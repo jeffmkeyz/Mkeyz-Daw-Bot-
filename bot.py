@@ -569,67 +569,67 @@ async def ask_upgrade(query, required_plan):
 def kb_main():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("𝗠𝗜𝗦 𝗕𝗘𝗔𝗧𝗦  🎵",      callback_data="sec_beats"),
-            InlineKeyboardButton("𝗖𝗔𝗟𝗖𝗨𝗟𝗔𝗗𝗢𝗥𝗔  🧮",    callback_data="sec_calc"),
+            InlineKeyboardButton("🎵  Mis Beats",      callback_data="sec_beats"),
+            InlineKeyboardButton("🧮  Calculadora",    callback_data="sec_calc"),
         ],
         [
-            InlineKeyboardButton("𝗠𝗜𝗡𝗜 𝗗𝗔𝗪  🎛️",       callback_data="sec_daw"),
-            InlineKeyboardButton("𝗔𝗡𝗔𝗟𝗜𝗭𝗔𝗗𝗢𝗥  📊",     callback_data="sec_analyze"),
+            InlineKeyboardButton("🎛️  Mini DAW",       callback_data="sec_daw"),
+            InlineKeyboardButton("📊  Analizador",     callback_data="sec_analyze"),
         ],
         [
-            InlineKeyboardButton("𝗕𝗨𝗦𝗖𝗔𝗥 𝗖𝗔𝗡𝗖𝗜Ó𝗡  🔍", callback_data="sec_spotify"),
-            InlineKeyboardButton("𝗭𝗢𝗡𝗔 𝗔𝗥𝗧𝗜𝗦𝗧𝗔𝗦  🎤",  callback_data="sec_artists"),
+            InlineKeyboardButton("🔍  Buscar Canción", callback_data="sec_spotify"),
+            InlineKeyboardButton("🎤  Zona Artistas",  callback_data="sec_artists"),
         ],
         [
-            InlineKeyboardButton("𝗥𝗘𝗗𝗘𝗦  📱",          callback_data="sec_redes"),
-            InlineKeyboardButton("𝗦𝗢𝗕𝗥𝗘 𝗠Í  ℹ️",      callback_data="sec_about"),
+            InlineKeyboardButton("📱  Redes",          callback_data="sec_redes"),
+            InlineKeyboardButton("ℹ️   Sobre mí",      callback_data="sec_about"),
         ],
         [
-            InlineKeyboardButton("𝗖𝗢𝗡𝗧𝗔𝗖𝗧𝗢  📩",       callback_data="sec_contact"),
-            InlineKeyboardButton("𝗠𝗜 𝗣𝗟𝗔𝗡  💳",        callback_data="sec_planes"),
+            InlineKeyboardButton("📩  Contacto",       callback_data="sec_contact"),
+            InlineKeyboardButton("💳  Mi Plan",        callback_data="sec_planes"),
         ],
     ])
 
 def kb_back():
-    return InlineKeyboardMarkup([[InlineKeyboardButton("← 𝗠𝗘𝗡Ú", callback_data="sec_main")]])
+    return InlineKeyboardMarkup([[InlineKeyboardButton("‹ Menú principal", callback_data="sec_main")]])
 
 def kb_planes():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("⭐  𝗣𝗥𝗢  ·  385 Stars / mes",    callback_data="buy_pro")],
-        [InlineKeyboardButton("🎛️  𝗦𝗧𝗨𝗗𝗜𝗢  ·  1155 Stars / mes", callback_data="buy_studio")],
-        [InlineKeyboardButton("← 𝗠𝗘𝗡Ú",                 callback_data="sec_main")],
+        [InlineKeyboardButton("⭐ Pro — 385 Stars/mes (~$5)",    callback_data="buy_pro")],
+        [InlineKeyboardButton("🎛️ Studio — 1155 Stars/mes (~$15)", callback_data="buy_studio")],
+        [InlineKeyboardButton("‹ Menú principal",                 callback_data="sec_main")],
     ])
 
 def kb_beats():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛒  𝗩𝗘𝗥 𝗖𝗔𝗧Á𝗟𝗢𝗚𝗢  ·  BeatStars", url=LINKS["beatstars"])],
+        [InlineKeyboardButton("🛒  Ver catálogo — BeatStars", url=LINKS["beatstars"])],
         [
-            InlineKeyboardButton("🔥  𝗧𝗥𝗔𝗣",       callback_data="beats_trap"),
-            InlineKeyboardButton("🌴  𝗣𝗢𝗣 𝗟𝗔𝗧𝗜𝗡𝗢", callback_data="beats_pop"),
+            InlineKeyboardButton("🔥  Trap",       callback_data="beats_trap"),
+            InlineKeyboardButton("🌴  Pop Latino", callback_data="beats_pop"),
         ],
         [
-            InlineKeyboardButton("☁️  𝗟𝗢-𝗙𝗜",      callback_data="beats_lofi"),
-            InlineKeyboardButton("🥁  𝗔𝗙𝗥𝗢𝗕𝗘𝗔𝗧𝗦",  callback_data="beats_afro"),
+            InlineKeyboardButton("☁️   Lo-Fi",      callback_data="beats_lofi"),
+            InlineKeyboardButton("🥁  Afrobeats",  callback_data="beats_afro"),
         ],
-        [InlineKeyboardButton("← 𝗠𝗘𝗡Ú",  callback_data="sec_main")],
+        [InlineKeyboardButton("‹ Menú principal",  callback_data="sec_main")],
     ])
 
 def kb_redes():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🎵  𝗦𝗽𝗼𝘁𝗶𝗳𝘆",     url=LINKS["spotify"])],
-        [InlineKeyboardButton("🛍️  𝗕𝗲𝗮𝘁𝗦𝘁𝗮𝗿𝘀",  url=LINKS["beatstars"])],
+        [InlineKeyboardButton("🎵  Spotify",     url=LINKS["spotify"])],
+        [InlineKeyboardButton("🛍️   BeatStars",  url=LINKS["beatstars"])],
         [
-            InlineKeyboardButton("📸  𝗜𝗻𝘀𝘁𝗮𝗴𝗿𝗮𝗺", url=LINKS["instagram"]),
-            InlineKeyboardButton("🎬  𝗧𝗶𝗸𝗧𝗼𝗸",    url=LINKS["tiktok"]),
+            InlineKeyboardButton("📸  Instagram", url=LINKS["instagram"]),
+            InlineKeyboardButton("🎬  TikTok",    url=LINKS["tiktok"]),
         ],
-        [InlineKeyboardButton("▶️  𝗬𝗼𝘂𝗧𝘂𝗯𝗲",     url=LINKS["youtube"])],
-        [InlineKeyboardButton("← 𝗠𝗘𝗡Ú", callback_data="sec_main")],
+        [InlineKeyboardButton("▶️   YouTube",     url=LINKS["youtube"])],
+        [InlineKeyboardButton("‹ Menú principal", callback_data="sec_main")],
     ])
 
 def kb_calc():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🎵  𝗦𝗽𝗼𝘁𝗶𝗳𝘆",          callback_data="calc_Spotify"),
+            InlineKeyboardButton("🎵  Spotify",          callback_data="calc_Spotify"),
             InlineKeyboardButton("🍎  Apple Music",      callback_data="calc_Apple Music"),
         ],
         [
@@ -644,8 +644,8 @@ def kb_calc():
             InlineKeyboardButton("🎵  Audiomack",        callback_data="calc_Audiomack"),
             InlineKeyboardButton("🎵  TikTok",           callback_data="calc_TikTok"),
         ],
-        [InlineKeyboardButton("📈  𝗣𝗥𝗢𝗬𝗘𝗖𝗖𝗜Ó𝗡 𝗗𝗘 𝗜𝗡𝗚𝗥𝗘𝗦𝗢𝗦", callback_data="calc_proyeccion")],
-        [InlineKeyboardButton("← 𝗠𝗘𝗡Ú",            callback_data="sec_main")],
+        [InlineKeyboardButton("📈  Proyección de ingresos", callback_data="calc_proyeccion")],
+        [InlineKeyboardButton("‹ Menú principal",            callback_data="sec_main")],
     ])
 
 def kb_calc_result(plat):
@@ -659,49 +659,49 @@ def kb_calc_result(plat):
             row = []
     if row: rows.append(row)
     rows.append([InlineKeyboardButton(f"🔄 Otra cantidad — {plat}", callback_data=f"calc_{plat}")])
-    rows.append([InlineKeyboardButton("← 𝗠𝗘𝗡Ú", callback_data="sec_main")])
+    rows.append([InlineKeyboardButton("‹ Menú principal", callback_data="sec_main")])
     return InlineKeyboardMarkup(rows)
 
 def kb_daw():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🎵  𝗣𝗶𝘁𝗰𝗵  ▸ 𝗽𝗿𝗲𝘀𝗲𝘁",    callback_data="daw_pitch_menu"),
-            InlineKeyboardButton("🎵  𝗣𝗶𝘁𝗰𝗵  ▸ 𝗰𝘂𝘀𝘁𝗼𝗺",    callback_data="daw_pitch_custom"),
+            InlineKeyboardButton("🎵  Pitch preset",    callback_data="daw_pitch_menu"),
+            InlineKeyboardButton("🎵  Pitch custom",    callback_data="daw_pitch_custom"),
         ],
         [
-            InlineKeyboardButton("⏩  𝗦𝗽𝗲𝗲𝗱  ▸ 𝗽𝗿𝗲𝘀𝗲𝘁",    callback_data="daw_speed_menu"),
-            InlineKeyboardButton("⏩  𝗦𝗽𝗲𝗲𝗱  ▸ 𝗰𝘂𝘀𝘁𝗼𝗺",    callback_data="daw_speed_custom"),
+            InlineKeyboardButton("⏩  Speed preset",    callback_data="daw_speed_menu"),
+            InlineKeyboardButton("⏩  Speed custom",    callback_data="daw_speed_custom"),
         ],
         [
-            InlineKeyboardButton("🥁  𝗧𝗲𝗺𝗽𝗼  ▸ 𝗽𝗿𝗲𝘀𝗲𝘁",    callback_data="daw_tempo_menu"),
-            InlineKeyboardButton("🥁  𝗧𝗲𝗺𝗽𝗼  ▸ 𝗰𝘂𝘀𝘁𝗼𝗺",    callback_data="daw_tempo_custom"),
+            InlineKeyboardButton("🥁  Tempo preset",    callback_data="daw_tempo_menu"),
+            InlineKeyboardButton("🥁  Tempo custom",    callback_data="daw_tempo_custom"),
         ],
         [
-            InlineKeyboardButton("🔊  𝗕𝗮𝘀𝘀 𝗕𝗼𝗼𝘀𝘁",      callback_data="daw_bass"),
-            InlineKeyboardButton("🔇  𝗡𝗼𝗿𝗺𝗮𝗹𝗶𝘇𝗮𝗿",      callback_data="daw_norm"),
+            InlineKeyboardButton("🔊  Bass Boost",      callback_data="daw_bass"),
+            InlineKeyboardButton("🔇  Normalizar",      callback_data="daw_norm"),
         ],
         [
-            InlineKeyboardButton("🎚️  𝗙𝗮𝗱𝗲 𝗜𝗻/𝗢𝘂𝘁",     callback_data="daw_fade"),
-            InlineKeyboardButton("🌊  𝗘𝗰𝗵𝗼",            callback_data="daw_echo"),
+            InlineKeyboardButton("🎚️  Fade in/out",     callback_data="daw_fade"),
+            InlineKeyboardButton("🌊  Echo",            callback_data="daw_echo"),
         ],
         [
-            InlineKeyboardButton("🌊  𝗥𝗲𝘃𝗲𝗿𝗯",          callback_data="daw_reverb_menu"),
-            InlineKeyboardButton("🎚️  𝗘𝗤",              callback_data="daw_eq_menu"),
+            InlineKeyboardButton("🌊  Reverb",          callback_data="daw_reverb_menu"),
+            InlineKeyboardButton("🎚️  EQ",              callback_data="daw_eq_menu"),
         ],
         [
-            InlineKeyboardButton("⏱️  𝗗𝗲𝗹𝗮𝘆",           callback_data="daw_delay_menu"),
-            InlineKeyboardButton("🎤  𝗔𝘂𝘁𝗼𝘁𝘂𝗻𝗲",        callback_data="daw_autotune_menu"),
+            InlineKeyboardButton("⏱️  Delay",           callback_data="daw_delay_menu"),
+            InlineKeyboardButton("🎤  Autotune",        callback_data="daw_autotune_menu"),
         ],
         [
-            InlineKeyboardButton("⏮  𝗥𝗲𝘃𝗲𝗿𝘀𝗲",         callback_data="daw_rev"),
-            InlineKeyboardButton("📊  𝗔𝗻𝗮𝗹𝗶𝘇𝗮𝗿",        callback_data="daw_analyze"),
+            InlineKeyboardButton("⏮  Reverse",         callback_data="daw_rev"),
+            InlineKeyboardButton("📊  Analizar",        callback_data="daw_analyze"),
         ],
         [
-            InlineKeyboardButton("⬇️  𝗠𝗣𝟯 · 𝟯𝟮𝟬𝗸",             callback_data="daw_dl_mp3"),
-            InlineKeyboardButton("⬇️  𝗪𝗔𝗩 · 𝗹𝗼𝘀𝘀𝗹𝗲𝘀𝘀",             callback_data="daw_dl_wav"),
+            InlineKeyboardButton("⬇️  MP3",             callback_data="daw_dl_mp3"),
+            InlineKeyboardButton("⬇️  WAV",             callback_data="daw_dl_wav"),
         ],
         [
-            InlineKeyboardButton("🔄  𝗡𝘂𝗲𝘃𝗼 𝗮𝘂𝗱𝗶𝗼",     callback_data="daw_reset"),
+            InlineKeyboardButton("🔄  Nuevo audio",     callback_data="daw_reset"),
             InlineKeyboardButton("✖  Cerrar DAW",       callback_data="sec_main"),
         ],
     ])
@@ -711,7 +711,7 @@ def kb_daw_pitch():
         [InlineKeyboardButton("▲ +1", callback_data="daw_pitch_1"),  InlineKeyboardButton("▼ -1", callback_data="daw_pitch_-1")],
         [InlineKeyboardButton("▲ +2", callback_data="daw_pitch_2"),  InlineKeyboardButton("▼ -2", callback_data="daw_pitch_-2")],
         [InlineKeyboardButton("▲ +3", callback_data="daw_pitch_3"),  InlineKeyboardButton("▼ -3", callback_data="daw_pitch_-3")],
-        [InlineKeyboardButton("← 𝗩𝗢𝗟𝗩𝗘𝗥", callback_data="daw_back")],
+        [InlineKeyboardButton("‹ Volver", callback_data="daw_back")],
     ])
 
 def kb_daw_speed():
@@ -719,7 +719,7 @@ def kb_daw_speed():
         [InlineKeyboardButton("×1.15", callback_data="daw_speed_1.15"), InlineKeyboardButton("×0.85", callback_data="daw_speed_0.85")],
         [InlineKeyboardButton("×1.25", callback_data="daw_speed_1.25"), InlineKeyboardButton("×0.75", callback_data="daw_speed_0.75")],
         [InlineKeyboardButton("×1.5",  callback_data="daw_speed_1.5"),  InlineKeyboardButton("×0.5",  callback_data="daw_speed_0.5")],
-        [InlineKeyboardButton("← 𝗩𝗢𝗟𝗩𝗘𝗥", callback_data="daw_back")],
+        [InlineKeyboardButton("‹ Volver", callback_data="daw_back")],
     ])
 
 def kb_daw_tempo():
@@ -727,37 +727,37 @@ def kb_daw_tempo():
         [InlineKeyboardButton("+10%", callback_data="daw_tempo_1.1"), InlineKeyboardButton("-10%", callback_data="daw_tempo_0.9")],
         [InlineKeyboardButton("+20%", callback_data="daw_tempo_1.2"), InlineKeyboardButton("-20%", callback_data="daw_tempo_0.8")],
         [InlineKeyboardButton("+50%", callback_data="daw_tempo_1.5"), InlineKeyboardButton("-50%", callback_data="daw_tempo_0.5")],
-        [InlineKeyboardButton("← 𝗩𝗢𝗟𝗩𝗘𝗥", callback_data="daw_back")],
+        [InlineKeyboardButton("‹ Volver", callback_data="daw_back")],
     ])
 
 def kb_daw_reverb():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🏠  𝗦𝗮𝗹𝗮 𝗣𝗲𝗾𝘂𝗲ñ𝗮",  callback_data="daw_reverb_0.2_0.5_0.3")],
-        [InlineKeyboardButton("🏛️  𝗦𝗮𝗹𝗮 𝗠𝗲𝗱𝗶𝗮𝗻𝗮", callback_data="daw_reverb_0.5_0.5_0.4")],
-        [InlineKeyboardButton("🏟️  𝗦𝗮𝗹𝗮 𝗚𝗿𝗮𝗻𝗱𝗲",  callback_data="daw_reverb_0.8_0.3_0.5")],
-        [InlineKeyboardButton("🌌  𝗖𝗮𝘁𝗵𝗲𝗱𝗿𝗮𝗹",     callback_data="daw_reverb_0.95_0.2_0.6")],
-        [InlineKeyboardButton("← 𝗩𝗢𝗟𝗩𝗘𝗥",         callback_data="daw_back")],
+        [InlineKeyboardButton("🏠 Sala pequeña",  callback_data="daw_reverb_0.2_0.5_0.3")],
+        [InlineKeyboardButton("🏛️  Sala mediana", callback_data="daw_reverb_0.5_0.5_0.4")],
+        [InlineKeyboardButton("🏟️  Sala grande",  callback_data="daw_reverb_0.8_0.3_0.5")],
+        [InlineKeyboardButton("🌌 Cathedral",     callback_data="daw_reverb_0.95_0.2_0.6")],
+        [InlineKeyboardButton("‹ Volver",         callback_data="daw_back")],
     ])
 
 def kb_daw_eq():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔊  𝗕𝗼𝗼𝘀𝘁 𝗚𝗿𝗮𝘃𝗲𝘀",  callback_data="daw_eq_6_0_0")],
-        [InlineKeyboardButton("🎙️  𝗕𝗼𝗼𝘀𝘁 𝗠𝗲𝗱𝗶𝗼𝘀", callback_data="daw_eq_0_6_0")],
-        [InlineKeyboardButton("✨  𝗕𝗼𝗼𝘀𝘁 𝗔𝗴𝘂𝗱𝗼𝘀",  callback_data="daw_eq_0_0_6")],
-        [InlineKeyboardButton("🎛️  𝗪𝗮𝗿𝗺",          callback_data="daw_eq_8_2_-2")],
-        [InlineKeyboardButton("💎  𝗕𝗿𝗶𝗴𝗵𝘁",         callback_data="daw_eq_-2_2_8")],
-        [InlineKeyboardButton("🎤  𝗩𝗼𝗰𝗮𝗹 𝗕𝗼𝗼𝘀𝘁",    callback_data="daw_eq_-3_6_3")],
-        [InlineKeyboardButton("← 𝗩𝗢𝗟𝗩𝗘𝗥",          callback_data="daw_back")],
+        [InlineKeyboardButton("🔊 Boost Graves",  callback_data="daw_eq_6_0_0")],
+        [InlineKeyboardButton("🎙️  Boost Medios", callback_data="daw_eq_0_6_0")],
+        [InlineKeyboardButton("✨ Boost Agudos",  callback_data="daw_eq_0_0_6")],
+        [InlineKeyboardButton("🎛️  Warm",          callback_data="daw_eq_8_2_-2")],
+        [InlineKeyboardButton("💎 Bright",         callback_data="daw_eq_-2_2_8")],
+        [InlineKeyboardButton("🎤 Vocal Boost",    callback_data="daw_eq_-3_6_3")],
+        [InlineKeyboardButton("‹ Volver",          callback_data="daw_back")],
     ])
 
 def kb_daw_delay():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("⚡  𝗦𝗹𝗮𝗽𝗯𝗮𝗰𝗸 · 80𝗺𝘀",  callback_data="daw_delay_80_0.2_0.3")],
-        [InlineKeyboardButton("🎸  𝗦𝗵𝗼𝗿𝘁 · 150𝗺𝘀",    callback_data="daw_delay_150_0.35_0.4")],
-        [InlineKeyboardButton("🎵  𝗠𝗲𝗱𝗶𝘂𝗺 · 250𝗺𝘀",   callback_data="daw_delay_250_0.45_0.5")],
-        [InlineKeyboardButton("🌊  𝗟𝗼𝗻𝗴 · 400𝗺𝘀",     callback_data="daw_delay_400_0.5_0.5")],
-        [InlineKeyboardButton("🌌  𝗗𝗲𝗲𝗽 · 600𝗺𝘀",     callback_data="daw_delay_600_0.55_0.45")],
-        [InlineKeyboardButton("← 𝗩𝗢𝗟𝗩𝗘𝗥",          callback_data="daw_back")],
+        [InlineKeyboardButton("⚡ Slapback 80ms",  callback_data="daw_delay_80_0.2_0.3")],
+        [InlineKeyboardButton("🎸 Short 150ms",    callback_data="daw_delay_150_0.35_0.4")],
+        [InlineKeyboardButton("🎵 Medium 250ms",   callback_data="daw_delay_250_0.45_0.5")],
+        [InlineKeyboardButton("🌊 Long 400ms",     callback_data="daw_delay_400_0.5_0.5")],
+        [InlineKeyboardButton("🌌 Deep 600ms",     callback_data="daw_delay_600_0.55_0.45")],
+        [InlineKeyboardButton("‹ Volver",          callback_data="daw_back")],
     ])
 
 def kb_daw_autotune():
@@ -766,24 +766,24 @@ def kb_daw_autotune():
         [InlineKeyboardButton("D#", callback_data="daw_autotune_D#"), InlineKeyboardButton("E",  callback_data="daw_autotune_E"),  InlineKeyboardButton("F",  callback_data="daw_autotune_F")],
         [InlineKeyboardButton("F#", callback_data="daw_autotune_F#"), InlineKeyboardButton("G",  callback_data="daw_autotune_G"),  InlineKeyboardButton("G#", callback_data="daw_autotune_G#")],
         [InlineKeyboardButton("A",  callback_data="daw_autotune_A"),  InlineKeyboardButton("A#", callback_data="daw_autotune_A#"), InlineKeyboardButton("B",  callback_data="daw_autotune_B")],
-        [InlineKeyboardButton("← 𝗩𝗢𝗟𝗩𝗘𝗥", callback_data="daw_back")],
+        [InlineKeyboardButton("‹ Volver", callback_data="daw_back")],
     ])
 
 def kb_artists_main():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("✏️  𝗠𝗜 𝗣𝗘𝗥𝗙𝗜𝗟",      callback_data="art_profile"),
-            InlineKeyboardButton("🤝  𝗖𝗢𝗟𝗔𝗕𝗢𝗥𝗔𝗖𝗜𝗢𝗡𝗘𝗦",  callback_data="art_colabs"),
+            InlineKeyboardButton("✏️  Mi perfil",      callback_data="art_profile"),
+            InlineKeyboardButton("🤝  Buscar colabs",  callback_data="art_colabs"),
         ],
         [
-            InlineKeyboardButton("💡  𝗖𝗢𝗠𝗣𝗔𝗥𝗧𝗜𝗥 𝗜𝗗𝗘𝗔", callback_data="art_idea"),
-            InlineKeyboardButton("🎵  𝗦𝗛𝗢𝗪𝗖𝗔𝗦𝗘",       callback_data="art_showcase"),
+            InlineKeyboardButton("💡  Compartir idea", callback_data="art_idea"),
+            InlineKeyboardButton("🎵  Showcase",       callback_data="art_showcase"),
         ],
         [
-            InlineKeyboardButton("📋  𝗙𝗘𝗘𝗗 𝗥𝗘𝗖𝗜𝗘𝗡𝗧𝗘",  callback_data="art_feed"),
-            InlineKeyboardButton("💬  𝗠𝗜 𝗙𝗘𝗘𝗗𝗕𝗔𝗖𝗞",    callback_data="art_myfeed"),
+            InlineKeyboardButton("📋  Feed reciente",  callback_data="art_feed"),
+            InlineKeyboardButton("💬  Mi feedback",    callback_data="art_myfeed"),
         ],
-        [InlineKeyboardButton("← 𝗠𝗘𝗡Ú",      callback_data="sec_main")],
+        [InlineKeyboardButton("‹ Menú principal",      callback_data="sec_main")],
     ])
 
 def kb_genres(prefix="reg_genre_"):
@@ -794,7 +794,7 @@ def kb_genres(prefix="reg_genre_"):
             rows.append(row)
             row = []
     if row: rows.append(row)
-    rows.append([InlineKeyboardButton("✕ 𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥", callback_data="sec_artists")])
+    rows.append([InlineKeyboardButton("❌ Cancelar", callback_data="sec_artists")])
     return InlineKeyboardMarkup(rows)
 
 # ══════════════════════════════════════════════════════════
@@ -831,7 +831,7 @@ async def cmd_mipan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"👤 Tu plan: *{PLAN_LABELS.get(plan, plan)}*",
         parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("💳  𝗩𝗘𝗥 𝗣𝗟𝗔𝗡𝗘𝗦", callback_data="sec_planes")]]))
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("💳 Ver planes", callback_data="sec_planes")]]))
 
 async def cmd_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
@@ -911,8 +911,8 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if game_url:
             kb_b.append([InlineKeyboardButton("🎮 Abrir Beat Battle Arena",
                          web_app=WebAppInfo(url=game_url))])
-        kb_b.append([InlineKeyboardButton("🎵  𝗦𝗨𝗕𝗜𝗥 𝗠𝗜 𝗕𝗘𝗔𝗧", callback_data="battle_submit")])
-        kb_b.append([InlineKeyboardButton("← 𝗠𝗘𝗡Ú", callback_data="sec_main")])
+        kb_b.append([InlineKeyboardButton("🎵  Subir mi beat", callback_data="battle_submit")])
+        kb_b.append([InlineKeyboardButton("‹ Menú principal", callback_data="sec_main")])
         await edit(q, text, InlineKeyboardMarkup(kb_b))
         return
 
@@ -923,7 +923,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             "Envía tu beat (MP3 o nota de voz).\n"
             "Estará activo durante *24 horas* para que la comunidad vote.\n\n"
             "👇 Envía el audio:",
-            InlineKeyboardMarkup([[InlineKeyboardButton("✕ 𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥", callback_data="sec_battle")]]))
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancelar", callback_data="sec_battle")]]))
         return
 
     if d == "battle_no_cap":
@@ -940,7 +940,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             "¡Comparte el bot para conseguir votos! 🔥",
             InlineKeyboardMarkup([
                 [InlineKeyboardButton("🎮 Ver el Battle", callback_data="sec_battle")],
-                [InlineKeyboardButton("← 𝗠𝗘𝗡Ú",          callback_data="sec_main")],
+                [InlineKeyboardButton("‹ Menú principal",          callback_data="sec_main")],
             ]))
         return
 
@@ -1034,7 +1034,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await edit(q,
             "📈 *Proyección de Ingresos*\n\n"
             "Paso 1 de 3 — ¿Cuántos streams tienes al mes?\nEjemplo: `50000`",
-            InlineKeyboardMarkup([[InlineKeyboardButton("← 𝗖𝗔𝗟𝗖𝗨𝗟𝗔𝗗𝗢𝗥𝗔", callback_data="sec_calc")]]))
+            InlineKeyboardMarkup([[InlineKeyboardButton("‹ Calculadora", callback_data="sec_calc")]]))
         return
 
     if d.startswith("calc_same_"):
@@ -1075,8 +1075,8 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         lines += ["", f"💰 *Total 6 meses: `${total_usd:.2f}` / `€{round(total_usd*EUR_RATE,2):.2f}`*"]
         ctx.user_data["mode"] = MODE_NONE
         kb_p = InlineKeyboardMarkup([
-            [InlineKeyboardButton("📈  𝗡𝗨𝗘𝗩𝗔 𝗣𝗥𝗢𝗬𝗘𝗖𝗖𝗜Ó𝗡", callback_data="calc_proyeccion")],
-            [InlineKeyboardButton("← 𝗠𝗘𝗡Ú",    callback_data="sec_main")],
+            [InlineKeyboardButton("📈 Nueva proyección", callback_data="calc_proyeccion")],
+            [InlineKeyboardButton("‹ Menú principal",    callback_data="sec_main")],
         ])
         try: await q.edit_message_text("\n".join(lines), parse_mode="Markdown", reply_markup=kb_p)
         except: await q.message.reply_text("\n".join(lines), parse_mode="Markdown", reply_markup=kb_p)
@@ -1091,8 +1091,8 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         hint = f"\n\n_Último valor: {last:,} streams_" if last else ""
         text = f"🧮 *Calculadora — {plat}*\n\n💲 Rate: `${rate:.6f}` por stream\n\n✏️ Escribe el número de streams:" + hint
         kb_c = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔄  𝗖𝗔𝗠𝗕𝗜𝗔𝗥 𝗣𝗟𝗔𝗧𝗔𝗙𝗢𝗥𝗠𝗔", callback_data="sec_calc")],
-            [InlineKeyboardButton("← 𝗠𝗘𝗡Ú",      callback_data="sec_main")],
+            [InlineKeyboardButton("🔄 Cambiar plataforma", callback_data="sec_calc")],
+            [InlineKeyboardButton("‹ Menú principal",      callback_data="sec_main")],
         ])
         try:
             if q.message.photo: await q.edit_message_caption(caption=text, parse_mode="Markdown", reply_markup=kb_c)
@@ -1119,8 +1119,8 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if track:
             ctx.user_data["mode"] = MODE_SEARCH
             await edit(q, format_track(track), InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔍  𝗕𝗨𝗦𝗖𝗔𝗥 𝗢𝗧𝗥𝗔", callback_data="sec_spotify")],
-                [InlineKeyboardButton("← 𝗠𝗘𝗡Ú",         callback_data="sec_main")],
+                [InlineKeyboardButton("🔍 Buscar otra", callback_data="sec_spotify")],
+                [InlineKeyboardButton("‹ Menú principal",         callback_data="sec_main")],
             ]))
         return
 
@@ -1141,7 +1141,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             except: pass
         ctx.user_data["wav"]  = None
         ctx.user_data["mode"] = MODE_DAW
-        await edit(q, "🎛️ *Mini DAW*\n\nAudio descartado.\nEnvíame un nuevo audio:", InlineKeyboardMarkup([[InlineKeyboardButton("← 𝗠𝗘𝗡Ú", callback_data="sec_main")]]))
+        await edit(q, "🎛️ *Mini DAW*\n\nAudio descartado.\nEnvíame un nuevo audio:", InlineKeyboardMarkup([[InlineKeyboardButton("‹ Menú principal", callback_data="sec_main")]]))
         return
 
     if d in ("daw_pitch_menu","daw_speed_menu","daw_tempo_menu","daw_reverb_menu","daw_eq_menu","daw_delay_menu","daw_autotune_menu"):
@@ -1169,7 +1169,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await q.message.reply_text("Envía un audio primero.", reply_markup=kb_main())
             return
         ctx.user_data["mode"] = mode
-        await edit(q, text, InlineKeyboardMarkup([[InlineKeyboardButton("← 𝗩𝗢𝗟𝗩𝗘𝗥", callback_data="daw_back")]]))
+        await edit(q, text, InlineKeyboardMarkup([[InlineKeyboardButton("‹ Volver", callback_data="daw_back")]]))
         return
 
     # ── DAW descargas ──────────────────────────────────────
@@ -1312,8 +1312,8 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 "🤝 Buscar colaboraciones\n💡 Compartir ideas\n🎵 Showcases con feedback\n\n"
                 "Para participar regístrate primero 👇",
                 InlineKeyboardMarkup([
-                    [InlineKeyboardButton("✏️  𝗥𝗘𝗚𝗜𝗦𝗧𝗥𝗔𝗥𝗠𝗘",  callback_data="art_register")],
-                    [InlineKeyboardButton("← 𝗠𝗘𝗡Ú", callback_data="sec_main")],
+                    [InlineKeyboardButton("✏️ Registrarme",  callback_data="art_register")],
+                    [InlineKeyboardButton("‹ Menú principal", callback_data="sec_main")],
                 ]))
         return
 
@@ -1321,7 +1321,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         ctx.user_data["mode"]     = MODE_REG
         ctx.user_data["reg_step"] = "name"
         await edit(q, "✏️ *Registro — Paso 1 de 4*\n\n¿Cuál es tu nombre artístico?",
-            InlineKeyboardMarkup([[InlineKeyboardButton("✕  𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥", callback_data="sec_artists")]]))
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancelar", callback_data="sec_artists")]]))
         return
 
     if d == "art_profile":
@@ -1333,24 +1333,24 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await edit(q,
             f"🎤 *Tu perfil*\n\n👤 *{artist['name']}*\n🎸 {artist['genre']}\n📝 {artist.get('bio') or 'Sin bio'}\n📸 {ig}",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("✏️  𝗘𝗗𝗜𝗧𝗔𝗥 𝗣𝗘𝗥𝗙𝗜𝗟",           callback_data="art_register")],
-                [InlineKeyboardButton("🗑️  𝗘𝗟𝗜𝗠𝗜𝗡𝗔𝗥 𝗖𝗨𝗘𝗡𝗧𝗔",  callback_data="art_delete_confirm")],
-                [InlineKeyboardButton("← 𝗭𝗢𝗡𝗔 𝗔𝗥𝗧𝗜𝗦𝗧𝗔𝗦",     callback_data="sec_artists")],
+                [InlineKeyboardButton("✏️ Editar",           callback_data="art_register")],
+                [InlineKeyboardButton("🗑️ Eliminar cuenta",  callback_data="art_delete_confirm")],
+                [InlineKeyboardButton("‹ Zona Artistas",     callback_data="sec_artists")],
             ]))
         return
 
     if d == "art_delete_confirm":
         await edit(q, "🗑️ *Eliminar cuenta*\n\n¿Estás seguro? Se borrará todo tu contenido.\n\n⚠️ No se puede deshacer.",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("✅  𝗦Í, 𝗘𝗟𝗜𝗠𝗜𝗡𝗔𝗥", callback_data="art_delete_yes")],
-                [InlineKeyboardButton("✕  𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥",     callback_data="art_profile")],
+                [InlineKeyboardButton("✅ Sí, eliminar", callback_data="art_delete_yes")],
+                [InlineKeyboardButton("❌ Cancelar",     callback_data="art_profile")],
             ]))
         return
 
     if d == "art_delete_yes":
         db_delete_artist(q.from_user.id)
         await edit(q, "✅ Cuenta eliminada.\nPuedes registrarte de nuevo cuando quieras.",
-            InlineKeyboardMarkup([[InlineKeyboardButton("← 𝗭𝗢𝗡𝗔 𝗔𝗥𝗧𝗜𝗦𝗧𝗔𝗦", callback_data="sec_artists")]]))
+            InlineKeyboardMarkup([[InlineKeyboardButton("‹ Zona Artistas", callback_data="sec_artists")]]))
         return
 
     if d == "art_colabs":
@@ -1363,7 +1363,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         me      = db_get_artist(q.from_user.id)
         if not artists:
             await edit(q, f"No hay artistas en *{genre}* todavía.\n¡Sé el primero!",
-                InlineKeyboardMarkup([[InlineKeyboardButton("← 𝗕𝗨𝗦𝗖𝗔𝗥", callback_data="art_colabs")]]))
+                InlineKeyboardMarkup([[InlineKeyboardButton("‹ Buscar", callback_data="art_colabs")]]))
             return
         lines   = [f"🤝 *Artistas de {genre}*\n"]
         buttons = []
@@ -1373,7 +1373,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             lines.append(f"• *{a['name']}*{ig}")
             if a.get("username"):
                 buttons.append([InlineKeyboardButton(a["name"], url=f"https://t.me/{a['username']}")])
-        buttons.append([InlineKeyboardButton("← 𝗖𝗢𝗟𝗔𝗕𝗦", callback_data="art_colabs")])
+        buttons.append([InlineKeyboardButton("‹ Colabs", callback_data="art_colabs")])
         await edit(q, "\n".join(lines), InlineKeyboardMarkup(buttons))
         return
 
@@ -1383,7 +1383,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             return
         ctx.user_data["mode"] = MODE_IDEA
         await edit(q, "💡 *Compartir Idea*\n\nEnvía texto o audio:\n\n👇 Escribe o envía el audio:",
-            InlineKeyboardMarkup([[InlineKeyboardButton("✕  𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥", callback_data="sec_artists")]]))
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancelar", callback_data="sec_artists")]]))
         return
 
     if d == "art_showcase":
@@ -1392,7 +1392,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             return
         ctx.user_data["mode"] = MODE_SHOW
         await edit(q, "🎵 *Showcase*\n\nSube un preview para recibir feedback.\n\n👇 Envía el audio:",
-            InlineKeyboardMarkup([[InlineKeyboardButton("✕  𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥", callback_data="sec_artists")]]))
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancelar", callback_data="sec_artists")]]))
         return
 
     if d == "art_feed":
@@ -1411,7 +1411,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 buttons.append([InlineKeyboardButton(
                     f"🎵 {p['artist_name']} — {(p['caption'] or 'Preview')[:25]}",
                     callback_data=f"feed_post_{p['id']}")])
-        buttons.append([InlineKeyboardButton("← 𝗭𝗢𝗡𝗔 𝗔𝗥𝗧𝗜𝗦𝗧𝗔𝗦", callback_data="sec_artists")])
+        buttons.append([InlineKeyboardButton("‹ Zona Artistas", callback_data="sec_artists")])
         await edit(q, "\n".join(lines), InlineKeyboardMarkup(buttons))
         return
 
@@ -1429,8 +1429,8 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 fb_text += f"• *{fb['from_name']}:* {fb['text'][:60]}\n"
         cap     = f"{post.get('caption') or 'Preview'}\n_por {post['artist_name']}_" + fb_text
         kb_post = InlineKeyboardMarkup([
-            [InlineKeyboardButton("💬  𝗗𝗘𝗝𝗔𝗥 𝗙𝗘𝗘𝗗𝗕𝗔𝗖𝗞", callback_data=f"fb_write_{post_id}")],
-            [InlineKeyboardButton("← 𝗙𝗘𝗘𝗗",            callback_data="art_feed")],
+            [InlineKeyboardButton("💬 Dejar feedback", callback_data=f"fb_write_{post_id}")],
+            [InlineKeyboardButton("‹ Feed",            callback_data="art_feed")],
         ])
         ctx.user_data["fb_post_id"] = post_id
         ctx.user_data["mode"]       = MODE_FB
@@ -1452,7 +1452,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         ctx.user_data["fb_post_id"] = int(d[9:])
         ctx.user_data["mode"]       = MODE_FB
         await q.message.reply_text("💬 Escribe tu feedback:",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✕  𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥", callback_data="art_feed")]]))
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancelar", callback_data="art_feed")]]))
         return
 
     if d == "art_myfeed":
@@ -1484,12 +1484,12 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await q.edit_message_text(
                 f"✏️ *Registro — Paso 3 de 4*\n\nGénero: *{genre}* ✅\n\nEscribe tu bio corta:",
                 parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✕  𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥", callback_data="sec_artists")]]))
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancelar", callback_data="sec_artists")]]))
         except Exception:
             await q.message.chat.send_message(
                 f"✏️ *Registro — Paso 3 de 4*\n\nGénero: *{genre}* ✅\n\nEscribe tu bio corta:",
                 parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✕  𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥", callback_data="sec_artists")]]))
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancelar", callback_data="sec_artists")]]))
         return
 
     if d == "reg_skip_ig":
@@ -1539,7 +1539,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🎮 Ver el Battle", callback_data="sec_battle")],
-                [InlineKeyboardButton("← 𝗠𝗘𝗡Ú",          callback_data="sec_main")],
+                [InlineKeyboardButton("‹ Menú principal",          callback_data="sec_main")],
             ]))
         return
 
@@ -1632,7 +1632,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             msg = await update.message.reply_text(
                 f"📈 Streams: `{streams:,}`\n\nPaso 2 de 3 — ¿Cuánto % creces al mes?\nEjemplo: `20`",
                 parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✕ 𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥", callback_data="sec_calc")]]))
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancelar", callback_data="sec_calc")]]))
             return
         if step == "growth":
             try:
@@ -1653,7 +1653,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                      InlineKeyboardButton("YouTube",    callback_data="proj_plat_YouTube Premium")],
                     [InlineKeyboardButton("Audiomack",  callback_data="proj_plat_Audiomack"),
                      InlineKeyboardButton("TikTok",     callback_data="proj_plat_TikTok")],
-                    [InlineKeyboardButton("✕ 𝗖𝗔𝗡𝗖𝗘𝗟𝗔𝗥", callback_data="sec_calc")],
+                    [InlineKeyboardButton("❌ Cancelar", callback_data="sec_calc")],
                 ]))
             return
 
@@ -1671,7 +1671,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(
                 "✏️ *Registro — Paso 4 de 4*\n\nInstagram (sin @) o escribe `skip`:",
                 parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("𝗢𝗠𝗜𝗧𝗜𝗥", callback_data="reg_skip_ig")]]))
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Omitir", callback_data="reg_skip_ig")]]))
         elif step == "ig":
             ig = "" if texto.lower() == "skip" else texto.replace("@","").strip()
             u  = update.effective_user
@@ -1727,8 +1727,8 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 artist = t.get("artistName","N/A")[:20]
                 lines.append(f"{i+1}. {name} — {artist}")
                 buttons.append([InlineKeyboardButton(f"{i+1}. {name[:22]} — {artist[:12]}", callback_data=f"it_track_{i}")])
-            buttons.append([InlineKeyboardButton("🔍  𝗕𝗨𝗦𝗖𝗔𝗥 𝗢𝗧𝗥𝗔", callback_data="sec_spotify")])
-            buttons.append([InlineKeyboardButton("← 𝗠𝗘𝗡Ú",             callback_data="sec_main")])
+            buttons.append([InlineKeyboardButton("🔍 Buscar otra", callback_data="sec_spotify")])
+            buttons.append([InlineKeyboardButton("‹ Menú principal",             callback_data="sec_main")])
             await status.edit_text("\n".join(lines) + "\n\nSelecciona una canción:",
                 parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(buttons))
         except Exception as e:
@@ -1770,7 +1770,7 @@ async def on_audio(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await status.edit_text(
                 "✅ Beat recibido\n\n¿Cómo se llama tu beat? Escribe el nombre o toca Omitir:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("𝗢𝗠𝗜𝗧𝗜𝗥", callback_data="battle_no_cap")
+                    InlineKeyboardButton("Omitir", callback_data="battle_no_cap")
                 ]]))
         except Exception as e:
             log.error(f"Battle upload: {e}")
@@ -1807,7 +1807,7 @@ async def on_audio(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             ctx.user_data["reg_step"]       = "show_caption"
             await status.edit_text(
                 "✅ Audio recibido\n\n¿Añadir descripción? Escríbela o toca Omitir:",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("𝗢𝗠𝗜𝗧𝗜𝗥", callback_data="show_no_cap")]]))
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Omitir", callback_data="show_no_cap")]]))
         except Exception as e:
             log.error(f"Showcase: {e}")
             await status.edit_text(f"❌ Error: {e}")
@@ -1867,9 +1867,9 @@ async def on_audio(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 f"_Audio listo para editar 🎛️_",
                 parse_mode="Markdown",
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🎛️  𝗘𝗗𝗜𝗧𝗔𝗥 𝗘𝗡 𝗗𝗔𝗪",  callback_data="sec_daw")],
-                    [InlineKeyboardButton("📊  𝗔𝗡𝗔𝗟𝗜𝗭𝗔𝗥 𝗢𝗧𝗥𝗢",  callback_data="sec_analyze")],
-                    [InlineKeyboardButton("← 𝗠𝗘𝗡Ú",  callback_data="sec_main")],
+                    [InlineKeyboardButton("🎛️ Editar en DAW",  callback_data="sec_daw")],
+                    [InlineKeyboardButton("📊 Analizar otro",  callback_data="sec_analyze")],
+                    [InlineKeyboardButton("‹ Menú principal",  callback_data="sec_main")],
                 ]))
         except Exception as e:
             log.error(f"analyze: {e}")
