@@ -628,7 +628,6 @@ def format_track(t):
         f"💿 {t.get('collectionName','N/A')} ({t.get('releaseDate','')[:4]})",
         f"🎸 {t.get('primaryGenreName','N/A')}  ·  ⏱️ {dur_s//60}:{dur_s%60:02d}",
     ]
-    # Apple Music como botón, no como link en texto
     return "\n".join(lines), artwork, url
 
 # ══════════════════════════════════════════════════════════
@@ -1493,17 +1492,55 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if d == "sec_spotify":
         ctx.user_data["mode"]           = MODE_SEARCH
         ctx.user_data["search_results"] = {}
-        await edit(q, "🔍 *Buscador de Canciones*\n\nEscribe el nombre de la canción o artista.\nEjemplo: `Bad Bunny Titi me pregunto`\n\n✏️ Escríbelo en el chat:", kb_back())
+        await edit(q, "🔍 *Buscador de Canciones*\n\nEscribe el nombre de la canción o artista.\nEjemplo: `Jeff Mkeyz No Me Creo`\n\n✏️ Escríbelo en el chat:", kb_back())
         return
 
     if d.startswith("it_track_"):
         track = ctx.user_data.get("search_results", {}).get(d[9:])
         if track:
             ctx.user_data["mode"] = MODE_SEARCH
-            await edit(q, format_track(track), InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔍 Buscar otra", callback_data="sec_spotify")],
-                [InlineKeyboardButton("‹ Menú principal",         callback_data="sec_main")],
-            ]))
+            text, artwork, url = format_track(track)
+            buttons = []
+            if url:
+                buttons.append([InlineKeyboardButton("🎵 Ver en Apple Music", url=url)])
+            buttons.append([InlineKeyboardButton("🖼️ Descargar portada", callback_data=f"dl_cover_{d[9:]}")])
+            buttons.append([InlineKeyboardButton("🔍 Buscar otra",       callback_data="sec_spotify")])
+            buttons.append([InlineKeyboardButton("‹ Menú",               callback_data="sec_main")])
+            kb_track = InlineKeyboardMarkup(buttons)
+            try:
+                await q.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup([[]]))
+            except: pass
+            if artwork:
+                await q.message.reply_photo(photo=artwork, caption=text,
+                    parse_mode="Markdown", reply_markup=kb_track)
+            else:
+                await q.message.reply_text(text, parse_mode="Markdown", reply_markup=kb_track)
+        return
+
+    if d.startswith("dl_cover_"):
+        idx   = d[9:]
+        track = ctx.user_data.get("search_results", {}).get(idx)
+        if not track:
+            await q.answer("No encontrado.")
+            return
+        artwork = track.get("artworkUrl100","").replace("100x100bb","3000x3000bb")
+        name    = track.get("trackName","cover").replace(" ","_")[:30]
+        artist  = track.get("artistName","").replace(" ","_")[:20]
+        try:
+            await q.answer("⏳ Descargando...")
+            resp = requests.get(artwork, timeout=15)
+            resp.raise_for_status()
+            from io import BytesIO
+            img = BytesIO(resp.content)
+            img.name = f"{artist}_{name}.jpg"
+            await q.message.reply_document(
+                document=img,
+                filename=f"{artist}_{name}.jpg",
+                caption=f"🖼️ *{track.get('trackName','N/A')}*\n👤 {track.get('artistName','N/A')}\n_Alta calidad · 3000×3000px_",
+                parse_mode="Markdown")
+        except Exception as e:
+            log.error(f"Cover: {e}")
+            await q.message.reply_text("❌ No se pudo descargar la portada.")
         return
 
     # ── Mini DAW ───────────────────────────────────────────
