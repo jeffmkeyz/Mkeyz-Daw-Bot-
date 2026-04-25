@@ -39,11 +39,11 @@ PLAN_FREE   = "free"
 PLAN_PRO    = "pro"
 PLAN_STUDIO = "studio"
 
-PLAN_PRICES = {PLAN_PRO: 385, PLAN_STUDIO: 1155}
+PLAN_PRICES = {PLAN_PRO: 50, PLAN_STUDIO: 150}
 PLAN_LABELS = {
     PLAN_FREE:   "🆓 Free",
-    PLAN_PRO:    "⭐ Pro — $5/mes",
-    PLAN_STUDIO: "🎛️ Studio — $15/mes",
+    PLAN_PRO:    "⭐ Pro — 50 Stars/mes",
+    PLAN_STUDIO: "🎛️ Studio — 150 Stars/mes",
 }
 
 PLAN_PERMS = {
@@ -595,8 +595,8 @@ def kb_back():
 
 def kb_planes():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("⭐ Pro — 385 Stars/mes (~$5)",    callback_data="buy_pro")],
-        [InlineKeyboardButton("🎛️ Studio — 1155 Stars/mes (~$15)", callback_data="buy_studio")],
+        [InlineKeyboardButton("⭐ Pro — 50 Stars/mes (~$0.65)",    callback_data="buy_pro")],
+        [InlineKeyboardButton("🎛️ Studio — 150 Stars/mes (~$2)", callback_data="buy_studio")],
         [InlineKeyboardButton("‹ Menú principal",                 callback_data="sec_main")],
     ])
 
@@ -822,8 +822,8 @@ async def cmd_planes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     plan = db_get_plan(update.effective_user.id)
     await update.message.reply_text(
         f"💳 *Planes de Mkeyz Studio*\n\nTu plan actual: *{PLAN_LABELS.get(plan, plan)}*\n\n"
-        "⭐ *Pro — 385 Stars/mes (~$5)*\n🎛️ DAW · 📊 Analizador · 🧮 Calculadora\n\n"
-        "🎛️ *Studio — 1155 Stars/mes (~$15)*\nTodo lo Pro + 🎤 Zona Artistas",
+        "⭐ *Pro — 50 Stars/mes (~$0.65)*\n🎛️ DAW · 📊 Analizador · 🧮 Calculadora\n\n"
+        "🎛️ *Studio — 150 Stars/mes (~$2)*\nTodo lo Pro + 🎤 Zona Artistas",
         parse_mode="Markdown", reply_markup=kb_planes())
 
 async def cmd_mipan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -950,9 +950,9 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await edit(q,
             f"💳 *Planes de Mkeyz Studio*\n\nTu plan: *{PLAN_LABELS.get(plan)}*\n\n"
             "🆓 *Free* — Menú público · Buscar canciones\n\n"
-            "⭐ *Pro — 385 Stars/mes (~$5)*\n"
+            "⭐ *Pro — 50 Stars/mes (~$0.65)*\n"
             "✅ Mini DAW completo\n✅ Analizador\n✅ Calculadora\n✅ Proyección\n\n"
-            "🎛️ *Studio — 1155 Stars/mes (~$15)*\n"
+            "🎛️ *Studio — 150 Stars/mes (~$2)*\n"
             "✅ Todo lo Pro\n✅ Zona Artistas\n✅ Colabs · Showcases",
             kb_planes())
         return
