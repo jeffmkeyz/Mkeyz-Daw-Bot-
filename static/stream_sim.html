@@ -249,11 +249,17 @@ input[type=range]::-webkit-slider-thumb {
   <div class="slider-card">
     <div class="slider-header">
       <div class="slider-name">Oyentes</div>
-      <div class="slider-val" id="val-oyentes">1K</div>
+      <div class="slider-val" id="val-oyentes">1,000</div>
     </div>
     <input type="range" class="slider-oyentes" id="sl-oyentes"
-           min="100" max="10000000" step="100" value="1000" oninput="update()">
-    <div class="slider-labels"><span>100</span><span>250K</span><span>1M</span><span>5M</span><span>10M</span></div>
+           min="0" max="100" value="30" oninput="update()">
+    <div class="slider-labels"><span>100</span><span>1K</span><span>10K</span><span>100K</span><span>10M</span></div>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
+      <span style="font-size:12px;color:var(--muted)">Personalizar:</span>
+      <input type="number" id="oyentes-manual" placeholder="Ej: 5000"
+        style="flex:1;background:var(--border);border:none;border-radius:8px;padding:8px;color:#fff;font-size:14px"
+        oninput="setOyentesManual(this.value)">
+    </div>
   </div>
 
   <div class="section-title">🔁 Repeticiones por oyente/mes</div>
@@ -368,14 +374,40 @@ function fmtMoney(n) {
   return "$" + n.toFixed(2);
 }
 
+function logSliderToOyentes(val) {
+  // 0=100, 30=1K, 50=10K, 70=100K, 85=1M, 100=10M
+  const minv = Math.log(100);
+  const maxv = Math.log(10000000);
+  return Math.round(Math.exp(minv + (maxv - minv) * val / 100));
+}
+
+function setOyentesManual(val) {
+  const n = parseInt(val);
+  if (!isNaN(n) && n > 0) {
+    // Find closest log slider position
+    const minv = Math.log(100);
+    const maxv = Math.log(10000000);
+    const pos  = Math.round(((Math.log(Math.min(n, 10000000)) - minv) / (maxv - minv)) * 100);
+    document.getElementById("sl-oyentes").value = pos;
+    update();
+  }
+}
+
 function update() {
   const canciones = parseInt(document.getElementById("sl-canciones").value);
-  const oyentes   = parseInt(document.getElementById("sl-oyentes").value);
+  const slPos     = parseInt(document.getElementById("sl-oyentes").value);
+  const oyentes   = logSliderToOyentes(slPos);
   const rep       = parseInt(document.getElementById("sl-rep").value);
 
   document.getElementById("val-canciones").textContent = canciones;
   document.getElementById("val-oyentes").textContent   = fmtNum(oyentes);
   document.getElementById("val-rep").textContent       = rep + "×";
+  
+  // Update manual input if not focused
+  const manualEl = document.getElementById("oyentes-manual");
+  if (document.activeElement !== manualEl) {
+    manualEl.placeholder = fmtNum(oyentes);
+  }
 
   const total = canciones * oyentes * rep;
 
