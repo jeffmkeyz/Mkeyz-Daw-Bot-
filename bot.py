@@ -707,6 +707,7 @@ def kb_main():
             InlineKeyboardButton("🎮  Beat Battle  🔥",  callback_data="sec_battle"),
             InlineKeyboardButton("🥁  Adivina el BPM",   callback_data="sec_bpm"),
         ],
+        [InlineKeyboardButton("📊  Simulador de Streams", callback_data="sec_simulator")],
     ])
 
 def kb_back():
