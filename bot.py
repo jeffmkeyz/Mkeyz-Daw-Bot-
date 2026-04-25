@@ -1227,15 +1227,13 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         # Mostrar foto, esperar 4 seg, borrar y mostrar info
         try:
-            photo_msg = await q.message.reply_photo(photo=BANNER_URL)
-            await edit(q, text, kb_back())
-            async def remove_photo():
-                await asyncio.sleep(2)
-                try: await photo_msg.delete()
-                except: pass
-            asyncio.create_task(remove_photo())
-        except Exception:
-            await edit(q, text, kb_back())
+            await q.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup([[]]))
+        except: pass
+        try:
+            await q.message.reply_photo(photo=BANNER_URL, caption=text,
+                                         parse_mode="Markdown", reply_markup=kb_back())
+        except:
+            await q.message.reply_text(text, parse_mode="Markdown", reply_markup=kb_back())
         return
 
     # ── Contacto ───────────────────────────────────────────
