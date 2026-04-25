@@ -33,8 +33,8 @@ LINKS = {
     "beatstars": "https://beatstars.com/jeffmkeyz",
     "tiktok":    "https://tiktok.com/@jeffmkeyz",
     "youtube":   "https://youtube.com/@jeffmkeyz",
-    "instagram": "https://instagram.com/jeffmkeyz",
-    "spotify":   "https://open.spotify.com/artist/5GnCPMWUzBJCxbBRPgxJEo",
+    "instagram": "https://instagram.com/jeffmkeyzx",
+    "spotify":   "https://open.spotify.com/intl-es/artist/1PTk2yExL9jgOUPYEjWF1E",
 }
 
 # ── Planes ─────────────────────────────────────────────────
