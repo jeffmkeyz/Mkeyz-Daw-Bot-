@@ -588,6 +588,7 @@ def kb_main():
             InlineKeyboardButton("📩  Contacto",       callback_data="sec_contact"),
             InlineKeyboardButton("💳  Mi Plan",        callback_data="sec_planes"),
         ],
+        [InlineKeyboardButton("🎮  Beat Battle  🔥",  callback_data="sec_battle")],
     ])
 
 def kb_back():
@@ -1009,13 +1010,8 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             "📦 Distribución: DistroKid\n"
             "🇪🇸 España · 🇩🇴 República Dominicana"
         )
-        try: await q.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup([[]]))
-        except: pass
-        try:
-            await q.message.reply_photo(photo=BANNER_URL, caption=text,
-                                         parse_mode="Markdown", reply_markup=kb_back())
-        except:
-            await q.message.reply_text(text, parse_mode="Markdown", reply_markup=kb_back())
+        # Solo editar el mensaje actual sin mandar foto nueva
+        await edit(q, text, kb_back())
         return
 
     # ── Contacto ───────────────────────────────────────────
