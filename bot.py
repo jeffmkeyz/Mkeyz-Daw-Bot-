@@ -343,73 +343,6 @@ TITULOS_POOL = {
     "default": ["Eclipse","Phantom","Celestial","Nova","Abyss","Genesis","Solstice","Meridian"],
 }
 
-# ── IA — Generador de títulos y tags ─────────────────────
-
-def generate_beat_titles(descripcion: str) -> list:
-    """Genera 8 títulos creativos para un beat usando Claude."""
-    resp = requests.post(
-        "https://api.anthropic.com/v1/messages",
-        headers={
-            "x-api-key": os.getenv("ANTHROPIC_API_KEY", ""),
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        },
-        json={
-            "model": "claude-haiku-4-5-20251001",
-            "max_tokens": 300,
-            "messages": [{
-                "role": "user",
-                "content": (
-                    f"Genera exactamente 8 títulos creativos y únicos para un beat de música con esta descripción: '{descripcion}'.\n\n"
-                    "Reglas:\n"
-                    "- Mezcla inglés y español si encaja con el género\n"
-                    "- Cortos (1-3 palabras máximo)\n"
-                    "- Creativos, evocadores, que suenen a nombre de beat\n"
-                    "- Sin numeración, sin guiones, sin explicaciones\n"
-                    "- Solo los 8 títulos, uno por línea\n"
-                    "- Nada más"
-                )
-            }]
-        },
-        timeout=15
-    )
-    resp.raise_for_status()
-    text = resp.json()["content"][0]["text"].strip()
-    titles = [t.strip() for t in text.split("\n") if t.strip()]
-    return titles[:8]
-
-def generate_beat_tags(descripcion: str) -> list:
-    """Genera tags/hashtags optimizados para un beat."""
-    resp = requests.post(
-        "https://api.anthropic.com/v1/messages",
-        headers={
-            "x-api-key": os.getenv("ANTHROPIC_API_KEY", ""),
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        },
-        json={
-            "model": "claude-haiku-4-5-20251001",
-            "max_tokens": 300,
-            "messages": [{
-                "role": "user",
-                "content": (
-                    f"Genera exactamente 15 hashtags optimizados para TikTok e Instagram para un beat con esta descripción: '{descripcion}'.\n\n"
-                    "Reglas:\n"
-                    "- Mezcla hashtags grandes (millones de posts) y nicho\n"
-                    "- Relacionados con producción musical, el género y el mood\n"
-                    "- Con # delante\n"
-                    "- Sin explicaciones, solo los hashtags separados por espacio\n"
-                    "- Nada más"
-                )
-            }]
-        },
-        timeout=15
-    )
-    resp.raise_for_status()
-    text = resp.json()["content"][0]["text"].strip()
-    tags = [t.strip() for t in text.split() if t.startswith("#")]
-    return tags[:15]
-
 # ── Retos Semanales ───────────────────────────────────────
 
 RETOS_POOL = [
@@ -1972,28 +1905,27 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     mode  = ctx.user_data.get("mode", MODE_NONE)
     texto = update.message.text.strip()
 
-    # ── Generador de títulos con IA ───────────────────────
+    # ── Generador de títulos ──────────────────────────────
     if mode == "titulos":
         ctx.user_data["mode"] = MODE_NONE
-        ctx.user_data["last_titulo_desc"] = texto
-        await typing(update)
-        status = await update.message.reply_text("✏️ Generando títulos creativos con IA…")
-        try:
-            titulos = await asyncio.to_thread(generate_beat_titles, texto)
-            lines   = ["✏️ *Títulos generados para tu beat*\n", f"_Descripción: {texto}_\n"]
-            buttons = []
-            for i, t in enumerate(titulos):
-                lines.append(f"{i+1}. *{t}*")
-                safe = t[:32].replace(" ","_")
-                buttons.append([InlineKeyboardButton(f"📋 {t}", callback_data=f"titulo_copy_{safe}")])
-            buttons.append([InlineKeyboardButton("🔄 Generar más",    callback_data="sec_titulos")])
-            buttons.append([InlineKeyboardButton("‹ Menú principal",  callback_data="sec_main")])
-            await status.edit_text(
-                "\n".join(lines), parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup(buttons))
-        except Exception as e:
-            log.error(f"Titulos AI: {e}")
-            await status.edit_text("❌ Error generando títulos. Intenta de nuevo.")
+        import random
+        texto_lower = texto.lower()
+        titulos = TITULOS_POOL.get("default")
+        for genero, names in TITULOS_POOL.items():
+            if genero in texto_lower:
+                titulos = names
+                break
+        seleccionados = random.sample(titulos, min(8, len(titulos)))
+        lines   = ["✏️ *Títulos sugeridos para tu beat*\n", f"_Descripción: {texto}_\n"]
+        buttons = []
+        for i, t in enumerate(seleccionados):
+            lines.append(f"{i+1}. *{t}*")
+            buttons.append([InlineKeyboardButton(f"📋 {t}", callback_data=f"titulo_copy_{t[:32]}")])
+        buttons.append([InlineKeyboardButton("🔄 Generar más",   callback_data="sec_titulos")])
+        buttons.append([InlineKeyboardButton("‹ Menú principal", callback_data="sec_main")])
+        await update.message.reply_text(
+            "\n".join(lines), parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup(buttons))
         return
 
     # ── Battle caption ────────────────────────────────────
