@@ -926,7 +926,10 @@ async def cmd_mipan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("💳 Ver planes", callback_data="sec_planes")]]))
 
 async def cmd_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_admin(update.effective_user.id):
+    uid = update.effective_user.id
+    log.info(f"cmd_admin called by {uid}, ADMIN_ID={ADMIN_ID}, match={uid==ADMIN_ID}")
+    if not is_admin(uid):
+        await update.message.reply_text(f"❌ No autorizado. Tu ID: `{uid}`", parse_mode="Markdown")
         return
     args = ctx.args or []
     if not args:
