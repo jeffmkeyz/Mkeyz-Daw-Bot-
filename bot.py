@@ -1230,7 +1230,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             photo_msg = await q.message.reply_photo(photo=BANNER_URL)
             await edit(q, text, kb_back())
             async def remove_photo():
-                await asyncio.sleep(1.5)
+                await asyncio.sleep(2)
                 try: await photo_msg.delete()
                 except: pass
             asyncio.create_task(remove_photo())
