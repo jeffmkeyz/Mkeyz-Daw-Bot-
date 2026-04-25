@@ -33,8 +33,8 @@ LINKS = {
     "beatstars": "https://beatstars.com/jeffmkeyz",
     "tiktok":    "https://tiktok.com/@jeffmkeyz",
     "youtube":   "https://youtube.com/@jeffmkeyz",
-    "instagram": "https://instagram.com/jeffmkeyzx",
-    "spotify":   "https://open.spotify.com/intl-es/artist/1PTk2yExL9jgOUPYEjWF1E",
+    "instagram": "https://instagram.com/jeffmkeyz",
+    "spotify":   "https://open.spotify.com/artist/5GnCPMWUzBJCxbBRPgxJEo",
 }
 
 # ── Planes ─────────────────────────────────────────────────
@@ -1041,6 +1041,24 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # ── Menú principal ─────────────────────────────────────
     if d == "sec_main":
         await edit(q, "👋 *Jeff Mkeyz* — Menú principal\n\nProductor · Cantautor\nPop Latino · Trap · Lo-Fi · Afrobeats 🎛️", kb_main())
+        return
+
+    # ── Simulador de Streams ───────────────────────────────
+    if d == "sec_simulator":
+        game_url = (GAME_URL.rstrip("/") + "/simulator") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "📊 *Simulador de Streams*\n\n"
+                "Configura cuántas canciones tienes, cuántos oyentes\n"
+                "y cuántas veces repiten — ve el total en tiempo real.\n\n"
+                "🎵 Canciones × 👥 Oyentes × 🔁 Repeticiones\n\n"
+                "Calcula tus ganancias en todas las plataformas\ny tu progreso hacia las grandes metas.",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("📊 Abrir Simulador", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← 𝗠𝗘𝗡Ú", callback_data="sec_main")],
+                ]))
+        else:
+            await edit(q, "📊 Simulador no disponible.", kb_back())
         return
 
     # ── Cotizador ──────────────────────────────────────────
