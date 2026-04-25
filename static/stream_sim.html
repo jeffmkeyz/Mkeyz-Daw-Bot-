@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Stream Simulator — Mkeyz Studio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:     #0a0a0a;
+  --card:   #111;
+  --border: #1f1f1f;
+  --gold:   #f5c518;
+  --green:  #00e676;
+  --fire:   #ff4d4d;
+  --blue:   #4fc3f7;
+  --text:   #fff;
+  --muted:  #555;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  min-height: 100vh;
+  padding: 16px;
+  padding-bottom: 40px;
+}
+
+.header {
+  text-align: center;
+  padding: 16px 0 24px;
+}
+.header h1 {
+  font-size: 22px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fff, var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+.header p { font-size: 13px; color: var(--muted); }
+
+/* ── TOTAL DISPLAY ── */
+.total-box {
+  background: linear-gradient(135deg, #1a1a00, #111);
+  border: 1px solid var(--gold);
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.total-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.total-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.total-streams {
+  font-size: 42px; font-weight: 900; color: var(--gold);
+  letter-spacing: -2px; line-height: 1;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.total-formula {
+  font-size: 12px; color: var(--muted); margin-top: 8px;
+}
+.total-formula span { color: var(--gold); font-weight: 700; }
+
+/* ── EARNINGS ── */
+.earnings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.earn-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  text-align: center;
+}
+.earn-platform { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.earn-amount { font-size: 18px; font-weight: 800; color: var(--green); }
+.earn-eur { font-size: 11px; color: var(--muted); }
+
+/* ── SLIDERS ── */
+.section-title {
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 12px; margin-top: 20px;
+}
+
+.slider-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.slider-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px;
+}
+.slider-name { font-size: 14px; font-weight: 700; }
+.slider-val {
+  font-size: 20px; font-weight: 900; color: var(--gold);
+  min-width: 80px; text-align: right;
+}
+input[type=range] {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 6px; border-radius: 100px;
+  background: var(--border); outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 24px; height: 24px;
+  border-radius: 50%; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.slider-canciones::-webkit-slider-thumb { background: var(--blue); }
+.slider-oyentes::-webkit-slider-thumb  { background: var(--green); }
+.slider-rep::-webkit-slider-thumb     { background: var(--fire); }
+
+.slider-labels {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--muted); margin-top: 6px;
+}
+
+/* ── PLATFORM SELECTOR ── */
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.plat-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 11px;
+  color: var(--muted);
+}
+.plat-btn.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: #1a1500;
+}
+.plat-btn .plat-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+.plat-btn:active { transform: scale(0.95); }
+
+/* ── SHARE BTN ── */
+.btn-share {
+  width: 100%; padding: 16px; border: none; border-radius: 16px;
+  background: linear-gradient(135deg, var(--gold), #ff8c00);
+  font-size: 16px; font-weight: 800; color: #000;
+  cursor: pointer; margin-top: 8px;
+  transition: transform 0.1s;
+}
+.btn-share:active { transform: scale(0.97); }
+
+/* ── MILESTONE ── */
+.milestone {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.milestone .ms-icon { font-size: 28px; }
+.milestone .ms-info { flex: 1; }
+.milestone .ms-name { font-size: 13px; font-weight: 700; }
+.milestone .ms-req  { font-size: 11px; color: var(--muted); }
+.milestone .ms-bar-wrap { background: var(--border); border-radius: 100px; height: 4px; margin-top: 6px; }
+.milestone .ms-bar { height: 100%; border-radius: 100px; background: var(--gold); transition: width 0.5s ease; }
+
+/* ── TOGGLE ── */
+.tabs {
+  display: flex; background: var(--border);
+  border-radius: 12px; padding: 4px; margin-bottom: 20px;
+}
+.tab-btn {
+  flex: 1; padding: 8px; border: none; background: transparent;
+  color: var(--muted); font-size: 13px; font-weight: 600;
+  border-radius: 9px; cursor: pointer; transition: all 0.2s;
+}
+.tab-btn.active { background: var(--card); color: var(--text); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── PULSE ANIM ── */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.pulse { animation: pulse 0.3s ease; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎵 Stream Simulator</h1>
+  <p>Simula tus streams y calcula tus ganancias</p>
+</div>
+
+<!-- TOTAL -->
+<div class="total-box">
+  <div class="total-label">Total de Streams</div>
+  <div class="total-streams" id="total-streams">0</div>
+  <div class="total-formula">
+    <span id="f-canciones">0</span> canciones ×
+    <span id="f-oyentes">0</span> oyentes ×
+    <span id="f-rep">0</span> repeticiones
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('sim')">🎛️ Simulador</button>
+  <button class="tab-btn" onclick="showTab('earn')">💰 Ganancias</button>
+  <button class="tab-btn" onclick="showTab('goals')">🏆 Metas</button>
+</div>
+
+<!-- TAB: SIMULADOR -->
+<div class="tab-content active" id="tab-sim">
+
+  <div class="section-title">🎵 Canciones en catálogo</div>
+  <div class="slider-card">
+    <div class="slider-header">
+      <div class="slider-name">Canciones</div>
+      <div class="slider-val" id="val-canciones">1</div>
+    </div>
+    <input type="range" class="slider-canciones" id="sl-canciones"
+           min="1" max="100" value="1" oninput="update()">
+    <div class="slider-labels"><span>1</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+  </div>
+
+  <div class="section-title">👥 Oyentes mensuales</div>
+  <div class="slider-card">
+    <div class="slider-header">
+      <div class="slider-name">Oyentes</div>
+      <div class="slider-val" id="val-oyentes">1K</div>
+    </div>
+    <input type="range" class="slider-oyentes" id="sl-oyentes"
+           min="100" max="10000000" step="100" value="1000" oninput="update()">
+    <div class="slider-labels"><span>100</span><span>250K</span><span>1M</span><span>5M</span><span>10M</span></div>
+  </div>
+
+  <div class="section-title">🔁 Repeticiones por oyente/mes</div>
+  <div class="slider-card">
+    <div class="slider-header">
+      <div class="slider-name">Repeticiones</div>
+      <div class="slider-val" id="val-rep">3×</div>
+    </div>
+    <input type="range" class="slider-rep" id="sl-rep"
+           min="1" max="50" value="3" oninput="update()">
+    <div class="slider-labels"><span>1×</span><span>10×</span><span>20×</span><span>35×</span><span>50×</span></div>
+  </div>
+
+</div>
+
+<!-- TAB: GANANCIAS -->
+<div class="tab-content" id="tab-earn">
+
+  <div class="section-title">Plataforma</div>
+  <div class="platform-grid">
+    <div class="plat-btn active" onclick="selectPlat(this,'Spotify',0.001106)">
+      <span class="plat-icon">🎵</span>Spotify
+    </div>
+    <div class="plat-btn" onclick="selectPlat(this,'Apple',0.005799)">
+      <span class="plat-icon">🍎</span>Apple Music
+    </div>
+    <div class="plat-btn" onclick="selectPlat(this,'Tidal',0.003433)">
+      <span class="plat-icon">🌊</span>Tidal
+    </div>
+    <div class="plat-btn" onclick="selectPlat(this,'YT Prem',0.007441)">
+      <span class="plat-icon">▶️</span>YT Premium
+    </div>
+    <div class="plat-btn" onclick="selectPlat(this,'YT Ads',0.003197)">
+      <span class="plat-icon">📺</span>YT Ads
+    </div>
+    <div class="plat-btn" onclick="selectPlat(this,'Amazon',0.010574)">
+      <span class="plat-icon">📦</span>Amazon UNL
+    </div>
+    <div class="plat-btn" onclick="selectPlat(this,'TikTok',0.000850)">
+      <span class="plat-icon">🎬</span>TikTok
+    </div>
+    <div class="plat-btn" onclick="selectPlat(this,'Audiomack',0.001144)">
+      <span class="plat-icon">🎧</span>Audiomack
+    </div>
+    <div class="plat-btn" onclick="selectPlat(this,'Pandora',0.001705)">
+      <span class="plat-icon">📻</span>Pandora
+    </div>
+  </div>
+
+  <div class="section-title">Proyección de ganancias</div>
+  <div class="earnings-grid">
+    <div class="earn-card">
+      <div class="earn-platform">📅 Mensual</div>
+      <div class="earn-amount" id="earn-month">$0</div>
+      <div class="earn-eur" id="earn-month-eur">€0</div>
+    </div>
+    <div class="earn-card">
+      <div class="earn-platform">📆 Anual</div>
+      <div class="earn-amount" id="earn-year">$0</div>
+      <div class="earn-eur" id="earn-year-eur">€0</div>
+    </div>
+    <div class="earn-card">
+      <div class="earn-platform">💲 Por stream</div>
+      <div class="earn-amount" id="earn-rate">$0</div>
+      <div class="earn-eur" id="earn-plat-name">Spotify</div>
+    </div>
+    <div class="earn-card">
+      <div class="earn-platform">🎵 Por canción</div>
+      <div class="earn-amount" id="earn-per-song">$0</div>
+      <div class="earn-eur" id="earn-per-song-eur">€0</div>
+    </div>
+  </div>
+
+  <button class="btn-share" onclick="shareResults()">📤 Compartir resultados</button>
+</div>
+
+<!-- TAB: METAS -->
+<div class="tab-content" id="tab-goals">
+  <div class="section-title">Progreso hacia tus metas</div>
+  <div id="milestones"></div>
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
+
+let currentRate = 0.001106;
+let currentPlatName = "Spotify";
+const EUR = 0.92;
+
+const MILESTONES = [
+  { icon:"🌱", name:"Primeros 1K",     req:1000 },
+  { icon:"🔥", name:"10K Streams",    req:10000 },
+  { icon:"💫", name:"50K Streams",    req:50000 },
+  { icon:"⭐", name:"100K Streams",   req:100000 },
+  { icon:"🚀", name:"500K Streams",   req:500000 },
+  { icon:"💎", name:"1M Streams",     req:1000000 },
+  { icon:"👑", name:"10M Streams",    req:10000000 },
+  { icon:"🌍", name:"100M Streams",   req:100000000 },
+];
+
+function fmtNum(n) {
+  if (n >= 1000000000) return (n/1000000000).toFixed(1) + "B";
+  if (n >= 1000000)    return (n/1000000).toFixed(1) + "M";
+  if (n >= 1000)       return (n/1000).toFixed(1) + "K";
+  return n.toLocaleString();
+}
+
+function fmtMoney(n) {
+  if (n >= 1000000) return "$" + (n/1000000).toFixed(2) + "M";
+  if (n >= 1000)    return "$" + (n/1000).toFixed(1) + "K";
+  return "$" + n.toFixed(2);
+}
+
+function update() {
+  const canciones = parseInt(document.getElementById("sl-canciones").value);
+  const oyentes   = parseInt(document.getElementById("sl-oyentes").value);
+  const rep       = parseInt(document.getElementById("sl-rep").value);
+
+  document.getElementById("val-canciones").textContent = canciones;
+  document.getElementById("val-oyentes").textContent   = fmtNum(oyentes);
+  document.getElementById("val-rep").textContent       = rep + "×";
+
+  const total = canciones * oyentes * rep;
+
+  // Animate total
+  const el = document.getElementById("total-streams");
+  el.textContent = fmtNum(total);
+  el.classList.remove("pulse");
+  void el.offsetWidth;
+  el.classList.add("pulse");
+
+  document.getElementById("f-canciones").textContent = canciones;
+  document.getElementById("f-oyentes").textContent   = fmtNum(oyentes);
+  document.getElementById("f-rep").textContent       = rep;
+
+  // Earnings
+  const monthly    = total * currentRate;
+  const yearly     = monthly * 12;
+  const perSong    = monthly / canciones;
+
+  document.getElementById("earn-month").textContent     = fmtMoney(monthly);
+  document.getElementById("earn-month-eur").textContent = "€" + (monthly * EUR).toFixed(2);
+  document.getElementById("earn-year").textContent      = fmtMoney(yearly);
+  document.getElementById("earn-year-eur").textContent  = "€" + (yearly * EUR).toFixed(2);
+  document.getElementById("earn-rate").textContent      = "$" + currentRate.toFixed(6);
+  document.getElementById("earn-per-song").textContent  = fmtMoney(perSong);
+  document.getElementById("earn-per-song-eur").textContent = "€" + (perSong * EUR).toFixed(2);
+
+  // Milestones
+  const ms = document.getElementById("milestones");
+  ms.innerHTML = MILESTONES.map(m => {
+    const pct     = Math.min(100, (total / m.req) * 100);
+    const reached = total >= m.req;
+    return `
+      <div class="milestone" style="${reached ? 'border-color:#f5c518;background:#1a1500' : ''}">
+        <div class="ms-icon">${m.icon}</div>
+        <div class="ms-info">
+          <div class="ms-name">${m.name} ${reached ? '✅' : ''}</div>
+          <div class="ms-req">${fmtNum(m.req)} streams necesarios · Actual: ${fmtNum(total)}</div>
+          <div class="ms-bar-wrap">
+            <div class="ms-bar" style="width:${pct}%;background:${reached?'#00e676':'#f5c518'}"></div>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+
+  if (tg) tg.HapticFeedback?.selectionChanged();
+}
+
+function selectPlat(btn, name, rate) {
+  document.querySelectorAll(".plat-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  currentRate     = rate;
+  currentPlatName = name;
+  document.getElementById("earn-plat-name").textContent = name;
+  update();
+}
+
+function showTab(id) {
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + id).classList.add("active");
+  event.target.classList.add("active");
+}
+
+function shareResults() {
+  const canciones = document.getElementById("sl-canciones").value;
+  const oyentes   = fmtNum(parseInt(document.getElementById("sl-oyentes").value));
+  const rep       = document.getElementById("sl-rep").value;
+  const total     = document.getElementById("total-streams").textContent;
+  const monthly   = document.getElementById("earn-month").textContent;
+  const msg = `🎵 Mi simulación en Mkeyz Studio\n\n${canciones} canciones × ${oyentes} oyentes × ${rep} rep = ${total} streams\n💰 ${monthly}/mes en ${currentPlatName}\n\n@MkeyzDAWbot`;
+  if (tg) {
+    tg.switchInlineQuery(msg);
+  } else {
+    navigator.clipboard?.writeText(msg);
+    alert("Copiado al portapapeles");
+  }
+}
+
+// Init
+update();
+</script>
+</body>
+</html>
