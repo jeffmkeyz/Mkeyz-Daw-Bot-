@@ -442,6 +442,7 @@ def do_delay(wav, delay_ms=250, feedback=0.4, mix=0.5):
     return to_ogg(out)
 
 def do_autotune(wav, scale="C"):
+    raise NotImplementedError("Autotune no disponible en esta versión")
     import pyworld as pw
     SCALES = {
         "C":[0,2,4,5,7,9,11],"C#":[1,3,5,6,8,10,0],"D":[2,4,6,7,9,11,1],
