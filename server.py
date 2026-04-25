@@ -161,6 +161,10 @@ def serve_game():
 def serve_bpm():
     return send_from_directory("static", "bpm_game.html")
 
+@app.route("/simulator")
+def serve_simulator():
+    return send_from_directory("static", "stream_sim.html")
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
