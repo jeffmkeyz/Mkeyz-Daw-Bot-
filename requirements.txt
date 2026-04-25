@@ -1,0 +1,12 @@
+python-telegram-bot==21.6
+librosa==0.10.2
+soundfile==0.12.1
+numpy==1.26.4
+scipy==1.13.1
+numba==0.60.0
+pydub==0.25.1
+requests==2.31.0
+pedalboard==0.9.9
+pyworld==0.3.4
+flask==3.0.3
+gunicorn==22.0.0
