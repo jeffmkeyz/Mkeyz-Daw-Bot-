@@ -619,8 +619,9 @@ def itunes_search(query):
     return resp.json().get("results", [])
 
 def format_track(t):
-    dur_s = t.get("trackTimeMillis", 0) // 1000
-    url   = t.get("trackViewUrl", "")
+    dur_s    = t.get("trackTimeMillis", 0) // 1000
+    url      = t.get("trackViewUrl", "")
+    artwork  = t.get("artworkUrl100", "").replace("100x100bb", "600x600bb")
     lines = [
         f"🎵 *{t.get('trackName','N/A')}*",
         f"👤 {t.get('artistName','N/A')}",
@@ -629,7 +630,7 @@ def format_track(t):
     ]
     if url:
         lines += ["", f"[Ver en Apple Music]({url})"]
-    return "\n".join(lines)
+    return "\n".join(lines), artwork
 
 # ══════════════════════════════════════════════════════════
 #  HELPERS
