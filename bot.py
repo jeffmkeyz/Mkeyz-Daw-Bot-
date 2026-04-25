@@ -902,7 +902,17 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "🇩🇴 República Dominicana · 🇪🇸 España\n\n"
         "¿Qué quieres hacer hoy? 👇"
     )
-    await update.message.reply_text(text, parse_mode="Markdown", reply_markup=kb_main())
+    # Enviar foto, esperar 4 segundos, borrarla y mostrar menú limpio
+    try:
+        photo_msg = await update.message.reply_photo(photo=BANNER_URL)
+        async def remove_and_show():
+            await asyncio.sleep(4)
+            try: await photo_msg.delete()
+            except: pass
+            await update.message.reply_text(text, parse_mode="Markdown", reply_markup=kb_main())
+        asyncio.create_task(remove_and_show())
+    except Exception:
+        await update.message.reply_text(text, parse_mode="Markdown", reply_markup=kb_main())
 
 async def cmd_planes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     plan = db_get_plan(update.effective_user.id)
@@ -1215,8 +1225,17 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             "📦 Distribución: DistroKid\n"
             "🇪🇸 España · 🇩🇴 República Dominicana"
         )
-        # Solo editar el mensaje actual sin mandar foto nueva
-        await edit(q, text, kb_back())
+        # Mostrar foto, esperar 4 seg, borrar y mostrar info
+        try:
+            photo_msg = await q.message.reply_photo(photo=BANNER_URL)
+            await edit(q, text, kb_back())
+            async def remove_photo():
+                await asyncio.sleep(4)
+                try: await photo_msg.delete()
+                except: pass
+            asyncio.create_task(remove_photo())
+        except Exception:
+            await edit(q, text, kb_back())
         return
 
     # ── Contacto ───────────────────────────────────────────
