@@ -588,7 +588,10 @@ def kb_main():
             InlineKeyboardButton("📩  Contacto",       callback_data="sec_contact"),
             InlineKeyboardButton("💳  Mi Plan",        callback_data="sec_planes"),
         ],
-        [InlineKeyboardButton("🎮  Beat Battle  🔥",  callback_data="sec_battle")],
+        [
+            InlineKeyboardButton("🎮  Beat Battle  🔥",  callback_data="sec_battle"),
+            InlineKeyboardButton("🥁  Adivina el BPM",   callback_data="sec_bpm"),
+        ],
     ])
 
 def kb_back():
@@ -890,6 +893,25 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # ── Menú principal ─────────────────────────────────────
     if d == "sec_main":
         await edit(q, "👋 *Jeff Mkeyz* — Menú principal\n\nProductor · Cantautor\nPop Latino · Trap · Lo-Fi · Afrobeats 🎛️", kb_main())
+        return
+
+    # ── BPM Game ───────────────────────────────────────────
+    if d == "sec_bpm":
+        game_url = (GAME_URL.rstrip("/") + "/bpm") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "🥁 *Adivina el BPM*\n\n"
+                "Escucha el beat, toca al ritmo y adivina los BPM exactos.\n\n"
+                "5 rondas · Hasta 550 puntos por ronda\n"
+                "¡Demuestra tu oído musical! 🎯",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎮 Jugar ahora", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← 𝗠𝗘𝗡Ú", callback_data="sec_main")],
+                ]))
+        else:
+            await edit(q,
+                "🥁 *Adivina el BPM*\n\nJuego no disponible aún.",
+                kb_back())
         return
 
     # ── Beat Battle ────────────────────────────────────────
