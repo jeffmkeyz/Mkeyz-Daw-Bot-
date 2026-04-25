@@ -101,8 +101,19 @@ MODE_DAW_SPEED  = "daw_speed_custom"
 MODE_DAW_TEMPO  = "daw_tempo_custom"
 MODE_PROJ       = "proyeccion"
 MODE_RETO       = "reto"
+MODE_COTIZADOR  = "cotizador"
 MODE_BATTLE     = "battle"
-GAME_URL        = os.getenv("GAME_URL", "")  # URL pública del servidor Flask en Railway
+GAME_URL        = os.getenv("GAME_URL", "")
+
+# ── Cotizador de licencias ─────────────────────────────────
+LICENCIAS = {
+    "Básica":    {"precio": 49,  "streams": "100K", "vids": "1 video", "radio": "No", "desc": "YouTube · Redes · No comercial"},
+    "Premium":   {"precio": 149, "streams": "500K", "vids": "Ilimitado", "radio": "Sí", "desc": "Distribución · Radio · Uso comercial"},
+    "Exclusiva": {"precio": 499, "streams": "Ilimitado", "vids": "Ilimitado", "radio": "Sí", "desc": "Derechos completos · Solo para ti"},
+}
+
+GENEROS_BEATS = ["Trap", "Pop Latino", "Afrobeats", "Reggaeton", "Lo-Fi", "R&B", "Hip-Hop", "Drill", "Dancehall", "Otro"]
+MOODS_BEATS   = ["Oscuro 🌑", "Alegre ☀️", "Romántico 💜", "Agresivo 🔥", "Relajado ☁️", "Épico ⚡", "Melancólico 🌧️"]  # URL pública del servidor Flask en Railway
 
 # ══════════════════════════════════════════════════════════
 #  BASE DE DATOS
@@ -319,6 +330,18 @@ def db_get_active_battles(limit=5):
     rows = [dict(r) for r in cur.fetchall()]
     con.close()
     return rows
+
+
+TITULOS_POOL = {
+    "trap": ["Dark Ritual","Midnight Trap","Phantom Bounce","Cold Nights","Street Sermon","Noir Trap","Shadow Walk","Blood Money"],
+    "pop latino": ["Corazón de Fuego","Verano Eterno","Noche de Luna","Dulce Veneno","Amor Prohibido","Entre Tus Brazos","Fuego y Sal","Mil Razones"],
+    "afrobeats": ["Lagos Nights","Afro Spirit","Jungle Rhythm","Golden Coast","Ancestral Groove","Sunset Tribe","Rhythm of Life","West Side Vibes"],
+    "reggaeton": ["Perreo Fatal","La Calle Llama","Bajo el Sol","Ritmo Caliente","La Noche Es Nuestra","Vibra Latina","Dale Duro","Fuego en la Pista"],
+    "lo-fi": ["Sunday Morning","Rainy Study","Nostalgic Drive","Bedroom Vibes","Coffee Shop","Late Night Thoughts","Soft Landing","Memory Lane"],
+    "r&b": ["Velvet Soul","Midnight Silk","Sweet Obsession","Slow Burn","Satin Dreams","Smooth Criminal","Golden Hour","Tender Love"],
+    "drill": ["No Cap","Grimey Streets","Block Runner","Pressure","Mob Talk","Cold Steel","Nightshift","Trap Demons"],
+    "default": ["Eclipse","Phantom","Celestial","Nova","Abyss","Genesis","Solstice","Meridian"],
+}
 
 # ── Retos Semanales ───────────────────────────────────────
 
@@ -661,6 +684,10 @@ def kb_main():
             InlineKeyboardButton("🧮  Calculadora",    callback_data="sec_calc"),
         ],
         [
+            InlineKeyboardButton("💼  Cotizador",      callback_data="sec_cotizador"),
+            InlineKeyboardButton("✏️  Títulos de Beat", callback_data="sec_titulos"),
+        ],
+        [
             InlineKeyboardButton("🎛️  Mini DAW",       callback_data="sec_daw"),
             InlineKeyboardButton("📊  Analizador",     callback_data="sec_analyze"),
         ],
@@ -691,6 +718,33 @@ def kb_planes():
         [InlineKeyboardButton("⭐ Pro — 50 Stars/mes (~$0.65)",    callback_data="buy_pro")],
         [InlineKeyboardButton("🎛️ Studio — 150 Stars/mes (~$2)", callback_data="buy_studio")],
         [InlineKeyboardButton("‹ Menú principal",                 callback_data="sec_main")],
+    ])
+
+def kb_cotizador_genero():
+    rows, row = [], []
+    for g in GENEROS_BEATS:
+        row.append(InlineKeyboardButton(g, callback_data=f"cot_gen_{g}"))
+        if len(row) == 2:
+            rows.append(row)
+            row = []
+    if row: rows.append(row)
+    rows.append([InlineKeyboardButton("‹ Menú principal", callback_data="sec_main")])
+    return InlineKeyboardMarkup(rows)
+
+def kb_cotizador_mood():
+    rows = []
+    for m in MOODS_BEATS:
+        rows.append([InlineKeyboardButton(m, callback_data=f"cot_mood_{m}")])
+    rows.append([InlineKeyboardButton("‹ Cancelar", callback_data="sec_main")])
+    return InlineKeyboardMarkup(rows)
+
+def kb_cotizador_uso():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎵 Solo streaming", callback_data="cot_uso_streaming")],
+        [InlineKeyboardButton("📺 YouTube + Redes", callback_data="cot_uso_youtube")],
+        [InlineKeyboardButton("📻 Radio + Comercial", callback_data="cot_uso_radio")],
+        [InlineKeyboardButton("🏆 Uso exclusivo total", callback_data="cot_uso_exclusivo")],
+        [InlineKeyboardButton("‹ Cancelar", callback_data="sec_main")],
     ])
 
 def kb_beats():
@@ -988,6 +1042,116 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # ── Menú principal ─────────────────────────────────────
     if d == "sec_main":
         await edit(q, "👋 *Jeff Mkeyz* — Menú principal\n\nProductor · Cantautor\nPop Latino · Trap · Lo-Fi · Afrobeats 🎛️", kb_main())
+        return
+
+    # ── Cotizador ──────────────────────────────────────────
+    if d == "sec_cotizador":
+        ctx.user_data["cot"] = {}
+        await edit(q,
+            "💼 *Cotizador de Licencias*\n\n"
+            "Te ayudo a encontrar la licencia perfecta para tu proyecto.\n\n"
+            "Paso 1 de 3 — ¿Qué género necesitas?",
+            kb_cotizador_genero())
+        return
+
+    if d.startswith("cot_gen_"):
+        ctx.user_data["cot"]["genero"] = d[8:]
+        await edit(q,
+            f"💼 Género: *{d[8:]}* ✅\n\n"
+            "Paso 2 de 3 — ¿Qué mood buscas?",
+            kb_cotizador_mood())
+        return
+
+    if d.startswith("cot_mood_"):
+        ctx.user_data["cot"]["mood"] = d[9:]
+        await edit(q,
+            f"💼 Mood: *{d[9:]}* ✅\n\n"
+            "Paso 3 de 3 — ¿Para qué vas a usar el beat?",
+            kb_cotizador_uso())
+        return
+
+    if d.startswith("cot_uso_"):
+        uso  = d[8:]
+        cot  = ctx.user_data.get("cot", {})
+        genero = cot.get("genero","")
+        mood   = cot.get("mood","")
+
+        # Recommend license based on uso
+        if uso == "streaming":
+            rec = "Básica"
+        elif uso == "youtube":
+            rec = "Premium"
+        elif uso in ("radio","exclusivo"):
+            rec = "Exclusiva"
+        else:
+            rec = "Premium"
+
+        lic = LICENCIAS[rec]
+        alt = {k:v for k,v in LICENCIAS.items() if k != rec}
+
+        text = (
+            f"💼 *Tu cotización — {genero} · {mood}*\n\n"
+            f"📋 Uso: {uso.replace('_',' ').title()}\n\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"✅ *Licencia recomendada: {rec}*\n"
+            f"💵 `${lic['precio']} USD`\n"
+            f"🎧 Hasta {lic['streams']} streams\n"
+            f"🎬 {lic['vids']}\n"
+            f"📻 Radio: {lic['radio']}\n"
+            f"_{lic['desc']}_\n"
+            f"━━━━━━━━━━━━━━━━━━\n\n"
+            f"*Otras opciones:*\n"
+        )
+        for nombre, l in alt.items():
+            text += f"• *{nombre}* — `${l['precio']}` — {l['desc']}\n"
+
+        await edit(q, text, InlineKeyboardMarkup([
+            [InlineKeyboardButton("🛒 Ver beats en BeatStars", url=LINKS["beatstars"])],
+            [InlineKeyboardButton("💬 Contactar por Telegram", url="https://t.me/jeffmkeyz")],
+            [InlineKeyboardButton("🔄 Nueva cotización", callback_data="sec_cotizador")],
+            [InlineKeyboardButton("‹ Menú principal",    callback_data="sec_main")],
+        ]))
+        return
+
+    # ── Generador de títulos ────────────────────────────────
+    if d == "sec_titulos":
+        ctx.user_data["mode"] = MODE_NONE
+        await edit(q,
+            "✏️ *Generador de Títulos de Beat*\n\n"
+            "Escribe el género y el mood de tu beat\n"
+            "y te genero 8 nombres creativos.\n\n"
+            "Ejemplo: `trap oscuro agresivo`\n"
+            "Ejemplo: `pop latino romántico`\n\n"
+            "✏️ Descríbelo en el chat:",
+            InlineKeyboardMarkup([[InlineKeyboardButton("‹ Cancelar", callback_data="sec_main")]]))
+        ctx.user_data["mode"] = "titulos"
+        return
+
+    # ── Calculadora de licencias ────────────────────────────
+    if d == "sec_calc_lic":
+        await edit(q,
+            "🧮 *Calculadora de Licencias*\n\n"
+            f"*Básica — $49*\n"
+            f"✅ 100K streams · 1 video\n"
+            f"✅ YouTube · Redes sociales\n"
+            f"❌ Radio · No exclusivo\n\n"
+            f"*Premium — $149*\n"
+            f"✅ 500K streams · Ilimitado\n"
+            f"✅ Distribución en plataformas\n"
+            f"✅ Radio · Uso comercial\n\n"
+            f"*Exclusiva — $499*\n"
+            f"✅ Streams ilimitados\n"
+            f"✅ Derechos completos\n"
+            f"✅ Solo para ti — nadie más puede comprarla",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("🛒 Ir a BeatStars", url=LINKS["beatstars"])],
+                [InlineKeyboardButton("‹ Menú principal",  callback_data="sec_main")],
+            ]))
+        return
+
+    if d.startswith("titulo_copy_"):
+        titulo = d[12:]
+        await q.answer(f"✅ '{titulo}' copiado!", show_alert=True)
         return
 
     # ── Reto Semanal ───────────────────────────────────────
@@ -1740,6 +1904,31 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     mode  = ctx.user_data.get("mode", MODE_NONE)
     texto = update.message.text.strip()
+
+    # ── Generador de títulos ──────────────────────────────
+    if mode == "titulos":
+        ctx.user_data["mode"] = MODE_NONE
+        texto_lower = texto.lower()
+        # Find matching genre
+        titulos = TITULOS_POOL.get("default")
+        for genero, names in TITULOS_POOL.items():
+            if genero in texto_lower:
+                titulos = names
+                break
+        import random
+        seleccionados = random.sample(titulos, min(8, len(titulos)))
+        lines = ["✏️ *Títulos sugeridos para tu beat*\n"]
+        for i, t in enumerate(seleccionados):
+            lines.append(f"{i+1}. *{t}*")
+        lines.append("\n_Toca el que más te guste para copiarlo_")
+        # Create buttons for each title
+        buttons = [[InlineKeyboardButton(t, callback_data=f"titulo_copy_{t}")] for t in seleccionados]
+        buttons.append([InlineKeyboardButton("🔄 Generar más", callback_data="sec_titulos")])
+        buttons.append([InlineKeyboardButton("‹ Menú principal", callback_data="sec_main")])
+        await update.message.reply_text(
+            "\n".join(lines), parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup(buttons))
+        return
 
     # ── Battle caption ────────────────────────────────────
     if ctx.user_data.get("reg_step") == "battle_caption":
