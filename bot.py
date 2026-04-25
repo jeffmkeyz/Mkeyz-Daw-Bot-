@@ -676,6 +676,7 @@ def kb_main():
             InlineKeyboardButton("📩  Contacto",       callback_data="sec_contact"),
             InlineKeyboardButton("💳  Mi Plan",        callback_data="sec_planes"),
         ],
+        [InlineKeyboardButton("🏆  Reto Semanal",      callback_data="sec_reto")],
         [
             InlineKeyboardButton("🎮  Beat Battle  🔥",  callback_data="sec_battle"),
             InlineKeyboardButton("🥁  Adivina el BPM",   callback_data="sec_bpm"),
@@ -893,7 +894,7 @@ def kb_genres(prefix="reg_genre_"):
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["mode"] = MODE_NONE
     u = update.effective_user
-    caption = (
+    text = (
         f"👋 Hola *{u.first_name}*\n\n"
         "Bienvenido al bot oficial de *Jeff Mkeyz* 🎛️\n"
         "Productor · Cantautor\n"
@@ -901,11 +902,7 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "🇩🇴 República Dominicana · 🇪🇸 España\n\n"
         "¿Qué quieres hacer hoy? 👇"
     )
-    try:
-        await update.message.reply_photo(photo=BANNER_URL, caption=caption,
-                                         parse_mode="Markdown", reply_markup=kb_main())
-    except Exception:
-        await update.message.reply_text(caption, parse_mode="Markdown", reply_markup=kb_main())
+    await update.message.reply_text(text, parse_mode="Markdown", reply_markup=kb_main())
 
 async def cmd_planes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     plan = db_get_plan(update.effective_user.id)
