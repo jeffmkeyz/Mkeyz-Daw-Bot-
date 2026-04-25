@@ -619,18 +619,17 @@ def itunes_search(query):
     return resp.json().get("results", [])
 
 def format_track(t):
-    dur_s    = t.get("trackTimeMillis", 0) // 1000
-    url      = t.get("trackViewUrl", "")
-    artwork  = t.get("artworkUrl100", "").replace("100x100bb", "600x600bb")
-    lines = [
+    dur_s   = t.get("trackTimeMillis", 0) // 1000
+    url     = t.get("trackViewUrl", "")
+    artwork = t.get("artworkUrl100", "").replace("100x100bb", "600x600bb")
+    lines   = [
         f"🎵 *{t.get('trackName','N/A')}*",
         f"👤 {t.get('artistName','N/A')}",
         f"💿 {t.get('collectionName','N/A')} ({t.get('releaseDate','')[:4]})",
         f"🎸 {t.get('primaryGenreName','N/A')}  ·  ⏱️ {dur_s//60}:{dur_s%60:02d}",
     ]
-    if url:
-        lines += ["", f"[Ver en Apple Music]({url})"]
-    return "\n".join(lines), artwork
+    # Apple Music como botón, no como link en texto
+    return "\n".join(lines), artwork, url
 
 # ══════════════════════════════════════════════════════════
 #  HELPERS
