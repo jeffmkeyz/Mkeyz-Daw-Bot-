@@ -97,6 +97,7 @@ MODE_DAW_PITCH  = "daw_pitch_custom"
 MODE_DAW_SPEED  = "daw_speed_custom"
 MODE_DAW_TEMPO  = "daw_tempo_custom"
 MODE_PROJ       = "proyeccion"
+MODE_RETO       = "reto"
 MODE_BATTLE     = "battle"
 GAME_URL        = os.getenv("GAME_URL", "")  # URL pública del servidor Flask en Railway
 
@@ -315,6 +316,90 @@ def db_get_active_battles(limit=5):
     rows = [dict(r) for r in cur.fetchall()]
     con.close()
     return rows
+
+# ── Retos Semanales ───────────────────────────────────────
+
+RETOS_POOL = [
+    {"titulo": "Beat en 140 BPM", "desc": "Produce un beat a exactamente 140 BPM. Cualquier género.", "emoji": "🥁"},
+    {"titulo": "Hook en C Minor", "desc": "Graba un hook o melodía en Do Menor. Mínimo 15 segundos.", "emoji": "🎵"},
+    {"titulo": "Beat con solo 3 elementos", "desc": "Kick, bass y un sample. Nada más. Demuestra que menos es más.", "emoji": "🎚️"},
+    {"titulo": "Freestyle 60 segundos", "desc": "60 segundos de freestyle sobre cualquier instrumental.", "emoji": "🎤"},
+    {"titulo": "Beat de Afrobeats", "desc": "Produce un beat con vibras afrobeats. Sin límite de BPM.", "emoji": "🌍"},
+    {"titulo": "Sample flip", "desc": "Toma cualquier sonido del día a día y conviértelo en un beat.", "emoji": "🔄"},
+    {"titulo": "Lo-Fi en 2 minutos", "desc": "Produce un beat lo-fi completo en menos de 2 minutos.", "emoji": "☁️"},
+    {"titulo": "Trap en 808", "desc": "Un beat de trap donde el 808 sea el protagonista.", "emoji": "🔊"},
+    {"titulo": "Beat sin kick", "desc": "Produce un beat sin usar ningún kick drum.", "emoji": "🚫"},
+    {"titulo": "Melodía de 8 notas", "desc": "Crea una melodía usando exactamente 8 notas distintas.", "emoji": "🎼"},
+    {"titulo": "Reggaeton clásico", "desc": "Dembow puro. El patrón original, tu sello personal.", "emoji": "🌴"},
+    {"titulo": "Beat en tiempo récord", "desc": "Tienes 5 minutos reales para hacer un beat. Sube el resultado.", "emoji": "⏱️"},
+]
+
+def get_current_reto():
+    """Genera el reto de esta semana basado en el número de semana del año."""
+    week = int(time.time()) // (7 * 24 * 3600)
+    return RETOS_POOL[week % len(RETOS_POOL)]
+
+def get_week_id():
+    return int(time.time()) // (7 * 24 * 3600)
+
+def db_add_reto_entry(tg_id, name, file_id, file_type, week_id):
+    con = sqlite3.connect(DB_PATH)
+    cur = con.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS reto_entries (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            tg_id     INTEGER NOT NULL,
+            name      TEXT NOT NULL,
+            file_id   TEXT NOT NULL,
+            file_type TEXT NOT NULL,
+            week_id   INTEGER NOT NULL,
+            votes     INTEGER DEFAULT 0,
+            posted_at INTEGER NOT NULL
+        )""")
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS reto_votes (
+            entry_id    INTEGER NOT NULL,
+            voter_tg_id INTEGER NOT NULL,
+            PRIMARY KEY (entry_id, voter_tg_id)
+        )""")
+    # Check if already submitted this week
+    cur.execute("SELECT id FROM reto_entries WHERE tg_id=? AND week_id=?", (tg_id, week_id))
+    if cur.fetchone():
+        con.close()
+        return None
+    cur.execute("INSERT INTO reto_entries (tg_id,name,file_id,file_type,week_id,votes,posted_at) VALUES (?,?,?,?,?,0,?)",
+                (tg_id, name, file_id, file_type, week_id, int(time.time())))
+    eid = cur.lastrowid
+    con.commit()
+    con.close()
+    return eid
+
+def db_get_reto_entries(week_id, limit=10):
+    con = sqlite3.connect(DB_PATH)
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    try:
+        cur.execute("SELECT * FROM reto_entries WHERE week_id=? ORDER BY votes DESC LIMIT ?",
+                    (week_id, limit))
+        rows = [dict(r) for r in cur.fetchall()]
+    except:
+        rows = []
+    con.close()
+    return rows
+
+def db_vote_reto(entry_id, voter_tg_id):
+    con = sqlite3.connect(DB_PATH)
+    cur = con.cursor()
+    try:
+        cur.execute("INSERT INTO reto_votes (entry_id, voter_tg_id) VALUES (?,?)",
+                    (entry_id, voter_tg_id))
+        cur.execute("UPDATE reto_entries SET votes = votes + 1 WHERE id=?", (entry_id,))
+        con.commit()
+        con.close()
+        return True
+    except sqlite3.IntegrityError:
+        con.close()
+        return False
 
 # ══════════════════════════════════════════════════════════
 #  AUDIO UTILS
@@ -893,6 +978,104 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # ── Menú principal ─────────────────────────────────────
     if d == "sec_main":
         await edit(q, "👋 *Jeff Mkeyz* — Menú principal\n\nProductor · Cantautor\nPop Latino · Trap · Lo-Fi · Afrobeats 🎛️", kb_main())
+        return
+
+    # ── Reto Semanal ───────────────────────────────────────
+    if d == "sec_reto":
+        reto    = get_current_reto()
+        week_id = get_week_id()
+        entries = db_get_reto_entries(week_id, limit=5)
+
+        # Calculate days left
+        secs_in_week  = 7 * 24 * 3600
+        secs_this_week = int(time.time()) % secs_in_week
+        days_left = 7 - (secs_this_week // 86400)
+
+        text = (
+            f"🏆 *Reto de la Semana*\n\n"
+            f"{reto['emoji']} *{reto['titulo']}*\n\n"
+            f"_{reto['desc']}_\n\n"
+            f"⏳ Quedan *{days_left} días* para participar\n"
+            f"👥 *{len(entries)}* participantes esta semana\n"
+        )
+        if entries:
+            text += "\n*Top participantes:*\n"
+            for i, e in enumerate(entries[:3]):
+                medals = ["🥇","🥈","🥉"]
+                text += f"{medals[i]} {e['name']} — {e['votes']} votos\n"
+
+        kb_r = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🎵 Participar — Subir audio", callback_data="reto_submit")],
+            [InlineKeyboardButton("📋 Ver todos los participantes", callback_data="reto_feed")],
+            [InlineKeyboardButton("← 𝗠𝗘𝗡Ú", callback_data="sec_main")],
+        ])
+        await edit(q, text, kb_r)
+        return
+
+    if d == "reto_submit":
+        ctx.user_data["mode"] = MODE_RETO
+        reto = get_current_reto()
+        await edit(q,
+            f"🏆 *{reto['titulo']}*\n\n"
+            f"{reto['desc']}\n\n"
+            f"👇 Envía tu audio para participar:\n"
+            f"_Solo puedes participar una vez por semana_",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancelar", callback_data="sec_reto")]]))
+        return
+
+    if d == "reto_feed":
+        week_id = get_week_id()
+        entries = db_get_reto_entries(week_id)
+        reto    = get_current_reto()
+        if not entries:
+            await edit(q,
+                f"🏆 *{reto['titulo']}*\n\n"
+                "Aún no hay participantes esta semana.\n¡Sé el primero! 🎵",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎵 Participar", callback_data="reto_submit")],
+                    [InlineKeyboardButton("← Reto",        callback_data="sec_reto")],
+                ]))
+            return
+        lines   = [f"🏆 *Participantes — {reto['titulo']}*\n"]
+        buttons = []
+        medals  = ["🥇","🥈","🥉"]
+        for i, e in enumerate(entries):
+            medal = medals[i] if i < 3 else f"{i+1}."
+            lines.append(f"{medal} *{e['name']}* — {e['votes']} votos")
+            buttons.append([InlineKeyboardButton(
+                f"{medal} {e['name']} ({e['votes']} 🔥)",
+                callback_data=f"reto_play_{e['id']}")])
+        buttons.append([InlineKeyboardButton("← Reto", callback_data="sec_reto")])
+        await edit(q, "\n".join(lines), InlineKeyboardMarkup(buttons))
+        return
+
+    if d.startswith("reto_play_"):
+        entry_id = int(d[10:])
+        entries  = db_get_reto_entries(get_week_id(), limit=20)
+        entry    = next((e for e in entries if e["id"] == entry_id), None)
+        if not entry:
+            await q.answer("No encontrado.")
+            return
+        voted = db_vote_reto(entry_id, q.from_user.id)
+        cap   = (
+            f"🏆 *{entry['name']}*\n"
+            f"🔥 {entry['votes'] + (1 if voted else 0)} votos"
+        )
+        kb_play = InlineKeyboardMarkup([
+            [InlineKeyboardButton(
+                "✅ Votado!" if voted else "🔥 Votar",
+                callback_data=f"reto_play_{entry_id}")],
+            [InlineKeyboardButton("← Ver todos", callback_data="reto_feed")],
+        ])
+        try:
+            if entry["file_type"] == "voice":
+                await q.message.reply_voice(voice=entry["file_id"], caption=cap,
+                    parse_mode="Markdown", reply_markup=kb_play)
+            else:
+                await q.message.reply_audio(audio=entry["file_id"], caption=cap,
+                    parse_mode="Markdown", reply_markup=kb_play)
+        except Exception as e:
+            await q.message.reply_text(cap, parse_mode="Markdown", reply_markup=kb_play)
         return
 
     # ── BPM Game ───────────────────────────────────────────
@@ -1765,6 +1948,52 @@ async def on_audio(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg  = update.message
     fobj = msg.audio or msg.voice or msg.document
 
+    # ── Reto semanal ───────────────────────────────────────
+    if mode == MODE_RETO:
+        status = await msg.reply_text("⏳ Subiendo tu participación…")
+        raw    = os.path.join(TMP, uuid.uuid4().hex + ".bin")
+        tg_file = await fobj.get_file()
+        await tg_file.download_to_drive(raw)
+        try:
+            if msg.voice:
+                sent = await msg.reply_voice(voice=msg.voice.file_id, caption="🏆 Participación recibida")
+                file_id, ftype = sent.voice.file_id, "voice"
+            elif msg.audio:
+                sent = await msg.reply_audio(audio=msg.audio.file_id, caption="🏆 Participación recibida")
+                file_id, ftype = sent.audio.file_id, "audio"
+            else:
+                with open(raw, "rb") as f:
+                    sent = await msg.reply_audio(audio=f, caption="🏆 Participación recibida")
+                file_id, ftype = sent.audio.file_id, "audio"
+            u       = msg.from_user
+            name    = u.first_name or u.username or "Anónimo"
+            week_id = get_week_id()
+            eid     = db_add_reto_entry(u.id, name, file_id, ftype, week_id)
+            if eid is None:
+                await status.edit_text(
+                    "⚠️ Ya participaste esta semana.\nVuelve el próximo lunes!",
+                    reply_markup=InlineKeyboardMarkup([[
+                        InlineKeyboardButton("🏆 Ver reto", callback_data="sec_reto")
+                    ]]))
+            else:
+                reto = get_current_reto()
+                ctx.user_data["mode"] = MODE_NONE
+                await status.edit_text(
+                    f"✅ *¡Participación enviada!*\n\n"
+                    f"🏆 *{reto['titulo']}*\n\n"
+                    f"La comunidad puede votar tu audio 🔥",
+                    parse_mode="Markdown",
+                    reply_markup=InlineKeyboardMarkup([
+                        [InlineKeyboardButton("📋 Ver participantes", callback_data="reto_feed")],
+                        [InlineKeyboardButton("← Menú", callback_data="sec_main")],
+                    ]))
+        except Exception as e:
+            log.error(f"Reto: {e}")
+            await status.edit_text(f"❌ Error: {e}")
+        finally:
+            if os.path.exists(raw): os.remove(raw)
+        return
+
     if mode == MODE_BATTLE:
         status = await msg.reply_text("⏳ Recibiendo tu beat…")
         raw    = os.path.join(TMP, uuid.uuid4().hex + ".bin")
@@ -1797,7 +2026,7 @@ async def on_audio(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             if os.path.exists(raw): os.remove(raw)
         return
 
-    if mode not in (MODE_DAW, MODE_ANLZ, MODE_SHOW, MODE_IDEA):
+    if mode not in (MODE_DAW, MODE_ANLZ, MODE_SHOW, MODE_IDEA, MODE_BATTLE, MODE_RETO):
         await msg.reply_text(
             "¿Quieres editarlo? → 🎛️ Mini DAW\n¿Quieres analizarlo? → 📊 Analizador\n\nElige desde el menú 👇",
             reply_markup=kb_main())
