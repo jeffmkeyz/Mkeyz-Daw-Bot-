@@ -111,14 +111,55 @@ def submit_battle():
 
 # ── Serve game ─────────────────────────────────────────────
 
+# ── BPM Game API ──────────────────────────────────────────
+
+@app.route("/api/bpm/score", methods=["POST"])
+def bpm_score():
+    data    = request.json or {}
+    user_id = str(data.get("user_id",""))
+    name    = str(data.get("name","Anónimo"))[:30]
+    score   = int(data.get("score", 0))
+    if not user_id: return jsonify({"ok":False}), 400
+    con = get_db()
+    cur = con.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS bpm_scores (
+            user_id TEXT PRIMARY KEY,
+            name    TEXT,
+            score   INTEGER,
+            updated_at INTEGER
+        )""")
+    cur.execute("""
+        INSERT INTO bpm_scores (user_id,name,score,updated_at) VALUES (?,?,?,?)
+        ON CONFLICT(user_id) DO UPDATE SET
+          name=excluded.name,
+          score=MAX(score, excluded.score),
+          updated_at=excluded.updated_at
+    """, (user_id, name, score, int(time.time())))
+    con.commit()
+    con.close()
+    return jsonify({"ok":True})
+
+@app.route("/api/bpm/leaderboard")
+def bpm_leaderboard():
+    con = get_db()
+    cur = con.cursor()
+    try:
+        cur.execute("SELECT name, score FROM bpm_scores ORDER BY score DESC LIMIT 10")
+        rows = [dict(r) for r in cur.fetchall()]
+    except:
+        rows = []
+    con.close()
+    return jsonify(rows)
+
 @app.route("/")
 @app.route("/game")
 def serve_game():
     return send_from_directory("static", "index.html")
 
-@app.route("/leaderboard")
-def serve_leaderboard():
-    return send_from_directory("static", "leaderboard.html")
+@app.route("/bpm")
+def serve_bpm():
+    return send_from_directory("static", "bpm_game.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
