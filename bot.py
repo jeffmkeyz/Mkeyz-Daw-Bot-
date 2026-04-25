@@ -33,8 +33,8 @@ LINKS = {
     "beatstars": "https://beatstars.com/jeffmkeyz",
     "tiktok":    "https://tiktok.com/@jeffmkeyz",
     "youtube":   "https://youtube.com/@jeffmkeyz",
-    "instagram": "https://instagram.com/jeffmkeyz",
-    "spotify":   "https://open.spotify.com/artist/5GnCPMWUzBJCxbBRPgxJEo",
+    "instagram": "https://instagram.com/jeffmkeyzx",
+    "spotify":   "https://open.spotify.com/intl-es/artist/1PTk2yExL9jgOUPYEjWF1E",
 }
 
 # ── Planes ─────────────────────────────────────────────────
@@ -1124,7 +1124,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
         await edit(q, text, InlineKeyboardMarkup([
             [InlineKeyboardButton("🛒 Ver beats en BeatStars", url=LINKS["beatstars"])],
-            [InlineKeyboardButton("💬 Contactar por Telegram", url="https://t.me/jeffmkeyz")],
+            [InlineKeyboardButton("💬 Contactar por Telegram", url="https://t.me/jeffmkeyzx")],
             [InlineKeyboardButton("🔄 Nueva cotización", callback_data="sec_cotizador")],
             [InlineKeyboardButton("‹ Menú principal",    callback_data="sec_main")],
         ]))
