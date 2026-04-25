@@ -780,10 +780,7 @@ def kb_daw():
             InlineKeyboardButton("🌊  Reverb",          callback_data="daw_reverb_menu"),
             InlineKeyboardButton("🎚️  EQ",              callback_data="daw_eq_menu"),
         ],
-        [
-            InlineKeyboardButton("⏱️  Delay",           callback_data="daw_delay_menu"),
-            InlineKeyboardButton("🎤  Autotune",        callback_data="daw_autotune_menu"),
-        ],
+        [InlineKeyboardButton("⏱️  Delay",           callback_data="daw_delay_menu")],
         [
             InlineKeyboardButton("⏮  Reverse",         callback_data="daw_rev"),
             InlineKeyboardButton("📊  Analizar",        callback_data="daw_analyze"),
@@ -1359,7 +1356,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             "daw_reverb_menu":  ("🌊 *Reverb*\n\nElige el tipo de sala:",      kb_daw_reverb()),
             "daw_eq_menu":      ("🎚️ *EQ*\n\nElige un preset:",               kb_daw_eq()),
             "daw_delay_menu":   ("⏱️ *Delay*\n\nElige el tiempo:",             kb_daw_delay()),
-            "daw_autotune_menu":("🎤 *Autotune*\n\nElige la escala:",         kb_daw_autotune()),
+    
         }
         text, kb = menus[d]
         await edit(q, text, kb)
