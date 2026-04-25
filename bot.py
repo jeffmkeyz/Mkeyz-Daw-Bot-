@@ -50,11 +50,12 @@ PLAN_LABELS = {
 }
 
 PLAN_PERMS = {
-    "sec_calc":    PLAN_PRO,
-    "sec_daw":     PLAN_PRO,
-    "sec_analyze": PLAN_PRO,
-    "sec_spotify": PLAN_FREE,
-    "sec_artists": PLAN_STUDIO,
+    "sec_calc":      PLAN_PRO,
+    "sec_daw":       PLAN_PRO,
+    "sec_analyze":   PLAN_PRO,
+    "sec_spotify":   PLAN_FREE,
+    "sec_artists":   PLAN_STUDIO,
+    "sec_simulator": PLAN_STUDIO,
 }
 
 # ── Plataformas de streaming ───────────────────────────────
@@ -679,35 +680,64 @@ async def ask_upgrade(query, required_plan):
 def kb_main():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🎵  Mis Beats",      callback_data="sec_beats"),
-            InlineKeyboardButton("🧮  Calculadora",    callback_data="sec_calc"),
+            InlineKeyboardButton("🎵  Beats & Música",    callback_data="sub_beats"),
+            InlineKeyboardButton("🎛️  Herramientas",      callback_data="sub_tools"),
         ],
         [
-            InlineKeyboardButton("💼  Cotizador",      callback_data="sec_cotizador"),
-            InlineKeyboardButton("✏️  Títulos de Beat", callback_data="sec_titulos"),
+            InlineKeyboardButton("💰  Negocio",           callback_data="sub_negocio"),
+            InlineKeyboardButton("🎮  Juegos",            callback_data="sub_juegos"),
         ],
         [
-            InlineKeyboardButton("🎛️  Mini DAW",       callback_data="sec_daw"),
-            InlineKeyboardButton("📊  Analizador",     callback_data="sec_analyze"),
+            InlineKeyboardButton("🎤  Comunidad",         callback_data="sub_comunidad"),
+            InlineKeyboardButton("ℹ️   Jeff Mkeyz",       callback_data="sub_info"),
         ],
-        [
-            InlineKeyboardButton("🔍  Buscar Canción", callback_data="sec_spotify"),
-            InlineKeyboardButton("🎤  Zona Artistas",  callback_data="sec_artists"),
-        ],
-        [
-            InlineKeyboardButton("📱  Redes",          callback_data="sec_redes"),
-            InlineKeyboardButton("ℹ️   Sobre mí",      callback_data="sec_about"),
-        ],
-        [
-            InlineKeyboardButton("📩  Contacto",       callback_data="sec_contact"),
-            InlineKeyboardButton("💳  Mi Plan",        callback_data="sec_planes"),
-        ],
+        [InlineKeyboardButton("💳  Mi Plan",              callback_data="sec_planes")],
+    ])
+
+def kb_sub_beats():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎵  Mis Beats",         callback_data="sec_beats")],
+        [InlineKeyboardButton("🔍  Buscar Canción",    callback_data="sec_spotify")],
+        [InlineKeyboardButton("✏️  Títulos de Beat",   callback_data="sec_titulos")],
+        [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
+    ])
+
+def kb_sub_tools():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎛️  Mini DAW",           callback_data="sec_daw")],
+        [InlineKeyboardButton("📊  Analizador",         callback_data="sec_analyze")],
+        [InlineKeyboardButton("📊  Simulador Streams",  callback_data="sec_simulator")],
+        [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
+    ])
+
+def kb_sub_negocio():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🧮  Calculadora",        callback_data="sec_calc")],
+        [InlineKeyboardButton("💼  Cotizador",          callback_data="sec_cotizador")],
+        [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
+    ])
+
+def kb_sub_juegos():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎮  Beat Battle  🔥",   callback_data="sec_battle")],
+        [InlineKeyboardButton("🥁  Adivina el BPM",    callback_data="sec_bpm")],
         [InlineKeyboardButton("🏆  Reto Semanal",      callback_data="sec_reto")],
-        [
-            InlineKeyboardButton("🎮  Beat Battle  🔥",  callback_data="sec_battle"),
-            InlineKeyboardButton("🥁  Adivina el BPM",   callback_data="sec_bpm"),
-        ],
-        [InlineKeyboardButton("📊  Simulador de Streams", callback_data="sec_simulator")],
+        [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
+    ])
+
+def kb_sub_comunidad():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎤  Zona Artistas",     callback_data="sec_artists")],
+        [InlineKeyboardButton("🏆  Reto Semanal",      callback_data="sec_reto")],
+        [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
+    ])
+
+def kb_sub_info():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("ℹ️   Sobre mí",         callback_data="sec_about")],
+        [InlineKeyboardButton("📱  Redes",             callback_data="sec_redes")],
+        [InlineKeyboardButton("📩  Contacto",          callback_data="sec_contact")],
+        [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
     ])
 
 def kb_back():
@@ -1027,7 +1057,8 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     d = q.data
 
     # Limpiar modo al navegar al menú
-    if d in ("sec_main","sec_beats","sec_redes","sec_about","sec_contact","sec_artists"):
+    if d in ("sec_main","sec_beats","sec_redes","sec_about","sec_contact","sec_artists",
+              "sub_beats","sub_tools","sub_negocio","sub_juegos","sub_comunidad","sub_info"):
         ctx.user_data["mode"]     = MODE_NONE
         ctx.user_data["reg_step"] = None
 
@@ -1038,6 +1069,26 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if required != PLAN_FREE and not plan_allows(user_plan, required):
             await ask_upgrade(q, required)
             return
+
+    # ── Submenús ───────────────────────────────────────────
+    if d == "sub_beats":
+        await edit(q, "🎵 *Beats & Música*\n\nElige una opción:", kb_sub_beats())
+        return
+    if d == "sub_tools":
+        await edit(q, "🎛️ *Herramientas Pro*\n\nElige una opción:", kb_sub_tools())
+        return
+    if d == "sub_negocio":
+        await edit(q, "💰 *Negocio*\n\nElige una opción:", kb_sub_negocio())
+        return
+    if d == "sub_juegos":
+        await edit(q, "🎮 *Juegos*\n\nElige una opción:", kb_sub_juegos())
+        return
+    if d == "sub_comunidad":
+        await edit(q, "🎤 *Comunidad*\n\nElige una opción:", kb_sub_comunidad())
+        return
+    if d == "sub_info":
+        await edit(q, "ℹ️ *Jeff Mkeyz*\n\nElige una opción:", kb_sub_info())
+        return
 
     # ── Menú principal ─────────────────────────────────────
     if d == "sec_main":
