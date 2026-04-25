@@ -22,6 +22,9 @@ from telegram.ext import (
 
 TOKEN    = os.getenv("BOT_TOKEN", "8736753639:AAGHp-nxa4KKvUcnmhJplgBb0-asZogoiuE")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
+
+def is_admin(user_id: int) -> bool:
+    return ADMIN_ID != 0 and user_id == ADMIN_ID
 EUR_RATE = 0.92
 
 BANNER_URL = "https://i.ibb.co/Fqxk8NHZ/chromatic-haze-portrait-1f1314d5-273f-6550-a10c-a923b265cbc7-0-0.png"
@@ -923,7 +926,7 @@ async def cmd_mipan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("💳 Ver planes", callback_data="sec_planes")]]))
 
 async def cmd_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID:
+    if not is_admin(update.effective_user.id):
         return
     args = ctx.args or []
     if not args:
