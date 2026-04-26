@@ -165,6 +165,18 @@ def serve_bpm():
 def serve_simulator():
     return send_from_directory("static", "stream_sim.html")
 
+@app.route("/scale")
+def serve_scale():
+    return send_from_directory("static", "scale_detector.html")
+
+@app.route("/freq")
+def serve_freq():
+    return send_from_directory("static", "freq_visualizer.html")
+
+@app.route("/compare")
+def serve_compare():
+    return send_from_directory("static", "artist_compare.html")
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
