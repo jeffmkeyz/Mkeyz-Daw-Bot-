@@ -189,6 +189,10 @@ def serve_chords():
 def serve_voice():
     return send_from_directory("static", "voice_studio.html")
 
+@app.route("/qr")
+def serve_qr():
+    return send_from_directory("static", "qr.html")
+
 @app.route("/api/artist/profile")
 def api_artist_profile():
     user_id = request.args.get("user_id")
