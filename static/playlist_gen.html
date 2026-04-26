@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Playlist Generator — Mkeyz Studio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root { --bg:#0a0a0a; --card:#111; --border:#1f1f1f; --gold:#f5c518; --green:#00e676; --fire:#ff4d4d; --blue:#4fc3f7; --purple:#9c27b0; --text:#fff; --muted:#555; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; padding:16px; padding-bottom:60px; }
+
+.header { text-align:center; padding:14px 0 20px; }
+.header h1 { font-size:22px; font-weight:900; background:linear-gradient(135deg,#fff,var(--green)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:4px; }
+.header p { font-size:13px; color:var(--muted); }
+
+.section-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; margin-top:20px; }
+
+/* Config card */
+.config-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px; }
+.form-label { font-size:12px; color:var(--muted); margin-bottom:6px; display:block; }
+.form-input {
+  width:100%; background:#1a1a1a; border:1px solid var(--border);
+  border-radius:10px; padding:10px 12px; color:#fff; font-size:14px;
+  outline:none; transition:border-color 0.2s; margin-bottom:10px;
+}
+.form-input:focus { border-color:var(--green); }
+.form-input::placeholder { color:#444; }
+
+/* Genre circles */
+.genre-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+.genre-circle {
+  aspect-ratio:1; border-radius:50%; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; cursor:pointer;
+  border:2px solid transparent; position:relative; overflow:hidden;
+  transition:all 0.2s; background:#1a1a1a;
+}
+.genre-circle .g-emoji { font-size:13px; margin-bottom:2px; line-height:1; }
+.genre-circle .g-name  { font-size:7px; font-weight:800; text-align:center; color:#666; letter-spacing:0.2px; line-height:1.2; padding:0 2px; }
+.genre-circle.selected .g-name { color:#000; }
+.genre-circle::after {
+  content:''; position:absolute; inset:0; border-radius:50%;
+  transform:scale(0); opacity:0;
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+}
+.genre-circle.selected::after { transform:scale(1); opacity:0.15; }
+.genre-circle.ripple-anim::before {
+  content:''; position:absolute; inset:-4px; border-radius:50%;
+  border:3px solid currentColor; opacity:0;
+  animation:genreRipple 0.6s ease-out forwards;
+}
+@keyframes genreRipple {
+  0%   { transform:scale(0.8); opacity:0.8; }
+  100% { transform:scale(1.3); opacity:0; }
+}
+.genre-circle:active { transform:scale(0.92); }
+
+/* Mood/ctx chips */
+.chip-grid { display:flex; flex-wrap:wrap; gap:6px; }
+.chip {
+  padding:8px 16px; border-radius:100px; font-size:12px; font-weight:700;
+  background:#1a1a1a; color:#666; border:2px solid #2a2a2a; cursor:pointer;
+  transition:all 0.2s;
+}
+.chip.selected { color:#000; border-color:transparent; }
+.chip:active { transform:scale(0.95); }
+
+/* Length selector */
+.len-row { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.len-btn {
+  padding:10px 4px; border-radius:10px; font-size:12px; font-weight:700;
+  background:#1a1a1a; color:#666; border:1px solid #2a2a2a;
+  cursor:pointer; transition:all 0.2s; text-align:center;
+}
+.len-btn.active { background:#0d1f0d; color:var(--green); border-color:#00e67655; }
+
+/* Generate button */
+.btn-gen {
+  width:100%; padding:18px; border:none; border-radius:18px;
+  background:linear-gradient(135deg,var(--green),#00bcd4);
+  font-size:18px; font-weight:800; color:#000; cursor:pointer; margin-top:20px;
+  transition:all 0.15s; box-shadow:0 8px 24px rgba(0,230,118,0.2);
+}
+.btn-gen:active { transform:scale(0.97); }
+.btn-gen:disabled { opacity:0.5; }
+
+/* Playlist result */
+.playlist-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:20px; overflow:hidden; margin-top:20px;
+  animation:slideIn 0.4s ease;
+}
+@keyframes slideIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.playlist-header {
+  padding:20px; background:linear-gradient(135deg,#0d1f0d,#111);
+  border-bottom:1px solid var(--border);
+}
+.playlist-name { font-size:20px; font-weight:900; color:var(--green); margin-bottom:4px; }
+.playlist-meta { font-size:12px; color:var(--muted); }
+.playlist-tags { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+.playlist-tag { padding:3px 10px; border-radius:100px; font-size:11px; font-weight:600; background:#1a2a1a; color:var(--green); border:1px solid #00e67633; }
+
+/* Track list */
+.track-list { padding:8px 0; }
+.track-item {
+  display:flex; align-items:center; gap:12px; padding:12px 16px;
+  border-bottom:1px solid #0d0d0d; transition:background 0.15s;
+  cursor:pointer;
+}
+.track-item:last-child { border-bottom:none; }
+.track-item:active { background:#1a1a1a; }
+.track-num { font-size:13px; color:var(--muted); min-width:20px; text-align:center; font-weight:600; }
+.track-info { flex:1; }
+.track-name { font-size:14px; font-weight:700; margin-bottom:2px; }
+.track-artist { font-size:12px; color:var(--muted); }
+.track-duration { font-size:12px; color:var(--muted); }
+.track-genre-badge { font-size:10px; padding:2px 8px; border-radius:100px; margin-top:4px; display:inline-block; }
+
+/* Jeff Mkeyz highlight */
+.is-mkeyz .track-name { color:var(--gold); }
+.is-mkeyz .track-artist { color:#f5c51888; }
+.is-mkeyz .track-num { color:var(--gold); }
+.mkeyz-badge { font-size:9px; background:#1a1500; color:var(--gold); border:1px solid #f5c51844; padding:2px 8px; border-radius:100px; margin-left:6px; vertical-align:middle; }
+
+/* Section divider */
+.section-divider { padding:10px 16px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; background:#0d0d0d; }
+
+/* Action buttons */
+.action-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:16px; border-top:1px solid var(--border); }
+.action-btn {
+  padding:12px; border:none; border-radius:12px; font-size:13px; font-weight:700;
+  cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.action-btn:active { transform:scale(0.96); }
+.btn-copy-pl  { background:#1a2a1a; color:var(--green); }
+.btn-shuffle  { background:#1a1a2a; color:var(--blue); }
+.btn-new      { width:100%; background:#111; color:var(--muted); border:1px solid var(--border); border-radius:12px; padding:12px; font-size:13px; font-weight:700; cursor:pointer; margin:0 16px 16px; width:calc(100% - 32px); }
+
+/* Spinner */
+.spinner-wrap { text-align:center; padding:40px 20px; }
+.spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.spinner-text { font-size:14px; color:var(--muted); }
+
+/* Toast */
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#fff; color:#000; padding:12px 20px; border-radius:100px; font-size:14px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+.empty { text-align:center; padding:40px 20px; color:var(--muted); }
+.empty .icon { font-size:48px; margin-bottom:12px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎵 Playlist Generator</h1>
+  <p>Genera playlists curadas con artistas reales</p>
+</div>
+
+<!-- GENRE -->
+<div class="section-title">Género principal</div>
+<div class="config-card" style="padding:10px">
+  <div class="genre-grid" id="genre-chips"></div>
+</div>
+
+<!-- MOOD -->
+<div class="section-title">Mood / Ambiente</div>
+<div class="config-card">
+  <div class="chip-grid" id="mood-chips"></div>
+</div>
+
+<!-- CONTEXT -->
+<div class="section-title">Contexto</div>
+<div class="config-card">
+  <div class="chip-grid" id="ctx-chips"></div>
+</div>
+
+<!-- LENGTH -->
+<div class="section-title">Duración</div>
+<div class="config-card">
+  <div class="len-row" id="len-btns" style="grid-template-columns:repeat(4,1fr)">
+    <div class="len-btn active" onclick="setLen(10,this)">10<br><span style="font-size:9px;opacity:0.5">~30 min</span></div>
+    <div class="len-btn" onclick="setLen(20,this)">20<br><span style="font-size:9px;opacity:0.5">~60 min</span></div>
+    <div class="len-btn" onclick="setLen(30,this)">30<br><span style="font-size:9px;opacity:0.5">~90 min</span></div>
+    <div class="len-btn" onclick="setLen(50,this)">50<br><span style="font-size:9px;opacity:0.5">~2.5h</span></div>
+  </div>
+  <div class="len-row" id="len-btns2" style="grid-template-columns:repeat(4,1fr);margin-top:6px">
+    <div class="len-btn" onclick="setLen(75,this)">75<br><span style="font-size:9px;opacity:0.5">~3.5h</span></div>
+    <div class="len-btn" onclick="setLen(100,this)">100<br><span style="font-size:9px;opacity:0.5">~5h</span></div>
+    <div class="len-btn" onclick="setLen(150,this)">150<br><span style="font-size:9px;opacity:0.5">~7h</span></div>
+    <div class="len-btn" onclick="setLen(200,this)">200<br><span style="font-size:9px;opacity:0.5">~10h</span></div>
+  </div>
+</div>
+
+<!-- INCLUDE MKEYZ -->
+<div class="config-card" style="display:flex;align-items:center;justify-content:space-between">
+  <div>
+    <div style="font-size:14px;font-weight:700;color:var(--gold)">🎛️ Incluir Jeff Mkeyz</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px">Añade beats de Jeff Mkeyz a la playlist</div>
+  </div>
+  <button class="fx-toggle on" id="mkeyz-toggle" onclick="toggleMkeyz(this)" style="width:44px;height:24px;border-radius:100px;border:none;cursor:pointer;transition:all 0.2s;position:relative;background:var(--gold)">
+    <span style="position:absolute;top:3px;left:21px;width:18px;height:18px;border-radius:50%;background:#fff;transition:all 0.2s"></span>
+  </button>
+</div>
+
+<button class="btn-gen" id="btn-gen" onclick="generatePlaylist()">🎵 Generar Playlist</button>
+
+<div id="result"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
+
+// ── DATA ─────────────────────────────────────────────────────
+const GENRES = ["Pop Latino","Trap","Reggaeton","Afrobeats","R&B","Hip-Hop","Lo-Fi","Dancehall","Drill","Salsa","Bachata","EDM","House","Dembow"];
+const MOODS  = ["Energético","Relajado","Romántico","Melancólico","Motivacional","Oscuro","Alegre","Fiesta","Concentración","Workout"];
+const CTXS   = ["En el carro","Sesión de estudio","Gym","Fiesta","Trabajo","Antes de dormir","Viaje","Break","Tarde de lluvia","Verano"];
+
+const GENRE_COLORS = {
+  "Pop Latino":"#e91e63","Trap":"#ff4d4d","Reggaeton":"#ff6b35",
+  "Afrobeats":"#ff9800","R&B":"#9c27b0","Hip-Hop":"#2196f3",
+  "Lo-Fi":"#4fc3f7","Dancehall":"#00bcd4","Drill":"#607d8b",
+  "Salsa":"#f44336","Bachata":"#e91e63","EDM":"#00e5ff",
+  "House":"#7c4dff","Dembow":"#ff6d00",
+};
+
+// Artist database per genre
+const ARTISTS = {
+  "Pop Latino": [
+    {name:"Bad Bunny", tracks:["Tití Me Preguntó","Me Porto Bonito","El Apagón","Neverita","Moscow Mule"]},
+    {name:"J Balvin", tracks:["Con Calma","Mi Gente","Safari","Vibras","Bonita"]},
+    {name:"Ozuna", tracks:["Taki Taki","Bésame","Única","Dile Que Tú Me Quieres","Hey Mor"]},
+    {name:"Maluma", tracks:["Hawái","Felices Los 4","Chantaje","Cuatro Babys","11 PM"]},
+    {name:"Daddy Yankee", tracks:["Gasolina","Con Calma","Dura","Rompe","Lo Que Pasó Pasó"]},
+    {name:"Rauw Alejandro", tracks:["Todo De Ti","Lokura","Tattoo","Esencial","Cúrame"]},
+    {name:"Myke Towers", tracks:["Girl","Bandido","La Playa","Pa Mí","Si Se Da"]},
+    {name:"Sech", tracks:["Otro Trago","Relación","911","Quiero Más","Señorita"]},
+    {name:"Jhay Cortez", tracks:["Dakiti","No Me Conoce","Dákiti","Porfa","Que Dios Me Perdone"]},
+    {name:"Farruko", tracks:["Pepas","Callaíta","Krippy Kush","Pa Romperla","Inolvidable"]},
+  ],
+  "Trap": [
+    {name:"Travis Scott", tracks:["SICKO MODE","Goosebumps","Antidote","Highest in the Room","FEIN"]},
+    {name:"Future", tracks:["Mask Off","March Madness","Low Life","Jumpin on a Jet","I'm on One"]},
+    {name:"Lil Baby", tracks:["Drip Too Hard","Yes Indeed","Sum 2 Prove","On Me","Forever"]},
+    {name:"21 Savage", tracks:["Rockstar","Bank Account","A Lot","No Heart","Runnin"]},
+    {name:"Young Thug", tracks:["Best Friend","Digits","Havana","Hot","Tick Tock"]},
+    {name:"Gunna", tracks:["Drip Season","Speed It Up","Pushin P","Turks","Banking on Me"]},
+    {name:"Polo G", tracks:["Pop Out","Heartless","Martin & Gina","Finer Things","Gang Gang"]},
+    {name:"Roddy Ricch", tracks:["The Box","High Fashion","Tip Toe","Start Wit Me","Ballin"]},
+    {name:"NBA YoungBoy", tracks:["Outside Today","Valuable Pain","No Smoke","Lonely Child","Bandit"]},
+    {name:"Lil Durk", tracks:["India","Laugh Now Cry Later","The Voice","Backdoor","Make It Out"]},
+  ],
+  "Reggaeton": [
+    {name:"Bad Bunny", tracks:["Callaíta","Yo Perreo Sola","La Noche de Anoche","Si Veo a Tu Mamá","Efecto"]},
+    {name:"Daddy Yankee", tracks:["Gasolina","Shaky Shaky","Limbo","El Amante","Problema"]},
+    {name:"Anuel AA", tracks:["China","Secreto","Keii","Ella Quiere Besar","Brindemos"]},
+    {name:"Karol G", tracks:["MAMIII","Bichota","Tusa","Mi Cama","Ocean"]},
+    {name:"Nicki Nicole", tracks:["Colocao","Wapo Traketero","Mamichula","No Toque Mi Naik","Buenos Aires"]},
+    {name:"Jhay Cortez", tracks:["Fresa","No Me Conoce","Porfa","Soak It Up","La Capi"]},
+    {name:"Mora", tracks:["Soltera","Jangueo","Mía","Por el Mar","Estoy Enamorado"]},
+    {name:"Lunay", tracks:["Soltera","Cuando Te Besé","Fin de Semana","Aventura","Como Antes"]},
+    {name:"Eladio Carrión", tracks:["Tata","Kemba Walker","Morir Soñando","Nene Malo","Senator"]},
+    {name:"Lyanno", tracks:["Illusion","Adicto","Solo Yo","Pienso En Ti","Llegaste Tú"]},
+  ],
+  "Afrobeats": [
+    {name:"Burna Boy", tracks:["Last Last","Ye","Outside","23","Gbona"]},
+    {name:"Wizkid", tracks:["Essence","Come Closer","Ojuelegba","Joro","Mood"]},
+    {name:"Davido", tracks:["Fall","If","Assurance","FEM","Stand Strong"]},
+    {name:"Tems", tracks:["Free Mind","Higher","Crazy Tings","Try Me","Broken Holes"]},
+    {name:"Rema", tracks:["Calm Down","Dumebi","Iron Man","Bad Commando","FYN"]},
+    {name:"Ckay", tracks:["Love Nwantiti","Felony","Emiliana","Watawi","Feels"]},
+    {name:"Fireboy DML", tracks:["Peru","Jealous","Like I Do","What If I Say","New York City Boy"]},
+    {name:"Omah Lay", tracks:["Godly","Bad Influence","Lo Lo","You","Attention"]},
+    {name:"Asake", tracks:["Terminator","Joha","Palazzo","Reason","Lonely at the Top"]},
+    {name:"Ayra Starr", tracks:["Rush","19 & Dangerous","Bloody Samaritan","Fashion Killer","Ase"]},
+  ],
+  "R&B": [
+    {name:"The Weeknd", tracks:["Blinding Lights","Starboy","Save Your Tears","Die For You","Earned It"]},
+    {name:"SZA", tracks:["Kill Bill","Good Days","Shirt","Snooze","Nobody Gets Me"]},
+    {name:"Frank Ocean", tracks:["Chanel","Nights","Pink + White","Ivy","Lost"]},
+    {name:"H.E.R.", tracks:["Best Part","Focus","Could've Been","Hold On","Lights On"]},
+    {name:"Jhené Aiko", tracks:["None of Your Concern","Bed Peace","While We're Young","Trigger Protection","Sativa"]},
+    {name:"Daniel Caesar", tracks:["Best Part","Blessed","Get You","Superposition","Cyanide"]},
+    {name:"Brent Faiyaz", tracks:["Gravity","Clouded","Wasting Time","First World Problems","Show U Off"]},
+    {name:"Lucky Daye", tracks:["Painted","Roll Some Mo","Chocolate Grapes","Over","Ready"]},
+    {name:"Giveon", tracks:["Heartbreak Anniversary","Like I Want You","Favorite Mistake","For Tonight","Lay You Down"]},
+    {name:"Summer Walker", tracks:["Playing Games","Come Thru","Girls Need Love","I'll Kill You","Lake Tahoe"]},
+  ],
+  "Hip-Hop": [
+    {name:"Drake", tracks:["God's Plan","In My Feelings","One Dance","Started From the Bottom","Hotline Bling"]},
+    {name:"Kendrick Lamar", tracks:["HUMBLE.","Swimming Pools","Alright","Money Trees","DNA."]},
+    {name:"J. Cole", tracks:["No Role Modelz","MIDDLE CHILD","Work Out","ATM","Photograph"]},
+    {name:"Kanye West", tracks:["POWER","Stronger","Gold Digger","All Falls Down","Flashing Lights"]},
+    {name:"Tyler the Creator", tracks:["EARFQUAKE","See You Again","IGOR'S THEME","NEW MAGIC WAND","911"]},
+    {name:"Mac Miller", tracks:["Self Care","Come Back to Earth","Small Worlds","Good News","Circles"]},
+    {name:"A$AP Rocky", tracks:["FUKK SLEEP","Fashion Killa","Praise the Lord","Everyday","Phoenix"]},
+    {name:"Childish Gambino", tracks:["Redbone","This Is America","3005","Sweatpants","Terrified"]},
+    {name:"Cardi B", tracks:["Bodak Yellow","I Like It","WAP","Money","Up"]},
+    {name:"Nicki Minaj", tracks:["Super Bass","Anaconda","Bang Bang","Starships","Pills N Potions"]},
+  ],
+  "Lo-Fi": [
+    {name:"Nujabes", tracks:["Feather","Aruarian Dance","F.I.L.O.","Reflection Eternal","Lady Brown"]},
+    {name:"J Dilla", tracks:["Donuts","Time: The Donut","Workinonit","So Far to Go","Welcome to Detroit"]},
+    {name:"Shing02", tracks:["Luv(sic)","411","Spiritual State","Latitude","Perfect Circle"]},
+    {name:"Uyama Hiroto", tracks:["A Son of the Sun","Life Time","Horizon","Freedom","Fly"]},
+    {name:"Idealism", tracks:["Take It Easy","Somewhere","Rain","Floating","Morning"]},
+    {name:"Philanthrope", tracks:["We Stay Together","Higher","Time Flies","Be Here","Motion"]},
+    {name:"Potsu", tracks:["i'm sorry","after rain","with you","take me back","forever"]},
+    {name:"Jinsang", tracks:["solitude","tender","u","life","adore"]},
+    {name:"Kupla", tracks:["Feelings","Nostalgia","Petrichor","Alone","Calm"]},
+    {name:"Oatmello", tracks:["love you","drifting","warmth","tender","relax"]},
+  ],
+  "Dancehall": [
+    {name:"Vybz Kartel", tracks:["Fever","Temperature","Clarks","Straight Jeans and Fitted","Wi Nuh Tek Friend"]},
+    {name:"Popcaan", tracks:["Everything Nice","Family","Body So Good","Only Man She Want","Ravin"]},
+    {name:"Alkaline", tracks:["Champion Boy","Build a Fence","Levels","Fight Back","DJ"]},
+    {name:"Skillibeng", tracks:["Whap Whap","Crocodile Teeth","Italian","Mr. Universe","Psycho"]},
+    {name:"Shenseea", tracks:["Run Run","Blessed","Lighter","Bad Alone","Trending"]},
+    {name:"Spice", tracks:["So Mi Like It","Sheet","Back Way","Conjugal Visit","Needle Eye"]},
+    {name:"Chronic Law", tracks:["Picture Perfect","Love Sick","Circle","Natural","Rise"]},
+    {name:"Masicka", tracks:["Greatest","Royalty","Bigger Than","High","Elevated"]},
+    {name:"Squash", tracks:["Trending","Six Boss","Leave it Alone","6ix World","Lean"]},
+    {name:"Jahshii", tracks:["Consumer","Trust the Universe","Prisoner","Born Warrior","Heaven"]},
+  ],
+  "Salsa": [
+    {name:"Marc Anthony", tracks:["Vivir Mi Vida","Valió la Pena","Flor Pálida","Y Hubo Alguien","Que Precio Tiene el Cielo"]},
+    {name:"Víctor Manuelle", tracks:["Un Siglo Sin Ti","Tengo Ganas","Sobreviviré","Necesito Verte","Que Manera de Amarte"]},
+    {name:"Gilberto Santa Rosa", tracks:["Que Manera de Quererte","Conciencia","Perdoname","Que Alguien Me Diga","Comparsa de la Vida"]},
+    {name:"Celia Cruz", tracks:["La Vida Es Un Carnaval","Quimbara","Bemba Colora","Guaracha","Toro Mata"]},
+    {name:"Willie Colón", tracks:["El Malo","Che Che Colé","Oh That's Nice","Te Conozco","Calle Luna Calle Sol"]},
+    {name:"Rubén Blades", tracks:["Pedro Navaja","Plástico","El Padre Antonio","Pablo Pueblo","Buscando América"]},
+    {name:"Oscar D'León", tracks:["Llorarás","Detalles","Medley","Juanita","La Salsa de Mi Vida"]},
+    {name:"Tito Nieves", tracks:["I'll Always Love You","Me Niego a Ser Tuyo","Como Es Posible","Voy a Sobrevivir","Te Quiero"]},
+    {name:"La India", tracks:["Ese Hombre","Mi Mayor Venganza","Dicen","Sedúceme","Vivir Lo Nuestro"]},
+    {name:"Frankie Ruiz", tracks:["La Cura","Quiero Llenarte","Mi Libertad","Imposible Amor","El Camionero"]},
+  ],
+  "Bachata": [
+    {name:"Romeo Santos", tracks:["Propuesta Indecente","Eres Mía","Odio","Yo También","Bella y Sensual"]},
+    {name:"Prince Royce", tracks:["Corazón Sin Cara","Stand by Me","Darte un Beso","Incondicional","Culpa al Corazón"]},
+    {name:"Aventura", tracks:["Obsesión","Por Un Segundo","El Malo","Tu Eres Mi Todo","Cuando Volveras"]},
+    {name:"Luis Fonsi", tracks:["Despacito","Nada Es Para Siempre","Sola","Llegaste Tú","No Me Doy Por Vencido"]},
+    {name:"Juan Luis Guerra", tracks:["Bachata en Fukuoka","Visa Para un Sueño","A Pedir su Mano","Burbujas de Amor","Ojalá Que Llueva Café"]},
+    {name:"Frank Reyes", tracks:["Principe de las Baches","Tu Eres Todo","Necesito un Amor","Por el Resto de mi Vida","Eres Mia"]},
+    {name:"Toby Love", tracks:["Llorar Lloviendo","Un Besito Más","Carmín","Poquito a Poco","Mi Todo Eres Tú"]},
+    {name:"Xtreme", tracks:["Te Extraño","Como yo Nadie Te Ha Amado","Tu Amor","Shorty","Shorty"]},
+    {name:"Grupo Extra", tracks:["Niña Bonita","Me Cambiaste","Enséñame","Fria","Que me des una razon"]},
+    {name:"Anthony Santos", tracks:["Voy pa'llá","Tu Mala Manera","Grítame","Me Duele la Cabeza","Que Se Muera"]},
+  ],
+  "EDM": [
+    {name:"Martin Garrix", tracks:["Animals","In the Name of Love","Scared to Be Lonely","Waiting for Tomorrow","High on Life"]},
+    {name:"Marshmello", tracks:["Alone","Happier","Silence","Friends","Wolves"]},
+    {name:"Calvin Harris", tracks:["This Is What You Came For","Summer","Feel So Close","Sweet Nothing","Acceptable in the 80s"]},
+    {name:"The Chainsmokers", tracks:["Closer","Something Just Like This","Don't Let Me Down","All We Know","Paris"]},
+    {name:"Kygo", tracks:["Firestone","Stay","Stole the Show","Happy Now","Remind Me to Forget"]},
+    {name:"Avicii", tracks:["Wake Me Up","Levels","Hey Brother","Addicted to You","Waiting for Love"]},
+    {name:"Zedd", tracks:["Clarity","The Middle","Beautiful Now","Stay the Night","Spectrum"]},
+    {name:"Illenium", tracks:["Crawl Outta Love","Good Things Fall Apart","Beautiful Creatures","Feel Good","Gorgeous"]},
+    {name:"Alesso", tracks:["Heroes","If I Lose Myself","Cool","Calling","Years"]},
+    {name:"Alan Walker", tracks:["Faded","Alone","The Spectre","Darkside","On My Way"]},
+  ],
+  "House": [
+    {name:"Fisher", tracks:["Losing It","You Little Beauty","Wanna Feel","Crowd Control","Stop It"]},
+    {name:"Chris Lake", tracks:["I Want You","Human","Operator","Turn Off the Lights","Chest"]},
+    {name:"John Summit", tracks:["La Danza","Shrooms","Where You Are","On My Way","Human"]},
+    {name:"Dom Dolla", tracks:["Take It","San Frandisco","Eat Your Man","Move","Miracle Maker"]},
+    {name:"Claptone", tracks:["The Music Got Me","No Eyes","Heartbeat","In the Night","Puppet Theatre"]},
+    {name:"Vintage Culture", tracks:["Numb","So Alive","Future","Deep Delight","Pra Não Dizer"]},
+    {name:"Meduza", tracks:["Piece of Your Heart","Lose Control","Phone","Tell It to My Heart","Bad Guy"]},
+    {name:"Disclosure", tracks:["Latch","You & Me","White Noise","When a Fire Starts to Burn","Help Me Lose My Mind"]},
+    {name:"Duke Dumont", tracks:["I Got U","Need U","Ocean Drive","Won't Look Back","Duality"]},
+    {name:"Tchami", tracks:["After Life","Adieu","Do You Feel","Promesses","Untrue"]},
+  ],
+  "Drill": [
+    {name:"Pop Smoke", tracks:["Welcome to the Party","Dior","For the Night","Hello","Mood Swings"]},
+    {name:"Kay Flock", tracks:["Being Honest","Shake It","Is You Ill","Shake","Brothers"]},
+    {name:"Fivio Foreign", tracks:["Big Drip","Wetty","Sniper Gang Presents Fivio Foreign","Pain Away","Demons & Angels"]},
+    {name:"Sleepy Hallow", tracks:["Deep End Freestyle","Holy Ghost","2055","Still Sleep","Tip Toe"]},
+    {name:"Sha Ek", tracks:["Foreign Thing","Pull Up N Slide","Spin Again","Trippin","Pressure"]},
+    {name:"Ice Spice", tracks:["Munch","In Ha Mood","Princess Diana","Bikini Bottom","Deli"]},
+    {name:"Lil TJay", tracks:["Pop Out","F.N.","Hold On","Brothers","20/20"]},
+    {name:"Youngboy Never Broke Again", tracks:["Valuable Pain","Lonely Child","Bandit","No Smoke","Through the Storm"]},
+    {name:"Central Cee", tracks:["Loading","Obsessed With You","Day in the Life","Retail Therapy","One Up"]},
+    {name:"Headie One", tracks:["Know Better","Siberia","Mainstream Sellout","Princess Cuts","Back to Basics"]},
+  ],
+  "Dembow": [
+    {name:"El Alfa", tracks:["Coronao Now","La Mamá de la Mamá","Muevete pa ca","Gogo Dance","Tiguere de Verdad"]},
+    {name:"Rochy RD", tracks:["Ela Ela","Cayó La Noche","La Llevo","Descontrolao","Pata"]},
+    {name:"Chimbala", tracks:["Loco","Me Tiene","Tembleque","Pam","Yo Soy"]},
+    {name:"Mark B", tracks:["Pa' Encima","No Quiere Novio","La Mia","Ven Pa Ca","Dime"]},
+    {name:"Bulova", tracks:["Maquiavélico","Mentiroso","Cama Grande","Bruta","Independiente"]},
+    {name:"Shadow Blow", tracks:["La Calle","El Hombre","Monstruo","Fuego","Rompiendo"]},
+    {name:"Ceky Viciny", tracks:["La Melaza","Yo Soy El Que Soy","La Formula","Sin Miedo","Pa Ti"]},
+    {name:"Mozart La Para", tracks:["Que Se Muera","Sube El Volumen","El Dentista","Suelta La Pose","Queso"]},
+    {name:"Bulin 47", tracks:["La Culpable","Pal Party","Tu No Sei","Sanguinaria","La Formula"]},
+    {name:"Químico Ultra Mega", tracks:["Caution","Explosivo","Mi Ritmo","Guerrero","Tumbando el Club"]},
+  ],
+};
+
+// Jeff Mkeyz tracks per genre
+const MKEYZ_TRACKS = {
+  "Pop Latino": [{title:"No Me Creo",bpm:95},{title:"Una Luz",bpm:88},{title:"Que Será",bpm:92}],
+  "Trap":       [{title:"Dark Session",bpm:140},{title:"Night Mode",bpm:145},{title:"808 Vision",bpm:138}],
+  "Reggaeton":  [{title:"Perreo Suave",bpm:98},{title:"La Noche",bpm:96},{title:"Fuego",bpm:100}],
+  "Afrobeats":  [{title:"Lagos Nights",bpm:105},{title:"Afro Soul",bpm:102},{title:"Groove"}],
+  "R&B":        [{title:"Velvet",bpm:80},{title:"Soft Landing",bpm:78},{title:"Golden Hour",bpm:85}],
+  "Hip-Hop":    [{title:"Real Talk",bpm:90},{title:"Street Gospel",bpm:88},{title:"Level Up",bpm:92}],
+  "Lo-Fi":      [{title:"Late Night Coffee",bpm:75},{title:"Rain Session",bpm:72},{title:"Study Mode",bpm:78}],
+  "Dancehall":  [{title:"Island Vibes",bpm:100},{title:"Caribbean Heat",bpm:98}],
+  "Drill":      [{title:"Cold World",bpm:142},{title:"Street Chronicles",bpm:140}],
+  "Dembow":     [{title:"Tiguere Beat",bpm:120},{title:"Caribe Flow",bpm:118},{title:"Movimiento",bpm:122}],
+  "Salsa":      [{title:"Sabor Latino",bpm:185}],
+  "Bachata":    [{title:"Corazón Roto",bpm:130}],
+  "EDM":        [{title:"Electric Dreams",bpm:128},{title:"Festival Mode",bpm:132}],
+  "House":      [{title:"Deep Groove",bpm:124},{title:"Club Sessions",bpm:126}],
+};
+
+const PLAYLIST_NAMES = {
+  "Energético":     ["Full Power 🔋","No Pare 🚀","Máxima Energía ⚡","Ultra Boost 💥"],
+  "Relajado":       ["Chill Mode 😌","Smooth Vibes 🌊","Take It Easy ☁️","Zero Stress 🧘"],
+  "Romántico":      ["Love Playlist 💕","Corazón Abierto ❤️","Noche de Amor 🌹","Piel con Piel 🔥"],
+  "Melancólico":    ["Feelings 😔","Lluvia de Pensamientos 🌧️","Soul Session 💙","Deep Thoughts 🌙"],
+  "Motivacional":   ["Beast Mode 💪","On Top 👑","Champions Playlist 🏆","Rise & Grind 🌅"],
+  "Oscuro":         ["Dark Side 🌑","Midnight Sessions 🌃","Shadow Mode 🖤","No Light 🕷️"],
+  "Alegre":         ["Good Vibes ✨","Happy Hour 🎉","Smile Playlist 😊","Sunshine ☀️"],
+  "Fiesta":         ["Party Mode 🎊","Fuego en la Pista 🔥","Club Bangers 🎵","100% Fiesta 🥳"],
+  "Concentración":  ["Focus Zone 🎯","Deep Work 💻","Flow State 🧠","Study Session 📚"],
+  "Workout":        ["Gym Playlist 🏋️","Run Mode 🏃","No Days Off 💦","Training Day 🥊"],
+};
+
+let selectedGenre = "";
+let selectedMood  = "";
+let selectedCtx   = "";
+let playlistLen   = 10;
+let includeMkeyz  = true;
+
+// Build chips
+function buildChips(containerId, items, colorFn, onSelect) {
+  const el = document.getElementById(containerId);
+  items.forEach((item, idx) => {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.textContent = item;
+    const color = colorFn(item, idx);
+    chip.style.borderColor = color + "55";
+    chip.style.color = color;
+    chip.onclick = () => {
+      el.querySelectorAll(".chip").forEach(c => {
+        c.classList.remove("selected");
+        const cc = colorFn(c.textContent, items.indexOf(c.textContent));
+        c.style.background  = "";
+        c.style.fontWeight  = "600";
+        c.style.transform   = "scale(1)";
+      });
+      chip.classList.add("selected");
+      chip.style.background  = color + "33";
+      chip.style.borderColor = color;
+      chip.style.transform   = "scale(1.05)";
+      chip.style.boxShadow   = `0 0 12px ${color}44`;
+      onSelect(item);
+      if (tg) tg.HapticFeedback?.impactOccurred("light");
+    };
+    el.appendChild(chip);
+  });
+}
+
+// Build genre circles
+const genreEl = document.getElementById("genre-chips");
+const GENRE_EMOJIS = {
+  "Pop Latino":"🌴","Trap":"🔥","Reggaeton":"💃","Afrobeats":"🌍",
+  "R&B":"💜","Hip-Hop":"🎤","Lo-Fi":"☁️","Dancehall":"🏝️",
+  "Drill":"🖤","Salsa":"🎺","Bachata":"❤️","EDM":"⚡",
+  "House":"🏠","Dembow":"🇩🇴"
+};
+GENRES.forEach(g => {
+  const color = GENRE_COLORS[g] || "#f5c518";
+  const circle = document.createElement("div");
+  circle.className = "genre-circle";
+  circle.innerHTML = `<div class="g-emoji">${GENRE_EMOJIS[g]||"🎵"}</div><div class="g-name">${g}</div>`;
+  circle.style.background = color + "18";
+  circle.style.borderColor = color + "44";
+  circle.onclick = () => {
+    genreEl.querySelectorAll(".genre-circle").forEach(c => {
+      c.classList.remove("selected","ripple-anim");
+      c.style.background  = GENRE_COLORS[c.dataset.genre]+"18" || "#1a1a1a";
+      c.style.borderColor = GENRE_COLORS[c.dataset.genre]+"44" || "#2a2a2a";
+      c.style.boxShadow   = "none";
+      c.querySelector(".g-name").style.color = "#666";
+    });
+    circle.classList.add("selected");
+    void circle.offsetWidth;
+    circle.classList.add("ripple-anim");
+    circle.style.background  = color + "44";
+    circle.style.borderColor = color;
+    circle.style.boxShadow   = `0 0 20px ${color}66`;
+    circle.querySelector(".g-name").style.color = color;
+    selectedGenre = g;
+    if (window.Telegram?.WebApp) window.Telegram.WebApp.HapticFeedback?.impactOccurred("medium");
+    setTimeout(() => circle.classList.remove("ripple-anim"), 700);
+  };
+  circle.dataset.genre = g;
+  genreEl.appendChild(circle);
+});
+
+const MOOD_COLORS = {
+  "Energético":"#ff4d4d","Relajado":"#4fc3f7","Romántico":"#e91e63",
+  "Melancólico":"#7c4dff","Motivacional":"#ff9800","Oscuro":"#607d8b",
+  "Alegre":"#f5c518","Fiesta":"#ff6d00","Concentración":"#00e676","Workout":"#ff1744"
+};
+buildChips("mood-chips", MOODS,
+  m => MOOD_COLORS[m] || "#00e676",
+  m => selectedMood = m);
+
+const CTX_COLORS = ["#ff6b35","#4fc3f7","#ff4d4d","#9c27b0","#00e676","#607d8b","#f5c518","#ff9800","#00bcd4","#ffeb3b"];
+buildChips("ctx-chips", CTXS,
+  (c,i) => CTX_COLORS[CTXS.indexOf(c)] || "#4fc3f7",
+  c => selectedCtx = c);
+
+function setLen(n, btn) {
+  document.querySelectorAll(".len-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  playlistLen = n;
+}
+
+function toggleMkeyz(btn) {
+  includeMkeyz = !includeMkeyz;
+  btn.style.background = includeMkeyz ? "var(--gold)" : "var(--border)";
+  btn.querySelector("span").style.left = includeMkeyz ? "21px" : "3px";
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function randDur() {
+  const m = 2 + Math.floor(Math.random() * 3);
+  const s = Math.floor(Math.random() * 60);
+  return `${m}:${String(s).padStart(2,"0")}`;
+}
+
+function generatePlaylist() {
+  if (!selectedGenre) { showToast("Elige un género primero"); return; }
+  if (!selectedMood)  { showToast("Elige un mood"); return; }
+
+  document.getElementById("result").innerHTML = `
+    <div class="spinner-wrap">
+      <div class="spinner"></div>
+      <div class="spinner-text">Generando tu playlist...</div>
+    </div>`;
+
+  setTimeout(() => buildPlaylist(), 800);
+}
+
+function buildPlaylist() {
+  const artists   = shuffle(ARTISTS[selectedGenre] || ARTISTS["Hip-Hop"]);
+  const mkeyzT    = MKEYZ_TRACKS[selectedGenre] || MKEYZ_TRACKS["Trap"];
+  const color     = GENRE_COLORS[selectedGenre] || "#f5c518";
+  const namePool  = PLAYLIST_NAMES[selectedMood] || ["Mi Playlist 🎵"];
+  const plName    = namePool[Math.floor(Math.random() * namePool.length)];
+
+  let tracks = [];
+
+  // If include Mkeyz, add 2-3 tracks at strategic positions
+  let mkeyzPositions = [];
+  if (includeMkeyz && mkeyzT.length > 0) {
+    const mkeyzCount = Math.min(mkeyzT.length, 3);
+    for (let i = 0; i < mkeyzCount; i++) {
+      mkeyzPositions.push(Math.floor(Math.random() * playlistLen));
+    }
+  }
+
+  // Build track list
+  let artistIdx = 0;
+  let trackIdx  = 0;
+
+  for (let i = 0; i < playlistLen; i++) {
+    if (mkeyzPositions.includes(i) && mkeyzT.length > 0) {
+      const mk = mkeyzT[Math.floor(Math.random() * mkeyzT.length)];
+      tracks.push({
+        name: mk.title,
+        artist: "Jeff Mkeyz",
+        duration: randDur(),
+        isMkeyz: true,
+        genre: selectedGenre,
+      });
+    } else {
+      const artist = artists[artistIdx % artists.length];
+      const track  = artist.tracks[trackIdx % artist.tracks.length];
+      tracks.push({
+        name: track,
+        artist: artist.name,
+        duration: randDur(),
+        isMkeyz: false,
+        genre: selectedGenre,
+      });
+      trackIdx++;
+      if (trackIdx % artist.tracks.length === 0) artistIdx++;
+    }
+  }
+
+  const totalMin = tracks.reduce((s, t) => {
+    const [m, sec] = t.duration.split(":").map(Number);
+    return s + m * 60 + sec;
+  }, 0);
+  const totalStr = `${Math.floor(totalMin/60)}h ${Math.floor(totalMin%60)}m`;
+
+  renderPlaylist(plName, tracks, color, totalStr);
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+}
+
+function renderPlaylist(name, tracks, color, totalDur) {
+  const ctx = selectedCtx || "General";
+  const html = `
+    <div class="playlist-card">
+      <div class="playlist-header">
+        <div class="playlist-name">${name}</div>
+        <div class="playlist-meta">${tracks.length} canciones · ${totalDur} · ${selectedGenre}</div>
+        <div class="playlist-tags">
+          <span class="playlist-tag">${selectedGenre}</span>
+          <span class="playlist-tag">${selectedMood}</span>
+          ${ctx ? `<span class="playlist-tag">${ctx}</span>` : ""}
+          ${includeMkeyz ? '<span class="playlist-tag" style="background:#1a1500;color:#f5c518;border-color:#f5c51844">🎛️ Jeff Mkeyz</span>' : ""}
+        </div>
+      </div>
+
+      <div class="track-list">
+        ${tracks.map((t, i) => `
+          <div class="track-item ${t.isMkeyz ? "is-mkeyz" : ""}">
+            <div class="track-num">${i+1}</div>
+            <div class="track-info">
+              <div class="track-name">
+                ${t.name}
+                ${t.isMkeyz ? '<span class="mkeyz-badge">Jeff Mkeyz</span>' : ""}
+              </div>
+              <div class="track-artist">${t.artist}</div>
+            </div>
+            <div class="track-duration">${t.duration}</div>
+          </div>`).join("")}
+      </div>
+
+      <div class="action-row">
+        <button class="action-btn btn-copy-pl" onclick="copyPlaylist(${JSON.stringify(tracks).replace(/"/g,'&quot;')}, '${name}')">📋 Copiar lista</button>
+        <button class="action-btn btn-shuffle" onclick="shuffleTracks()">🔀 Mezclar</button>
+      </div>
+      <button class="btn-new" onclick="generatePlaylist()">🔄 Regenerar playlist</button>
+    </div>`;
+
+  document.getElementById("result").innerHTML = html;
+  document.getElementById("result").scrollIntoView({ behavior:"smooth" });
+}
+
+function shuffleTracks() {
+  generatePlaylist();
+}
+
+function copyPlaylist(tracks, name) {
+  const text = `🎵 ${name}\n\n` + tracks.map((t,i) => `${i+1}. ${t.name} — ${t.artist}`).join("\n") + `\n\n🤖 Mkeyz Studio Bot\nt.me/MkeyzDAWbot`;
+  navigator.clipboard?.writeText(text).then(() => showToast("✅ Playlist copiada"));
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+</script>
+</body>
+</html>
