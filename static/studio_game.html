@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mkeyz Studio — The Game</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Orbitron:wght@700;900&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+
+:root {
+  --bg:      #07080d;
+  --panel:   #0d0f1a;
+  --card:    #111420;
+  --border:  #1c1f30;
+  --gold:    #f5c518;
+  --gold2:   #ff9f1c;
+  --green:   #00e676;
+  --blue:    #4fc3f7;
+  --purple:  #9c27b0;
+  --fire:    #ff4d4d;
+  --text:    #e8eaf6;
+  --muted:   #4a4f6a;
+  --xp-bar:  #1c1f30;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: linear-gradient(180deg, #0d0f1a 0%, rgba(13,15,26,0) 100%);
+  padding: 12px 16px 16px;
+  position: sticky; top: 0; z-index: 50;
+  border-bottom: 1px solid var(--border);
+}
+.hdr-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.game-title { font-family:'Orbitron',monospace; font-size:14px; font-weight:900; color:var(--gold); letter-spacing:2px; }
+.coins-display {
+  display:flex; align-items:center; gap:6px;
+  background:var(--card); border:1px solid var(--gold)33;
+  border-radius:100px; padding:6px 14px;
+}
+.coins-icon { font-size:16px; }
+.coins-val { font-family:'Orbitron',monospace; font-size:14px; font-weight:700; color:var(--gold); }
+
+/* XP Bar */
+.xp-row { display:flex; align-items:center; gap:8px; }
+.level-badge {
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#000; font-family:'Orbitron',monospace; font-size:11px; font-weight:900;
+  padding:4px 10px; border-radius:8px; flex-shrink:0;
+}
+.xp-wrap { flex:1; background:var(--xp-bar); border-radius:100px; height:6px; overflow:hidden; }
+.xp-fill { height:100%; border-radius:100px; background:linear-gradient(90deg,var(--gold),var(--gold2)); transition:width 0.5s ease; }
+.xp-text { font-size:10px; color:var(--muted); flex-shrink:0; font-family:'Orbitron',monospace; }
+
+/* ── STUDIO ROOM ── */
+.studio-room {
+  background: linear-gradient(180deg, #0a0c15 0%, #07080d 100%);
+  margin: 0 16px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  min-height: 180px;
+}
+.studio-room::before {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(245,197,24,0.06) 0%, transparent 60%);
+}
+
+.studio-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  position: relative; z-index:1;
+}
+
+.studio-item {
+  aspect-ratio: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-size: 28px; gap: 4px;
+  position: relative; overflow: hidden;
+  transition: all 0.2s;
+}
+.studio-item.owned {
+  border-color: var(--gold)44;
+  background: linear-gradient(135deg, #1a1500, #0d0f1a);
+  animation: studioGlow 3s ease-in-out infinite alternate;
+}
+@keyframes studioGlow {
+  from { box-shadow: 0 0 8px rgba(245,197,24,0.1); }
+  to   { box-shadow: 0 0 20px rgba(245,197,24,0.25); }
+}
+.studio-item.locked {
+  opacity: 0.3; filter: grayscale(1);
+}
+.studio-item .item-label {
+  font-size: 9px; color: var(--muted); font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+.studio-item.owned .item-label { color: var(--gold); }
+.studio-item .item-rate {
+  position: absolute; top: 4px; right: 6px;
+  font-size: 8px; color: var(--green); font-family:'Orbitron',monospace; font-weight:700;
+}
+.studio-item .item-lvl {
+  position: absolute; bottom: 4px; left: 6px;
+  font-size: 8px; color: var(--muted); font-family:'Orbitron',monospace;
+}
+
+/* Coin float animation */
+.coin-float {
+  position: fixed; pointer-events:none; z-index:999;
+  font-family:'Orbitron',monospace; font-size:14px; font-weight:700; color:var(--gold);
+  animation: floatUp 1.2s ease-out forwards;
+}
+@keyframes floatUp {
+  0%   { opacity:1; transform:translateY(0) scale(1); }
+  100% { opacity:0; transform:translateY(-80px) scale(0.8); }
+}
+
+/* ── COLLECT BUTTON ── */
+.collect-wrap { padding: 0 16px 16px; }
+.collect-btn {
+  width:100%; padding:18px; border:none; border-radius:18px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  font-family:'Orbitron',monospace; font-size:16px; font-weight:900;
+  color:#000; cursor:pointer; position:relative; overflow:hidden;
+  transition:all 0.15s; letter-spacing:1px;
+}
+.collect-btn:active { transform:scale(0.97); }
+.collect-btn.empty { background:var(--card); color:var(--muted); border:1px solid var(--border); }
+.pending-display {
+  font-size:12px; text-align:center; margin-bottom:8px;
+  color:var(--muted); font-family:'Orbitron',monospace;
+}
+.pending-display span { color:var(--gold); font-weight:700; }
+
+/* ── STREAK BANNER ── */
+.streak-banner {
+  margin: 0 16px 16px;
+  background:linear-gradient(135deg,#1a0a00,#1a1500);
+  border:1px solid var(--gold)44; border-radius:16px; padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+}
+.streak-fire { font-size:28px; }
+.streak-info { flex:1; }
+.streak-title { font-size:14px; font-weight:700; color:var(--gold); }
+.streak-sub   { font-size:11px; color:var(--muted); margin-top:2px; }
+.streak-claim-btn {
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  border:none; border-radius:10px; padding:8px 16px;
+  font-family:'Orbitron',monospace; font-size:11px; font-weight:700;
+  color:#000; cursor:pointer; flex-shrink:0; transition:all 0.15s;
+}
+.streak-claim-btn:active { transform:scale(0.95); }
+.streak-claim-btn.claimed { background:var(--border); color:var(--muted); cursor:default; }
+
+/* ── TABS ── */
+.tabs { display:flex; padding:0 16px; gap:6px; margin-bottom:16px; }
+.tab {
+  flex:1; padding:10px; border-radius:12px; border:1px solid var(--border);
+  background:var(--card); color:var(--muted); font-size:12px; font-weight:700;
+  cursor:pointer; transition:all 0.2s; text-align:center; font-family:'Rajdhani',sans-serif;
+}
+.tab.active { background:#1a1500; color:var(--gold); border-color:var(--gold)55; }
+
+/* ── SHOP ── */
+.shop-list { padding:0 16px; }
+.shop-item {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:18px; padding:16px; margin-bottom:12px;
+  display:flex; align-items:center; gap:14px;
+  transition:all 0.2s;
+}
+.shop-item.affordable { border-color:var(--gold)33; }
+.shop-item.maxed { opacity:0.5; }
+.shop-emoji { font-size:36px; flex-shrink:0; }
+.shop-info { flex:1; min-width:0; }
+.shop-name { font-size:16px; font-weight:700; margin-bottom:2px; }
+.shop-desc { font-size:11px; color:var(--muted); margin-bottom:6px; }
+.shop-stats { display:flex; gap:10px; }
+.shop-stat { font-size:11px; }
+.shop-stat .val { color:var(--green); font-family:'Orbitron',monospace; font-weight:700; }
+.shop-stat .lbl { color:var(--muted); }
+.shop-buy {
+  flex-shrink:0; padding:10px 16px; border:none; border-radius:12px;
+  font-family:'Orbitron',monospace; font-size:12px; font-weight:700;
+  cursor:pointer; transition:all 0.15s; text-align:center; min-width:80px;
+}
+.shop-buy.can-buy { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#000; }
+.shop-buy.cant-buy { background:var(--border); color:var(--muted); cursor:not-allowed; }
+.shop-buy.upgrade { background:linear-gradient(135deg,#00695c,var(--green)); color:#000; }
+.shop-buy.maxed-btn { background:var(--purple)33; color:var(--purple); cursor:default; }
+.shop-buy:active:not(.cant-buy):not(.maxed-btn) { transform:scale(0.95); }
+.owned-badge { font-size:10px; color:var(--gold); font-family:'Orbitron',monospace; margin-top:4px; }
+.level-dots { display:flex; gap:3px; margin-top:6px; }
+.level-dot { width:8px; height:8px; border-radius:50%; background:var(--border); }
+.level-dot.filled { background:var(--gold); }
+
+/* ── STATS TAB ── */
+.stats-section { padding:0 16px; }
+.stat-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 0; border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+.stat-row:last-child { border-bottom:none; }
+.stat-row .s-label { color:var(--muted); }
+.stat-row .s-val   { font-family:'Orbitron',monospace; font-weight:700; color:var(--gold); }
+
+.milestone-list { padding:0 16px; margin-top:8px; }
+.milestone-item {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:14px; margin-bottom:10px;
+  display:flex; align-items:center; gap:12px;
+}
+.milestone-item.reached { border-color:var(--gold)44; background:#1a1500; }
+.ms-icon { font-size:24px; }
+.ms-info { flex:1; }
+.ms-name { font-size:14px; font-weight:700; }
+.ms-req  { font-size:11px; color:var(--muted); margin-top:2px; }
+.ms-bar-wrap { background:var(--border); border-radius:100px; height:4px; margin-top:6px; }
+.ms-bar      { height:100%; border-radius:100px; background:var(--gold); transition:width 0.5s; }
+
+/* ── UNLOCK POPUP ── */
+.popup-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.85);
+  z-index:200; display:none; align-items:center; justify-content:center; padding:24px;
+}
+.popup-overlay.show { display:flex; }
+.popup-box {
+  background:var(--panel); border:1px solid var(--gold)66;
+  border-radius:24px; padding:32px 24px; text-align:center; width:100%; max-width:320px;
+  animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn {
+  from { transform:scale(0.7); opacity:0; }
+  to   { transform:scale(1); opacity:1; }
+}
+.popup-emoji { font-size:64px; margin-bottom:12px; }
+.popup-title { font-family:'Orbitron',monospace; font-size:20px; font-weight:900; color:var(--gold); margin-bottom:8px; }
+.popup-desc  { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:20px; }
+.popup-btn {
+  width:100%; padding:16px; border:none; border-radius:14px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  font-family:'Orbitron',monospace; font-size:15px; font-weight:700;
+  color:#000; cursor:pointer;
+}
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:#fff; color:#000; padding:12px 20px; border-radius:100px;
+  font-size:14px; font-weight:700; z-index:999;
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  font-family:'Rajdhani',sans-serif;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ── SECTION TITLE ── */
+.section-title {
+  font-family:'Orbitron',monospace; font-size:10px; font-weight:700;
+  color:var(--muted); letter-spacing:2px; text-transform:uppercase;
+  padding:0 16px; margin-bottom:10px;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="game-title">🎛️ MKEYZ STUDIO</div>
+    <div class="coins-display">
+      <span class="coins-icon">🪙</span>
+      <span class="coins-val" id="coins-display">0</span>
+    </div>
+  </div>
+  <div class="xp-row">
+    <div class="level-badge" id="level-badge">LVL 1</div>
+    <div class="xp-wrap"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-text" id="xp-text">0/100</div>
+  </div>
+</div>
+
+<!-- STUDIO ROOM -->
+<div class="studio-room">
+  <div class="studio-grid" id="studio-grid"></div>
+</div>
+
+<!-- PENDING COLLECT -->
+<div class="collect-wrap">
+  <div class="pending-display" id="pending-display">Generando <span id="pending-val">0</span> 🪙 / hora</div>
+  <button class="collect-btn empty" id="collect-btn" onclick="collectCoins()">RECOGER COINS</button>
+</div>
+
+<!-- STREAK -->
+<div class="streak-banner" id="streak-banner">
+  <div class="streak-fire" id="streak-fire">🔥</div>
+  <div class="streak-info">
+    <div class="streak-title" id="streak-title">Racha diaria</div>
+    <div class="streak-sub" id="streak-sub">Entra cada día para multiplicar tus ganancias</div>
+  </div>
+  <button class="streak-claim-btn" id="streak-btn" onclick="claimStreak()">CLAIM</button>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('shop',this)">🛒 Tienda</div>
+  <div class="tab" onclick="showTab('stats',this)">📊 Stats</div>
+  <div class="tab" onclick="showTab('milestones',this)">🏆 Logros</div>
+</div>
+
+<!-- SHOP TAB -->
+<div id="tab-shop">
+  <div class="section-title">Equipa tu estudio</div>
+  <div class="shop-list" id="shop-list"></div>
+</div>
+
+<!-- STATS TAB -->
+<div id="tab-stats" style="display:none">
+  <div class="stats-section">
+    <div class="stat-row"><span class="s-label">🪙 Total ganado</span><span class="s-val" id="st-total">0</span></div>
+    <div class="stat-row"><span class="s-label">⚡ Coins/hora</span><span class="s-val" id="st-rate">0</span></div>
+    <div class="stat-row"><span class="s-label">🔥 Racha actual</span><span class="s-val" id="st-streak">0 días</span></div>
+    <div class="stat-row"><span class="s-label">🏆 Mejor racha</span><span class="s-val" id="st-best">0 días</span></div>
+    <div class="stat-row"><span class="s-label">🎚️ Equipos comprados</span><span class="s-val" id="st-equip">0</span></div>
+    <div class="stat-row"><span class="s-label">📅 Días jugando</span><span class="s-val" id="st-days">0</span></div>
+    <div class="stat-row"><span class="s-label">⏱️ Tiempo en juego</span><span class="s-val" id="st-time">0h</span></div>
+  </div>
+</div>
+
+<!-- MILESTONES TAB -->
+<div id="tab-milestones" style="display:none">
+  <div class="section-title">Logros</div>
+  <div class="milestone-list" id="milestone-list"></div>
+</div>
+
+<!-- UNLOCK POPUP -->
+<div class="popup-overlay" id="popup" onclick="closePopup()">
+  <div class="popup-box" onclick="event.stopPropagation()">
+    <div class="popup-emoji" id="pop-emoji">🎉</div>
+    <div class="popup-title" id="pop-title">¡DESBLOQUEADO!</div>
+    <div class="popup-desc" id="pop-desc"></div>
+    <button class="popup-btn" onclick="closePopup()">¡GENIAL!</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#07080d"); tg.setBackgroundColor("#07080d"); }
+
+// ══════════════════════════════════════════════════════════
+//  GAME DATA
+// ══════════════════════════════════════════════════════════
+
+const EQUIPMENT = [
+  { id:"laptop",    emoji:"💻", name:"Laptop",          desc:"Tu primer setup. Básico pero funcional.", coinsPerHour:5,   cost:0,    maxLevel:5, xpGain:10, unlockLevel:1  },
+  { id:"headphones",emoji:"🎧", name:"Auriculares",     desc:"Escucha cada detalle del mix.",           coinsPerHour:12,  cost:50,   maxLevel:5, xpGain:15, unlockLevel:1  },
+  { id:"mic",       emoji:"🎙️", name:"Micrófono",       desc:"Para grabar voces y samples.",            coinsPerHour:20,  cost:150,  maxLevel:5, xpGain:20, unlockLevel:2  },
+  { id:"keyboard",  emoji:"🎹", name:"Teclado MIDI",    desc:"Componer melodías como un pro.",          coinsPerHour:35,  cost:300,  maxLevel:5, xpGain:25, unlockLevel:3  },
+  { id:"drums",     emoji:"🥁", name:"Drum Machine",    desc:"Ritmos perfectos sin esfuerzo.",          coinsPerHour:55,  cost:600,  maxLevel:5, xpGain:30, unlockLevel:5  },
+  { id:"bass",      emoji:"🎸", name:"Bajo Eléctrico",  desc:"Las frecuencias bajas que mueven.",       coinsPerHour:80,  cost:1000, maxLevel:5, xpGain:35, unlockLevel:7  },
+  { id:"monitors",  emoji:"🔊", name:"Monitores",       desc:"Mezcla con precisión quirúrgica.",        coinsPerHour:120, cost:1800, maxLevel:5, xpGain:40, unlockLevel:10 },
+  { id:"synth",     emoji:"🎛️", name:"Sintetizador",    desc:"Sonidos únicos que no existen en otro lugar.", coinsPerHour:180, cost:3000, maxLevel:5, xpGain:50, unlockLevel:12 },
+  { id:"audio_int", emoji:"🎚️", name:"Audio Interface", desc:"Calidad de sonido profesional.",          coinsPerHour:260, cost:5000, maxLevel:5, xpGain:60, unlockLevel:15 },
+  { id:"console",   emoji:"🖥️", name:"Consola de Mezcla",desc:"El corazón de cualquier estudio serio.", coinsPerHour:380, cost:8000, maxLevel:5, xpGain:75, unlockLevel:20 },
+  { id:"sampler",   emoji:"🎵", name:"Sampler",         desc:"Convierte cualquier sonido en música.",   coinsPerHour:550, cost:12000,maxLevel:5, xpGain:90, unlockLevel:25 },
+  { id:"vocoder",   emoji:"🤖", name:"Vocoder",         desc:"Efectos de voz futuristas.",              coinsPerHour:750, cost:18000,maxLevel:5, xpGain:100,unlockLevel:30 },
+  { id:"mpc",       emoji:"🟫", name:"MPC",             desc:"El instrumento de los productores legendarios.", coinsPerHour:1000,cost:25000,maxLevel:5,xpGain:120,unlockLevel:40 },
+  { id:"fl_studio", emoji:"🌈", name:"FL Studio Pro",   desc:"El DAW definitivo. Nivel máximo.",        coinsPerHour:1500,cost:40000,maxLevel:5, xpGain:150,unlockLevel:50 },
+  { id:"studio_room",emoji:"🏠",name:"Sala de Mezcla",  desc:"Tu propio espacio profesional.",          coinsPerHour:2500,cost:75000,maxLevel:3, xpGain:200,unlockLevel:60 },
+  { id:"label",     emoji:"🏷️", name:"Sello Discográfico",desc:"Lanza artistas y multiplica todo.",   coinsPerHour:5000,cost:150000,maxLevel:3,xpGain:300,unlockLevel:80 },
+];
+
+const MILESTONES = [
+  { id:"first_buy",   icon:"🛒", name:"Primera Compra",    desc:"Compra tu primer equipo",           req:v=>v.totalPurchases>=1 },
+  { id:"coins_1k",    icon:"🪙", name:"Millonario Inicial", desc:"Acumula 1,000 MKEYZ",              req:v=>v.totalEarned>=1000 },
+  { id:"coins_10k",   icon:"💰", name:"Productor Serio",    desc:"Acumula 10,000 MKEYZ",             req:v=>v.totalEarned>=10000 },
+  { id:"coins_100k",  icon:"💎", name:"Mogul Musical",      desc:"Acumula 100,000 MKEYZ",            req:v=>v.totalEarned>=100000 },
+  { id:"streak_3",    icon:"🔥", name:"En Racha",           desc:"3 días consecutivos",              req:v=>v.bestStreak>=3 },
+  { id:"streak_7",    icon:"⚡", name:"Semana Completa",    desc:"7 días consecutivos",              req:v=>v.bestStreak>=7 },
+  { id:"streak_30",   icon:"👑", name:"Dedicación Total",   desc:"30 días consecutivos",             req:v=>v.bestStreak>=30 },
+  { id:"lvl_10",      icon:"🚀", name:"Nivel 10",           desc:"Llega al nivel 10",                req:v=>v.level>=10 },
+  { id:"lvl_25",      icon:"⭐", name:"Nivel 25",           desc:"Llega al nivel 25",                req:v=>v.level>=25 },
+  { id:"lvl_50",      icon:"🏆", name:"Nivel 50",           desc:"Llega al nivel 50 — Leyenda",      req:v=>v.level>=50 },
+  { id:"all_basic",   icon:"🎛️", name:"Setup Completo",     desc:"Compra los primeros 5 equipos",    req:v=>Object.keys(v.owned).length>=5 },
+  { id:"rate_1000",   icon:"📈", name:"Fábrica de Coins",   desc:"Genera 1000 MKEYZ/hora",           req:v=>v.coinsPerHour>=1000 },
+];
+
+// XP needed per level
+function xpForLevel(l) { return Math.floor(100 * Math.pow(1.15, l - 1)); }
+
+// ══════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════
+
+const SAVE_KEY = "mkeyz_game_v1";
+
+function defaultState() {
+  return {
+    coins: 0,
+    totalEarned: 0,
+    xp: 0,
+    level: 1,
+    owned: { laptop: 1 },   // laptop starts owned
+    lastCollect: Date.now(),
+    lastLogin: null,
+    streak: 0,
+    bestStreak: 0,
+    streakClaimedToday: false,
+    totalPurchases: 0,
+    daysPlayed: 0,
+    sessionStart: Date.now(),
+    milestones: {},
+    coinsPerHour: 0,
+  };
+}
+
+let S = defaultState();
+
+async function loadState() {
+  try {
+    const r = await window.storage.get(SAVE_KEY);
+    if (r && r.value) S = { ...defaultState(), ...JSON.parse(r.value) };
+  } catch(e) {}
+  // Recalc coinsPerHour
+  S.coinsPerHour = calcRate();
+  checkDailyLogin();
+  render();
+  startTick();
+}
+
+async function saveState() {
+  try { await window.storage.set(SAVE_KEY, JSON.stringify(S)); } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════
+//  GAME LOGIC
+// ══════════════════════════════════════════════════════════
+
+function calcRate() {
+  return EQUIPMENT.reduce((sum, eq) => {
+    const lvl = S.owned[eq.id] || 0;
+    if (!lvl) return sum;
+    const mult = 1 + (lvl - 1) * 0.5; // each level = +50% production
+    return sum + eq.coinsPerHour * mult;
+  }, 0);
+}
+
+function getPendingCoins() {
+  const hrs = (Date.now() - S.lastCollect) / 3600000;
+  const maxHrs = 8; // max 8h offline
+  return Math.floor(calcRate() * Math.min(hrs, maxHrs));
+}
+
+function collectCoins() {
+  const pending = getPendingCoins();
+  if (pending <= 0) { showToast("Nada que recoger todavía"); return; }
+  S.coins       += pending;
+  S.totalEarned += pending;
+  S.lastCollect  = Date.now();
+  addXP(Math.floor(pending / 10));
+  floatCoins(pending);
+  saveState();
+  render();
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+  checkMilestones();
+}
+
+function buyEquipment(id) {
+  const eq  = EQUIPMENT.find(e => e.id === id);
+  if (!eq) return;
+  const lvl = S.owned[id] || 0;
+
+  if (lvl >= eq.maxLevel) { showToast("¡Nivel máximo!"); return; }
+  if (S.level < eq.unlockLevel) { showToast(`Requiere nivel ${eq.unlockLevel}`); return; }
+
+  const cost = getUpgradeCost(eq, lvl);
+  if (S.coins < cost) { showToast("No tienes suficientes coins 🪙"); return; }
+
+  S.coins -= cost;
+  S.owned[id] = lvl + 1;
+  S.totalPurchases++;
+  S.coinsPerHour = calcRate();
+  addXP(eq.xpGain);
+  saveState();
+  render();
+  if (tg) tg.HapticFeedback?.impactOccurred("medium");
+
+  if (lvl === 0) {
+    showPopup(eq.emoji, `¡${eq.name} comprado!`, eq.desc + `\n\n+${eq.coinsPerHour} 🪙/hora`);
+  } else {
+    showToast(`${eq.emoji} Nivel ${lvl+1} — +${Math.floor(eq.coinsPerHour * 0.5)} 🪙/hora`);
+  }
+  checkMilestones();
+}
+
+function getUpgradeCost(eq, currentLevel) {
+  return Math.floor(eq.cost * Math.pow(1.8, currentLevel));
+}
+
+function addXP(amount) {
+  S.xp += amount;
+  let needed = xpForLevel(S.level);
+  while (S.xp >= needed && S.level < 100) {
+    S.xp -= needed;
+    S.level++;
+    needed = xpForLevel(S.level);
+    onLevelUp(S.level);
+  }
+  if (S.level >= 100) S.xp = xpForLevel(100);
+}
+
+function onLevelUp(newLevel) {
+  showPopup("🚀", `¡NIVEL ${newLevel}!`, `Has subido al nivel ${newLevel}.\n¡Nuevos equipos disponibles!`);
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+}
+
+function checkDailyLogin() {
+  const today = new Date().toDateString();
+  if (S.lastLogin === today) return;
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (S.lastLogin === yesterday) {
+    S.streak++;
+  } else if (S.lastLogin !== null) {
+    S.streak = 1;
+  } else {
+    S.streak = 1;
+  }
+  S.bestStreak = Math.max(S.bestStreak, S.streak);
+  S.lastLogin  = today;
+  S.daysPlayed++;
+  S.streakClaimedToday = false;
+  saveState();
+}
+
+function claimStreak() {
+  if (S.streakClaimedToday) { showToast("Ya reclamaste hoy"); return; }
+  const mult   = Math.min(S.streak, 30); // max 30x
+  const bonus  = Math.floor(calcRate() * mult);
+  S.coins      += bonus;
+  S.totalEarned+= bonus;
+  S.streakClaimedToday = true;
+  floatCoins(bonus);
+  saveState();
+  render();
+  showToast(`🔥 +${fmtNum(bonus)} bonus de racha x${mult}`);
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+  checkMilestones();
+}
+
+function checkMilestones() {
+  MILESTONES.forEach(m => {
+    if (!S.milestones[m.id] && m.req(S)) {
+      S.milestones[m.id] = true;
+      saveState();
+      setTimeout(() => showPopup(m.icon, m.name, m.desc), 500);
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  TICK
+// ══════════════════════════════════════════════════════════
+
+function startTick() {
+  setInterval(() => {
+    updatePendingDisplay();
+    updateStats();
+  }, 3000);
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════
+
+function fmtNum(n) {
+  n = Math.floor(n);
+  if (n >= 1000000) return (n/1000000).toFixed(1)+"M";
+  if (n >= 1000)    return (n/1000).toFixed(1)+"K";
+  return n.toString();
+}
+
+function render() {
+  // Header
+  document.getElementById("coins-display").textContent = fmtNum(S.coins);
+  document.getElementById("level-badge").textContent   = `LVL ${S.level}`;
+  const needed = xpForLevel(S.level);
+  const pct    = Math.min(100, (S.xp / needed) * 100);
+  document.getElementById("xp-fill").style.width = pct + "%";
+  document.getElementById("xp-text").textContent  = `${fmtNum(S.xp)}/${fmtNum(needed)}`;
+
+  // Studio room
+  renderStudioRoom();
+
+  // Collect button
+  updatePendingDisplay();
+
+  // Streak
+  renderStreak();
+
+  // Shop
+  renderShop();
+
+  // Stats
+  updateStats();
+
+  // Milestones
+  renderMilestones();
+}
+
+function renderStudioRoom() {
+  const grid = document.getElementById("studio-grid");
+  grid.innerHTML = "";
+  const slots = EQUIPMENT.slice(0, 12);
+  slots.forEach(eq => {
+    const lvl   = S.owned[eq.id] || 0;
+    const locked = S.level < eq.unlockLevel;
+    const div = document.createElement("div");
+    div.className = "studio-item" + (lvl > 0 ? " owned" : locked ? " locked" : "");
+
+    const rate = lvl > 0 ? Math.floor(eq.coinsPerHour * (1 + (lvl-1)*0.5)) : 0;
+    div.innerHTML = `
+      ${lvl > 0 ? `<div class="item-rate">+${fmtNum(rate)}/h</div>` : ""}
+      <div style="font-size:${lvl>0?'28px':'22px'}">${eq.emoji}</div>
+      <div class="item-label">${eq.name.split(" ")[0]}</div>
+      ${lvl > 0 ? `<div class="item-lvl">Lv${lvl}</div>` : ""}
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function updatePendingDisplay() {
+  const rate    = calcRate();
+  const pending = getPendingCoins();
+  document.getElementById("pending-val").textContent = fmtNum(rate);
+  const btn = document.getElementById("collect-btn");
+  if (pending > 0) {
+    btn.className = "collect-btn";
+    btn.textContent = `RECOGER +${fmtNum(pending)} 🪙`;
+  } else {
+    btn.className = "collect-btn empty";
+    btn.textContent = rate > 0 ? "Generando coins..." : "Compra equipos para generar coins";
+  }
+}
+
+function renderStreak() {
+  document.getElementById("streak-fire").textContent = S.streak > 0 ? "🔥" : "💤";
+  document.getElementById("streak-title").textContent = S.streak > 0
+    ? `Racha de ${S.streak} día${S.streak>1?"s":""} 🔥`
+    : "Sin racha activa";
+  const mult = Math.min(S.streak, 30);
+  const bonus = Math.floor(calcRate() * mult);
+  document.getElementById("streak-sub").textContent = S.streakClaimedToday
+    ? "✅ Bonus reclamado hoy"
+    : S.streak > 0
+    ? `Bonus de hoy: +${fmtNum(bonus)} 🪙 (×${mult})`
+    : "Entra mañana para empezar tu racha";
+
+  const btn = document.getElementById("streak-btn");
+  if (S.streakClaimedToday || S.streak === 0) {
+    btn.className = "streak-claim-btn claimed";
+    btn.textContent = S.streakClaimedToday ? "✓ CLAIMED" : "HOY NO";
+  } else {
+    btn.className = "streak-claim-btn";
+    btn.textContent = "CLAIM";
+  }
+}
+
+function renderShop() {
+  const list = document.getElementById("shop-list");
+  list.innerHTML = "";
+  EQUIPMENT.forEach(eq => {
+    const lvl    = S.owned[eq.id] || 0;
+    const locked = S.level < eq.unlockLevel;
+    const maxed  = lvl >= eq.maxLevel;
+    const cost   = getUpgradeCost(eq, lvl);
+    const canBuy = S.coins >= cost && !locked;
+    const rate   = Math.floor(eq.coinsPerHour * (1 + lvl * 0.5));
+
+    const div = document.createElement("div");
+    div.className = "shop-item" + (canBuy && !maxed ? " affordable" : maxed ? " maxed" : "");
+
+    let btnClass = "shop-buy ";
+    let btnText  = "";
+    if (maxed)        { btnClass += "maxed-btn"; btnText = "MAX ⭐"; }
+    else if (locked)  { btnClass += "cant-buy";  btnText = `🔒 Lv${eq.unlockLevel}`; }
+    else if (lvl > 0) { btnClass += canBuy ? "upgrade" : "cant-buy"; btnText = `⬆️ ${fmtNum(cost)}`; }
+    else              { btnClass += canBuy ? "can-buy" : "cant-buy"; btnText = fmtNum(cost) + " 🪙"; }
+
+    const dots = Array.from({length:eq.maxLevel}, (_,i) =>
+      `<div class="level-dot ${i<lvl?"filled":""}"></div>`).join("");
+
+    div.innerHTML = `
+      <div class="shop-emoji">${eq.emoji}</div>
+      <div class="shop-info">
+        <div class="shop-name">${eq.name} ${lvl>0?`<span class="owned-badge">Lv${lvl}</span>`:""}</div>
+        <div class="shop-desc">${locked ? `🔒 Desbloquea en nivel ${eq.unlockLevel}` : eq.desc}</div>
+        <div class="shop-stats">
+          <div class="shop-stat"><span class="val">+${fmtNum(rate)}</span> <span class="lbl">🪙/h</span></div>
+          ${lvl>0?`<div class="shop-stat"><span class="val">+${fmtNum(eq.coinsPerHour*0.5)}</span> <span class="lbl">next lv</span></div>`:""}
+        </div>
+        <div class="level-dots">${dots}</div>
+      </div>
+      <button class="${btnClass}" onclick="buyEquipment('${eq.id}')">${btnText}</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function updateStats() {
+  const sessionHrs = ((Date.now() - S.sessionStart) / 3600000).toFixed(1);
+  document.getElementById("st-total").textContent  = fmtNum(S.totalEarned);
+  document.getElementById("st-rate").textContent   = fmtNum(calcRate());
+  document.getElementById("st-streak").textContent = S.streak + " días";
+  document.getElementById("st-best").textContent   = S.bestStreak + " días";
+  document.getElementById("st-equip").textContent  = S.totalPurchases;
+  document.getElementById("st-days").textContent   = S.daysPlayed;
+  document.getElementById("st-time").textContent   = sessionHrs + "h";
+}
+
+function renderMilestones() {
+  const list = document.getElementById("milestone-list");
+  list.innerHTML = "";
+  MILESTONES.forEach(m => {
+    const reached = !!S.milestones[m.id];
+    const div = document.createElement("div");
+    div.className = "milestone-item" + (reached ? " reached" : "");
+    div.innerHTML = `
+      <div class="ms-icon">${m.icon}</div>
+      <div class="ms-info">
+        <div class="ms-name" style="color:${reached?"var(--gold)":"var(--text)"}">${m.name} ${reached?"✅":""}</div>
+        <div class="ms-req">${m.desc}</div>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════════════════════════
+
+function showTab(name, btn) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tab-shop").style.display       = name==="shop"       ? "" : "none";
+  document.getElementById("tab-stats").style.display      = name==="stats"      ? "" : "none";
+  document.getElementById("tab-milestones").style.display = name==="milestones" ? "" : "none";
+  if (name === "stats")      updateStats();
+  if (name === "milestones") renderMilestones();
+}
+
+function floatCoins(amount) {
+  const el  = document.createElement("div");
+  el.className = "coin-float";
+  el.textContent = `+${fmtNum(amount)} 🪙`;
+  el.style.left = "50%";
+  el.style.top  = "40%";
+  el.style.transform = "translateX(-50%)";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+function showPopup(emoji, title, desc) {
+  document.getElementById("pop-emoji").textContent = emoji;
+  document.getElementById("pop-title").textContent = title;
+  document.getElementById("pop-desc").textContent  = desc;
+  document.getElementById("popup").classList.add("show");
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+}
+function closePopup() { document.getElementById("popup").classList.remove("show"); }
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+loadState();
+</script>
+</body>
+</html>
