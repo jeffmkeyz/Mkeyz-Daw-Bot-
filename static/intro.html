@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mkeyz Studio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:100%; height:100%; background:#000; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; color:#fff; }
+
+canvas#bg { position:fixed; inset:0; z-index:0; }
+
+.scene { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; opacity:0; transition:opacity 0.5s ease; pointer-events:none; }
+.scene.active { opacity:1; pointer-events:all; }
+
+/* Scene 0 - Logo */
+.logo-mark {
+  width:100px; height:100px; border-radius:28px;
+  background:linear-gradient(135deg,#1a0040,#9c27b0);
+  display:flex; align-items:center; justify-content:center;
+  font-size:42px; font-weight:900; color:#fff;
+  transform:scale(0) rotate(-20deg);
+  transition:all 0.7s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 0 60px rgba(156,39,176,0.4);
+  margin-bottom:20px;
+}
+.logo-mark.show { transform:scale(1) rotate(0); }
+
+.logo-text {
+  font-size:36px; font-weight:900; letter-spacing:-1.5px;
+  background:linear-gradient(135deg,#fff,#f5c518);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  opacity:0; transform:translateY(20px);
+  transition:all 0.6s ease 0.3s;
+  text-align:center;
+}
+.logo-text.show { opacity:1; transform:translateY(0); }
+
+.logo-sub {
+  font-size:12px; color:rgba(255,255,255,0.4); letter-spacing:3px;
+  text-transform:uppercase; margin-top:8px;
+  opacity:0; transition:all 0.5s ease 0.6s;
+}
+.logo-sub.show { opacity:1; }
+
+/* Scene 1 - Features quick flash */
+.quick-feat {
+  font-size:52px; text-align:center;
+  opacity:0; transform:scale(1.5);
+  transition:all 0.3s ease;
+}
+.quick-feat.show { opacity:1; transform:scale(1); }
+.quick-label {
+  font-size:18px; font-weight:800; margin-top:10px; text-align:center;
+  opacity:0; transition:all 0.3s ease 0.1s;
+}
+.quick-label.show { opacity:1; }
+
+/* Scene 2 - CTA */
+.cta-title {
+  font-size:34px; font-weight:900; text-align:center; line-height:1.2;
+  letter-spacing:-1px;
+  opacity:0; transform:translateY(30px);
+  transition:all 0.7s cubic-bezier(0.34,1.56,0.64,1);
+}
+.cta-title.show { opacity:1; transform:translateY(0); }
+.cta-title span { color:#f5c518; }
+
+.cta-url {
+  font-size:16px; font-weight:700; color:#f5c518; margin-top:16px;
+  opacity:0; transition:all 0.5s ease 0.4s;
+}
+.cta-url.show { opacity:1; }
+
+.cta-btn {
+  margin-top:28px; padding:16px 40px; border-radius:100px; border:none;
+  background:linear-gradient(135deg,#f5c518,#ff8c00);
+  font-size:17px; font-weight:800; color:#000; cursor:pointer;
+  opacity:0; transform:scale(0.8);
+  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.7s;
+  box-shadow:0 8px 32px rgba(245,197,24,0.3);
+}
+.cta-btn.show { opacity:1; transform:scale(1); }
+.cta-btn:active { transform:scale(0.97); }
+
+/* Progress dots */
+.dots { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:20; }
+.dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.2); transition:all 0.3s; }
+.dot.active { background:#f5c518; width:20px; border-radius:3px; }
+
+/* Wave bg */
+.wave-bg { position:fixed; bottom:0; left:0; right:0; height:120px; z-index:2; }
+.wave-bg canvas { width:100%; height:100%; }
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<!-- SCENE 0: LOGO -->
+<div class="scene active" id="s0">
+  <div class="logo-mark" id="logo-mark">🎛️</div>
+  <div class="logo-text" id="logo-text">Mkeyz Studio</div>
+  <div class="logo-sub" id="logo-sub">Tu estudio en Telegram</div>
+</div>
+
+<!-- SCENE 1: FEATURE FLASH -->
+<div class="scene" id="s1">
+  <div class="quick-feat" id="qfeat">🎛️</div>
+  <div class="quick-label" id="qlabel">Mini DAW</div>
+</div>
+
+<!-- SCENE 2: CTA -->
+<div class="scene" id="s2">
+  <div class="cta-title" id="cta-title">Tu estudio.<br><span>En tu bolsillo.</span></div>
+  <div class="cta-url" id="cta-url">t.me/MkeyzDAWbot</div>
+  <button class="cta-btn" id="cta-btn" onclick="openBot()">🚀 Entrar ahora</button>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#000"); tg.setBackgroundColor("#000"); }
+
+// ── BG CANVAS ────────────────────────────────────────────────
+const bg    = document.getElementById("bg");
+const bgCtx = bg.getContext("2d");
+let phase   = 0;
+
+function resizeBg() { bg.width = window.innerWidth; bg.height = window.innerHeight; }
+resizeBg();
+window.addEventListener("resize", resizeBg);
+
+function drawBg() {
+  requestAnimationFrame(drawBg);
+  bgCtx.fillStyle = "rgba(0,0,0,0.12)";
+  bgCtx.fillRect(0, 0, bg.width, bg.height);
+
+  // 3 animated waves at bottom
+  const waves = [
+    { color:"rgba(156,39,176,0.15)", speed:0.8, amp:0.06, offset:0 },
+    { color:"rgba(245,197,24,0.08)", speed:1.2, amp:0.04, offset:2 },
+    { color:"rgba(124,58,237,0.1)",  speed:0.6, amp:0.08, offset:4 },
+  ];
+  waves.forEach(w => {
+    bgCtx.fillStyle = w.color;
+    bgCtx.beginPath();
+    bgCtx.moveTo(0, bg.height);
+    for (let x = 0; x <= bg.width; x += 4) {
+      const y = bg.height - bg.height * w.amp * (1 + Math.sin((x / bg.width) * Math.PI * 3 + phase * w.speed + w.offset));
+      bgCtx.lineTo(x, y);
+    }
+    bgCtx.lineTo(bg.width, bg.height);
+    bgCtx.closePath();
+    bgCtx.fill();
+  });
+  phase += 0.02;
+}
+drawBg();
+
+// ── AUDIO ─────────────────────────────────────────────────────
+let ctx;
+function audio() { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); return ctx; }
+
+function playTone(freq, dur, type="sine", vol=0.2) {
+  try {
+    const c = audio();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+    o.start(c.currentTime); o.stop(c.currentTime + dur);
+  } catch(e) {}
+}
+
+function playChime() {
+  [523,659,784,1047].forEach((f,i) => setTimeout(() => playTone(f, 0.5, "sine", 0.12), i*80));
+}
+
+// ── FEATURES ──────────────────────────────────────────────────
+const FEATURES = [
+  { icon:"🎛️", label:"Mini DAW" },
+  { icon:"🎹", label:"Chord Generator" },
+  { icon:"🎤", label:"Voice Studio" },
+  { icon:"📊", label:"Stream Simulator" },
+  { icon:"🎮", label:"Beat Battle" },
+  { icon:"🏆", label:"Reto Semanal" },
+];
+
+let featIdx = 0;
+let featInterval;
+
+function flashFeature() {
+  if (featIdx >= FEATURES.length) {
+    clearInterval(featInterval);
+    setTimeout(goScene2, 200);
+    return;
+  }
+  const f = FEATURES[featIdx];
+  const el = document.getElementById("qfeat");
+  const ll = document.getElementById("qlabel");
+
+  el.classList.remove("show"); ll.classList.remove("show");
+  void el.offsetWidth;
+  el.textContent = f.icon;
+  ll.textContent = f.label;
+  el.classList.add("show"); ll.classList.add("show");
+  playTone(300 + featIdx * 80, 0.2, "triangle", 0.1);
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+  featIdx++;
+}
+
+// ── SCENES ────────────────────────────────────────────────────
+const TOTAL = 3;
+function buildDots() {
+  const d = document.getElementById("dots");
+  for (let i = 0; i < TOTAL; i++) {
+    const dot = document.createElement("div");
+    dot.className = "dot" + (i===0?" active":"");
+    d.appendChild(dot);
+  }
+}
+
+function setDot(idx) {
+  document.querySelectorAll(".dot").forEach((d,i) => {
+    d.classList.toggle("active", i===idx);
+  });
+}
+
+function goScene0() {
+  setDot(0);
+  document.querySelectorAll(".scene").forEach(s=>s.classList.remove("active"));
+  document.getElementById("s0").classList.add("active");
+  setTimeout(() => { document.getElementById("logo-mark").classList.add("show"); playTone(200, 0.8, "sine", 0.15); }, 100);
+  setTimeout(() => document.getElementById("logo-text").classList.add("show"), 400);
+  setTimeout(() => document.getElementById("logo-sub").classList.add("show"), 700);
+  setTimeout(goScene1, 2000);
+}
+
+function goScene1() {
+  setDot(1);
+  document.querySelectorAll(".scene").forEach(s=>s.classList.remove("active"));
+  document.getElementById("s1").classList.add("active");
+  featIdx = 0;
+  flashFeature();
+  featInterval = setInterval(flashFeature, 500);
+}
+
+function goScene2() {
+  setDot(2);
+  document.querySelectorAll(".scene").forEach(s=>s.classList.remove("active"));
+  document.getElementById("s2").classList.add("active");
+  setTimeout(() => document.getElementById("cta-title").classList.add("show"), 100);
+  setTimeout(() => document.getElementById("cta-url").classList.add("show"), 400);
+  setTimeout(() => { document.getElementById("cta-btn").classList.add("show"); playChime(); }, 700);
+}
+
+function openBot() {
+  if (tg) tg.close();
+  else window.open("https://t.me/MkeyzDAWbot","_blank");
+}
+
+buildDots();
+goScene0();
+</script>
+</body>
+</html>
