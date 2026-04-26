@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tarjeta de Artista — Mkeyz Studio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#0a0a0a; --card:#111; --border:#1f1f1f;
+  --gold:#f5c518; --text:#fff; --muted:#555;
+}
+body {
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
+  padding:16px; padding-bottom:40px;
+}
+
+.header { text-align:center; padding:16px 0 20px; }
+.header h1 { font-size:22px; font-weight:900; background:linear-gradient(135deg,#fff,var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:4px; }
+.header p { font-size:13px; color:var(--muted); }
+
+/* ── CARD ── */
+.card-wrap { display:flex; justify-content:center; margin-bottom:20px; }
+
+#artist-card {
+  width:320px;
+  background:#080808;
+  border:1px solid #2a2a2a;
+  border-radius:20px;
+  overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
+}
+
+.card-top {
+  background:linear-gradient(135deg,#1a0a2e,#0d0d0d);
+  padding:20px;
+  border-bottom:1px solid #1f1f1f;
+  display:flex; align-items:center; gap:14px;
+  position:relative; overflow:hidden;
+}
+.card-top::after {
+  content:''; position:absolute; top:-20px; right:-20px;
+  width:100px; height:100px; opacity:0.08;
+  background:radial-gradient(circle,#f5c518,transparent);
+  border-radius:50%;
+}
+.card-avatar {
+  width:52px; height:52px; border-radius:50%;
+  background:linear-gradient(135deg,#9c27b0,#f5c518);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; font-weight:900; color:#fff; flex-shrink:0;
+  border:2px solid #f5c51833;
+}
+.card-name { font-size:18px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
+.card-sub  { font-size:12px; color:#555; margin-top:2px; }
+.card-badge {
+  margin-left:auto; background:var(--gold);
+  color:#000; font-size:10px; font-weight:800;
+  padding:4px 10px; border-radius:100px; flex-shrink:0;
+  letter-spacing:0.5px;
+}
+
+.card-stats {
+  display:grid; grid-template-columns:1fr 1fr 1fr;
+  padding:16px 20px; border-bottom:1px solid #1a1a1a;
+}
+.card-stat { text-align:center; }
+.card-stat-n { font-size:18px; font-weight:900; color:var(--gold); }
+.card-stat-l { font-size:10px; color:#444; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+
+.card-genres {
+  display:flex; gap:6px; flex-wrap:wrap;
+  padding:14px 20px; border-bottom:1px solid #1a1a1a;
+  min-height:48px;
+}
+.card-genre {
+  padding:4px 12px; border-radius:100px;
+  font-size:11px; font-weight:600;
+  background:#1a1a1a; color:#888;
+  border:1px solid #2a2a2a;
+}
+
+.card-bio {
+  padding:12px 20px;
+  font-size:12px; color:#444;
+  line-height:1.5; border-bottom:1px solid #1a1a1a;
+  min-height:40px;
+}
+
+.card-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 20px;
+}
+.card-footer-logo { font-size:11px; color:#333; font-weight:800; letter-spacing:1.5px; }
+.card-ig { font-size:11px; color:#444; }
+
+.wave { display:flex; gap:2px; align-items:flex-end; }
+.wave-bar {
+  width:3px; border-radius:2px; background:var(--gold);
+  animation:wave 0.8s ease-in-out infinite alternate;
+}
+.wave-bar:nth-child(1){height:6px;  animation-delay:0s}
+.wave-bar:nth-child(2){height:12px; animation-delay:0.1s}
+.wave-bar:nth-child(3){height:8px;  animation-delay:0.2s}
+.wave-bar:nth-child(4){height:14px; animation-delay:0.15s}
+.wave-bar:nth-child(5){height:6px;  animation-delay:0.05s}
+.wave-bar:nth-child(6){height:10px; animation-delay:0.25s}
+@keyframes wave { from{transform:scaleY(0.4)} to{transform:scaleY(1)} }
+
+/* ── FORM ── */
+.section-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; margin-top:20px; }
+
+.form-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px; }
+.form-row { margin-bottom:12px; }
+.form-label { font-size:12px; color:var(--muted); margin-bottom:6px; display:block; }
+.form-input {
+  width:100%; background:#1a1a1a; border:1px solid var(--border);
+  border-radius:10px; padding:10px 12px; color:#fff; font-size:14px;
+  outline:none; transition:border-color 0.2s;
+}
+.form-input:focus { border-color:var(--gold); }
+.form-input::placeholder { color:#444; }
+
+.genre-picker { display:flex; flex-wrap:wrap; gap:6px; }
+.genre-opt {
+  padding:6px 14px; border-radius:100px; font-size:12px; font-weight:600;
+  background:#1a1a1a; color:#666; border:1px solid #2a2a2a; cursor:pointer;
+  transition:all 0.15s;
+}
+.genre-opt.selected { background:#2a1f00; color:var(--gold); border-color:#f5c51866; }
+.genre-opt:active { transform:scale(0.95); }
+
+/* ── BUTTONS ── */
+.btn-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+.btn {
+  padding:16px; border:none; border-radius:16px;
+  font-size:15px; font-weight:800; cursor:pointer;
+  transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn:active { transform:scale(0.97); }
+.btn-download { background:linear-gradient(135deg,var(--gold),#ff8c00); color:#000; }
+.btn-share    { background:#1a1a1a; color:#fff; border:1px solid #2a2a2a; }
+
+.btn-full {
+  width:100%; padding:16px; border:none; border-radius:16px;
+  background:linear-gradient(135deg,#1f1f1f,#2a2a2a);
+  color:var(--muted); font-size:14px; font-weight:700; cursor:pointer; margin-top:8px;
+}
+
+/* ── LOADER ── */
+.toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:#fff; color:#000; padding:12px 20px; border-radius:100px;
+  font-size:14px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🃏 Tarjeta de Artista</h1>
+  <p>Tu carta de presentación para las redes</p>
+</div>
+
+<!-- CARD PREVIEW -->
+<div class="card-wrap">
+  <div id="artist-card">
+    <div class="card-top">
+      <div class="card-avatar" id="card-avatar">JM</div>
+      <div>
+        <div class="card-name" id="card-name">Tu nombre</div>
+        <div class="card-sub"  id="card-sub">Productor · Artista</div>
+      </div>
+      <div class="card-badge" id="card-badge">PRO</div>
+    </div>
+    <div class="card-stats">
+      <div class="card-stat">
+        <div class="card-stat-n" id="stat-beats">—</div>
+        <div class="card-stat-l">Beats</div>
+      </div>
+      <div class="card-stat">
+        <div class="card-stat-n" id="stat-streams">—</div>
+        <div class="card-stat-l">Streams</div>
+      </div>
+      <div class="card-stat">
+        <div class="card-stat-n" id="stat-since">—</div>
+        <div class="card-stat-l">Desde</div>
+      </div>
+    </div>
+    <div class="card-genres" id="card-genres">
+      <div class="card-genre">Tu género</div>
+    </div>
+    <div class="card-bio" id="card-bio">Tu bio aparecerá aquí</div>
+    <div class="card-footer">
+      <div class="card-footer-logo">MKEYZ STUDIO</div>
+      <div class="card-ig" id="card-ig">@usuario</div>
+      <div class="wave">
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="section-title">Personaliza tu tarjeta</div>
+
+<div class="form-card">
+  <div class="form-row">
+    <label class="form-label">Nombre artístico</label>
+    <input class="form-input" id="f-name" placeholder="Jeff Mkeyz" oninput="updateCard()">
+  </div>
+  <div class="form-row">
+    <label class="form-label">Bio corta</label>
+    <input class="form-input" id="f-bio" placeholder="Productor independiente de Pop Latino y Trap" oninput="updateCard()">
+  </div>
+  <div class="form-row">
+    <label class="form-label">Instagram (sin @)</label>
+    <input class="form-input" id="f-ig" placeholder="jeffmkeyz" oninput="updateCard()">
+  </div>
+</div>
+
+<div class="form-card">
+  <div class="form-row">
+    <label class="form-label">Stats</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <input class="form-input" id="f-beats"   placeholder="100+" oninput="updateCard()">
+      <input class="form-input" id="f-streams" placeholder="47K"  oninput="updateCard()">
+      <input class="form-input" id="f-since"   placeholder="2020" oninput="updateCard()">
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:10px;color:var(--muted)">
+      <span>Beats</span><span>Streams</span><span>Año inicio</span>
+    </div>
+  </div>
+</div>
+
+<div class="form-card">
+  <label class="form-label">Géneros (máx. 4)</label>
+  <div class="genre-picker" id="genre-picker"></div>
+</div>
+
+<div class="btn-row">
+  <button class="btn btn-download" onclick="downloadCard()">⬇️ Descargar PNG</button>
+  <button class="btn btn-share"    onclick="shareCard()">📤 Compartir</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
+
+const GENRES = ["Trap","Pop Latino","Afrobeats","Reggaeton","Lo-Fi","R&B","Hip-Hop","Drill","Dancehall","Salsa","Bachata","EDM","House","Funk"];
+let selectedGenres = [];
+
+// Build genre picker
+const picker = document.getElementById("genre-picker");
+GENRES.forEach(g => {
+  const btn = document.createElement("div");
+  btn.className = "genre-opt";
+  btn.textContent = g;
+  btn.onclick = () => toggleGenre(g, btn);
+  picker.appendChild(btn);
+});
+
+function toggleGenre(g, btn) {
+  if (selectedGenres.includes(g)) {
+    selectedGenres = selectedGenres.filter(x => x !== g);
+    btn.classList.remove("selected");
+  } else if (selectedGenres.length < 4) {
+    selectedGenres.push(g);
+    btn.classList.add("selected");
+  } else {
+    showToast("Máximo 4 géneros");
+    return;
+  }
+  updateCard();
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+function getInitials(name) {
+  return name.trim().split(" ").slice(0,2).map(w => w[0]?.toUpperCase() || "").join("") || "??";
+}
+
+function updateCard() {
+  const name    = document.getElementById("f-name").value.trim()    || "Tu nombre";
+  const bio     = document.getElementById("f-bio").value.trim()     || "Tu bio aparecerá aquí";
+  const ig      = document.getElementById("f-ig").value.trim()      || "usuario";
+  const beats   = document.getElementById("f-beats").value.trim()   || "—";
+  const streams = document.getElementById("f-streams").value.trim() || "—";
+  const since   = document.getElementById("f-since").value.trim()   || "—";
+
+  document.getElementById("card-name").textContent    = name;
+  document.getElementById("card-avatar").textContent  = getInitials(name);
+  document.getElementById("card-bio").textContent     = bio;
+  document.getElementById("card-ig").textContent      = "@" + ig;
+  document.getElementById("stat-beats").textContent   = beats;
+  document.getElementById("stat-streams").textContent = streams;
+  document.getElementById("stat-since").textContent   = since;
+
+  // Sub text
+  const sub = selectedGenres.length > 0
+    ? selectedGenres.slice(0,2).join(" · ")
+    : "Productor · Artista";
+  document.getElementById("card-sub").textContent = sub;
+
+  // Genres
+  const genresEl = document.getElementById("card-genres");
+  if (selectedGenres.length > 0) {
+    genresEl.innerHTML = selectedGenres.map(g => `<div class="card-genre">${g}</div>`).join("");
+  } else {
+    genresEl.innerHTML = '<div class="card-genre">Tu género</div>';
+  }
+}
+
+// Load from Zona Artistas profile if available
+async function loadProfile() {
+  const userId = tg?.initDataUnsafe?.user?.id;
+  if (!userId) return;
+  try {
+    const res  = await fetch(`/api/artist/profile?user_id=${userId}`);
+    const data = await res.json();
+    if (data && data.name) {
+      document.getElementById("f-name").value = data.name  || "";
+      document.getElementById("f-bio").value  = data.bio   || "";
+      document.getElementById("f-ig").value   = data.ig    || "";
+
+      // Set genre
+      if (data.genre) {
+        const btn = [...document.querySelectorAll(".genre-opt")].find(b => b.textContent === data.genre);
+        if (btn) toggleGenre(data.genre, btn);
+      }
+      updateCard();
+      showToast("✅ Perfil cargado desde Zona Artistas");
+    }
+  } catch(e) {
+    // No profile — user fills manually
+  }
+}
+
+async function downloadCard() {
+  showToast("⏳ Generando imagen...");
+  try {
+    const card    = document.getElementById("artist-card");
+    const canvas  = await html2canvas(card, {
+      backgroundColor: "#080808",
+      scale: 3,
+      useCORS: true,
+      logging: false,
+    });
+    const link     = document.createElement("a");
+    link.download  = "mkeyz_artist_card.png";
+    link.href      = canvas.toDataURL("image/png");
+    link.click();
+    showToast("✅ Imagen descargada");
+    if (tg) tg.HapticFeedback?.notificationOccurred("success");
+  } catch(e) {
+    showToast("❌ Error generando imagen");
+  }
+}
+
+async function shareCard() {
+  const name    = document.getElementById("f-name").value.trim()    || "Artista";
+  const ig      = document.getElementById("f-ig").value.trim();
+  const beats   = document.getElementById("f-beats").value.trim()   || "—";
+  const streams = document.getElementById("f-streams").value.trim() || "—";
+  const genres  = selectedGenres.join(" · ") || "Música";
+
+  const msg = `🃏 *${name}*\n\n🎵 ${genres}\n🎧 ${beats} beats · ${streams} streams\n${ig ? `📸 @${ig}` : ""}\n\n_Generado con Mkeyz Studio Bot_\n@MkeyzDAWbot`;
+
+  try {
+    const card   = document.getElementById("artist-card");
+    const canvas = await html2canvas(card, { backgroundColor:"#080808", scale:2, useCORS:true, logging:false });
+    canvas.toBlob(async blob => {
+      if (navigator.share && blob) {
+        const file = new File([blob], "mkeyz_card.png", { type:"image/png" });
+        await navigator.share({ title: name, text: msg, files: [file] });
+      } else {
+        navigator.clipboard?.writeText(msg);
+        showToast("✅ Info copiada al portapapeles");
+      }
+    }, "image/png");
+  } catch(e) {
+    navigator.clipboard?.writeText(msg);
+    showToast("✅ Info copiada al portapapeles");
+  }
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+// Init
+loadProfile();
+updateCard();
+</script>
+</body>
+</html>
