@@ -22,6 +22,8 @@ from telegram.ext import (
 
 TOKEN    = os.getenv("BOT_TOKEN", "8736753639:AAGHp-nxa4KKvUcnmhJplgBb0-asZogoiuE")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
+# IDs con plan Studio permanente (sin necesidad de pagar)
+VIP_IDS  = set(map(int, os.getenv("VIP_IDS", "").split(",") if os.getenv("VIP_IDS") else []))
 
 def is_admin(user_id: int) -> bool:
     return ADMIN_ID != 0 and user_id == ADMIN_ID
@@ -191,6 +193,11 @@ def db_init():
 
 # ── Suscripciones ──────────────────────────────────────────
 def db_get_plan(tg_id):
+    # Admin y VIPs siempre tienen Studio sin importar la DB
+    if ADMIN_ID and tg_id == ADMIN_ID:
+        return PLAN_STUDIO
+    if tg_id in VIP_IDS:
+        return PLAN_STUDIO
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
     cur.execute("SELECT plan, expires_at FROM subscriptions WHERE tg_id=?", (tg_id,))
