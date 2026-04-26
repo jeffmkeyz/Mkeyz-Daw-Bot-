@@ -78,6 +78,26 @@ canvas { width:100%; border-radius:16px; border:1px solid var(--border); display
   </div>
 </div>
 
+<!-- PITCH / NOTE DETECTION -->
+<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin:12px 0;display:flex;align-items:center;gap:16px">
+  <div style="text-align:center;flex-shrink:0">
+    <div style="font-size:48px;font-weight:900;color:var(--gold);line-height:1;min-width:60px" id="note-name">—</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:4px">NOTA</div>
+  </div>
+  <div style="flex:1">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+      <span style="color:var(--muted)">Octava <span id="note-octave" style="color:var(--text)">—</span></span>
+      <span style="color:var(--muted)"><span id="note-cents" style="color:var(--gold)">0</span> cents</span>
+    </div>
+    <!-- Tuning bar -->
+    <div style="background:var(--border);border-radius:100px;height:8px;position:relative;margin-bottom:8px">
+      <div style="position:absolute;left:50%;top:0;bottom:0;width:2px;background:#333;transform:translateX(-50%)"></div>
+      <div id="tune-needle" style="position:absolute;top:-2px;bottom:-2px;width:4px;border-radius:2px;background:var(--gold);left:50%;transform:translateX(-50%);transition:left 0.1s ease"></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted)" id="note-desc">Activa el micrófono para detectar notas</div>
+  </div>
+</div>
+
 <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--muted);line-height:1.8" id="freq-tip">
   Activa el micrófono para ver el análisis de frecuencias en tiempo real.
 </div>
@@ -190,6 +210,49 @@ function draw() {
     document.getElementById("stat-zone").textContent = zone.name;
     document.getElementById("stat-zone").style.color = zone.color;
     document.getElementById("freq-tip").textContent  = zone.tip;
+  }
+
+  // ── PITCH / NOTE DETECTION ──────────────────────────────
+  if (maxVal > 30 && domFreq >= 60 && domFreq <= 2000) {
+    const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+    const NOTE_FULL  = ["Do","Do#","Re","Re#","Mi","Fa","Fa#","Sol","Sol#","La","La#","Si"];
+    const NOTE_DESC  = {
+      "C":"Do - La base de la mayoría de escalas mayores",
+      "C#":"Do# / Reb - Tono brillante y dramático",
+      "D":"Re - Común en pop y reggaeton",
+      "D#":"Re# / Mib - Usado en música negra y soul",
+      "E":"Mi - Brillante, común en rock y trap",
+      "F":"Fa - Cálido, muy usado en baladas",
+      "F#":"Fa# - Melancólico, ideal para R&B",
+      "G":"Sol - El más natural para la voz humana",
+      "G#":"Sol# / Lab - Dramático y emotivo",
+      "A":"La - La = 440Hz, referencia de afinación",
+      "A#":"La# / Sib - Suave, usado en jazz",
+      "B":"Si - Tensión armónica, lleva a la resolución"
+    };
+
+    // A4 = 440Hz, MIDI 69
+    const midi   = 12 * Math.log2(domFreq / 440) + 69;
+    const midiR  = Math.round(midi);
+    const cents  = Math.round((midi - midiR) * 100);
+    const note   = NOTE_NAMES[((midiR % 12) + 12) % 12];
+    const octave = Math.floor(midiR / 12) - 1;
+
+    document.getElementById("note-name").textContent   = note;
+    document.getElementById("note-octave").textContent = octave;
+    document.getElementById("note-cents").textContent  = (cents >= 0 ? "+" : "") + cents;
+    document.getElementById("note-desc").textContent   = NOTE_DESC[note] || note;
+
+    // Tuning needle (0 cents = center, ±50 = edges)
+    const needlePct = 50 + (cents / 50) * 45;
+    document.getElementById("tune-needle").style.left = Math.min(95, Math.max(5, needlePct)) + "%";
+    document.getElementById("tune-needle").style.background = Math.abs(cents) < 10 ? "var(--green)" : Math.abs(cents) < 25 ? "var(--gold)" : "var(--fire)";
+  } else if (maxVal < 15) {
+    document.getElementById("note-name").textContent  = "—";
+    document.getElementById("note-octave").textContent = "—";
+    document.getElementById("note-cents").textContent  = "0";
+    document.getElementById("note-desc").textContent   = "Canta o toca una nota...";
+    document.getElementById("tune-needle").style.left  = "50%";
   }
 }
 
