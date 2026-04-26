@@ -140,12 +140,17 @@ input[type=range]::-webkit-slider-thumb {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 10px 6px;
+  padding: 12px 6px;
   text-align: center;
   cursor: pointer;
   transition: all 0.15s;
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  color: #ccc;
+  letter-spacing: 0.2px;
+}
+.plat-btn.active {
+  color: var(--gold) !important;
 }
 .plat-btn.active {
   border-color: var(--gold);
@@ -241,8 +246,8 @@ input[type=range]::-webkit-slider-thumb {
       <div class="slider-val" id="val-canciones">1</div>
     </div>
     <input type="range" class="slider-canciones" id="sl-canciones"
-           min="1" max="100" value="1" oninput="update()">
-    <div class="slider-labels"><span>1</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+           min="1" max="1000" value="1" oninput="update()">
+    <div class="slider-labels"><span>1</span><span>100</span><span>250</span><span>500</span><span>1000</span></div>
   </div>
 
   <div class="section-title">👥 Oyentes diarios</div>
@@ -297,11 +302,11 @@ input[type=range]::-webkit-slider-thumb {
       Spotify
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'Apple Music',0.005799)">
-      <svg class="plat-icon" viewBox="0 0 24 24" fill="#fc3c44" width="28" height="28"><path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026C4.786.07 4.043.15 3.34.428 2.004.958 1.04 1.88.475 3.208A5.494 5.494 0 00.05 5.064a49.43 49.43 0 00-.05 1.015v11.96c.01.317.026.636.06.953.122 1.108.47 2.107 1.158 2.964.888 1.106 2.07 1.7 3.454 1.913.51.077 1.026.107 1.543.115h13.028c.36-.01.72-.025 1.078-.07 1.228-.154 2.277-.643 3.122-1.51.74-.757 1.2-1.687 1.39-2.74.1-.573.12-1.15.127-1.726V6.124zm-11.07 5.47c-.55.12-1.093.16-1.64.16-.29 0-.587-.01-.877-.04-.19-.02-.38-.04-.57-.07L9.5 12c.01.12.01.23.01.35 0 1.52-.51 2.67-1.52 3.44-.72.55-1.55.83-2.48.83-1.01 0-1.84-.3-2.51-.92-.67-.61-1.01-1.4-1.01-2.37 0-.82.26-1.53.78-2.14.52-.6 1.22-1.01 2.1-1.21.48-.11.97-.16 1.47-.16.29 0 .58.01.87.04V7.83a6.73 6.73 0 01-.87-.06c-.35-.04-.7-.1-1.04-.19L5 7.25v-4.6l7.92-1.42v9.37zm7.5 3.87c-.52.61-1.22 1.01-2.1 1.21-.48.11-.97.16-1.47.16-.29 0-.58-.01-.87-.04V18c.29.04.58.06.87.06.35.04.7.1 1.04.19l.3.34v-4.93l-7.92 1.42V5.31l7.92-1.42v4.6c.35.04.7.1 1.04.19l.26.29v4.93z"/></svg>
+      <svg class="plat-icon" viewBox="0 0 24 24" width="28" height="28"><defs><linearGradient id="appleGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#f94f6d"/><stop offset="100%" style="stop-color:#fb5c74"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#appleGrad)"/><path fill="white" d="M17.05 8.352c-.17.08-1.87.9-1.87 2.75 0 2.14 1.87 2.9 1.93 2.92-.01.07-.3 1.04-.99 2.02-.61.87-1.25 1.74-2.22 1.74s-1.22-.57-2.32-.57c-1.07 0-1.45.59-2.34.59-.89 0-1.52-.83-2.24-1.84-1.02-1.43-1.85-3.65-1.85-5.74 0-3.35 2.19-5.13 4.34-5.13 1.14 0 2.1.75 2.82.75.68 0 1.76-.8 3.07-.8.5 0 2.22.04 3.36 1.68l-.66.33zM13.5 5.5c.54-.64.93-1.53.93-2.42 0-.12-.01-.25-.03-.35-.88.03-1.94.59-2.57 1.31-.5.56-.96 1.43-.96 2.33 0 .13.02.27.03.31.06.01.14.02.22.02.79 0 1.84-.53 2.38-1.2z"/></svg>
       Apple
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'Tidal',0.003433)">
-      <svg class="plat-icon" viewBox="0 0 24 24" fill="#00FFFF" width="28" height="28"><path d="M12.012 3.992L8.008 7.996 4.004 3.992 0 7.996l4.004 4.004 4.004-4.004 4.004 4.004 4.004-4.004zM8.008 16.004l4.004-4.004 4.004 4.004 4.004-4.004-4.004-4.004-4.004 4.004-4.004-4.004-4.004 4.004z"/></svg>
+      <svg class="plat-icon" viewBox="0 0 50 50" width="28" height="28"><path fill="#fff" d="M25 5L16.7 13.3 8.3 5 0 13.3l8.3 8.3 8.4-8.3 8.3 8.3 8.3-8.3zM16.7 29.9l8.3-8.3 8.3 8.3 8.4-8.3-8.4-8.3-8.3 8.3-8.3-8.3-8.4 8.3z"/></svg>
       Tidal
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'YT Premium',0.007441)">
@@ -321,11 +326,11 @@ input[type=range]::-webkit-slider-thumb {
       TikTok
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'Audiomack',0.001144)">
-      <svg class="plat-icon" viewBox="0 0 24 24" fill="#FF6A00" width="28" height="28"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 19.2c-3.975 0-7.2-3.225-7.2-7.2S8.025 4.8 12 4.8s7.2 3.225 7.2 7.2-3.225 7.2-7.2 7.2zm0-11.4c-2.32 0-4.2 1.88-4.2 4.2s1.88 4.2 4.2 4.2 4.2-1.88 4.2-4.2-1.88-4.2-4.2-4.2zm0 6a1.8 1.8 0 110-3.6 1.8 1.8 0 010 3.6z"/></svg>
+      <svg class="plat-icon" viewBox="0 0 24 24" width="28" height="28"><circle cx="12" cy="12" r="12" fill="#FE6B00"/><circle cx="12" cy="12" r="7" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="white"/></svg>
       Audiomack
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'Pandora',0.001705)">
-      <svg class="plat-icon" viewBox="0 0 24 24" fill="#005483" width="28" height="28"><path d="M0 0v24h7.228C11.818 24 16 20.018 16 14.285c0-4.907-3.178-8.104-7.636-8.104H5.091V0H0zm5.09 9.877h2.956c2.545 0 4.364 2.019 4.364 4.453 0 3.142-2.091 5.979-5.32 5.979H5.091V9.877zM19.09 5.09C17.09 5.09 16 6.545 16 8.544v.908h3.09v-1.18c0-.59.273-.727.59-.727.32 0 .593.136.593.726v.82c0 .637-.318 1.136-.864 1.59L17.09 12.5c-1.09.956-1.636 2.046-1.636 3.59V18h6.273v-2.136h-3.59v-.637c0-.682.364-1.09.864-1.5l2.364-2.046C22.59 10.5 23 9.318 23 7.772v-.59C23 5.728 21.41 5.09 19.09 5.09z"/></svg>
+      <svg class="plat-icon" viewBox="0 0 24 24" width="28" height="28"><circle cx="12" cy="12" r="12" fill="#224099"/><text x="12" y="17" text-anchor="middle" fill="white" font-size="14" font-weight="900" font-family="Arial">P</text></svg>
       Pandora
     </div>
   </div>
