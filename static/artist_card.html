@@ -15,106 +15,183 @@
 body {
   background:var(--bg); color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
-  padding:16px; padding-bottom:40px;
+  padding:16px; padding-bottom:60px;
 }
 
-.header { text-align:center; padding:16px 0 20px; }
+.header { text-align:center; padding:12px 0 20px; }
 .header h1 { font-size:22px; font-weight:900; background:linear-gradient(135deg,#fff,var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:4px; }
 .header p { font-size:13px; color:var(--muted); }
 
-/* ── CARD ── */
-.card-wrap { display:flex; justify-content:center; margin-bottom:20px; }
+/* ── FORMAT TABS ── */
+.format-tabs { display:flex; gap:6px; margin-bottom:16px; }
+.fmt-tab {
+  flex:1; padding:10px 6px; border:1px solid var(--border);
+  border-radius:12px; background:var(--card); color:var(--muted);
+  font-size:11px; font-weight:700; cursor:pointer; text-align:center;
+  transition:all 0.2s;
+}
+.fmt-tab.active { border-color:var(--gold); color:var(--gold); background:#1a1500; }
 
-#artist-card {
-  width:320px;
-  background:#080808;
-  border:1px solid #2a2a2a;
-  border-radius:20px;
-  overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
+/* ── THEME SELECTOR ── */
+.theme-row { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:4px; }
+.theme-btn {
+  flex-shrink:0; width:44px; height:44px; border-radius:12px;
+  border:2px solid transparent; cursor:pointer; transition:all 0.15s;
+  position:relative;
 }
+.theme-btn.active { border-color:#fff; transform:scale(1.1); }
+.theme-btn:active { transform:scale(0.95); }
 
-.card-top {
-  background:linear-gradient(135deg,#1a0a2e,#0d0d0d);
-  padding:20px;
-  border-bottom:1px solid #1f1f1f;
-  display:flex; align-items:center; gap:14px;
-  position:relative; overflow:hidden;
+/* ── CARD PREVIEW WRAP ── */
+.card-preview {
+  display:flex; justify-content:center; margin-bottom:20px;
+  position:relative;
 }
-.card-top::after {
-  content:''; position:absolute; top:-20px; right:-20px;
-  width:100px; height:100px; opacity:0.08;
-  background:radial-gradient(circle,#f5c518,transparent);
-  border-radius:50%;
-}
-.card-avatar {
-  width:52px; height:52px; border-radius:50%;
-  background:linear-gradient(135deg,#9c27b0,#f5c518);
+.card-preview.generating::after {
+  content:''; position:absolute; inset:0;
+  background:rgba(0,0,0,0.7); border-radius:20px;
   display:flex; align-items:center; justify-content:center;
-  font-size:18px; font-weight:900; color:#fff; flex-shrink:0;
-  border:2px solid #f5c51833;
+  animation:pulse 0.5s ease-in-out infinite alternate;
 }
-.card-name { font-size:18px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
-.card-sub  { font-size:12px; color:#555; margin-top:2px; }
+@keyframes pulse { from{opacity:0.5} to{opacity:1} }
+
+/* ── CARD BASE ── */
+#artist-card {
+  border-radius:20px; overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
+  transition:all 0.3s ease;
+  position:relative;
+}
+
+/* Formats */
+#artist-card.fmt-square  { width:300px; }
+#artist-card.fmt-stories { width:180px; }
+#artist-card.fmt-banner  { width:340px; }
+
+/* ── THEMES ── */
+.theme-gold    { background:#080808; }
+.theme-purple  { background:#0d0820; }
+.theme-neon    { background:#050f05; }
+.theme-chrome  { background:#0a0a0f; }
+.theme-minimal { background:#0f0f0f; }
+
+.card-bg {
+  position:absolute; inset:0; pointer-events:none; z-index:0;
+}
+.theme-gold   .card-bg { background:linear-gradient(135deg,#1a0a2e 0%,#080808 60%); }
+.theme-purple .card-bg { background:linear-gradient(135deg,#1a0040 0%,#0d0820 60%); }
+.theme-neon   .card-bg { background:linear-gradient(135deg,#001a00 0%,#050f05 60%); }
+.theme-chrome .card-bg { background:linear-gradient(135deg,#1a1a2e 0%,#0a0a0f 60%); }
+.theme-minimal .card-bg{ background:#0f0f0f; }
+
+.card-inner { position:relative; z-index:1; }
+
+/* TOP BAND */
+.card-top {
+  padding:16px 18px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  display:flex; align-items:center; gap:12px;
+}
+.card-avatar-wrap { position:relative; flex-shrink:0; }
+.card-avatar {
+  width:48px; height:48px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; font-weight:900; color:#fff;
+  background:linear-gradient(135deg,#9c27b0,#f5c518);
+  overflow:hidden; border:2px solid rgba(255,255,255,0.1);
+}
+.card-avatar img { width:100%; height:100%; object-fit:cover; }
+.card-info { flex:1; min-width:0; }
+.card-name { font-size:16px; font-weight:800; color:#fff; letter-spacing:-0.3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.card-sub  { font-size:11px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .card-badge {
-  margin-left:auto; background:var(--gold);
-  color:#000; font-size:10px; font-weight:800;
-  padding:4px 10px; border-radius:100px; flex-shrink:0;
-  letter-spacing:0.5px;
+  flex-shrink:0; font-size:9px; font-weight:800;
+  padding:3px 8px; border-radius:100px; letter-spacing:0.5px;
 }
 
-.card-stats {
-  display:grid; grid-template-columns:1fr 1fr 1fr;
-  padding:16px 20px; border-bottom:1px solid #1a1a1a;
-}
+/* STATS */
+.card-stats { display:grid; padding:12px 18px; border-bottom:1px solid rgba(255,255,255,0.06); }
 .card-stat { text-align:center; }
-.card-stat-n { font-size:18px; font-weight:900; color:var(--gold); }
-.card-stat-l { font-size:10px; color:#444; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+.card-stat-n { font-size:16px; font-weight:900; }
+.card-stat-l { font-size:9px; text-transform:uppercase; letter-spacing:0.5px; margin-top:1px; opacity:0.4; }
 
-.card-genres {
-  display:flex; gap:6px; flex-wrap:wrap;
-  padding:14px 20px; border-bottom:1px solid #1a1a1a;
-  min-height:48px;
-}
-.card-genre {
-  padding:4px 12px; border-radius:100px;
-  font-size:11px; font-weight:600;
-  background:#1a1a1a; color:#888;
-  border:1px solid #2a2a2a;
-}
+/* GENRES */
+.card-genres { display:flex; gap:5px; flex-wrap:wrap; padding:10px 18px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.card-genre { padding:3px 10px; border-radius:100px; font-size:10px; font-weight:600; }
 
-.card-bio {
-  padding:12px 20px;
-  font-size:12px; color:#444;
-  line-height:1.5; border-bottom:1px solid #1a1a1a;
-  min-height:40px;
-}
+/* BIO */
+.card-bio { padding:10px 18px; font-size:11px; line-height:1.5; border-bottom:1px solid rgba(255,255,255,0.06); }
 
-.card-footer {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:12px 20px;
-}
-.card-footer-logo { font-size:11px; color:#333; font-weight:800; letter-spacing:1.5px; }
-.card-ig { font-size:11px; color:#444; }
-
+/* FOOTER */
+.card-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 18px; }
+.card-footer-logo { font-size:9px; font-weight:800; letter-spacing:1.5px; opacity:0.4; }
+.card-ig { font-size:10px; opacity:0.5; }
 .wave { display:flex; gap:2px; align-items:flex-end; }
-.wave-bar {
-  width:3px; border-radius:2px; background:var(--gold);
-  animation:wave 0.8s ease-in-out infinite alternate;
-}
-.wave-bar:nth-child(1){height:6px;  animation-delay:0s}
-.wave-bar:nth-child(2){height:12px; animation-delay:0.1s}
-.wave-bar:nth-child(3){height:8px;  animation-delay:0.2s}
-.wave-bar:nth-child(4){height:14px; animation-delay:0.15s}
-.wave-bar:nth-child(5){height:6px;  animation-delay:0.05s}
-.wave-bar:nth-child(6){height:10px; animation-delay:0.25s}
-@keyframes wave { from{transform:scaleY(0.4)} to{transform:scaleY(1)} }
+.wave-bar { width:2px; border-radius:2px; animation:wave 0.8s ease-in-out infinite alternate; }
+.wave-bar:nth-child(1){height:5px;animation-delay:0s}
+.wave-bar:nth-child(2){height:10px;animation-delay:0.1s}
+.wave-bar:nth-child(3){height:7px;animation-delay:0.2s}
+.wave-bar:nth-child(4){height:12px;animation-delay:0.15s}
+.wave-bar:nth-child(5){height:5px;animation-delay:0.05s}
+.wave-bar:nth-child(6){height:8px;animation-delay:0.25s}
+@keyframes wave{from{transform:scaleY(0.4)}to{transform:scaleY(1)}}
+
+/* ── THEME COLORS ── */
+.theme-gold .card-stat-n    { color:#f5c518; }
+.theme-gold .card-badge     { background:#f5c518; color:#000; }
+.theme-gold .card-genre     { background:#1a1500; color:#f5c518; border:1px solid #f5c51833; }
+.theme-gold .card-sub       { color:#666; }
+.theme-gold .card-bio       { color:#444; }
+.theme-gold .wave-bar       { background:#f5c518; }
+
+.theme-purple .card-stat-n  { color:#a78bfa; }
+.theme-purple .card-badge   { background:#7c3aed; color:#fff; }
+.theme-purple .card-genre   { background:#1a0a40; color:#a78bfa; border:1px solid #7c3aed33; }
+.theme-purple .card-sub     { color:#6d28d9; }
+.theme-purple .card-bio     { color:#4a3070; }
+.theme-purple .wave-bar     { background:#a78bfa; }
+.theme-purple .card-avatar  { background:linear-gradient(135deg,#4c1d95,#7c3aed); }
+
+.theme-neon .card-stat-n    { color:#00e676; }
+.theme-neon .card-badge     { background:#00e676; color:#000; }
+.theme-neon .card-genre     { background:#001a00; color:#00e676; border:1px solid #00e67633; }
+.theme-neon .card-sub       { color:#00695c; }
+.theme-neon .card-bio       { color:#1b3d1b; }
+.theme-neon .wave-bar       { background:#00e676; }
+.theme-neon .card-avatar    { background:linear-gradient(135deg,#004d40,#00e676); }
+
+.theme-chrome .card-stat-n  { color:#90caf9; }
+.theme-chrome .card-badge   { background:#1565c0; color:#fff; }
+.theme-chrome .card-genre   { background:#0a0a20; color:#90caf9; border:1px solid #1565c033; }
+.theme-chrome .card-sub     { color:#1565c0; }
+.theme-chrome .card-bio     { color:#1a2a40; }
+.theme-chrome .wave-bar     { background:#90caf9; }
+.theme-chrome .card-avatar  { background:linear-gradient(135deg,#0d47a1,#42a5f5); }
+
+.theme-minimal .card-stat-n { color:#fff; }
+.theme-minimal .card-badge  { background:#fff; color:#000; }
+.theme-minimal .card-genre  { background:#1a1a1a; color:#888; border:1px solid #333; }
+.theme-minimal .card-sub    { color:#555; }
+.theme-minimal .card-bio    { color:#333; }
+.theme-minimal .wave-bar    { background:#fff; }
+
+/* Stories format adjustments */
+#artist-card.fmt-stories .card-top { flex-direction:column; text-align:center; gap:8px; padding:20px 14px 14px; }
+#artist-card.fmt-stories .card-badge { margin:0 auto; }
+#artist-card.fmt-stories .card-name { font-size:14px; }
+#artist-card.fmt-stories .card-stats { grid-template-columns:1fr; gap:8px; }
+#artist-card.fmt-stories .card-genres { justify-content:center; }
+
+/* Banner format */
+#artist-card.fmt-banner .card-top { padding:14px 20px; }
+#artist-card.fmt-banner .card-stats { grid-template-columns:repeat(4,1fr); }
 
 /* ── FORM ── */
 .section-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; margin-top:20px; }
 
 .form-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px; }
 .form-row { margin-bottom:12px; }
+.form-row:last-child { margin-bottom:0; }
 .form-label { font-size:12px; color:var(--muted); margin-bottom:6px; display:block; }
 .form-input {
   width:100%; background:#1a1a1a; border:1px solid var(--border);
@@ -124,6 +201,19 @@ body {
 .form-input:focus { border-color:var(--gold); }
 .form-input::placeholder { color:#444; }
 
+/* Photo upload */
+.photo-upload {
+  width:70px; height:70px; border-radius:50%;
+  background:#1a1a1a; border:2px dashed #333;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  cursor:pointer; margin:0 auto 12px; font-size:22px; color:#444;
+  transition:all 0.2s; overflow:hidden;
+}
+.photo-upload:active { border-color:var(--gold); }
+.photo-upload img { width:100%; height:100%; object-fit:cover; }
+.photo-upload-hint { font-size:10px; color:#444; text-align:center; margin-bottom:12px; }
+
+/* Genre picker */
 .genre-picker { display:flex; flex-wrap:wrap; gap:6px; }
 .genre-opt {
   padding:6px 14px; border-radius:100px; font-size:12px; font-weight:600;
@@ -131,33 +221,43 @@ body {
   transition:all 0.15s;
 }
 .genre-opt.selected { background:#2a1f00; color:var(--gold); border-color:#f5c51866; }
-.genre-opt:active { transform:scale(0.95); }
 
-/* ── BUTTONS ── */
-.btn-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+/* Stat inputs */
+.stats-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.stat-input-wrap { text-align:center; }
+.stat-input-wrap .form-input { text-align:center; font-weight:800; font-size:16px; padding:8px; }
+.stat-input-label { font-size:10px; color:#444; text-transform:uppercase; letter-spacing:0.5px; margin-top:4px; }
+
+/* Buttons */
+.btn-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px; }
 .btn {
-  padding:16px; border:none; border-radius:16px;
-  font-size:15px; font-weight:800; cursor:pointer;
-  transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:16px 8px; border:none; border-radius:16px;
+  font-size:14px; font-weight:800; cursor:pointer;
+  transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:6px;
 }
 .btn:active { transform:scale(0.97); }
 .btn-download { background:linear-gradient(135deg,var(--gold),#ff8c00); color:#000; }
 .btn-share    { background:#1a1a1a; color:#fff; border:1px solid #2a2a2a; }
 
-.btn-full {
-  width:100%; padding:16px; border:none; border-radius:16px;
-  background:linear-gradient(135deg,#1f1f1f,#2a2a2a);
-  color:var(--muted); font-size:14px; font-weight:700; cursor:pointer; margin-top:8px;
-}
-
-/* ── LOADER ── */
+/* Toast */
 .toast {
   position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
   background:#fff; color:#000; padding:12px 20px; border-radius:100px;
-  font-size:14px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  font-size:14px; font-weight:700; z-index:9999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
   white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5);
 }
 .toast.show { transform:translateX(-50%) translateY(0); }
+
+/* Generating overlay */
+.generating-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.8); z-index:9998;
+  align-items:center; justify-content:center; flex-direction:column; gap:12px;
+}
+.generating-overlay.show { display:flex; }
+.spinner { width:40px; height:40px; border:3px solid #333; border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.gen-text { color:#fff; font-size:14px; font-weight:600; }
 </style>
 </head>
 <body>
@@ -167,50 +267,76 @@ body {
   <p>Tu carta de presentación para las redes</p>
 </div>
 
+<!-- FORMATS -->
+<div class="section-title">Formato</div>
+<div class="format-tabs">
+  <div class="fmt-tab active" onclick="setFormat('square',this)">⬛ Cuadrada<br><span style="font-size:9px;opacity:0.5">1:1 · Instagram</span></div>
+  <div class="fmt-tab" onclick="setFormat('stories',this)">📱 Stories<br><span style="font-size:9px;opacity:0.5">9:16 · TikTok</span></div>
+  <div class="fmt-tab" onclick="setFormat('banner',this)">🖥 Banner<br><span style="font-size:9px;opacity:0.5">16:9 · YouTube</span></div>
+</div>
+
+<!-- THEMES -->
+<div class="section-title">Tema</div>
+<div class="theme-row">
+  <div class="theme-btn active" style="background:linear-gradient(135deg,#1a0a2e,#080808)" onclick="setTheme('gold',this)" title="Gold"></div>
+  <div class="theme-btn" style="background:linear-gradient(135deg,#1a0040,#0d0820)" onclick="setTheme('purple',this)" title="Purple"></div>
+  <div class="theme-btn" style="background:linear-gradient(135deg,#001a00,#050f05)" onclick="setTheme('neon',this)" title="Neon"></div>
+  <div class="theme-btn" style="background:linear-gradient(135deg,#1a1a2e,#0a0a0f)" onclick="setTheme('chrome',this)" title="Chrome"></div>
+  <div class="theme-btn" style="background:#0f0f0f;border:1px solid #333" onclick="setTheme('minimal',this)" title="Minimal"></div>
+</div>
+
 <!-- CARD PREVIEW -->
-<div class="card-wrap">
-  <div id="artist-card">
-    <div class="card-top">
-      <div class="card-avatar" id="card-avatar">JM</div>
-      <div>
-        <div class="card-name" id="card-name">Tu nombre</div>
-        <div class="card-sub"  id="card-sub">Productor · Artista</div>
+<div class="section-title">Vista previa</div>
+<div class="card-preview">
+  <div id="artist-card" class="theme-gold fmt-square">
+    <div class="card-bg"></div>
+    <div class="card-inner">
+      <div class="card-top">
+        <div class="card-avatar-wrap">
+          <div class="card-avatar" id="card-avatar">
+            <span id="card-initials">JM</span>
+            <img id="card-photo" src="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+          </div>
+        </div>
+        <div class="card-info">
+          <div class="card-name" id="card-name">Tu nombre</div>
+          <div class="card-sub"  id="card-sub">Productor · Artista</div>
+        </div>
+        <div class="card-badge" id="card-badge">PRO</div>
       </div>
-      <div class="card-badge" id="card-badge">PRO</div>
-    </div>
-    <div class="card-stats">
-      <div class="card-stat">
-        <div class="card-stat-n" id="stat-beats">—</div>
-        <div class="card-stat-l">Beats</div>
+      <div class="card-stats" id="card-stats-row" style="grid-template-columns:1fr 1fr 1fr">
+        <div class="card-stat"><div class="card-stat-n" id="s-beats">—</div><div class="card-stat-l">Beats</div></div>
+        <div class="card-stat"><div class="card-stat-n" id="s-streams">—</div><div class="card-stat-l">Streams</div></div>
+        <div class="card-stat"><div class="card-stat-n" id="s-since">—</div><div class="card-stat-l">Desde</div></div>
       </div>
-      <div class="card-stat">
-        <div class="card-stat-n" id="stat-streams">—</div>
-        <div class="card-stat-l">Streams</div>
+      <div class="card-genres" id="card-genres">
+        <div class="card-genre">Tu género</div>
       </div>
-      <div class="card-stat">
-        <div class="card-stat-n" id="stat-since">—</div>
-        <div class="card-stat-l">Desde</div>
-      </div>
-    </div>
-    <div class="card-genres" id="card-genres">
-      <div class="card-genre">Tu género</div>
-    </div>
-    <div class="card-bio" id="card-bio">Tu bio aparecerá aquí</div>
-    <div class="card-footer">
-      <div class="card-footer-logo">MKEYZ STUDIO</div>
-      <div class="card-ig" id="card-ig">@usuario</div>
-      <div class="wave">
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="card-bio" id="card-bio">Tu bio aparecerá aquí</div>
+      <div class="card-footer">
+        <div class="card-footer-logo">MKEYZ STUDIO</div>
+        <div class="card-ig" id="card-ig">@usuario</div>
+        <div class="wave">
+          <div class="wave-bar"></div><div class="wave-bar"></div>
+          <div class="wave-bar"></div><div class="wave-bar"></div>
+          <div class="wave-bar"></div><div class="wave-bar"></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- FORM -->
-<div class="section-title">Personaliza tu tarjeta</div>
+<!-- FORM: PHOTO -->
+<div class="section-title">Foto de perfil</div>
+<div class="form-card">
+  <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="handlePhoto(event)">
+  <div class="photo-upload" onclick="document.getElementById('photo-input').click()" id="photo-preview">📷</div>
+  <p class="photo-upload-hint">Toca para subir tu foto</p>
+  <button onclick="removePhoto()" style="width:100%;padding:8px;background:transparent;border:1px solid #2a2a2a;border-radius:8px;color:#555;font-size:12px;cursor:pointer">Quitar foto · Usar iniciales</button>
+</div>
 
+<!-- FORM: INFO -->
+<div class="section-title">Información</div>
 <div class="form-card">
   <div class="form-row">
     <label class="form-label">Nombre artístico</label>
@@ -226,28 +352,41 @@ body {
   </div>
 </div>
 
+<!-- FORM: STATS -->
+<div class="section-title">Stats</div>
 <div class="form-card">
-  <div class="form-row">
-    <label class="form-label">Stats</label>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+  <div class="stats-grid">
+    <div class="stat-input-wrap">
       <input class="form-input" id="f-beats"   placeholder="100+" oninput="updateCard()">
-      <input class="form-input" id="f-streams" placeholder="47K"  oninput="updateCard()">
-      <input class="form-input" id="f-since"   placeholder="2020" oninput="updateCard()">
+      <div class="stat-input-label">Beats</div>
     </div>
-    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:10px;color:var(--muted)">
-      <span>Beats</span><span>Streams</span><span>Año inicio</span>
+    <div class="stat-input-wrap">
+      <input class="form-input" id="f-streams" placeholder="47K" oninput="updateCard()">
+      <div class="stat-input-label">Streams</div>
+    </div>
+    <div class="stat-input-wrap">
+      <input class="form-input" id="f-since"   placeholder="2020" oninput="updateCard()">
+      <div class="stat-input-label">Desde</div>
     </div>
   </div>
 </div>
 
+<!-- FORM: GENRES -->
+<div class="section-title">Géneros (máx. 4)</div>
 <div class="form-card">
-  <label class="form-label">Géneros (máx. 4)</label>
   <div class="genre-picker" id="genre-picker"></div>
 </div>
 
+<!-- BUTTONS -->
 <div class="btn-row">
   <button class="btn btn-download" onclick="downloadCard()">⬇️ Descargar PNG</button>
   <button class="btn btn-share"    onclick="shareCard()">📤 Compartir</button>
+</div>
+
+<!-- OVERLAY -->
+<div class="generating-overlay" id="gen-overlay">
+  <div class="spinner"></div>
+  <div class="gen-text" id="gen-text">Generando imagen...</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -256,8 +395,11 @@ body {
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
 
-const GENRES = ["Trap","Pop Latino","Afrobeats","Reggaeton","Lo-Fi","R&B","Hip-Hop","Drill","Dancehall","Salsa","Bachata","EDM","House","Funk"];
+const GENRES = ["Trap","Pop Latino","Afrobeats","Reggaeton","Lo-Fi","R&B","Hip-Hop","Drill","Dancehall","Salsa","Bachata","EDM","House","Funk","Dembow"];
 let selectedGenres = [];
+let currentTheme  = "gold";
+let currentFormat = "square";
+let photoDataUrl  = null;
 
 // Build genre picker
 const picker = document.getElementById("genre-picker");
@@ -284,6 +426,62 @@ function toggleGenre(g, btn) {
   if (tg) tg.HapticFeedback?.impactOccurred("light");
 }
 
+function setTheme(theme, btn) {
+  document.querySelectorAll(".theme-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  const card = document.getElementById("artist-card");
+  card.classList.remove("theme-gold","theme-purple","theme-neon","theme-chrome","theme-minimal");
+  card.classList.add("theme-" + theme);
+  currentTheme = theme;
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+function setFormat(fmt, btn) {
+  document.querySelectorAll(".fmt-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  const card = document.getElementById("artist-card");
+  card.classList.remove("fmt-square","fmt-stories","fmt-banner");
+  card.classList.add("fmt-" + fmt);
+  currentFormat = fmt;
+
+  // Adjust stats columns for banner
+  const statsRow = document.getElementById("card-stats-row");
+  if (fmt === "banner") {
+    statsRow.style.gridTemplateColumns = "repeat(4,1fr)";
+  } else if (fmt === "stories") {
+    statsRow.style.gridTemplateColumns = "1fr";
+  } else {
+    statsRow.style.gridTemplateColumns = "1fr 1fr 1fr";
+  }
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+function handlePhoto(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    photoDataUrl = e.target.result;
+    // Preview
+    const prev = document.getElementById("photo-preview");
+    prev.innerHTML = `<img src="${photoDataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    // Card
+    document.getElementById("card-initials").style.display = "none";
+    const img = document.getElementById("card-photo");
+    img.src = photoDataUrl;
+    img.style.display = "block";
+    if (tg) tg.HapticFeedback?.notificationOccurred("success");
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto() {
+  photoDataUrl = null;
+  document.getElementById("photo-preview").innerHTML = "📷";
+  document.getElementById("card-initials").style.display = "";
+  document.getElementById("card-photo").style.display = "none";
+}
+
 function getInitials(name) {
   return name.trim().split(" ").slice(0,2).map(w => w[0]?.toUpperCase() || "").join("") || "??";
 }
@@ -296,101 +494,106 @@ function updateCard() {
   const streams = document.getElementById("f-streams").value.trim() || "—";
   const since   = document.getElementById("f-since").value.trim()   || "—";
 
-  document.getElementById("card-name").textContent    = name;
-  document.getElementById("card-avatar").textContent  = getInitials(name);
-  document.getElementById("card-bio").textContent     = bio;
-  document.getElementById("card-ig").textContent      = "@" + ig;
-  document.getElementById("stat-beats").textContent   = beats;
-  document.getElementById("stat-streams").textContent = streams;
-  document.getElementById("stat-since").textContent   = since;
+  document.getElementById("card-name").textContent   = name;
+  document.getElementById("card-initials").textContent = getInitials(name);
+  document.getElementById("card-bio").textContent    = bio;
+  document.getElementById("card-ig").textContent     = "@" + ig;
+  document.getElementById("s-beats").textContent     = beats;
+  document.getElementById("s-streams").textContent   = streams;
+  document.getElementById("s-since").textContent     = since;
+  document.getElementById("card-sub").textContent    = selectedGenres.length > 0
+    ? selectedGenres.slice(0,2).join(" · ") : "Productor · Artista";
 
-  // Sub text
-  const sub = selectedGenres.length > 0
-    ? selectedGenres.slice(0,2).join(" · ")
-    : "Productor · Artista";
-  document.getElementById("card-sub").textContent = sub;
-
-  // Genres
   const genresEl = document.getElementById("card-genres");
-  if (selectedGenres.length > 0) {
-    genresEl.innerHTML = selectedGenres.map(g => `<div class="card-genre">${g}</div>`).join("");
-  } else {
-    genresEl.innerHTML = '<div class="card-genre">Tu género</div>';
-  }
+  genresEl.innerHTML = selectedGenres.length > 0
+    ? selectedGenres.map(g => `<div class="card-genre">${g}</div>`).join("")
+    : '<div class="card-genre">Tu género</div>';
 }
 
-// Load from Zona Artistas profile if available
-async function loadProfile() {
-  const userId = tg?.initDataUnsafe?.user?.id;
-  if (!userId) return;
-  try {
-    const res  = await fetch(`/api/artist/profile?user_id=${userId}`);
-    const data = await res.json();
-    if (data && data.name) {
-      document.getElementById("f-name").value = data.name  || "";
-      document.getElementById("f-bio").value  = data.bio   || "";
-      document.getElementById("f-ig").value   = data.ig    || "";
-
-      // Set genre
-      if (data.genre) {
-        const btn = [...document.querySelectorAll(".genre-opt")].find(b => b.textContent === data.genre);
-        if (btn) toggleGenre(data.genre, btn);
-      }
-      updateCard();
-      showToast("✅ Perfil cargado desde Zona Artistas");
+async function getCanvas() {
+  const card = document.getElementById("artist-card");
+  const scale = 3;
+  return await html2canvas(card, {
+    backgroundColor: null,
+    scale: scale,
+    useCORS: true,
+    allowTaint: true,
+    logging: false,
+    imageTimeout: 5000,
+    onclone: (doc) => {
+      // Stop wave animation for capture
+      doc.querySelectorAll(".wave-bar").forEach(b => {
+        b.style.animation = "none";
+        b.style.transform = "scaleY(0.8)";
+      });
     }
-  } catch(e) {
-    // No profile — user fills manually
-  }
+  });
 }
 
 async function downloadCard() {
-  showToast("⏳ Generando imagen...");
+  showOverlay("Generando tu tarjeta...");
   try {
-    const card    = document.getElementById("artist-card");
-    const canvas  = await html2canvas(card, {
-      backgroundColor: "#080808",
-      scale: 3,
-      useCORS: true,
-      logging: false,
-    });
-    const link     = document.createElement("a");
-    link.download  = "mkeyz_artist_card.png";
-    link.href      = canvas.toDataURL("image/png");
+    // Stop wave during capture
+    const canvas = await getCanvas();
+    const name   = document.getElementById("f-name").value.trim() || "mkeyz";
+    const link   = document.createElement("a");
+    link.download = `${name.replace(/\s+/g,"_")}_card_${currentFormat}.png`;
+    link.href = canvas.toDataURL("image/png", 1.0);
+    document.body.appendChild(link);
     link.click();
-    showToast("✅ Imagen descargada");
+    document.body.removeChild(link);
+    hideOverlay();
+    showToast("✅ Tarjeta descargada");
     if (tg) tg.HapticFeedback?.notificationOccurred("success");
   } catch(e) {
-    showToast("❌ Error generando imagen");
+    hideOverlay();
+    showToast("❌ Error: " + e.message);
+    console.error(e);
   }
 }
 
 async function shareCard() {
-  const name    = document.getElementById("f-name").value.trim()    || "Artista";
-  const ig      = document.getElementById("f-ig").value.trim();
-  const beats   = document.getElementById("f-beats").value.trim()   || "—";
-  const streams = document.getElementById("f-streams").value.trim() || "—";
-  const genres  = selectedGenres.join(" · ") || "Música";
-
-  const msg = `🃏 *${name}*\n\n🎵 ${genres}\n🎧 ${beats} beats · ${streams} streams\n${ig ? `📸 @${ig}` : ""}\n\n_Generado con Mkeyz Studio Bot_\n@MkeyzDAWbot`;
-
+  showOverlay("Preparando para compartir...");
   try {
-    const card   = document.getElementById("artist-card");
-    const canvas = await html2canvas(card, { backgroundColor:"#080808", scale:2, useCORS:true, logging:false });
+    const canvas = await getCanvas();
+    const name   = document.getElementById("f-name").value.trim()    || "Artista";
+    const ig     = document.getElementById("f-ig").value.trim();
+    const genres = selectedGenres.join(" · ") || "Música";
+    const beats  = document.getElementById("f-beats").value.trim()   || "";
+    const streams= document.getElementById("f-streams").value.trim() || "";
+    const msg    = `🃏 ${name}\n\n🎵 ${genres}${beats ? "\n🎛️ " + beats + " beats" : ""}${streams ? " · " + streams + " streams" : ""}\n${ig ? "📸 @" + ig : ""}\n\n_Mkeyz Studio Bot_`;
+
     canvas.toBlob(async blob => {
-      if (navigator.share && blob) {
-        const file = new File([blob], "mkeyz_card.png", { type:"image/png" });
-        await navigator.share({ title: name, text: msg, files: [file] });
+      hideOverlay();
+      if (!blob) { showToast("❌ Error generando imagen"); return; }
+      const file = new File([blob], "mkeyz_card.png", { type:"image/png" });
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: name, text: msg, files: [file] });
+          showToast("✅ Compartido");
+        } catch(e) {
+          if (e.name !== "AbortError") fallbackShare(msg);
+        }
       } else {
-        navigator.clipboard?.writeText(msg);
-        showToast("✅ Info copiada al portapapeles");
+        fallbackShare(msg);
       }
-    }, "image/png");
+    }, "image/png", 1.0);
   } catch(e) {
-    navigator.clipboard?.writeText(msg);
-    showToast("✅ Info copiada al portapapeles");
+    hideOverlay();
+    showToast("❌ Error: " + e.message);
   }
-  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+}
+
+function fallbackShare(msg) {
+  navigator.clipboard?.writeText(msg).then(() => showToast("✅ Info copiada al portapapeles"));
+}
+
+function showOverlay(text) {
+  document.getElementById("gen-text").textContent = text;
+  document.getElementById("gen-overlay").classList.add("show");
+}
+function hideOverlay() {
+  document.getElementById("gen-overlay").classList.remove("show");
 }
 
 function showToast(msg) {
@@ -400,7 +603,28 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove("show"), 2500);
 }
 
-// Init
+// Load Zona Artistas profile
+async function loadProfile() {
+  const userId = tg?.initDataUnsafe?.user?.id;
+  if (!userId) return;
+  try {
+    const res  = await fetch(`/api/artist/profile?user_id=${userId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.name) {
+      document.getElementById("f-name").value = data.name || "";
+      document.getElementById("f-bio").value  = data.bio  || "";
+      document.getElementById("f-ig").value   = data.ig   || "";
+      if (data.genre) {
+        const btn = [...document.querySelectorAll(".genre-opt")].find(b => b.textContent === data.genre);
+        if (btn) toggleGenre(data.genre, btn);
+      }
+      updateCard();
+      showToast("✅ Perfil cargado automáticamente");
+    }
+  } catch(e) {}
+}
+
 loadProfile();
 updateCard();
 </script>
