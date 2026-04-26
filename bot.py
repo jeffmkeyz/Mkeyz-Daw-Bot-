@@ -707,6 +707,9 @@ def kb_sub_tools():
         [InlineKeyboardButton("🎛️  Mini DAW",           callback_data="sec_daw")],
         [InlineKeyboardButton("📊  Analizador",         callback_data="sec_analyze")],
         [InlineKeyboardButton("📊  Simulador Streams",  callback_data="sec_simulator")],
+        [InlineKeyboardButton("🎹  Detector de Escala", callback_data="sec_scale")],
+        [InlineKeyboardButton("🎚️  Visualizador Freq.", callback_data="sec_freq")],
+        [InlineKeyboardButton("📈  Comparar Artistas",  callback_data="sec_compare")],
         [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
     ])
 
@@ -1093,6 +1096,65 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # ── Menú principal ─────────────────────────────────────
     if d == "sec_main":
         await edit(q, "👋 *Jeff Mkeyz* — Menú principal\n\nProductor · Cantautor\nPop Latino · Trap · Lo-Fi · Afrobeats 🎛️", kb_main())
+        return
+
+    # ── Detector de Escala ─────────────────────────────────
+    if d == "sec_scale":
+        game_url = (GAME_URL.rstrip("/") + "/scale") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "🎹 *Detector de Escala Musical*\n\n"
+                "Toca notas en el piano virtual y detecta automáticamente:\n\n"
+                "🎼 La escala musical\n"
+                "🎸 Los acordes que funcionan\n"
+                "🎵 El mood y géneros ideales\n"
+                "✨ Las notas resaltadas en el piano",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎹 Abrir Piano", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Herramientas", callback_data="sub_tools")],
+                ]))
+        else:
+            await edit(q, "🎹 No disponible.", kb_back())
+        return
+
+    # ── Visualizador de Frecuencias ─────────────────────────
+    if d == "sec_freq":
+        game_url = (GAME_URL.rstrip("/") + "/freq") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "🎚️ *Visualizador de Frecuencias*\n\n"
+                "Activa el micrófono y analiza tu audio en tiempo real:\n\n"
+                "📊 Espectro de frecuencias animado\n"
+                "〰️ Forma de onda\n"
+                "⭕ Visualización circular\n"
+                "🔊 Frecuencia dominante y zona\n"
+                "📈 Volumen en dB en tiempo real",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎚️ Abrir Visualizador", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Herramientas", callback_data="sub_tools")],
+                ]))
+        else:
+            await edit(q, "🎚️ No disponible.", kb_back())
+        return
+
+    # ── Comparador de Artistas ──────────────────────────────
+    if d == "sec_compare":
+        game_url = (GAME_URL.rstrip("/") + "/compare") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "📈 *Comparador de Artistas*\n\n"
+                "Compara dos artistas con datos reales de Last.fm:\n\n"
+                "👥 Oyentes mensuales\n"
+                "🔄 Total de plays\n"
+                "🔁 Plays por oyente\n"
+                "🏷️ Géneros y tags\n"
+                "🏆 Quién gana",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("📈 Abrir Comparador", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Herramientas", callback_data="sub_tools")],
+                ]))
+        else:
+            await edit(q, "📈 No disponible.", kb_back())
         return
 
     # ── Simulador de Streams ───────────────────────────────
