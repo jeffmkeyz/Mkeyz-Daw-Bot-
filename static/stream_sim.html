@@ -250,6 +250,34 @@ input[type=range]::-webkit-slider-thumb {
     <div class="slider-labels"><span>1</span><span>100</span><span>250</span><span>500</span><span>1000</span></div>
   </div>
 
+  <div class="section-title">⏱️ Duración de canciones (promedio)</div>
+  <div class="slider-card">
+    <div class="slider-header">
+      <div class="slider-name">Duración</div>
+      <div class="slider-val" id="val-duracion">3:30</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <input type="text" id="dur-manual" placeholder="Ej: 3:30" maxlength="5"
+        style="width:90px;background:var(--border);border:1px solid var(--border);border-radius:8px;padding:10px;color:#fff;font-size:16px;font-weight:700;text-align:center;outline:none"
+        oninput="parseDuration(this.value)">
+      <span style="font-size:12px;color:var(--muted)">formato MM:SS</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <button onclick="setDur('2:30')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">2:30</button>
+      <button onclick="setDur('3:00')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">3:00</button>
+      <button onclick="setDur('3:30')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">3:30</button>
+      <button onclick="setDur('4:00')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">4:00</button>
+      <button onclick="setDur('4:30')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">4:30</button>
+      <button onclick="setDur('5:00')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">5:00</button>
+    </div>
+    <!-- Total playback time -->
+    <div style="margin-top:14px;background:#0d1f0d;border:1px solid #00e67633;border-radius:12px;padding:12px;text-align:center">
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Tiempo total de reproducción</div>
+      <div style="font-size:22px;font-weight:900;color:var(--green)" id="total-time-display">—</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px" id="total-time-sub">canciones × duración</div>
+    </div>
+  </div>
+
   <div class="section-title">👥 Oyentes diarios</div>
   <div class="slider-card">
     <div class="slider-header">
@@ -450,7 +478,26 @@ function fmtMoney(n) {
   return "$" + n.toFixed(2);
 }
 
-let currentOyentes = 0;
+let currentOyentes  = 0;
+let duracionSecs    = 210; // 3:30 default
+
+function parseDuration(val) {
+  const parts = val.split(":");
+  if (parts.length === 2) {
+    const m = parseInt(parts[0]) || 0;
+    const s = parseInt(parts[1]) || 0;
+    if (s < 60) {
+      duracionSecs = m * 60 + s;
+      document.getElementById("val-duracion").textContent = `${m}:${String(s).padStart(2,"0")}`;
+      update();
+    }
+  }
+}
+
+function setDur(str) {
+  document.getElementById("dur-manual").value = str;
+  parseDuration(str);
+}
 
 function setOyentes(n) {
   currentOyentes = n;
@@ -488,6 +535,22 @@ function update() {
   document.getElementById("f-oyentes").textContent    = fmtNum(oyentes);
   document.getElementById("f-rep").textContent        = rep;
   document.getElementById("f-total-day").textContent  = fmtNum(total);
+
+  // Total playback time: canciones × duracion
+  const totalPlaySecs = canciones * duracionSecs;
+  const ph = Math.floor(totalPlaySecs / 3600);
+  const pm = Math.floor((totalPlaySecs % 3600) / 60);
+  const ps = totalPlaySecs % 60;
+  let timeStr = "";
+  if (ph > 0) timeStr = `${ph}h ${pm}m ${ps}s`;
+  else if (pm > 0) timeStr = `${pm}m ${ps}s`;
+  else timeStr = `${ps}s`;
+  const timeEl = document.getElementById("total-time-display");
+  const subEl  = document.getElementById("total-time-sub");
+  if (timeEl) {
+    timeEl.textContent = timeStr;
+    subEl.textContent  = `${canciones} canciones × ${Math.floor(duracionSecs/60)}:${String(duracionSecs%60).padStart(2,"0")} = ${timeStr}`;
+  }
 
   // total = streams PER DAY (canciones × oyentes × repeticiones)
   const daily    = total * currentRate;
