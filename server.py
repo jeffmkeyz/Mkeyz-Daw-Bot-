@@ -209,6 +209,128 @@ def serve_playlist():
 def serve_game2():
     return send_from_directory("static", "studio_game.html")
 
+@app.route("/about")
+def serve_about():
+    return send_from_directory("static", "about.html")
+
+# ── MKEYZ Token Economy ────────────────────────────────────────
+TOTAL_SUPPLY = 21_000_000  # Like Bitcoin — fixed supply
+
+@app.route("/api/mkeyz/supply")
+def mkeyz_supply():
+    """Returns global mining stats."""
+    con = get_db()
+    cur = con.cursor()
+    try:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mkeyz_rewards (
+                tg_id      INTEGER NOT NULL,
+                action     TEXT NOT NULL,
+                amount     INTEGER NOT NULL,
+                claimed    INTEGER DEFAULT 0,
+                created_at INTEGER NOT NULL
+            )""")
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mkeyz_game (
+                tg_id      INTEGER PRIMARY KEY,
+                total_mined INTEGER DEFAULT 0,
+                updated_at  INTEGER
+            )""")
+        con.commit()
+        cur.execute("SELECT COALESCE(SUM(total_mined),0) FROM mkeyz_game")
+        total = cur.fetchone()[0] or 0
+        cur.execute("SELECT COUNT(DISTINCT tg_id) FROM mkeyz_game WHERE total_mined > 0")
+        miners = cur.fetchone()[0] or 0
+    except Exception as e:
+        total, miners = 0, 0
+    con.close()
+    return jsonify({
+        "total_supply": TOTAL_SUPPLY,
+        "total_mined":  int(total),
+        "remaining":    TOTAL_SUPPLY - int(total),
+        "miners":       int(miners),
+        "pct_mined":    round(int(total) / TOTAL_SUPPLY * 100, 4)
+    })
+
+@app.route("/api/mkeyz/rewards")
+def get_rewards():
+    """Get pending rewards for a user."""
+    tg_id = request.args.get("tg_id")
+    if not tg_id: return jsonify([])
+    con = get_db()
+    cur = con.cursor()
+    try:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mkeyz_rewards (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id INTEGER NOT NULL, action TEXT NOT NULL,
+                amount INTEGER NOT NULL, claimed INTEGER DEFAULT 0,
+                created_at INTEGER NOT NULL)""")
+        cur.execute("SELECT id, action, amount FROM mkeyz_rewards WHERE tg_id=? AND claimed=0",
+                    (int(tg_id),))
+        rows = [{"id":r[0],"action":r[1],"amount":r[2]} for r in cur.fetchall()]
+    except: rows = []
+    con.close()
+    return jsonify(rows)
+
+@app.route("/api/mkeyz/claim", methods=["POST"])
+def claim_rewards():
+    """Mark rewards as claimed and update mined total."""
+    data  = request.json or {}
+    tg_id = data.get("tg_id")
+    ids   = data.get("ids", [])
+    total = data.get("total_claimed", 0)
+    if not tg_id: return jsonify({"ok":False})
+    con = get_db()
+    cur = con.cursor()
+    try:
+        for rid in ids:
+            cur.execute("UPDATE mkeyz_rewards SET claimed=1 WHERE id=?", (rid,))
+        cur.execute("""
+            INSERT INTO mkeyz_game (tg_id, total_mined, updated_at)
+            VALUES (?,?,?) ON CONFLICT(tg_id) DO UPDATE SET
+            total_mined=total_mined+excluded.total_mined, updated_at=excluded.updated_at
+        """, (int(tg_id), int(total), int(time.time())))
+        con.commit()
+    except Exception as e:
+        con.close()
+        return jsonify({"ok":False,"error":str(e)})
+    con.close()
+    return jsonify({"ok":True})
+
+@app.route("/api/mkeyz/award", methods=["POST"])
+def award_coins():
+    """Award coins to a user for using a bot tool."""
+    data   = request.json or {}
+    tg_id  = data.get("tg_id")
+    action = data.get("action","")
+    amount = data.get("amount", 0)
+    if not all([tg_id, action, amount]): return jsonify({"ok":False})
+    con = get_db()
+    cur = con.cursor()
+    try:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mkeyz_rewards (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id INTEGER NOT NULL, action TEXT NOT NULL,
+                amount INTEGER NOT NULL, claimed INTEGER DEFAULT 0,
+                created_at INTEGER NOT NULL)""")
+        # Check if already awarded this action today
+        today = int(time.time()) - 86400
+        cur.execute("SELECT COUNT(*) FROM mkeyz_rewards WHERE tg_id=? AND action=? AND created_at>?",
+                    (int(tg_id), action, today))
+        if cur.fetchone()[0] > 0:
+            con.close()
+            return jsonify({"ok":False, "reason":"already_awarded_today"})
+        cur.execute("INSERT INTO mkeyz_rewards (tg_id,action,amount,created_at) VALUES (?,?,?,?)",
+                    (int(tg_id), action, int(amount), int(time.time())))
+        con.commit()
+    except Exception as e:
+        con.close()
+        return jsonify({"ok":False,"error":str(e)})
+    con.close()
+    return jsonify({"ok":True, "awarded":amount})
+
 @app.route("/api/artist/profile")
 def api_artist_profile():
     user_id = request.args.get("user_id")
