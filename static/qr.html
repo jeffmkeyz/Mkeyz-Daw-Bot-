@@ -6,7 +6,6 @@
 <title>Mkeyz Studio — Compartir</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 :root {
@@ -206,10 +205,7 @@ body {
 <button class="btn-full btn-telegram" onclick="shareToTelegram()">✈️ Compartir por Telegram</button>
 <button class="btn-full btn-copy-link" onclick="copyLink()">🔗 Copiar enlace del bot</button>
 
-<div class="btn-row">
-  <button class="btn btn-gold"  onclick="downloadQR()">⬇️ Descargar QR</button>
-  <button class="btn btn-dark"  onclick="downloadCard()">🃏 Descargar tarjeta</button>
-</div>
+
 
 <!-- STATS -->
 <div class="section-title">El bot en números</div>
@@ -298,67 +294,7 @@ function generateQR() {
   });
 }
 
-async function downloadQR() {
-  showOverlay("Generando QR...");
-  try {
-    await sleep(300);
-    const box    = document.getElementById("qr-box");
-    const canvas = await html2canvas(box, {
-      backgroundColor:"#ffffff", scale:4, useCORS:true, logging:false,
-    });
-    const dataUrl = canvas.toDataURL("image/png");
-    hideOverlay();
-    await saveImage(dataUrl, "mkeyz_qr.png");
-    if (tg) tg.HapticFeedback?.notificationOccurred("success");
-  } catch(e) {
-    hideOverlay();
-    showToast("❌ Error: " + e.message);
-  }
-}
 
-async function downloadCard() {
-  showOverlay("Generando tarjeta...");
-  try {
-    await sleep(300);
-    const card   = document.getElementById("qr-card");
-    const canvas = await html2canvas(card, {
-      backgroundColor: null, scale:3, useCORS:true, logging:false,
-      onclone: doc => {
-        doc.querySelectorAll(".wave-dec span").forEach(s => {
-          s.style.animation = "none"; s.style.transform = "scaleY(0.8)";
-        });
-      }
-    });
-    const dataUrl = canvas.toDataURL("image/png");
-    hideOverlay();
-    await saveImage(dataUrl, "mkeyz_studio_card.png");
-    if (tg) tg.HapticFeedback?.notificationOccurred("success");
-  } catch(e) {
-    hideOverlay();
-    showToast("❌ Error: " + e.message);
-  }
-}
-
-async function saveImage(dataUrl, filename) {
-  if (navigator.share) {
-    try {
-      const res  = await fetch(dataUrl);
-      const blob = await res.blob();
-      const file = new File([blob], filename, { type:"image/png" });
-      await navigator.share({ files:[file] });
-      showToast("✅ Imagen compartida");
-      return;
-    } catch(e) {
-      if (e.name === "AbortError") return;
-    }
-  }
-  const res  = await fetch(dataUrl);
-  const blob = await res.blob();
-  const url  = URL.createObjectURL(blob);
-  window.open(url, "_blank");
-  showToast("📸 Mantén presionada la imagen para guardar");
-  setTimeout(() => URL.revokeObjectURL(url), 30000);
-}
 
 function shareToTelegram() {
   const msg = `🎛️ *Mkeyz Studio Bot*\n\n¡El primer estudio musical dentro de Telegram!\n\n🎵 Graba · 🎹 Chords · 🥁 Beat Battle\n📊 Analizador · 🎚️ DAW y mucho más.\n\n👉 ${BOT_URL}`;
