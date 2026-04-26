@@ -301,14 +301,14 @@ function generateQR() {
 async function downloadQR() {
   showOverlay("Generando QR...");
   try {
-    await sleep(300); // let QR render
+    await sleep(300);
     const box    = document.getElementById("qr-box");
     const canvas = await html2canvas(box, {
       backgroundColor:"#ffffff", scale:4, useCORS:true, logging:false,
     });
-    download(canvas.toDataURL("image/png"), "mkeyz_qr.png");
+    const dataUrl = canvas.toDataURL("image/png");
     hideOverlay();
-    showToast("✅ QR descargado");
+    await saveImage(dataUrl, "mkeyz_qr.png");
     if (tg) tg.HapticFeedback?.notificationOccurred("success");
   } catch(e) {
     hideOverlay();
@@ -321,7 +321,6 @@ async function downloadCard() {
   try {
     await sleep(300);
     const card   = document.getElementById("qr-card");
-    // Pause wave animation
     const canvas = await html2canvas(card, {
       backgroundColor: null, scale:3, useCORS:true, logging:false,
       onclone: doc => {
@@ -330,14 +329,35 @@ async function downloadCard() {
         });
       }
     });
-    download(canvas.toDataURL("image/png"), "mkeyz_studio_card.png");
+    const dataUrl = canvas.toDataURL("image/png");
     hideOverlay();
-    showToast("✅ Tarjeta descargada");
+    await saveImage(dataUrl, "mkeyz_studio_card.png");
     if (tg) tg.HapticFeedback?.notificationOccurred("success");
   } catch(e) {
     hideOverlay();
     showToast("❌ Error: " + e.message);
   }
+}
+
+async function saveImage(dataUrl, filename) {
+  if (navigator.share) {
+    try {
+      const res  = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], filename, { type:"image/png" });
+      await navigator.share({ files:[file] });
+      showToast("✅ Imagen compartida");
+      return;
+    } catch(e) {
+      if (e.name === "AbortError") return;
+    }
+  }
+  const res  = await fetch(dataUrl);
+  const blob = await res.blob();
+  const url  = URL.createObjectURL(blob);
+  window.open(url, "_blank");
+  showToast("📸 Mantén presionada la imagen para guardar");
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
 function shareToTelegram() {
@@ -366,12 +386,7 @@ function copyLink() {
   if (tg) tg.HapticFeedback?.impactOccurred("light");
 }
 
-function download(dataUrl, filename) {
-  const a = document.createElement("a");
-  a.href = dataUrl; a.download = filename;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-}
+
 
 function showOverlay(text) {
   document.getElementById("overlay-text").textContent = text;
