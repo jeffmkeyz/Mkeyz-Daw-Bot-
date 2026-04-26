@@ -27,7 +27,7 @@ def is_admin(user_id: int) -> bool:
     return ADMIN_ID != 0 and user_id == ADMIN_ID
 EUR_RATE = 0.92
 
-BANNER_URL = "https://ibb.co/mCqxB4fg"
+BANNER_URL = "https://i.ibb.co/Fqxk8NHZ/chromatic-haze-portrait-1f1314d5-273f-6550-a10c-a923b265cbc7-0-0.png"
 
 LINKS = {
     "beatstars": "https://beatstars.com/jeffmkeyz",
@@ -705,6 +705,7 @@ def kb_sub_beats():
         [InlineKeyboardButton("🎵  Mis Beats",         callback_data="sec_beats")],
         [InlineKeyboardButton("🔍  Buscar Canción",    callback_data="sec_spotify")],
         [InlineKeyboardButton("✏️  Títulos de Beat",   callback_data="sec_titulos")],
+        [InlineKeyboardButton("🎧  Playlist Generator", callback_data="sec_playlist")],
         [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
     ])
 
@@ -1108,6 +1109,26 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # ── Menú principal ─────────────────────────────────────
     if d == "sec_main":
         await edit(q, "👋 *Jeff Mkeyz* — Menú principal\n\nProductor · Cantautor\nPop Latino · Trap · Lo-Fi · Afrobeats 🎛️", kb_main())
+        return
+
+    # ── Playlist Generator ─────────────────────────────────
+    if d == "sec_playlist":
+        game_url = (GAME_URL.rstrip("/") + "/playlist") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "🎧 *Playlist Generator*\n\n"
+                "Genera playlists curadas con artistas reales:\n\n"
+                "🎵 14 géneros disponibles\n"
+                "💭 10 moods — Energético · Romántico · Workout...\n"
+                "📍 Contexto — Gym · Fiesta · Estudio · Carro...\n"
+                "🎛️ Incluye beats de Jeff Mkeyz\n"
+                "📋 Copia la lista completa",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎧 Generar Playlist", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Beats & Música", callback_data="sub_beats")],
+                ]))
+        else:
+            await edit(q, "🎧 No disponible.", kb_back())
         return
 
     # ── Chord Generator ────────────────────────────────────
