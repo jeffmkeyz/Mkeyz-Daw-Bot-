@@ -567,15 +567,18 @@ async function shareCard() {
       hideOverlay();
       if (!blob) { showToast("❌ Error generando imagen"); return; }
       const file = new File([blob], "mkeyz_card.png", { type:"image/png" });
-      if (navigator.share) {
-        try {
+      try {
+        if (navigator.share) {
           await navigator.share({ title: name, text: msg, files: [file] });
           showToast("✅ Compartido");
-        } catch(e) {
-          if (e.name !== "AbortError") fallbackShare(msg);
+        } else {
+          const url = URL.createObjectURL(blob);
+          window.open(url, "_blank");
+          showToast("📸 Mantén presionada para guardar");
+          setTimeout(() => URL.revokeObjectURL(url), 30000);
         }
-      } else {
-        fallbackShare(msg);
+      } catch(e) {
+        if (e.name !== "AbortError") fallbackShare(msg);
       }
     }, "image/png", 1.0);
   } catch(e) {
