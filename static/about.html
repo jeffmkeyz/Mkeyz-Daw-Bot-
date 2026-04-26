@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Jeff Mkeyz — Productor · Cantautor</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+:root {
+  --bg:     #060608;
+  --gold:   #f5c518;
+  --gold2:  #c9a84c;
+  --white:  #f0ede8;
+  --muted:  #4a4a5a;
+  --border: #1a1a24;
+  --card:   #0d0d14;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Space Grotesk', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.hero-photo {
+  position: absolute;
+  inset: 0;
+  background: url('https://i.ibb.co/FbwPWzRC/Picsart-26-04-26-00-55-47-981.jpg') center top / cover no-repeat;
+  filter: brightness(0.55);
+}
+
+.hero-grain {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 1;
+}
+
+.hero-gradient {
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 70%;
+  background: linear-gradient(to top, var(--bg) 0%, rgba(6,6,8,0.7) 50%, transparent 100%);
+  z-index: 2;
+}
+
+.hero-content {
+  position: relative; z-index: 3;
+  padding: 0 24px 40px;
+}
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(245,197,24,0.12); border: 1px solid rgba(245,197,24,0.3);
+  border-radius: 100px; padding: 6px 14px; margin-bottom: 16px;
+  font-size: 11px; font-weight: 600; color: var(--gold); letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.hero-tag::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--gold); animation:blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.hero-name {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(48px, 14vw, 72px);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -2px;
+  margin-bottom: 16px;
+}
+.hero-name span { color: var(--gold); }
+
+.hero-desc {
+  font-size: 15px;
+  color: rgba(240,237,232,0.6);
+  line-height: 1.6;
+  max-width: 320px;
+  margin-bottom: 24px;
+}
+
+.hero-flags {
+  display: flex; gap: 10px; align-items: center;
+  font-size: 22px; margin-bottom: 24px;
+}
+.hero-flags span { font-size: 12px; color: var(--muted); }
+
+.hero-stats {
+  display: flex; gap: 24px;
+}
+.h-stat-n { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; color:var(--gold); line-height:1; }
+.h-stat-l { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+
+/* ── SCROLL INDICATOR ── */
+.scroll-hint {
+  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+  animation: scrollBounce 2s ease-in-out infinite;
+}
+@keyframes scrollBounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+/* ── SECTIONS ── */
+section { padding: 60px 24px; }
+.section-label {
+  font-size: 10px; color: var(--gold); letter-spacing: 3px; text-transform: uppercase;
+  margin-bottom: 8px; font-weight: 600;
+}
+.section-title {
+  font-family:'Syne',sans-serif; font-size: 32px; font-weight: 800;
+  letter-spacing: -1px; line-height: 1.1; margin-bottom: 32px;
+}
+
+/* ── GENRES MARQUEE ── */
+.genres-section {
+  padding: 0; overflow: hidden; border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border); background: var(--card);
+}
+.marquee-wrap { display: flex; overflow: hidden; }
+.marquee-track {
+  display: flex; gap: 0; flex-shrink: 0;
+  animation: marquee 12s linear infinite;
+}
+@keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.marquee-item {
+  padding: 16px 28px; font-size: 13px; font-weight: 600; color: var(--muted);
+  border-right: 1px solid var(--border); white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+}
+.marquee-item .dot { width:4px; height:4px; border-radius:50%; background:var(--gold); }
+
+/* ── ABOUT TEXT ── */
+.about-section { padding: 60px 24px; }
+.about-text {
+  font-size: 16px; line-height: 1.8; color: rgba(240,237,232,0.7);
+  margin-bottom: 24px;
+}
+.about-text strong { color: var(--white); font-weight: 600; }
+.about-highlight {
+  font-family:'Syne',sans-serif; font-size:22px; font-weight:800;
+  color:var(--gold); line-height:1.3; margin-bottom:24px;
+  padding-left:16px; border-left:3px solid var(--gold);
+}
+
+/* ── SKILLS GRID ── */
+.skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+.skill-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 18px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.3s;
+}
+.skill-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+.skill-icon  { font-size: 28px; margin-bottom: 10px; }
+.skill-name  { font-family:'Syne',sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+.skill-desc  { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* ── GEAR ── */
+.gear-list { display: flex; flex-direction: column; gap: 0; }
+.gear-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 0; border-bottom: 1px solid var(--border);
+}
+.gear-item:last-child { border-bottom: none; }
+.gear-emoji { font-size: 22px; width: 40px; text-align: center; }
+.gear-name  { font-size: 14px; font-weight: 600; }
+.gear-type  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.gear-badge {
+  margin-left: auto; font-size: 9px; padding: 3px 8px;
+  border-radius: 100px; background: rgba(245,197,24,0.12);
+  color: var(--gold); border: 1px solid rgba(245,197,24,0.3);
+  font-weight: 700; letter-spacing: 0.5px; flex-shrink: 0;
+}
+
+/* ── LINKS ── */
+.links-grid { display: flex; flex-direction: column; gap: 10px; }
+.link-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px 18px; cursor: pointer;
+  text-decoration: none; color: var(--white);
+  transition: all 0.2s;
+}
+.link-card:active { transform: scale(0.98); border-color: var(--gold)55; }
+.link-icon { font-size: 22px; width: 44px; height: 44px; border-radius: 12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.link-info { flex:1; }
+.link-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.link-url  { font-size: 11px; color: var(--muted); }
+.link-arrow { color: var(--muted); font-size: 16px; }
+
+/* ── QUOTE ── */
+.quote-section {
+  padding: 60px 24px;
+  background: linear-gradient(135deg, #0d0d14, var(--bg));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+.quote-text {
+  font-family:'Syne',sans-serif; font-size: 24px; font-weight: 800;
+  line-height: 1.3; color: var(--white); margin-bottom: 16px;
+}
+.quote-text em { color: var(--gold); font-style: normal; }
+.quote-author { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+
+/* ── BOT CTA ── */
+.cta-section {
+  padding: 60px 24px;
+  text-align: center;
+}
+.cta-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; margin-bottom:8px; }
+.cta-sub   { font-size:14px; color:var(--muted); margin-bottom:28px; line-height:1.6; }
+.cta-btn {
+  display: block; width: 100%; padding: 18px;
+  background: linear-gradient(135deg, var(--gold), #c9a84c);
+  border: none; border-radius: 16px;
+  font-family:'Syne',sans-serif; font-size: 16px; font-weight: 800;
+  color: #000; cursor: pointer; text-decoration: none;
+  transition: all 0.15s; margin-bottom: 12px;
+}
+.cta-btn:active { transform: scale(0.97); }
+.cta-btn-outline {
+  display: block; width: 100%; padding: 16px;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 16px; font-size: 14px; font-weight: 600;
+  color: var(--muted); cursor: pointer; text-decoration: none;
+  transition: all 0.15s;
+}
+
+/* ── FOOTER ── */
+.footer {
+  padding: 24px; text-align: center;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--muted); letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-photo"></div>
+  <div class="hero-grain"></div>
+  <div class="hero-gradient"></div>
+  <div class="hero-content">
+    <div class="hero-tag">Disponible para colaboraciones</div>
+    <div class="hero-name">Jeff<br><span>Mkeyz</span></div>
+    <div class="hero-desc">Productor musical independiente. Creo sonidos que trascienden géneros y fronteras.</div>
+    <div class="hero-flags">🇩🇴 <span>·</span> 🇪🇸</div>
+    <div class="hero-stats">
+      <div><div class="h-stat-n">100+</div><div class="h-stat-l">Beats</div></div>
+      <div><div class="h-stat-n">4</div><div class="h-stat-l">Géneros</div></div>
+      <div><div class="h-stat-n">∞</div><div class="h-stat-l">Visión</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint">↓ scroll</div>
+</div>
+
+<!-- GENRE MARQUEE -->
+<div class="genres-section">
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <div class="marquee-item"><span class="dot"></span>Pop Latino</div>
+      <div class="marquee-item"><span class="dot"></span>Trap</div>
+      <div class="marquee-item"><span class="dot"></span>Afrobeats</div>
+      <div class="marquee-item"><span class="dot"></span>Lo-Fi</div>
+      <div class="marquee-item"><span class="dot"></span>R&B</div>
+      <div class="marquee-item"><span class="dot"></span>Reggaeton</div>
+      <div class="marquee-item"><span class="dot"></span>Drill</div>
+      <div class="marquee-item"><span class="dot"></span>Dembow</div>
+      <div class="marquee-item"><span class="dot"></span>Pop Latino</div>
+      <div class="marquee-item"><span class="dot"></span>Trap</div>
+      <div class="marquee-item"><span class="dot"></span>Afrobeats</div>
+      <div class="marquee-item"><span class="dot"></span>Lo-Fi</div>
+      <div class="marquee-item"><span class="dot"></span>R&B</div>
+      <div class="marquee-item"><span class="dot"></span>Reggaeton</div>
+      <div class="marquee-item"><span class="dot"></span>Drill</div>
+      <div class="marquee-item"><span class="dot"></span>Dembow</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="about-section">
+  <div class="section-label">Sobre mí</div>
+  <div class="about-highlight">"La música no tiene fronteras — mi estudio tampoco."</div>
+  <div class="about-text">
+    Soy <strong>Jeff Mkeyz</strong>, productor musical y cantautor independiente nacido en República Dominicana y establecido en España. Mi sonido no pertenece a un solo género — pertenece a una visión.
+  </div>
+  <div class="about-text">
+    Con más de <strong>100 instrumentales</strong> en catálogo, trabajo constantemente en la intersección entre el ritmo caribeño, la energía urbana y las texturas electrónicas modernas. Cada beat que produzco es una declaración.
+  </div>
+  <div class="about-text">
+    Distribuyo en todas las plataformas vía <strong>DistroKid</strong>, vendo licencias en <strong>BeatStars</strong> y construyo comunidad en TikTok y YouTube. No espero oportunidades — las creo.
+  </div>
+</div>
+
+<!-- SKILLS -->
+<section>
+  <div class="section-label">Habilidades</div>
+  <div class="section-title">Lo que traigo a la mesa</div>
+  <div class="skills-grid">
+    <div class="skill-card">
+      <div class="skill-icon">🎛️</div>
+      <div class="skill-name">Producción</div>
+      <div class="skill-desc">Beats desde cero. Sampling, síntesis y diseño de sonido.</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">🎤</div>
+      <div class="skill-name">Cantautor</div>
+      <div class="skill-desc">Letras, melodías y hooks que se quedan en la cabeza.</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">🎚️</div>
+      <div class="skill-name">Mezcla</div>
+      <div class="skill-desc">Pre-mastering a -9/-7 LUFS listo para streaming.</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">📱</div>
+      <div class="skill-name">Contenido</div>
+      <div class="skill-desc">Estrategia en TikTok, YouTube e Instagram.</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">🌍</div>
+      <div class="skill-name">Distribución</div>
+      <div class="skill-desc">Spotify, Apple Music, Tidal y +50 plataformas.</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">💼</div>
+      <div class="skill-name">Negocio</div>
+      <div class="skill-desc">Licencias, sync, splits y estrategia de catálogo.</div>
+    </div>
+  </div>
+</section>
+
+<!-- GEAR -->
+<section style="padding-top:0">
+  <div class="section-label">Setup</div>
+  <div class="section-title">Mi estudio</div>
+  <div class="gear-list">
+    <div class="gear-item">
+      <div class="gear-emoji">🎙️</div>
+      <div><div class="gear-name">Lewitt LCT 440 PURE</div><div class="gear-type">Micrófono de condensador</div></div>
+      <div class="gear-badge">VOCAL</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-emoji">🎚️</div>
+      <div><div class="gear-name">Universal Audio Volt 2</div><div class="gear-type">Audio Interface</div></div>
+      <div class="gear-badge">INTERFACE</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-emoji">🌈</div>
+      <div><div class="gear-name">FL Studio</div><div class="gear-type">DAW principal</div></div>
+      <div class="gear-badge">DAW</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-emoji">🔌</div>
+      <div><div class="gear-name">Waves + FabFilter</div><div class="gear-type">Plugins de mezcla</div></div>
+      <div class="gear-badge">PLUGINS</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-emoji">🎤</div>
+      <div><div class="gear-name">Kaotica Eyeball</div><div class="gear-type">Aislamiento acústico</div></div>
+      <div class="gear-badge">ACÚSTICA</div>
+    </div>
+    <div class="gear-item">
+      <div class="gear-emoji">💻</div>
+      <div><div class="gear-name">Ryzen 7 — 64GB RAM</div><div class="gear-type">Workstation</div></div>
+      <div class="gear-badge">PC</div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-section">
+  <div class="quote-text">El beat correcto puede <em>cambiar</em> la dirección de una carrera entera.</div>
+  <div class="quote-author">— Jeff Mkeyz</div>
+</div>
+
+<!-- LINKS -->
+<section>
+  <div class="section-label">Encuéntrame</div>
+  <div class="section-title">Redes y plataformas</div>
+  <div class="links-grid">
+    <a class="link-card" href="https://beatstars.com/jeffmkeyz" target="_blank">
+      <div class="link-icon" style="background:#ff6b35">🛍️</div>
+      <div class="link-info"><div class="link-name">BeatStars</div><div class="link-url">beatstars.com/jeffmkeyz</div></div>
+      <div class="link-arrow">→</div>
+    </a>
+    <a class="link-card" href="https://open.spotify.com/intl-es/artist/1PTk2yExL9jgOUPYEjWF1E" target="_blank">
+      <div class="link-icon" style="background:#1db954">🎵</div>
+      <div class="link-info"><div class="link-name">Spotify</div><div class="link-url">Jeff Mkeyz en Spotify</div></div>
+      <div class="link-arrow">→</div>
+    </a>
+    <a class="link-card" href="https://instagram.com/jeffmkeyzx" target="_blank">
+      <div class="link-icon" style="background:linear-gradient(135deg,#e1306c,#f77737)">📸</div>
+      <div class="link-info"><div class="link-name">Instagram</div><div class="link-url">@jeffmkeyzx</div></div>
+      <div class="link-arrow">→</div>
+    </a>
+    <a class="link-card" href="https://tiktok.com/@jeffmkeyz" target="_blank">
+      <div class="link-icon" style="background:#000">🎬</div>
+      <div class="link-info"><div class="link-name">TikTok</div><div class="link-url">@jeffmkeyz</div></div>
+      <div class="link-arrow">→</div>
+    </a>
+    <a class="link-card" href="https://youtube.com/@jeffmkeyz" target="_blank">
+      <div class="link-icon" style="background:#ff0000">▶️</div>
+      <div class="link-info"><div class="link-name">YouTube</div><div class="link-url">@jeffmkeyz</div></div>
+      <div class="link-arrow">→</div>
+    </a>
+    <a class="link-card" href="https://t.me/jeffmkeyzx" target="_blank">
+      <div class="link-icon" style="background:#0088cc">✈️</div>
+      <div class="link-info"><div class="link-name">Telegram</div><div class="link-url">@jeffmkeyzx</div></div>
+      <div class="link-arrow">→</div>
+    </a>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-title">¿Listo para colaborar?</div>
+  <div class="cta-sub">Explora el catálogo, prueba las herramientas<br>y conecta con la comunidad de artistas.</div>
+  <a class="cta-btn" href="https://t.me/MkeyzDAWbot">🎛️ Abrir Mkeyz Studio Bot</a>
+  <a class="cta-btn-outline" href="https://beatstars.com/jeffmkeyz">🛍️ Ver beats en BeatStars</a>
+</div>
+
+<div class="footer">
+  © 2026 JEFF MKEYZ · TODOS LOS DERECHOS RESERVADOS
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#060608"); tg.setBackgroundColor("#060608"); }
+</script>
+</body>
+</html>
