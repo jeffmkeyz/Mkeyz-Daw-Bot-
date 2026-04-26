@@ -27,7 +27,7 @@ def is_admin(user_id: int) -> bool:
     return ADMIN_ID != 0 and user_id == ADMIN_ID
 EUR_RATE = 0.92
 
-BANNER_URL = "https://i.ibb.co/Fqxk8NHZ/chromatic-haze-portrait-1f1314d5-273f-6550-a10c-a923b265cbc7-0-0.png"
+BANNER_URL = "https://ibb.co/mCqxB4fg"
 
 LINKS = {
     "beatstars": "https://beatstars.com/jeffmkeyz",
