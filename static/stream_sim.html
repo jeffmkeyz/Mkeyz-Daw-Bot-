@@ -248,83 +248,86 @@ input[type=range]::-webkit-slider-thumb {
 <!-- TAB: SIMULADOR -->
 <div class="tab-content active" id="tab-sim">
 
+  <!-- CANCIONES -->
   <div class="section-title">🎵 Canciones en catálogo</div>
-  <div class="slider-card">
+  <div class="slider-card" style="border-color:#f5c51844;background:linear-gradient(135deg,#1a1500,#111)">
     <div class="slider-header">
-      <div class="slider-name">Canciones</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <input type="number" id="canciones-input" min="1" max="10000" value="1"
-          style="width:70px;background:var(--border);border:1px solid #333;border-radius:8px;padding:6px 8px;color:#fff;font-size:16px;font-weight:800;text-align:center;outline:none"
-          oninput="setCancionesManual(this.value)">
-      </div>
+      <div class="slider-name" style="color:var(--gold)">Canciones</div>
+      <div class="slider-val" id="val-canciones-display" style="color:var(--gold)">1</div>
     </div>
-    <input type="range" class="slider-canciones" id="sl-canciones"
-           min="1" max="1000" value="1" oninput="setCancionesSlider(this.value)">
-    <div class="slider-labels"><span>1</span><span>100</span><span>250</span><span>500</span><span>1000+</span></div>
+    <input type="number" id="canciones-input" min="1" max="99999" value="1"
+      style="width:100%;background:#2a2000;border:1px solid #f5c51855;border-radius:10px;padding:12px;color:var(--gold);font-size:22px;font-weight:900;text-align:center;outline:none;margin-bottom:12px"
+      oninput="setCancionesManual(this.value)">
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <button onclick="setCanciones(1)"   class="preset-btn gold">1</button>
+      <button onclick="setCanciones(5)"   class="preset-btn gold">5</button>
+      <button onclick="setCanciones(10)"  class="preset-btn gold">10</button>
+      <button onclick="setCanciones(25)"  class="preset-btn gold">25</button>
+      <button onclick="setCanciones(50)"  class="preset-btn gold">50</button>
+      <button onclick="setCanciones(100)" class="preset-btn gold">100</button>
+      <button onclick="setCanciones(250)" class="preset-btn gold">250</button>
+      <button onclick="setCanciones(500)" class="preset-btn gold">500</button>
+      <button onclick="setCanciones(1000)"class="preset-btn gold">1000</button>
+    </div>
   </div>
 
+  <!-- DURACIÓN -->
   <div class="section-title">⏱️ Duración de canciones (promedio)</div>
-  <div class="slider-card">
+  <div class="slider-card" style="border-color:#9c27b044;background:linear-gradient(135deg,#1a0040,#111)">
     <div class="slider-header">
-      <div class="slider-name">Duración</div>
-      <div class="slider-val" id="val-duracion">3:30</div>
+      <div class="slider-name" style="color:#ce93d8">Duración</div>
+      <div class="slider-val" id="val-duracion" style="color:#ce93d8">3:30</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <input type="text" id="dur-manual" placeholder="Ej: 3:30" maxlength="5"
-        style="width:90px;background:var(--border);border:1px solid var(--border);border-radius:8px;padding:10px;color:#fff;font-size:16px;font-weight:700;text-align:center;outline:none"
-        oninput="parseDuration(this.value)">
-      <span style="font-size:12px;color:var(--muted)">formato MM:SS</span>
-    </div>
+    <input type="text" id="dur-manual" placeholder="3:30" maxlength="5" value="3:30"
+      style="width:100%;background:#2a0040;border:1px solid #9c27b055;border-radius:10px;padding:12px;color:#ce93d8;font-size:22px;font-weight:900;text-align:center;outline:none;margin-bottom:12px"
+      oninput="parseDuration(this.value)">
     <div style="display:flex;flex-wrap:wrap;gap:6px">
-      <button onclick="setDur('2:30')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">2:30</button>
-      <button onclick="setDur('3:00')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">3:00</button>
-      <button onclick="setDur('3:30')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">3:30</button>
-      <button onclick="setDur('4:00')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">4:00</button>
-      <button onclick="setDur('4:30')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">4:30</button>
-      <button onclick="setDur('5:00')" style="padding:6px 12px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">5:00</button>
+      <button onclick="setDur('2:00')" class="preset-btn" style="background:#2a0040;color:#ce93d8;border:1px solid #9c27b044">2:00</button>
+      <button onclick="setDur('2:30')" class="preset-btn" style="background:#2a0040;color:#ce93d8;border:1px solid #9c27b044">2:30</button>
+      <button onclick="setDur('3:00')" class="preset-btn" style="background:#2a0040;color:#ce93d8;border:1px solid #9c27b044">3:00</button>
+      <button onclick="setDur('3:30')" class="preset-btn" style="background:#2a0040;color:#ce93d8;border:1px solid #9c27b044">3:30</button>
+      <button onclick="setDur('4:00')" class="preset-btn" style="background:#2a0040;color:#ce93d8;border:1px solid #9c27b044">4:00</button>
+      <button onclick="setDur('5:00')" class="preset-btn" style="background:#2a0040;color:#ce93d8;border:1px solid #9c27b044">5:00</button>
     </div>
-    <!-- Total playback time -->
-    <div style="margin-top:14px;background:#0d1f0d;border:1px solid #00e67633;border-radius:12px;padding:12px;text-align:center">
+    <div style="margin-top:12px;background:#1a0030;border:1px solid #9c27b033;border-radius:10px;padding:12px;text-align:center">
       <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Tiempo total de reproducción</div>
-      <div style="font-size:22px;font-weight:900;color:var(--green)" id="total-time-display">—</div>
+      <div style="font-size:20px;font-weight:900;color:#ce93d8" id="total-time-display">—</div>
       <div style="font-size:11px;color:var(--muted);margin-top:2px" id="total-time-sub">canciones × duración</div>
     </div>
   </div>
 
+  <!-- OYENTES -->
   <div class="section-title">👥 Oyentes diarios</div>
-  <div class="slider-card">
+  <div class="slider-card" style="border-color:#00e67644;background:linear-gradient(135deg,#001a0d,#111)">
     <div class="slider-header">
-      <div class="slider-name">Oyentes</div>
-      <div class="slider-val" id="val-oyentes">0</div>
+      <div class="slider-name" style="color:var(--green)">Oyentes</div>
+      <div class="slider-val" id="val-oyentes" style="color:var(--green)">0</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <input type="number" id="oyentes-manual" placeholder="Escribe el número"
-        min="0" value="0"
-        style="flex:1;background:var(--border);border:1px solid var(--border);border-radius:10px;padding:12px;color:#fff;font-size:18px;font-weight:700;text-align:center;outline:none"
-        oninput="setOyentesManual(this.value)">
-    </div>
+    <input type="number" id="oyentes-manual" min="0" value="0"
+      style="width:100%;background:#002a12;border:1px solid #00e67655;border-radius:10px;padding:12px;color:var(--green);font-size:22px;font-weight:900;text-align:center;outline:none;margin-bottom:12px"
+      oninput="setOyentesManual(this.value)">
     <div style="display:flex;flex-wrap:wrap;gap:6px">
-      <button onclick="setOyentes(0)"     style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">0</button>
-      <button onclick="setOyentes(10)"    style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">10</button>
-      <button onclick="setOyentes(50)"    style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">50</button>
-      <button onclick="setOyentes(100)"   style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">100</button>
-      <button onclick="setOyentes(500)"   style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">500</button>
-      <button onclick="setOyentes(1000)"  style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">1K</button>
-      <button onclick="setOyentes(5000)"  style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">5K</button>
-      <button onclick="setOyentes(10000)" style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">10K</button>
-      <button onclick="setOyentes(50000)" style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">50K</button>
-      <button onclick="setOyentes(100000)"style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">100K</button>
-      <button onclick="setOyentes(1000000)"  style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">1M</button>
-      <button onclick="setOyentes(10000000)" style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">10M</button>
-      <button onclick="setOyentes(100000000)"style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">100M</button>
+      <button onclick="setOyentes(0)"        class="preset-btn green">0</button>
+      <button onclick="setOyentes(10)"       class="preset-btn green">10</button>
+      <button onclick="setOyentes(50)"       class="preset-btn green">50</button>
+      <button onclick="setOyentes(100)"      class="preset-btn green">100</button>
+      <button onclick="setOyentes(500)"      class="preset-btn green">500</button>
+      <button onclick="setOyentes(1000)"     class="preset-btn green">1K</button>
+      <button onclick="setOyentes(5000)"     class="preset-btn green">5K</button>
+      <button onclick="setOyentes(10000)"    class="preset-btn green">10K</button>
+      <button onclick="setOyentes(50000)"    class="preset-btn green">50K</button>
+      <button onclick="setOyentes(100000)"   class="preset-btn green">100K</button>
+      <button onclick="setOyentes(1000000)"  class="preset-btn green">1M</button>
+      <button onclick="setOyentes(10000000)" class="preset-btn green">10M</button>
     </div>
   </div>
 
-  <div class="section-title">🔁 Repeticiones por oyente/mes</div>
-  <div class="slider-card">
+  <!-- REPETICIONES -->
+  <div class="section-title">🔁 Repeticiones por oyente/día</div>
+  <div class="slider-card" style="border-color:#4fc3f744;background:linear-gradient(135deg,#001a2a,#111)">
     <div class="slider-header">
-      <div class="slider-name">Repeticiones</div>
-      <div class="slider-val" id="val-rep">3×</div>
+      <div class="slider-name" style="color:var(--blue)">Repeticiones</div>
+      <div class="slider-val" id="val-rep" style="color:var(--blue)">3×</div>
     </div>
     <input type="range" class="slider-rep" id="sl-rep"
            min="1" max="50" value="3" oninput="update()">
