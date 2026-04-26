@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Chord Generator — Mkeyz Studio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root { --bg:#0a0a0a; --card:#111; --border:#1f1f1f; --gold:#f5c518; --green:#00e676; --fire:#ff4d4d; --blue:#4fc3f7; --purple:#9c27b0; --text:#fff; --muted:#555; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; padding:16px; padding-bottom:60px; }
+
+.header { text-align:center; padding:12px 0 20px; }
+.header h1 { font-size:22px; font-weight:900; background:linear-gradient(135deg,#fff,var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:4px; }
+.header p { font-size:13px; color:var(--muted); }
+
+.section-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; margin-top:20px; }
+
+/* Selector grids */
+.sel-grid { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:4px; }
+.sel-btn {
+  padding:8px 14px; border-radius:100px; font-size:12px; font-weight:700;
+  background:var(--card); color:var(--muted); border:1px solid var(--border);
+  cursor:pointer; transition:all 0.15s;
+}
+.sel-btn.active { color:#000; border-color:transparent; }
+.sel-btn:active { transform:scale(0.95); }
+
+/* Key selector */
+.key-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
+.key-btn {
+  padding:10px 4px; border-radius:10px; font-size:12px; font-weight:800;
+  background:var(--card); color:var(--muted); border:1px solid var(--border);
+  cursor:pointer; transition:all 0.15s; text-align:center;
+}
+.key-btn.active { background:var(--purple); color:#fff; border-color:transparent; }
+.key-btn.black-key { background:#1a1a1a; }
+.key-btn:active { transform:scale(0.95); }
+
+/* Mode toggle */
+.mode-toggle { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:4px; }
+.mode-btn {
+  padding:10px; border-radius:12px; font-size:13px; font-weight:700;
+  background:var(--card); color:var(--muted); border:1px solid var(--border);
+  cursor:pointer; transition:all 0.2s; text-align:center;
+}
+.mode-btn.active { background:#1a0040; color:#a78bfa; border-color:#7c3aed55; }
+
+/* Generate btn */
+.btn-generate {
+  width:100%; padding:18px; border:none; border-radius:18px;
+  background:linear-gradient(135deg,var(--purple),#7c3aed);
+  font-size:18px; font-weight:800; color:#fff; cursor:pointer; margin-top:20px;
+  transition:all 0.15s; box-shadow:0 8px 24px rgba(124,58,237,0.3);
+}
+.btn-generate:active { transform:scale(0.97); }
+
+/* Progression cards */
+.prog-list { margin-top:20px; }
+.prog-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:18px; padding:16px; margin-bottom:12px;
+  animation:slideIn 0.3s ease;
+}
+@keyframes slideIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+.prog-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.prog-name  { font-size:14px; font-weight:800; color:var(--text); }
+.prog-genre { font-size:11px; color:var(--muted); background:var(--border); padding:3px 10px; border-radius:100px; }
+
+.chord-row { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.chord-pill {
+  min-width:52px; padding:12px 10px; border-radius:12px; text-align:center;
+  background:#1a1a2e; border:1px solid #2a2a4e;
+}
+.chord-name { font-size:16px; font-weight:900; color:#a78bfa; }
+.chord-roman { font-size:10px; color:var(--muted); margin-top:2px; }
+.chord-notes { font-size:9px; color:#333; margin-top:3px; }
+
+.prog-mood { font-size:12px; color:var(--muted); margin-bottom:10px; font-style:italic; }
+
+.prog-btns { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+.prog-btn {
+  padding:10px 6px; border:none; border-radius:10px;
+  font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s;
+  display:flex; align-items:center; justify-content:center; gap:4px;
+}
+.prog-btn:active { transform:scale(0.95); }
+.btn-play   { background:#1a2a1a; color:var(--green); }
+.btn-stop   { background:#2a1a1a; color:var(--fire); display:none; }
+.btn-copy   { background:#1a1a2a; color:var(--blue); }
+.btn-midi   { background:#2a1500; color:var(--gold); }
+
+.empty { text-align:center; padding:40px 20px; color:var(--muted); }
+.empty .icon { font-size:48px; margin-bottom:12px; }
+
+/* BPM slider */
+.bpm-row { display:flex; align-items:center; gap:12px; margin:8px 0; }
+.bpm-row label { font-size:12px; color:var(--muted); white-space:nowrap; }
+input[type=range] {
+  flex:1; -webkit-appearance:none; height:4px; border-radius:100px;
+  background:var(--border); outline:none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:20px; height:20px; border-radius:50%;
+  background:var(--purple); cursor:pointer;
+}
+.bpm-val { font-size:14px; font-weight:800; color:var(--purple); min-width:40px; }
+
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#fff; color:#000; padding:12px 20px; border-radius:100px; font-size:14px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎹 Chord Progressions</h1>
+  <p>Genera progresiones y expórtalas a MIDI</p>
+</div>
+
+<!-- KEY -->
+<div class="section-title">Tonalidad</div>
+<div class="key-grid" id="key-grid"></div>
+
+<!-- MODE -->
+<div class="section-title">Modo</div>
+<div class="mode-toggle">
+  <div class="mode-btn active" onclick="selectMode('major',this)">☀️ Mayor</div>
+  <div class="mode-btn" onclick="selectMode('minor',this)">🌙 Menor</div>
+</div>
+
+<!-- GENRE -->
+<div class="section-title">Género</div>
+<div class="sel-grid" id="genre-grid"></div>
+
+<!-- MOOD -->
+<div class="section-title">Mood</div>
+<div class="sel-grid" id="mood-grid"></div>
+
+<!-- BPM -->
+<div class="section-title">BPM del MIDI</div>
+<div class="bpm-row">
+  <label>Tempo</label>
+  <input type="range" min="60" max="200" value="120" id="bpm-sl" oninput="document.getElementById('bpm-val').textContent=this.value">
+  <div class="bpm-val" id="bpm-val">120</div>
+</div>
+
+<button class="btn-generate" onclick="generate()">🎵 Generar progresiones</button>
+
+<div class="prog-list" id="prog-list">
+  <div class="empty"><div class="icon">🎹</div><p>Configura la tonalidad, género y mood<br>para generar progresiones de acordes.</p></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
+
+// ── DATA ────────────────────────────────────────────────────
+const NOTES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const SHARP_NOTES = ["C#","D#","F#","G#","A#"];
+
+const MAJOR_INTERVALS = [0,2,4,5,7,9,11];
+const MINOR_INTERVALS = [0,2,3,5,7,8,10];
+
+const CHORD_QUALITIES_MAJOR = ["maj","min","min","maj","maj","min","dim"];
+const CHORD_QUALITIES_MINOR = ["min","dim","maj","min","min","maj","maj"];
+const ROMAN = ["I","II","III","IV","V","VI","VII"];
+
+const GENRES = ["Trap","Pop Latino","Afrobeats","Reggaeton","Lo-Fi","R&B","Hip-Hop","Drill","Salsa","EDM","House","Pop"];
+const MOODS  = ["Oscuro","Alegre","Romántico","Melancólico","Agresivo","Relajado","Épico","Misterioso"];
+
+const PROGRESSIONS_DB = {
+  "Trap":       [
+    { nums:[0,5,3,4], name:"Dark Trap",    mood:"Oscuro y pesado como el 808" },
+    { nums:[5,3,0,4], name:"Midnight",     mood:"Melancólico con tensión" },
+    { nums:[0,3,6,4], name:"Street Vibes", mood:"Agresivo, calle" },
+  ],
+  "Pop Latino": [
+    { nums:[0,5,3,4], name:"Verano",       mood:"Alegre y bailable" },
+    { nums:[0,3,4,0], name:"Romántico",    mood:"Suave y emotivo" },
+    { nums:[0,4,5,3], name:"Perreo",       mood:"Energético y sensual" },
+  ],
+  "Afrobeats":  [
+    { nums:[0,2,5,4], name:"Lagos",        mood:"Groove africano" },
+    { nums:[0,5,4,2], name:"Afro Soul",    mood:"Suave y fluido" },
+    { nums:[0,3,5,4], name:"Jollof",       mood:"Festivo y positivo" },
+  ],
+  "R&B":        [
+    { nums:[0,5,3,4], name:"Slow Jam",     mood:"Suave y sensual" },
+    { nums:[0,2,5,4], name:"Neo Soul",     mood:"Groove con jazz" },
+    { nums:[1,4,0,5], name:"Silk",         mood:"Lujoso, nocturno" },
+  ],
+  "Lo-Fi":      [
+    { nums:[0,5,3,4], name:"Study Beat",   mood:"Calmado, enfocado" },
+    { nums:[0,2,4,5], name:"Rain Day",     mood:"Melancólico, nostálgico" },
+    { nums:[3,0,4,5], name:"Coffee Shop",  mood:"Cálido y acogedor" },
+  ],
+  "Hip-Hop":    [
+    { nums:[0,5,4,3], name:"Classic",      mood:"Boom bap, clásico" },
+    { nums:[0,4,0,3], name:"East Coast",   mood:"Misterioso, oscuro" },
+    { nums:[0,2,4,5], name:"West Coast",   mood:"Relajado, chill" },
+  ],
+  "default":    [
+    { nums:[0,5,3,4], name:"I-VI-IV-V",   mood:"La más universal" },
+    { nums:[0,4,5,3], name:"I-V-VI-IV",   mood:"Pop clásico" },
+    { nums:[0,3,4,5], name:"I-IV-V-VI",   mood:"Rock, country, folk" },
+  ],
+};
+
+let selectedKey  = 0;
+let selectedMode = "major";
+let selectedGenre= "";
+let selectedMood = "";
+let audioCtx     = null;
+let activeOscs   = [];
+let activeCard   = null;
+
+// Build key grid
+const keyGrid = document.getElementById("key-grid");
+NOTES.forEach((n, i) => {
+  const btn = document.createElement("div");
+  btn.className = "key-btn" + (SHARP_NOTES.includes(n) ? " black-key" : "");
+  btn.textContent = n;
+  btn.dataset.idx = i;
+  btn.onclick = () => {
+    document.querySelectorAll(".key-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedKey = i;
+  };
+  keyGrid.appendChild(btn);
+});
+keyGrid.children[0].classList.add("active");
+
+// Build genre grid
+const genreGrid = document.getElementById("genre-grid");
+GENRES.forEach(g => {
+  const btn = document.createElement("div");
+  btn.className = "sel-btn";
+  btn.textContent = g;
+  btn.onclick = () => {
+    document.querySelectorAll("#genre-grid .sel-btn").forEach(b => { b.classList.remove("active"); b.style.background=""; b.style.color=""; });
+    btn.classList.add("active");
+    btn.style.background = "#a78bfa";
+    selectedGenre = g;
+  };
+  genreGrid.appendChild(btn);
+});
+
+// Build mood grid
+const moodGrid = document.getElementById("mood-grid");
+MOODS.forEach(m => {
+  const btn = document.createElement("div");
+  btn.className = "sel-btn";
+  btn.textContent = m;
+  btn.onclick = () => {
+    document.querySelectorAll("#mood-grid .sel-btn").forEach(b => { b.classList.remove("active"); b.style.background=""; b.style.color=""; });
+    btn.classList.add("active");
+    btn.style.background = "#7c3aed";
+    btn.style.color = "#fff";
+    selectedMood = m;
+  };
+  moodGrid.appendChild(btn);
+});
+
+function selectMode(mode, btn) {
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  selectedMode = mode;
+}
+
+// ── MUSIC THEORY ─────────────────────────────────────────────
+function getScaleNotes(root, mode) {
+  const intervals = mode === "major" ? MAJOR_INTERVALS : MINOR_INTERVALS;
+  return intervals.map(i => (root + i) % 12);
+}
+
+function getChordNotes(root, quality) {
+  // Returns MIDI note numbers (octave 4)
+  const base = 48 + root; // C3
+  if (quality === "maj") return [base, base+4, base+7];
+  if (quality === "min") return [base, base+3, base+7];
+  if (quality === "dim") return [base, base+3, base+6];
+  if (quality === "aug") return [base, base+4, base+8];
+  return [base, base+4, base+7];
+}
+
+function buildProgressions(root, mode, genre) {
+  const scaleNotes = getScaleNotes(root, mode);
+  const qualities  = mode === "major" ? CHORD_QUALITIES_MAJOR : CHORD_QUALITIES_MINOR;
+  const progs      = PROGRESSIONS_DB[genre] || PROGRESSIONS_DB["default"];
+
+  return progs.map(p => {
+    const chords = p.nums.map(num => {
+      const chordRoot = scaleNotes[num];
+      const quality   = qualities[num];
+      const name      = NOTES[chordRoot] + (quality === "min" ? "m" : quality === "dim" ? "°" : "");
+      const midiNotes = getChordNotes(chordRoot, quality);
+      return { name, roman: ROMAN[num], quality, midiNotes, rootNote: chordRoot };
+    });
+    return { ...p, chords };
+  });
+}
+
+// ── AUDIO ─────────────────────────────────────────────────────
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playChord(midiNotes, duration = 1.0) {
+  stopAll();
+  const ctx = getAudio();
+  midiNotes.forEach(midi => {
+    const freq = 440 * Math.pow(2, (midi - 69) / 12);
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+    activeOscs.push(osc);
+  });
+}
+
+function stopAll() {
+  activeOscs.forEach(o => { try { o.stop(); } catch(e) {} });
+  activeOscs = [];
+}
+
+async function playProgression(chords, bpm, cardEl) {
+  stopAll();
+  if (activeCard === cardEl) { activeCard = null; updatePlayBtn(cardEl, false); return; }
+  activeCard = cardEl;
+  updatePlayBtn(cardEl, true);
+
+  const beatDur = 60 / bpm;
+  const chordDur = beatDur * 2;
+
+  for (let i = 0; i < chords.length; i++) {
+    if (activeCard !== cardEl) break;
+    playChord(chords[i].midiNotes, chordDur);
+    await sleep(chordDur * 1000);
+  }
+  activeCard = null;
+  updatePlayBtn(cardEl, false);
+}
+
+function updatePlayBtn(cardEl, playing) {
+  const playBtn = cardEl.querySelector(".btn-play");
+  const stopBtn = cardEl.querySelector(".btn-stop");
+  if (playBtn) playBtn.style.display = playing ? "none" : "flex";
+  if (stopBtn) stopBtn.style.display = playing ? "flex" : "none";
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── MIDI EXPORT ───────────────────────────────────────────────
+function writeMidi(chords, bpm, key, mode) {
+  const tempo    = Math.round(60000000 / bpm);
+  const ticksPer = 480;
+  const chordDur = ticksPer * 2;
+
+  const toVlq = n => {
+    if (n < 0x80) return [n];
+    const bytes = [];
+    bytes.unshift(n & 0x7f);
+    n >>= 7;
+    while (n > 0) { bytes.unshift((n & 0x7f) | 0x80); n >>= 7; }
+    return bytes;
+  };
+
+  const events = [];
+  // Tempo event
+  events.push([0x00, 0xff, 0x51, 0x03, (tempo>>16)&0xff, (tempo>>8)&0xff, tempo&0xff]);
+
+  let tick = 0;
+  chords.forEach(chord => {
+    // Note ON for all notes
+    chord.midiNotes.forEach(midi => {
+      events.push([...toVlq(tick === 0 ? 0 : chordDur), 0x90, midi, 80]);
+      tick = 0;
+    });
+    // Note OFF after chordDur
+    chord.midiNotes.forEach((midi, i) => {
+      events.push([...toVlq(i === 0 ? chordDur : 0), 0x80, midi, 0]);
+    });
+  });
+  events.push([0x00, 0xff, 0x2f, 0x00]); // End of track
+
+  const trackData = events.flat();
+  const header = [
+    0x4d,0x54,0x68,0x64, 0,0,0,6,  // MThd
+    0,0, 0,1,               // format 0, 1 track
+    0,0,                    // placeholder for ticks
+    0,0,0,0, 0x4d,0x54,0x72,0x6b, // MTrk
+  ];
+  // Ticks per quarter
+  header[12] = (ticksPer >> 8) & 0xff;
+  header[13] = ticksPer & 0xff;
+  // Track length
+  const trackLen = trackData.length;
+  header[18] = (trackLen >> 24) & 0xff;
+  header[19] = (trackLen >> 16) & 0xff;
+  header[20] = (trackLen >> 8)  & 0xff;
+  header[21] = trackLen & 0xff;
+
+  const bytes = new Uint8Array([...header, ...trackData]);
+  const blob  = new Blob([bytes], { type:"audio/midi" });
+  const url   = URL.createObjectURL(blob);
+  const a     = document.createElement("a");
+  a.href      = url;
+  a.download  = `${NOTES[key]}${mode === "major" ? "maj" : "min"}_${bpm}bpm.mid`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── GENERATE ──────────────────────────────────────────────────
+function generate() {
+  if (!selectedGenre) { showToast("Elige un género primero"); return; }
+  const progs = buildProgressions(selectedKey, selectedMode, selectedGenre);
+  const bpm   = parseInt(document.getElementById("bpm-sl").value);
+  const list  = document.getElementById("prog-list");
+
+  list.innerHTML = "";
+  progs.forEach((prog, pi) => {
+    const card = document.createElement("div");
+    card.className = "prog-card";
+    card.style.animationDelay = (pi * 0.1) + "s";
+
+    const chordPills = prog.chords.map(c => `
+      <div class="chord-pill">
+        <div class="chord-name">${c.name}</div>
+        <div class="chord-roman">${c.roman}</div>
+        <div class="chord-notes">${c.midiNotes.slice(0,3).map(m => NOTES[m%12]).join("-")}</div>
+      </div>`).join("");
+
+    card.innerHTML = `
+      <div class="prog-header">
+        <div class="prog-name">${prog.name}</div>
+        <div class="prog-genre">${selectedGenre}</div>
+      </div>
+      <div class="chord-row">${chordPills}</div>
+      <div class="prog-mood">💭 ${prog.mood}</div>
+      <div class="prog-btns">
+        <button class="prog-btn btn-play" onclick="playProgression(${JSON.stringify(prog.chords).replace(/"/g,"'")},${bpm},this.closest('.prog-card'))">▶ Escuchar</button>
+        <button class="prog-btn btn-stop" onclick="stopAll();activeCard=null;updatePlayBtn(this.closest('.prog-card'),false)">⏹ Stop</button>
+        <button class="prog-btn btn-copy" onclick="copyChords('${prog.chords.map(c=>c.name).join(' - ')}')">📋 Copiar</button>
+        <button class="prog-btn btn-midi" onclick="writeMidi(${JSON.stringify(prog.chords).replace(/"/g,"'")},${bpm},${selectedKey},'${selectedMode}')">⬇️ MIDI</button>
+      </div>`;
+
+    list.appendChild(card);
+  });
+
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+  list.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+
+function copyChords(text) {
+  navigator.clipboard?.writeText(text);
+  showToast("✅ " + text + " — copiado");
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+</script>
+</body>
+</html>
