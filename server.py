@@ -181,6 +181,14 @@ def serve_compare():
 def serve_card():
     return send_from_directory("static", "artist_card.html")
 
+@app.route("/chords")
+def serve_chords():
+    return send_from_directory("static", "chord_gen.html")
+
+@app.route("/voice")
+def serve_voice():
+    return send_from_directory("static", "voice_studio.html")
+
 @app.route("/api/artist/profile")
 def api_artist_profile():
     user_id = request.args.get("user_id")
