@@ -205,6 +205,10 @@ def serve_intro():
 def serve_playlist():
     return send_from_directory("static", "playlist_gen.html")
 
+@app.route("/game2")
+def serve_game2():
+    return send_from_directory("static", "studio_game.html")
+
 @app.route("/api/artist/profile")
 def api_artist_profile():
     user_id = request.args.get("user_id")
