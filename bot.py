@@ -60,6 +60,8 @@ PLAN_PERMS = {
     "sec_freq":      PLAN_PRO,
     "sec_compare":   PLAN_STUDIO,
     "sec_card":      PLAN_PRO,
+    "sec_chords":    PLAN_PRO,
+    "sec_voice":     PLAN_PRO,
 }
 
 # ── Plataformas de streaming ───────────────────────────────
@@ -714,6 +716,8 @@ def kb_sub_tools():
         [InlineKeyboardButton("🎹  Detector de Escala", callback_data="sec_scale")],
         [InlineKeyboardButton("🎚️  Visualizador Freq.", callback_data="sec_freq")],
         [InlineKeyboardButton("📈  Comparar Artistas",  callback_data="sec_compare")],
+        [InlineKeyboardButton("🎵  Chord Generator",   callback_data="sec_chords")],
+        [InlineKeyboardButton("🎤  Voice Studio",      callback_data="sec_voice")],
         [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
     ])
 
@@ -1101,6 +1105,45 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # ── Menú principal ─────────────────────────────────────
     if d == "sec_main":
         await edit(q, "👋 *Jeff Mkeyz* — Menú principal\n\nProductor · Cantautor\nPop Latino · Trap · Lo-Fi · Afrobeats 🎛️", kb_main())
+        return
+
+    # ── Chord Generator ────────────────────────────────────
+    if d == "sec_chords":
+        game_url = (GAME_URL.rstrip("/") + "/chords") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "🎵 *Chord Progressions Generator*\n\n"
+                "Genera progresiones de acordes profesionales:\n\n"
+                "🎹 Elige tonalidad · Mayor o Menor\n"
+                "🎸 Por género — Trap · R&B · Lo-Fi · Reggaeton...\n"
+                "▶️ Escucha la progresión antes de usarla\n"
+                "⬇️ Exporta a MIDI para FL Studio",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎵 Abrir Chord Generator", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Herramientas", callback_data="sub_tools")],
+                ]))
+        else:
+            await edit(q, "🎵 No disponible.", kb_back())
+        return
+
+    # ── Voice Studio ────────────────────────────────────────
+    if d == "sec_voice":
+        game_url = (GAME_URL.rstrip("/") + "/voice") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "🎤 *Voice Studio*\n\n"
+                "Graba, aplica efectos y descarga desde el navegador:\n\n"
+                "🔴 Graba hasta 2 minutos\n"
+                "🌊 Reverb · 🔊 Compressor · 🎚️ EQ\n"
+                "🎵 Pitch Shift\n"
+                "⬇️ Descarga el audio procesado\n"
+                "💡 Ideal para grabar ideas de hooks al instante",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎤 Abrir Voice Studio", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Herramientas", callback_data="sub_tools")],
+                ]))
+        else:
+            await edit(q, "🎤 No disponible.", kb_back())
         return
 
     # ── Detector de Escala ─────────────────────────────────
