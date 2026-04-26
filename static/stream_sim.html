@@ -395,6 +395,19 @@ if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroun
 
 let currentRate = 0.001106;
 let currentPlatName = "Spotify";
+let currentPlatEmoji = "🎵";
+
+const PLAT_EMOJIS = {
+  "Spotify": "🎵",
+  "Apple": "🍎",
+  "Tidal": "🌊",
+  "YT Prem": "▶️",
+  "YT Ads": "📺",
+  "Amazon": "📦",
+  "TikTok": "🎬",
+  "Audiomack": "🎧",
+  "Pandora": "📻",
+};
 const EUR = 0.92;
 
 const MILESTONES = [
@@ -518,8 +531,9 @@ function update() {
 function selectPlat(btn, name, rate) {
   document.querySelectorAll(".plat-btn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
-  currentRate     = rate;
-  currentPlatName = name;
+  currentRate      = rate;
+  currentPlatName  = name;
+  currentPlatEmoji = PLAT_EMOJIS[name] || "🎵";
   document.getElementById("earn-plat-name").textContent = name;
   update();
 }
@@ -536,14 +550,11 @@ function shareResults() {
   const oyentes   = fmtNum(currentOyentes);
   const rep       = document.getElementById("sl-rep").value;
   const total     = document.getElementById("total-streams").textContent;
-  const monthly   = document.getElementById("earn-month").textContent;
   const daily     = document.getElementById("earn-day").textContent;
+  const monthly   = document.getElementById("earn-month").textContent;
   const yearly    = document.getElementById("earn-year").textContent;
 
-  const totalDay   = document.getElementById("total-day").textContent;
-  const totalMonth = document.getElementById("total-month").textContent;
-  const totalYear  = document.getElementById("total-year").textContent;
-  const msg = `🎵 Mi simulación — Mkeyz Studio\n\n📊 ${canciones} canciones × ${oyentes} oyentes × ${rep} rep\n🎧 ${total} streams/mes\n\n📱 ${currentPlatName}:\n☀️ Diario: ${daily} · 📅 Mensual: ${monthly}\n\n🌍 Todas las plataformas:\n☀️ Diario: ${totalDay} · 📅 Mensual: ${totalMonth} · 📆 Anual: ${totalYear}\n\n🤖 @MkeyzDAWbot`;
+  const msg = `${currentPlatEmoji} Simulación en ${currentPlatName} — Mkeyz Studio\n\n🎵 ${canciones} canciones\n👥 ${oyentes} oyentes\n🔁 ${rep} repeticiones/día\n🎧 ${total} streams/día\n\n☀️ Diario: ${daily}\n📅 Mensual: ${monthly}\n📆 Anual: ${yearly}\n\n🤖 @MkeyzDAWbot`;
 
   if (navigator.share) {
     navigator.share({ title: "Mkeyz Studio — Simulador", text: msg })
