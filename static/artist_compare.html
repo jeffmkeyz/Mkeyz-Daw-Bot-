@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Comparador de Artistas — Mkeyz Studio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root { --bg:#0a0a0a; --card:#111; --border:#1f1f1f; --gold:#f5c518; --green:#00e676; --fire:#ff4d4d; --blue:#4fc3f7; --text:#fff; --muted:#555; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,sans-serif; padding:16px; padding-bottom:40px; }
+
+.header { text-align:center; padding:16px 0 20px; }
+.header h1 { font-size:22px; font-weight:900; background:linear-gradient(135deg,#fff,var(--fire)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:4px; }
+.header p { font-size:13px; color:var(--muted); }
+
+.search-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.search-box { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; }
+.search-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+.search-input {
+  width:100%; background:var(--border); border:none; border-radius:8px;
+  padding:10px; color:#fff; font-size:14px; outline:none;
+}
+.search-input::placeholder { color:var(--muted); }
+
+.btn-compare {
+  width:100%; padding:16px; border:none; border-radius:16px;
+  background:linear-gradient(135deg,var(--fire),#ff8c00);
+  font-size:16px; font-weight:800; color:#fff; cursor:pointer; margin-bottom:16px;
+}
+.btn-compare:active { transform:scale(0.97); }
+.btn-compare:disabled { opacity:0.4; }
+
+/* Artist cards */
+.compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.artist-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:14px; text-align:center; }
+.artist-img { width:64px; height:64px; border-radius:50%; object-fit:cover; margin-bottom:8px; border:2px solid var(--border); }
+.artist-img-placeholder { width:64px; height:64px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 8px; }
+.artist-name { font-size:14px; font-weight:800; margin-bottom:4px; }
+.artist-listeners { font-size:12px; color:var(--gold); }
+.artist-genre { font-size:11px; color:var(--muted); margin-top:2px; }
+
+/* Stats bars */
+.stat-row { margin-bottom:10px; }
+.stat-header { display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; }
+.stat-name { color:var(--muted); }
+.stat-vals { display:flex; gap:8px; }
+.stat-val1 { color:var(--fire); font-weight:700; }
+.stat-val2 { color:var(--blue); font-weight:700; }
+.bar-container { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.bar-wrap { background:var(--border); border-radius:100px; height:6px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:100px; transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+.bar1 { background:linear-gradient(90deg,var(--fire),#ff8c00); }
+.bar2 { background:linear-gradient(90deg,var(--blue),#00bcd4); }
+
+/* Tags */
+.tags-row { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.tag { padding:4px 10px; border-radius:100px; background:var(--border); font-size:11px; color:var(--muted); }
+
+/* Winner */
+.winner-box { background:linear-gradient(135deg,#1a1500,#111); border:1px solid var(--gold); border-radius:16px; padding:16px; text-align:center; margin-bottom:16px; }
+.winner-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+.winner-name { font-size:22px; font-weight:900; color:var(--gold); }
+
+.loader { text-align:center; padding:40px; color:var(--muted); }
+.spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--fire); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.error-box { background:var(--card); border:1px solid var(--fire); border-radius:14px; padding:16px; text-align:center; color:var(--fire); font-size:14px; margin-bottom:16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Comparador de Artistas</h1>
+  <p>Compara dos artistas usando datos de Last.fm</p>
+</div>
+
+<div class="search-grid">
+  <div class="search-box">
+    <div class="search-label" style="color:var(--fire)">🔴 Artista 1</div>
+    <input class="search-input" id="artist1" placeholder="Jeff Mkeyz" value="Jeff Mkeyz">
+  </div>
+  <div class="search-box">
+    <div class="search-label" style="color:var(--blue)">🔵 Artista 2</div>
+    <input class="search-input" id="artist2" placeholder="Bad Bunny">
+  </div>
+</div>
+
+<button class="btn-compare" id="btn-compare" onclick="compare()">⚡ Comparar ahora</button>
+
+<div id="results"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
+
+const API_KEY = "1820e2706ba7dbb030a6d2de30f2b2cf";
+
+function fmtNum(n) {
+  if (!n) return "N/D";
+  n = parseInt(n);
+  if (n >= 1000000) return (n/1000000).toFixed(1) + "M";
+  if (n >= 1000)    return (n/1000).toFixed(0) + "K";
+  return n.toLocaleString();
+}
+
+async function fetchArtist(name) {
+  const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${encodeURIComponent(name)}&api_key=${API_KEY}&format=json`;
+  const res  = await fetch(url);
+  const data = await res.json();
+  if (data.error) throw new Error(data.message);
+  return data.artist;
+}
+
+async function compare() {
+  const name1 = document.getElementById("artist1").value.trim();
+  const name2 = document.getElementById("artist2").value.trim();
+  if (!name1 || !name2) { alert("Escribe ambos artistas."); return; }
+
+  document.getElementById("results").innerHTML = `
+    <div class="loader"><div class="spinner"></div>Buscando artistas...</div>`;
+  document.getElementById("btn-compare").disabled = true;
+
+  try {
+    const [a1, a2] = await Promise.all([fetchArtist(name1), fetchArtist(name2)]);
+
+    const listeners1 = parseInt(a1.stats?.listeners || 0);
+    const listeners2 = parseInt(a2.stats?.listeners || 0);
+    const plays1     = parseInt(a1.stats?.playcount || 0);
+    const plays2     = parseInt(a2.stats?.playcount || 0);
+    const maxL       = Math.max(listeners1, listeners2) || 1;
+    const maxP       = Math.max(plays1, plays2) || 1;
+
+    const tags1 = (a1.tags?.tag || []).slice(0,4).map(t => t.name);
+    const tags2 = (a2.tags?.tag || []).slice(0,4).map(t => t.name);
+
+    const winner = listeners1 > listeners2 ? a1.name : listeners2 > listeners1 ? a2.name : "Empate";
+
+    const img1 = a1.image?.find(i => i.size === "large")?.["#text"] || "";
+    const img2 = a2.image?.find(i => i.size === "large")?.["#text"] || "";
+
+    document.getElementById("results").innerHTML = `
+      <div class="winner-box">
+        <div class="winner-label">🏆 Más oyentes</div>
+        <div class="winner-name">${winner}</div>
+      </div>
+
+      <div class="compare-grid">
+        <div class="artist-card" style="border-color:#ff4d4d44">
+          ${img1 ? `<img class="artist-img" src="${img1}" onerror="this.style.display='none'">` : `<div class="artist-img-placeholder">🎤</div>`}
+          <div class="artist-name" style="color:var(--fire)">${a1.name}</div>
+          <div class="artist-listeners">${fmtNum(listeners1)} oyentes</div>
+          <div class="tags-row">${tags1.map(t => `<div class="tag">${t}</div>`).join("")}</div>
+        </div>
+        <div class="artist-card" style="border-color:#4fc3f744">
+          ${img2 ? `<img class="artist-img" src="${img2}" onerror="this.style.display='none'">` : `<div class="artist-img-placeholder">🎤</div>`}
+          <div class="artist-name" style="color:var(--blue)">${a2.name}</div>
+          <div class="artist-listeners">${fmtNum(listeners2)} oyentes</div>
+          <div class="tags-row">${tags2.map(t => `<div class="tag">${t}</div>`).join("")}</div>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px">
+        <div class="stat-row">
+          <div class="stat-header">
+            <span class="stat-name">👥 Oyentes</span>
+            <div class="stat-vals">
+              <span class="stat-val1">${fmtNum(listeners1)}</span>
+              <span class="stat-val2">${fmtNum(listeners2)}</span>
+            </div>
+          </div>
+          <div class="bar-container">
+            <div class="bar-wrap"><div class="bar-fill bar1" style="width:${(listeners1/maxL*100).toFixed(0)}%"></div></div>
+            <div class="bar-wrap"><div class="bar-fill bar2" style="width:${(listeners2/maxL*100).toFixed(0)}%"></div></div>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-header">
+            <span class="stat-name">🔄 Total plays</span>
+            <div class="stat-vals">
+              <span class="stat-val1">${fmtNum(plays1)}</span>
+              <span class="stat-val2">${fmtNum(plays2)}</span>
+            </div>
+          </div>
+          <div class="bar-container">
+            <div class="bar-wrap"><div class="bar-fill bar1" style="width:${(plays1/maxP*100).toFixed(0)}%"></div></div>
+            <div class="bar-wrap"><div class="bar-fill bar2" style="width:${(plays2/maxP*100).toFixed(0)}%"></div></div>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-header">
+            <span class="stat-name">🔁 Plays por oyente</span>
+            <div class="stat-vals">
+              <span class="stat-val1">${listeners1 ? (plays1/listeners1).toFixed(1) : "N/D"}</span>
+              <span class="stat-val2">${listeners2 ? (plays2/listeners2).toFixed(1) : "N/D"}</span>
+            </div>
+          </div>
+          <div class="bar-container">
+            <div class="bar-wrap"><div class="bar-fill bar1" style="width:${Math.min(100,(plays1/(listeners1||1))/20*100).toFixed(0)}%"></div></div>
+            <div class="bar-wrap"><div class="bar-fill bar2" style="width:${Math.min(100,(plays2/(listeners2||1))/20*100).toFixed(0)}%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      ${a1.bio?.summary ? `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px">
+        <div style="font-size:11px;color:var(--fire);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">${a1.name}</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">${a1.bio.summary.replace(/<[^>]+>/g,"").slice(0,200)}...</div>
+      </div>` : ""}
+
+      ${a2.bio?.summary ? `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px">
+        <div style="font-size:11px;color:var(--blue);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">${a2.name}</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">${a2.bio.summary.replace(/<[^>]+>/g,"").slice(0,200)}...</div>
+      </div>` : ""}
+    `;
+
+    if (tg) tg.HapticFeedback?.notificationOccurred("success");
+  } catch(e) {
+    document.getElementById("results").innerHTML = `
+      <div class="error-box">❌ No se encontró un artista. Verifica los nombres e intenta de nuevo.</div>`;
+  }
+
+  document.getElementById("btn-compare").disabled = false;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Detector de Escala — Mkeyz Studio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#0a0a0a; --card:#111; --border:#1f1f1f;
+  --gold:#f5c518; --green:#00e676; --fire:#ff4d4d;
+  --blue:#4fc3f7; --purple:#9c27b0; --text:#fff; --muted:#555;
+}
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; padding:16px; padding-bottom:40px; }
+
+.header { text-align:center; padding:16px 0 20px; }
+.header h1 { font-size:22px; font-weight:900; background:linear-gradient(135deg,#fff,var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:4px; }
+.header p { font-size:13px; color:var(--muted); }
+
+/* Result box */
+.result-box {
+  background:linear-gradient(135deg,#1a0a2e,#111);
+  border:1px solid var(--purple); border-radius:20px;
+  padding:20px; text-align:center; margin-bottom:20px; min-height:90px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+.result-scale { font-size:32px; font-weight:900; color:var(--gold); letter-spacing:-1px; }
+.result-type  { font-size:14px; color:var(--purple); margin-top:4px; font-weight:600; }
+.result-notes { font-size:13px; color:var(--muted); margin-top:8px; }
+
+/* Piano */
+.piano-wrap { overflow-x:auto; padding-bottom:8px; margin-bottom:20px; }
+.piano {
+  display:flex; position:relative;
+  height:140px; width:max-content; margin:0 auto;
+}
+.white-key {
+  width:44px; height:140px; background:#f0f0f0;
+  border:1px solid #999; border-radius:0 0 6px 6px;
+  cursor:pointer; position:relative; transition:all 0.1s;
+  display:flex; align-items:flex-end; justify-content:center; padding-bottom:8px;
+  font-size:11px; font-weight:700; color:#333;
+}
+.white-key.active { background:var(--gold); color:#000; }
+.white-key.in-scale { background:#e8f5e9; }
+.white-key.in-scale.active { background:var(--green); }
+.white-key:active { background:#ddd; transform:scaleY(0.98); }
+
+.black-key {
+  width:28px; height:90px; background:#111;
+  border-radius:0 0 4px 4px; cursor:pointer;
+  position:absolute; top:0; z-index:2; transition:all 0.1s;
+  display:flex; align-items:flex-end; justify-content:center; padding-bottom:6px;
+  font-size:9px; font-weight:700; color:#666;
+}
+.black-key.active { background:var(--gold); color:#000; }
+.black-key.in-scale { background:#1b5e20; }
+.black-key.in-scale.active { background:var(--green); }
+.black-key:active { background:#333; }
+
+/* Chord grid */
+.section-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; margin-top:20px; }
+
+.chord-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+.chord-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:12px; text-align:center;
+}
+.chord-num  { font-size:10px; color:var(--muted); margin-bottom:4px; }
+.chord-name { font-size:16px; font-weight:800; color:var(--gold); }
+.chord-type { font-size:10px; color:var(--muted); margin-top:2px; }
+
+/* Notes display */
+.notes-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+.note-pill {
+  padding:6px 14px; border-radius:100px;
+  font-size:13px; font-weight:700;
+  background:var(--border); color:var(--muted);
+}
+.note-pill.active { background:var(--purple); color:#fff; }
+
+/* Buttons */
+.btn-clear {
+  width:100%; padding:14px; border:1px solid var(--border);
+  border-radius:14px; background:transparent; color:var(--muted);
+  font-size:14px; font-weight:600; cursor:pointer; margin-bottom:10px;
+}
+.btn-clear:active { background:var(--border); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎹 Detector de Escala</h1>
+  <p>Toca las notas de tu melodía y detecta la escala</p>
+</div>
+
+<div class="result-box" id="result-box">
+  <div style="color:var(--muted);font-size:14px">Toca notas en el piano 👇</div>
+</div>
+
+<div class="piano-wrap">
+  <div class="piano" id="piano"></div>
+</div>
+
+<button class="btn-clear" onclick="clearAll()">🗑️ Limpiar selección</button>
+
+<div id="scale-info" style="display:none">
+  <div class="section-title">Notas de la escala</div>
+  <div class="notes-row" id="notes-row"></div>
+
+  <div class="section-title">Acordes que funcionan</div>
+  <div class="chord-grid" id="chord-grid"></div>
+
+  <div class="section-title">Info de la escala</div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;font-size:13px;line-height:1.8;color:var(--muted)" id="scale-tips"></div>
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
+
+const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const WHITE_NOTES = [0,2,4,5,7,9,11]; // C D E F G A B
+const BLACK_NOTES = [1,3,null,6,8,10]; // C# D# - F# G# A#
+
+// Scale patterns (intervals from root)
+const SCALES = {
+  "Mayor":           { intervals:[0,2,4,5,7,9,11], chords:["Maj","min","min","Maj","Maj","min","dim"], mood:"Alegre, brillante, positiva" },
+  "Menor Natural":   { intervals:[0,2,3,5,7,8,10], chords:["min","dim","Maj","min","min","Maj","Maj"], mood:"Oscura, melancólica, emocional" },
+  "Menor Armónica":  { intervals:[0,2,3,5,7,8,11], chords:["min","dim","Aug","min","Maj","Maj","dim"], mood:"Dramática, exótica, tensa" },
+  "Pentatónica Maj": { intervals:[0,2,4,7,9],       chords:null, mood:"Simple, folk, country, pop" },
+  "Pentatónica Min": { intervals:[0,3,5,7,10],       chords:null, mood:"Blues, rock, trap, lo-fi" },
+  "Dórico":          { intervals:[0,2,3,5,7,9,10],   chords:["min","min","Maj","Maj","min","dim","Maj"], mood:"Jazz, funk, R&B, groove" },
+  "Frigio":          { intervals:[0,1,3,5,7,8,10],   chords:["min","Maj","Maj","min","dim","Maj","min"], mood:"Flamenco, metal, dramático" },
+  "Lidio":           { intervals:[0,2,4,6,7,9,11],   chords:["Maj","Maj","min","dim","Maj","min","min"], mood:"Flotante, etéreo, épico, dreamy" },
+  "Mixolidio":       { intervals:[0,2,4,5,7,9,10],   chords:["Maj","min","dim","Maj","min","min","Maj"], mood:"Rock, blues, country, reggae" },
+  "Locrio":          { intervals:[0,1,3,5,6,8,10],   chords:["dim","Maj","min","min","Maj","Maj","min"], mood:"Oscuro, disonante, experimental" },
+};
+
+const ROMAN = ["I","II","III","IV","V","VI","VII"];
+
+let selectedNotes = new Set();
+let audioCtx = null;
+
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playNote(midi) {
+  try {
+    const ctx  = getAudio();
+    const freq  = 261.63 * Math.pow(2, midi / 12);
+    const osc   = ctx.createOscillator();
+    const gain  = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.8);
+  } catch(e) {}
+}
+
+function buildPiano() {
+  const piano = document.getElementById("piano");
+  const octaves = 2;
+  const startNote = 0; // C
+
+  let whiteIdx = 0;
+  const whites = [];
+  const blacks = [];
+
+  for (let oct = 0; oct < octaves; oct++) {
+    for (let w = 0; w < 7; w++) {
+      const noteIdx = WHITE_NOTES[w];
+      const midi    = oct * 12 + noteIdx;
+      const name    = NOTE_NAMES[noteIdx];
+
+      const key = document.createElement("div");
+      key.className = "white-key";
+      key.dataset.note = noteIdx;
+      key.dataset.midi = midi;
+      key.innerHTML = `<span>${name}</span>`;
+      key.onclick = () => toggleNote(noteIdx, key, midi);
+      piano.appendChild(key);
+      whites.push({ el: key, x: whiteIdx * 44 });
+      whiteIdx++;
+    }
+
+    // Black keys
+    const blackOffsets = [0.6, 1.6, null, 3.6, 4.6, 5.6];
+    blackOffsets.forEach((offset, i) => {
+      if (offset === null) return;
+      const noteIdx = BLACK_NOTES[i];
+      if (noteIdx === null) return;
+      const midi  = oct * 12 + noteIdx;
+      const name  = NOTE_NAMES[noteIdx];
+      const baseX = (oct * 7) * 44;
+
+      const key = document.createElement("div");
+      key.className = "black-key";
+      key.dataset.note = noteIdx;
+      key.dataset.midi = midi;
+      key.innerHTML = `<span>${name}</span>`;
+      key.style.left = (baseX + offset * 44 + 8) + "px";
+      key.onclick = () => toggleNote(noteIdx, key, midi);
+      piano.appendChild(key);
+    });
+  }
+}
+
+function toggleNote(noteIdx, el, midi) {
+  if (selectedNotes.has(noteIdx)) {
+    selectedNotes.delete(noteIdx);
+    el.classList.remove("active");
+  } else {
+    selectedNotes.add(noteIdx);
+    el.classList.add("active");
+    playNote(midi);
+    if (tg) tg.HapticFeedback?.impactOccurred("light");
+  }
+  analyzeScale();
+}
+
+function analyzeScale() {
+  if (selectedNotes.size === 0) {
+    document.getElementById("result-box").innerHTML = '<div style="color:var(--muted);font-size:14px">Toca notas en el piano 👇</div>';
+    document.getElementById("scale-info").style.display = "none";
+    return;
+  }
+
+  const notes = Array.from(selectedNotes);
+  let bestMatch = null;
+  let bestScore = -1;
+  let bestRoot  = 0;
+
+  // Try each note as root and each scale
+  for (let root = 0; root < 12; root++) {
+    for (const [scaleName, scaleData] of Object.entries(SCALES)) {
+      const scaleNotes = scaleData.intervals.map(i => (root + i) % 12);
+      let matches = 0;
+      let misses  = 0;
+      notes.forEach(n => { if (scaleNotes.includes(n)) matches++; else misses++; });
+      const score = matches * 2 - misses;
+      if (score > bestScore) {
+        bestScore  = score;
+        bestMatch  = scaleName;
+        bestRoot   = root;
+      }
+    }
+  }
+
+  if (!bestMatch) return;
+
+  const scale     = SCALES[bestMatch];
+  const rootName  = NOTE_NAMES[bestRoot];
+  const scaleNotes = scale.intervals.map(i => (bestRoot + i) % 12);
+
+  // Update result
+  document.getElementById("result-box").innerHTML = `
+    <div class="result-scale">${rootName} ${bestMatch}</div>
+    <div class="result-type">${scale.mood}</div>
+    <div class="result-notes">${scaleNotes.map(n => NOTE_NAMES[n]).join(" · ")}</div>
+  `;
+
+  // Highlight scale notes on piano
+  document.querySelectorAll(".white-key, .black-key").forEach(k => {
+    k.classList.remove("in-scale");
+    if (scaleNotes.includes(parseInt(k.dataset.note))) k.classList.add("in-scale");
+  });
+
+  // Notes pills
+  const notesRow = document.getElementById("notes-row");
+  notesRow.innerHTML = scaleNotes.map(n =>
+    `<div class="note-pill ${notes.includes(n) ? 'active' : ''}">${NOTE_NAMES[n]}</div>`
+  ).join("");
+
+  // Chords
+  const chordGrid = document.getElementById("chord-grid");
+  if (scale.chords) {
+    chordGrid.innerHTML = scale.chords.map((type, i) => {
+      const chordRoot = NOTE_NAMES[(bestRoot + scale.intervals[i]) % 12];
+      return `<div class="chord-card">
+        <div class="chord-num">${ROMAN[i]}</div>
+        <div class="chord-name">${chordRoot}${type === "min" ? "m" : type === "dim" ? "°" : type === "Aug" ? "+" : ""}</div>
+        <div class="chord-type">${type}</div>
+      </div>`;
+    }).join("");
+    document.getElementById("chord-grid").parentElement.style.display = "";
+  } else {
+    chordGrid.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:13px">Escala pentatónica — cualquier acorde de la escala mayor/menor correspondiente funciona.</div>';
+  }
+
+  // Tips
+  const genreMap = {
+    "Mayor":"Pop Latino · Reggaeton · Salsa · Bachata","Menor Natural":"Trap · R&B · Drill · Afrobeats",
+    "Menor Armónica":"Dancehall · Flamenco Urbano","Pentatónica Maj":"Pop · Folk · Country",
+    "Pentatónica Min":"Trap · Lo-Fi · Hip-Hop · Blues","Dórico":"R&B · Jazz · Funk · Neo-Soul",
+    "Frigio":"Reggaeton Oscuro · Flamenco · Metal","Lidio":"Lo-Fi · Dreamy Pop · Cine",
+    "Mixolidio":"Reggae · Rock · Indie","Locrio":"Experimental · Dark Ambient",
+  };
+  document.getElementById("scale-tips").innerHTML =
+    `<strong style="color:var(--text)">${rootName} ${bestMatch}</strong><br>
+    🎸 Géneros: ${genreMap[bestMatch] || "Varios"}<br>
+    🎵 Mood: ${scale.mood}<br>
+    🎹 Notas: ${scaleNotes.map(n => NOTE_NAMES[n]).join(", ")}`;
+
+  document.getElementById("scale-info").style.display = "block";
+}
+
+function clearAll() {
+  selectedNotes.clear();
+  document.querySelectorAll(".white-key, .black-key").forEach(k => k.classList.remove("active","in-scale"));
+  document.getElementById("result-box").innerHTML = '<div style="color:var(--muted);font-size:14px">Toca notas en el piano 👇</div>';
+  document.getElementById("scale-info").style.display = "none";
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+buildPiano();
+</script>
+</body>
+</html>
