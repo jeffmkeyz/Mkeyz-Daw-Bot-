@@ -268,7 +268,9 @@ input[type=range]::-webkit-slider-thumb {
       <button onclick="setOyentes(10000)" style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">10K</button>
       <button onclick="setOyentes(50000)" style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">50K</button>
       <button onclick="setOyentes(100000)"style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">100K</button>
-      <button onclick="setOyentes(1000000)"style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">1M</button>
+      <button onclick="setOyentes(1000000)"  style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">1M</button>
+      <button onclick="setOyentes(10000000)" style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">10M</button>
+      <button onclick="setOyentes(100000000)"style="flex:1;padding:8px;background:var(--border);border:none;border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">100M</button>
     </div>
   </div>
 
@@ -291,62 +293,71 @@ input[type=range]::-webkit-slider-thumb {
   <div class="section-title">Plataforma</div>
   <div class="platform-grid">
     <div class="plat-btn active" onclick="selectPlat(this,'Spotify',0.001106)">
-      <span class="plat-icon">🎵</span>Spotify
+      <svg class="plat-icon" viewBox="0 0 24 24" fill="#1DB954" width="28" height="28"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      Spotify
     </div>
-    <div class="plat-btn" onclick="selectPlat(this,'Apple',0.005799)">
-      <span class="plat-icon">🍎</span>Apple Music
+    <div class="plat-btn" onclick="selectPlat(this,'Apple Music',0.005799)">
+      <svg class="plat-icon" viewBox="0 0 24 24" fill="#fc3c44" width="28" height="28"><path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026C4.786.07 4.043.15 3.34.428 2.004.958 1.04 1.88.475 3.208A5.494 5.494 0 00.05 5.064a49.43 49.43 0 00-.05 1.015v11.96c.01.317.026.636.06.953.122 1.108.47 2.107 1.158 2.964.888 1.106 2.07 1.7 3.454 1.913.51.077 1.026.107 1.543.115h13.028c.36-.01.72-.025 1.078-.07 1.228-.154 2.277-.643 3.122-1.51.74-.757 1.2-1.687 1.39-2.74.1-.573.12-1.15.127-1.726V6.124zm-11.07 5.47c-.55.12-1.093.16-1.64.16-.29 0-.587-.01-.877-.04-.19-.02-.38-.04-.57-.07L9.5 12c.01.12.01.23.01.35 0 1.52-.51 2.67-1.52 3.44-.72.55-1.55.83-2.48.83-1.01 0-1.84-.3-2.51-.92-.67-.61-1.01-1.4-1.01-2.37 0-.82.26-1.53.78-2.14.52-.6 1.22-1.01 2.1-1.21.48-.11.97-.16 1.47-.16.29 0 .58.01.87.04V7.83a6.73 6.73 0 01-.87-.06c-.35-.04-.7-.1-1.04-.19L5 7.25v-4.6l7.92-1.42v9.37zm7.5 3.87c-.52.61-1.22 1.01-2.1 1.21-.48.11-.97.16-1.47.16-.29 0-.58-.01-.87-.04V18c.29.04.58.06.87.06.35.04.7.1 1.04.19l.3.34v-4.93l-7.92 1.42V5.31l7.92-1.42v4.6c.35.04.7.1 1.04.19l.26.29v4.93z"/></svg>
+      Apple
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'Tidal',0.003433)">
-      <span class="plat-icon">🌊</span>Tidal
+      <svg class="plat-icon" viewBox="0 0 24 24" fill="#00FFFF" width="28" height="28"><path d="M12.012 3.992L8.008 7.996 4.004 3.992 0 7.996l4.004 4.004 4.004-4.004 4.004 4.004 4.004-4.004zM8.008 16.004l4.004-4.004 4.004 4.004 4.004-4.004-4.004-4.004-4.004 4.004-4.004-4.004-4.004 4.004z"/></svg>
+      Tidal
     </div>
-    <div class="plat-btn" onclick="selectPlat(this,'YT Prem',0.007441)">
-      <span class="plat-icon">▶️</span>YT Premium
+    <div class="plat-btn" onclick="selectPlat(this,'YT Premium',0.007441)">
+      <svg class="plat-icon" viewBox="0 0 24 24" fill="#FF0000" width="28" height="28"><path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+      YouTube
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'YT Ads',0.003197)">
-      <span class="plat-icon">📺</span>YT Ads
+      <svg class="plat-icon" viewBox="0 0 24 24" fill="#FF0000" width="28" height="28" style="opacity:0.6"><path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+      YT Ads
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'Amazon',0.010574)">
-      <span class="plat-icon">📦</span>Amazon UNL
+      <svg class="plat-icon" viewBox="0 0 24 24" fill="#FF9900" width="28" height="28"><path d="M13.958 10.09c0 1.232.029 2.256-.591 3.351-.502.891-1.301 1.438-2.186 1.438-1.214 0-1.922-.924-1.922-2.292 0-2.692 2.415-3.182 4.7-3.182v.685zm3.186 7.705c-.209.189-.512.201-.745.074-1.052-.872-1.238-1.276-1.814-2.106-1.734 1.767-2.962 2.297-5.209 2.297-2.66 0-4.731-1.641-4.731-4.925 0-2.565 1.391-4.309 3.37-5.164 1.715-.754 4.11-.891 5.942-1.095v-.41c0-.753.06-1.642-.384-2.294-.385-.579-1.124-.82-1.775-.82-1.205 0-2.277.618-2.54 1.897-.054.285-.261.567-.549.582l-3.061-.333c-.259-.056-.548-.266-.472-.66.703-3.71 4.06-4.829 7.066-4.829 1.537 0 3.547.41 4.758 1.574 1.538 1.436 1.392 3.352 1.392 5.438v4.923c0 1.481.616 2.13 1.192 2.928.204.287.247.631-.01.847l-2.43 2.075zm3.21 1.535c-1.956 1.444-4.794 2.213-7.237 2.213-3.426 0-6.507-1.269-8.836-3.374-.183-.166-.02-.392.2-.263 2.514 1.466 5.622 2.347 8.836 2.347 2.166 0 4.548-.45 6.738-1.385.33-.141.607.216.299.462zm.857-1.466c-.251-.322-1.661-.152-2.295-.076-.193.023-.222-.144-.049-.266 1.124-.79 2.966-.562 3.181-.297.217.267-.056 2.114-.1 2.965-.014.232-.232.341-.452.182-.533-.349-.953-1.191-.285-2.508z"/></svg>
+      Amazon
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'TikTok',0.000850)">
-      <span class="plat-icon">🎬</span>TikTok
+      <svg class="plat-icon" viewBox="0 0 24 24" width="28" height="28"><path fill="#69C9D0" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/><path fill="#EE1D52" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" opacity=".5"/></svg>
+      TikTok
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'Audiomack',0.001144)">
-      <span class="plat-icon">🎧</span>Audiomack
+      <svg class="plat-icon" viewBox="0 0 24 24" fill="#FF6A00" width="28" height="28"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 19.2c-3.975 0-7.2-3.225-7.2-7.2S8.025 4.8 12 4.8s7.2 3.225 7.2 7.2-3.225 7.2-7.2 7.2zm0-11.4c-2.32 0-4.2 1.88-4.2 4.2s1.88 4.2 4.2 4.2 4.2-1.88 4.2-4.2-1.88-4.2-4.2-4.2zm0 6a1.8 1.8 0 110-3.6 1.8 1.8 0 010 3.6z"/></svg>
+      Audiomack
     </div>
     <div class="plat-btn" onclick="selectPlat(this,'Pandora',0.001705)">
-      <span class="plat-icon">📻</span>Pandora
+      <svg class="plat-icon" viewBox="0 0 24 24" fill="#005483" width="28" height="28"><path d="M0 0v24h7.228C11.818 24 16 20.018 16 14.285c0-4.907-3.178-8.104-7.636-8.104H5.091V0H0zm5.09 9.877h2.956c2.545 0 4.364 2.019 4.364 4.453 0 3.142-2.091 5.979-5.32 5.979H5.091V9.877zM19.09 5.09C17.09 5.09 16 6.545 16 8.544v.908h3.09v-1.18c0-.59.273-.727.59-.727.32 0 .593.136.593.726v.82c0 .637-.318 1.136-.864 1.59L17.09 12.5c-1.09.956-1.636 2.046-1.636 3.59V18h6.273v-2.136h-3.59v-.637c0-.682.364-1.09.864-1.5l2.364-2.046C22.59 10.5 23 9.318 23 7.772v-.59C23 5.728 21.41 5.09 19.09 5.09z"/></svg>
+      Pandora
     </div>
   </div>
 
   <div class="section-title">Proyección de ganancias (base diaria)</div>
   <div class="earnings-grid">
-    <div class="earn-card">
+    <div class="earn-card" onclick="highlightCard(this)" style="cursor:pointer;transition:all 0.2s">
       <div class="earn-platform">☀️ Diario</div>
       <div class="earn-amount" id="earn-day">$0</div>
       <div class="earn-eur" id="earn-day-eur">€0</div>
     </div>
-    <div class="earn-card">
+    <div class="earn-card" onclick="highlightCard(this)" style="cursor:pointer;transition:all 0.2s">
       <div class="earn-platform">📅 Mensual</div>
       <div class="earn-amount" id="earn-month">$0</div>
       <div class="earn-eur" id="earn-month-eur">€0</div>
     </div>
-    <div class="earn-card">
+    <div class="earn-card" onclick="highlightCard(this)" style="cursor:pointer;transition:all 0.2s">
       <div class="earn-platform">📆 Anual</div>
       <div class="earn-amount" id="earn-year">$0</div>
       <div class="earn-eur" id="earn-year-eur">€0</div>
     </div>
-    <div class="earn-card">
+    <div class="earn-card" onclick="highlightCard(this)" style="cursor:pointer;transition:all 0.2s">
       <div class="earn-platform">💲 Por stream</div>
       <div class="earn-amount" id="earn-rate">$0</div>
       <div class="earn-eur" id="earn-plat-name">Spotify</div>
     </div>
-    <div class="earn-card">
+    <div class="earn-card" onclick="highlightCard(this)" style="cursor:pointer;transition:all 0.2s">
       <div class="earn-platform">🎵 Por canción</div>
       <div class="earn-amount" id="earn-per-song">$0</div>
       <div class="earn-eur" id="earn-per-song-eur">€0</div>
     </div>
-    <div class="earn-card">
+    <div class="earn-card" onclick="highlightCard(this)" style="cursor:pointer;transition:all 0.2s">
       <div class="earn-platform">🔁 Por repetición</div>
       <div class="earn-amount" id="earn-per-rep">$0</div>
       <div class="earn-eur" id="earn-per-rep-eur">€0</div>
@@ -526,6 +537,26 @@ function update() {
   }).join("");
 
   if (tg) tg.HapticFeedback?.selectionChanged();
+}
+
+function highlightCard(card) {
+  // Remove highlight from all
+  document.querySelectorAll(".earn-card").forEach(c => {
+    c.style.borderColor = "var(--border)";
+    c.style.background  = "var(--card)";
+    c.style.transform   = "scale(1)";
+  });
+  // Highlight tapped
+  card.style.borderColor = "var(--gold)";
+  card.style.background  = "#1a1500";
+  card.style.transform   = "scale(1.04)";
+  if (window.Telegram?.WebApp) window.Telegram.WebApp.HapticFeedback?.impactOccurred("light");
+  // Reset after 1.5s
+  setTimeout(() => {
+    card.style.borderColor = "var(--border)";
+    card.style.background  = "var(--card)";
+    card.style.transform   = "scale(1)";
+  }, 1500);
 }
 
 function selectPlat(btn, name, rate) {
