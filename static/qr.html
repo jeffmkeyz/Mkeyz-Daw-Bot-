@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mkeyz Studio — Compartir</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#0a0a0a; --card:#111; --border:#1f1f1f;
+  --gold:#f5c518; --text:#fff; --muted:#555;
+}
+body {
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
+  padding:16px; padding-bottom:60px; min-height:100vh;
+}
+
+.header { text-align:center; padding:16px 0 24px; }
+.header h1 {
+  font-size:22px; font-weight:900;
+  background:linear-gradient(135deg,#fff,var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-bottom:4px;
+}
+.header p { font-size:13px; color:var(--muted); }
+
+/* ── QR CARD ── */
+#qr-card {
+  background:linear-gradient(160deg,#1a0a2e 0%,#080808 100%);
+  border:1px solid #2a2a2a; border-radius:24px;
+  padding:28px 20px; text-align:center;
+  margin-bottom:20px; position:relative; overflow:hidden;
+}
+#qr-card::before {
+  content:''; position:absolute; top:-40px; right:-40px;
+  width:160px; height:160px; opacity:0.07;
+  background:radial-gradient(circle,var(--gold),transparent);
+  border-radius:50%;
+}
+#qr-card::after {
+  content:''; position:absolute; bottom:-40px; left:-40px;
+  width:120px; height:120px; opacity:0.05;
+  background:radial-gradient(circle,#9c27b0,transparent);
+  border-radius:50%;
+}
+
+.qr-logo {
+  font-size:13px; font-weight:800; color:var(--muted);
+  letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;
+}
+
+#qr-box {
+  display:inline-flex; align-items:center; justify-content:center;
+  background:#fff; border-radius:16px; padding:14px;
+  position:relative; z-index:1; margin-bottom:20px;
+}
+#qr-box canvas, #qr-box img { display:block; border-radius:4px; }
+
+.qr-url {
+  font-size:14px; font-weight:700; color:var(--gold);
+  margin-bottom:6px; position:relative; z-index:1;
+}
+.qr-sub {
+  font-size:12px; color:var(--muted);
+  position:relative; z-index:1;
+}
+
+/* Wave decoration */
+.wave-dec {
+  display:flex; gap:3px; align-items:flex-end;
+  justify-content:center; margin-top:16px; opacity:0.5;
+}
+.wave-dec span {
+  width:3px; border-radius:2px; background:var(--gold);
+  animation:waveDec 0.8s ease-in-out infinite alternate;
+}
+.wave-dec span:nth-child(1){height:6px;  animation-delay:0s}
+.wave-dec span:nth-child(2){height:12px; animation-delay:0.1s}
+.wave-dec span:nth-child(3){height:8px;  animation-delay:0.2s}
+.wave-dec span:nth-child(4){height:16px; animation-delay:0.15s}
+.wave-dec span:nth-child(5){height:10px; animation-delay:0.05s}
+.wave-dec span:nth-child(6){height:14px; animation-delay:0.25s}
+.wave-dec span:nth-child(7){height:7px;  animation-delay:0.3s}
+@keyframes waveDec { from{transform:scaleY(0.4)} to{transform:scaleY(1)} }
+
+/* ── ACTION BUTTONS ── */
+.section-title {
+  font-size:11px; color:var(--muted); text-transform:uppercase;
+  letter-spacing:1px; margin-bottom:10px; margin-top:20px;
+}
+
+.btn-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.btn {
+  padding:16px 10px; border:none; border-radius:16px;
+  font-size:14px; font-weight:800; cursor:pointer;
+  transition:all 0.15s; display:flex; align-items:center;
+  justify-content:center; gap:8px;
+}
+.btn:active { transform:scale(0.97); }
+.btn-gold     { background:linear-gradient(135deg,var(--gold),#ff8c00); color:#000; }
+.btn-dark     { background:#1a1a1a; color:#fff; border:1px solid #2a2a2a; }
+.btn-full {
+  width:100%; padding:16px; border:none; border-radius:16px;
+  font-size:15px; font-weight:800; cursor:pointer; transition:all 0.15s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  margin-bottom:10px;
+}
+.btn-full:active { transform:scale(0.97); }
+.btn-telegram { background:linear-gradient(135deg,#0088cc,#006699); color:#fff; }
+.btn-copy-link { background:#1a1a1a; color:#fff; border:1px solid #2a2a2a; }
+
+/* ── STATS ── */
+.stats-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:8px; margin-bottom:16px;
+}
+.stat-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:14px; text-align:center;
+}
+.stat-n { font-size:20px; font-weight:900; color:var(--gold); }
+.stat-l { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:3px; }
+
+/* ── THEME SELECTOR ── */
+.theme-row { display:flex; gap:8px; margin-bottom:16px; }
+.theme-dot {
+  width:36px; height:36px; border-radius:50%; cursor:pointer;
+  border:2px solid transparent; transition:all 0.15s; flex-shrink:0;
+}
+.theme-dot.active { border-color:#fff; transform:scale(1.15); }
+.theme-dot:active { transform:scale(0.93); }
+
+/* ── SIZE SELECTOR ── */
+.size-row { display:flex; gap:8px; margin-bottom:16px; }
+.size-btn {
+  flex:1; padding:10px; border-radius:12px; font-size:12px; font-weight:700;
+  background:var(--card); color:var(--muted); border:1px solid var(--border);
+  cursor:pointer; transition:all 0.2s; text-align:center;
+}
+.size-btn.active { background:#1a1500; color:var(--gold); border-color:#f5c51866; }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:24px; left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:#fff; color:#000; padding:12px 20px; border-radius:100px;
+  font-size:14px; font-weight:700; z-index:9999;
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ── OVERLAY ── */
+.overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.8); z-index:9998;
+  align-items:center; justify-content:center; flex-direction:column; gap:12px;
+}
+.overlay.show { display:flex; }
+.spinner {
+  width:36px; height:36px; border:3px solid #333;
+  border-top-color:var(--gold); border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+.overlay-text { color:#fff; font-size:14px; font-weight:600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎛️ Mkeyz Studio</h1>
+  <p>Comparte el bot con otros artistas</p>
+</div>
+
+<!-- QR CARD -->
+<div id="qr-card">
+  <div class="qr-logo">MKEYZ STUDIO BOT</div>
+  <div id="qr-box"></div>
+  <div class="qr-url">t.me/MkeyzDAWbot</div>
+  <div class="qr-sub">Escanea para acceder al estudio</div>
+  <div class="wave-dec">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span>
+  </div>
+</div>
+
+<!-- THEME -->
+<div class="section-title">Color del QR</div>
+<div class="theme-row" id="theme-row"></div>
+
+<!-- SIZE -->
+<div class="section-title">Tamaño</div>
+<div class="size-row">
+  <div class="size-btn active" onclick="setSize(180,this)">Pequeño<br><span style="font-size:10px;opacity:0.5">180px</span></div>
+  <div class="size-btn" onclick="setSize(240,this)">Mediano<br><span style="font-size:10px;opacity:0.5">240px</span></div>
+  <div class="size-btn" onclick="setSize(300,this)">Grande<br><span style="font-size:10px;opacity:0.5">300px</span></div>
+</div>
+
+<!-- ACTIONS -->
+<div class="section-title">Compartir</div>
+<button class="btn-full btn-telegram" onclick="shareToTelegram()">✈️ Compartir por Telegram</button>
+<button class="btn-full btn-copy-link" onclick="copyLink()">🔗 Copiar enlace del bot</button>
+
+<div class="btn-row">
+  <button class="btn btn-gold"  onclick="downloadQR()">⬇️ Descargar QR</button>
+  <button class="btn btn-dark"  onclick="downloadCard()">🃏 Descargar tarjeta</button>
+</div>
+
+<!-- STATS -->
+<div class="section-title">El bot en números</div>
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-n">10+</div>
+    <div class="stat-l">Herramientas</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-n">3</div>
+    <div class="stat-l">Planes</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-n">∞</div>
+    <div class="stat-l">Usos</div>
+  </div>
+</div>
+
+<!-- INFO -->
+<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;font-size:13px;color:var(--muted);line-height:1.8">
+  <div style="color:var(--text);font-weight:700;margin-bottom:8px">🎛️ ¿Qué es Mkeyz Studio?</div>
+  El primer estudio musical dentro de Telegram.<br>
+  DAW · Analizador · Chord Generator · Voice Studio · Beat Battle · Reto Semanal y mucho más.<br>
+  <span style="color:var(--gold)">Hecho por Jeff Mkeyz 🇩🇴🇪🇸</span>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <div class="overlay-text" id="overlay-text">Generando...</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
+
+const BOT_URL = "https://t.me/MkeyzDAWbot";
+let currentSize  = 180;
+let currentColor = "#000000";
+let qrInstance   = null;
+
+const THEMES = [
+  { color:"#000000", bg:"#f5c518", label:"Gold" },
+  { color:"#1a0040", bg:"#a78bfa", label:"Purple" },
+  { color:"#000d00", bg:"#00e676", label:"Neon" },
+  { color:"#000a1a", bg:"#4fc3f7", label:"Blue" },
+  { color:"#0d0000", bg:"#ff4d4d", label:"Red" },
+  { color:"#000000", bg:"#ffffff", label:"White" },
+];
+
+// Build theme selector
+const themeRow = document.getElementById("theme-row");
+THEMES.forEach((t, i) => {
+  const dot = document.createElement("div");
+  dot.className = "theme-dot" + (i === 0 ? " active" : "");
+  dot.style.background = `linear-gradient(135deg,${t.color},${t.bg})`;
+  dot.title = t.label;
+  dot.onclick = () => {
+    document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
+    dot.classList.add("active");
+    currentColor = t.bg;
+    generateQR();
+    if (tg) tg.HapticFeedback?.impactOccurred("light");
+  };
+  themeRow.appendChild(dot);
+});
+
+function setSize(size, btn) {
+  document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  currentSize = size;
+  generateQR();
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+function generateQR() {
+  const box = document.getElementById("qr-box");
+  box.innerHTML = "";
+  qrInstance = new QRCode(box, {
+    text: BOT_URL,
+    width:  currentSize,
+    height: currentSize,
+    colorDark:  currentColor,
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H,
+  });
+}
+
+async function downloadQR() {
+  showOverlay("Generando QR...");
+  try {
+    await sleep(300); // let QR render
+    const box    = document.getElementById("qr-box");
+    const canvas = await html2canvas(box, {
+      backgroundColor:"#ffffff", scale:4, useCORS:true, logging:false,
+    });
+    download(canvas.toDataURL("image/png"), "mkeyz_qr.png");
+    hideOverlay();
+    showToast("✅ QR descargado");
+    if (tg) tg.HapticFeedback?.notificationOccurred("success");
+  } catch(e) {
+    hideOverlay();
+    showToast("❌ Error: " + e.message);
+  }
+}
+
+async function downloadCard() {
+  showOverlay("Generando tarjeta...");
+  try {
+    await sleep(300);
+    const card   = document.getElementById("qr-card");
+    // Pause wave animation
+    const canvas = await html2canvas(card, {
+      backgroundColor: null, scale:3, useCORS:true, logging:false,
+      onclone: doc => {
+        doc.querySelectorAll(".wave-dec span").forEach(s => {
+          s.style.animation = "none"; s.style.transform = "scaleY(0.8)";
+        });
+      }
+    });
+    download(canvas.toDataURL("image/png"), "mkeyz_studio_card.png");
+    hideOverlay();
+    showToast("✅ Tarjeta descargada");
+    if (tg) tg.HapticFeedback?.notificationOccurred("success");
+  } catch(e) {
+    hideOverlay();
+    showToast("❌ Error: " + e.message);
+  }
+}
+
+function shareToTelegram() {
+  const msg = `🎛️ *Mkeyz Studio Bot*\n\n¡El primer estudio musical dentro de Telegram!\n\n🎵 Graba · 🎹 Chords · 🥁 Beat Battle\n📊 Analizador · 🎚️ DAW y mucho más.\n\n👉 ${BOT_URL}`;
+  if (tg) {
+    tg.switchInlineQuery(BOT_URL, ["users","groups","channels"]);
+  } else {
+    const url = `https://t.me/share/url?url=${encodeURIComponent(BOT_URL)}&text=${encodeURIComponent("🎛️ Mkeyz Studio — El estudio musical dentro de Telegram")}`;
+    window.open(url, "_blank");
+  }
+  showToast("✅ Compartiendo...");
+}
+
+function copyLink() {
+  navigator.clipboard?.writeText(BOT_URL)
+    .then(() => showToast("✅ Enlace copiado"))
+    .catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = BOT_URL;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      showToast("✅ Enlace copiado");
+    });
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+function download(dataUrl, filename) {
+  const a = document.createElement("a");
+  a.href = dataUrl; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+}
+
+function showOverlay(text) {
+  document.getElementById("overlay-text").textContent = text;
+  document.getElementById("overlay").classList.add("show");
+}
+function hideOverlay() { document.getElementById("overlay").classList.remove("show"); }
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Init
+generateQR();
+</script>
+</body>
+</html>
