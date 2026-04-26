@@ -56,6 +56,9 @@ PLAN_PERMS = {
     "sec_spotify":   PLAN_FREE,
     "sec_artists":   PLAN_STUDIO,
     "sec_simulator": PLAN_STUDIO,
+    "sec_scale":     PLAN_PRO,
+    "sec_freq":      PLAN_PRO,
+    "sec_compare":   PLAN_STUDIO,
 }
 
 # ── Plataformas de streaming ───────────────────────────────
