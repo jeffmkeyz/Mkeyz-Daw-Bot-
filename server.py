@@ -177,6 +177,28 @@ def serve_freq():
 def serve_compare():
     return send_from_directory("static", "artist_compare.html")
 
+@app.route("/card")
+def serve_card():
+    return send_from_directory("static", "artist_card.html")
+
+@app.route("/api/artist/profile")
+def api_artist_profile():
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify({"error": "no user_id"}), 400
+    con = get_db()
+    cur = con.cursor()
+    try:
+        cur.execute("SELECT name, genre, bio, ig FROM artists WHERE tg_id=?", (int(user_id),))
+        row = cur.fetchone()
+        con.close()
+        if row:
+            return jsonify({"name": row["name"], "genre": row["genre"], "bio": row["bio"], "ig": row["ig"]})
+        return jsonify({}), 404
+    except Exception as e:
+        con.close()
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
