@@ -437,24 +437,43 @@ if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#07080d"); tg.setBackgroun
 //  GAME DATA
 // ══════════════════════════════════════════════════════════
 
+// SCARCE ECONOMY — coins are rare, must grind
 const EQUIPMENT = [
-  { id:"laptop",    emoji:"💻", name:"Laptop",          desc:"Tu primer setup. Básico pero funcional.", coinsPerHour:5,   cost:0,    maxLevel:5, xpGain:10, unlockLevel:1  },
-  { id:"headphones",emoji:"🎧", name:"Auriculares",     desc:"Escucha cada detalle del mix.",           coinsPerHour:12,  cost:50,   maxLevel:5, xpGain:15, unlockLevel:1  },
-  { id:"mic",       emoji:"🎙️", name:"Micrófono",       desc:"Para grabar voces y samples.",            coinsPerHour:20,  cost:150,  maxLevel:5, xpGain:20, unlockLevel:2  },
-  { id:"keyboard",  emoji:"🎹", name:"Teclado MIDI",    desc:"Componer melodías como un pro.",          coinsPerHour:35,  cost:300,  maxLevel:5, xpGain:25, unlockLevel:3  },
-  { id:"drums",     emoji:"🥁", name:"Drum Machine",    desc:"Ritmos perfectos sin esfuerzo.",          coinsPerHour:55,  cost:600,  maxLevel:5, xpGain:30, unlockLevel:5  },
-  { id:"bass",      emoji:"🎸", name:"Bajo Eléctrico",  desc:"Las frecuencias bajas que mueven.",       coinsPerHour:80,  cost:1000, maxLevel:5, xpGain:35, unlockLevel:7  },
-  { id:"monitors",  emoji:"🔊", name:"Monitores",       desc:"Mezcla con precisión quirúrgica.",        coinsPerHour:120, cost:1800, maxLevel:5, xpGain:40, unlockLevel:10 },
-  { id:"synth",     emoji:"🎛️", name:"Sintetizador",    desc:"Sonidos únicos que no existen en otro lugar.", coinsPerHour:180, cost:3000, maxLevel:5, xpGain:50, unlockLevel:12 },
-  { id:"audio_int", emoji:"🎚️", name:"Audio Interface", desc:"Calidad de sonido profesional.",          coinsPerHour:260, cost:5000, maxLevel:5, xpGain:60, unlockLevel:15 },
-  { id:"console",   emoji:"🖥️", name:"Consola de Mezcla",desc:"El corazón de cualquier estudio serio.", coinsPerHour:380, cost:8000, maxLevel:5, xpGain:75, unlockLevel:20 },
-  { id:"sampler",   emoji:"🎵", name:"Sampler",         desc:"Convierte cualquier sonido en música.",   coinsPerHour:550, cost:12000,maxLevel:5, xpGain:90, unlockLevel:25 },
-  { id:"vocoder",   emoji:"🤖", name:"Vocoder",         desc:"Efectos de voz futuristas.",              coinsPerHour:750, cost:18000,maxLevel:5, xpGain:100,unlockLevel:30 },
-  { id:"mpc",       emoji:"🟫", name:"MPC",             desc:"El instrumento de los productores legendarios.", coinsPerHour:1000,cost:25000,maxLevel:5,xpGain:120,unlockLevel:40 },
-  { id:"fl_studio", emoji:"🌈", name:"FL Studio Pro",   desc:"El DAW definitivo. Nivel máximo.",        coinsPerHour:1500,cost:40000,maxLevel:5, xpGain:150,unlockLevel:50 },
-  { id:"studio_room",emoji:"🏠",name:"Sala de Mezcla",  desc:"Tu propio espacio profesional.",          coinsPerHour:2500,cost:75000,maxLevel:3, xpGain:200,unlockLevel:60 },
-  { id:"label",     emoji:"🏷️", name:"Sello Discográfico",desc:"Lanza artistas y multiplica todo.",   coinsPerHour:5000,cost:150000,maxLevel:3,xpGain:300,unlockLevel:80 },
+  { id:"laptop",    emoji:"💻", name:"Laptop",          desc:"Tu primer setup. Básico pero funcional.", coinsPerHour:2,   cost:0,     maxLevel:5, xpGain:10, unlockLevel:1  },
+  { id:"headphones",emoji:"🎧", name:"Auriculares",     desc:"Escucha cada detalle del mix.",           coinsPerHour:4,   cost:80,    maxLevel:5, xpGain:15, unlockLevel:1  },
+  { id:"mic",       emoji:"🎙️", name:"Micrófono",       desc:"Para grabar voces y samples.",            coinsPerHour:7,   cost:250,   maxLevel:5, xpGain:20, unlockLevel:2  },
+  { id:"keyboard",  emoji:"🎹", name:"Teclado MIDI",    desc:"Componer melodías como un pro.",          coinsPerHour:12,  cost:600,   maxLevel:5, xpGain:25, unlockLevel:3  },
+  { id:"drums",     emoji:"🥁", name:"Drum Machine",    desc:"Ritmos perfectos sin esfuerzo.",          coinsPerHour:18,  cost:1200,  maxLevel:5, xpGain:30, unlockLevel:5  },
+  { id:"bass",      emoji:"🎸", name:"Bajo Eléctrico",  desc:"Las frecuencias bajas que mueven.",       coinsPerHour:26,  cost:2500,  maxLevel:5, xpGain:35, unlockLevel:7  },
+  { id:"monitors",  emoji:"🔊", name:"Monitores",       desc:"Mezcla con precisión quirúrgica.",        coinsPerHour:38,  cost:5000,  maxLevel:5, xpGain:40, unlockLevel:10 },
+  { id:"synth",     emoji:"🎛️", name:"Sintetizador",    desc:"Sonidos únicos e irrepetibles.",          coinsPerHour:55,  cost:9000,  maxLevel:5, xpGain:50, unlockLevel:12 },
+  { id:"audio_int", emoji:"🎚️", name:"Audio Interface", desc:"Calidad de sonido profesional.",          coinsPerHour:80,  cost:15000, maxLevel:5, xpGain:60, unlockLevel:15 },
+  { id:"console",   emoji:"🖥️", name:"Consola de Mezcla",desc:"El corazón de cualquier estudio serio.", coinsPerHour:115, cost:28000, maxLevel:5, xpGain:75, unlockLevel:20 },
+  { id:"sampler",   emoji:"🎵", name:"Sampler",         desc:"Convierte cualquier sonido en música.",   coinsPerHour:165, cost:50000, maxLevel:5, xpGain:90, unlockLevel:25 },
+  { id:"vocoder",   emoji:"🤖", name:"Vocoder",         desc:"Efectos de voz futuristas.",              coinsPerHour:230, cost:85000, maxLevel:5, xpGain:100,unlockLevel:30 },
+  { id:"mpc",       emoji:"🟫", name:"MPC",             desc:"El instrumento de los legendarios.",      coinsPerHour:320, cost:150000,maxLevel:5, xpGain:120,unlockLevel:40 },
+  { id:"fl_studio", emoji:"🌈", name:"FL Studio Pro",   desc:"El DAW definitivo.",                      coinsPerHour:450, cost:280000,maxLevel:5, xpGain:150,unlockLevel:50 },
+  { id:"studio_room",emoji:"🏠",name:"Sala de Mezcla",  desc:"Tu propio espacio profesional.",          coinsPerHour:650, cost:500000,maxLevel:3, xpGain:200,unlockLevel:60 },
+  { id:"label",     emoji:"🏷️", name:"Sello Discográfico",desc:"Lanza artistas. Multiplica todo.",     coinsPerHour:1000,cost:1000000,maxLevel:3,xpGain:300,unlockLevel:80 },
 ];
+
+// Bot tool rewards (called from bot via URL params)
+const BOT_REWARDS = {
+  daw:        { coins:25, xp:15, label:"Mini DAW" },
+  analyze:    { coins:15, xp:10, label:"Analizador" },
+  search:     { coins:10, xp:5,  label:"Buscador" },
+  chords:     { coins:20, xp:12, label:"Chord Generator" },
+  voice:      { coins:30, xp:18, label:"Voice Studio" },
+  battle:     { coins:40, xp:25, label:"Beat Battle" },
+  reto:       { coins:50, xp:30, label:"Reto Semanal" },
+  bpm:        { coins:15, xp:10, label:"BPM Game" },
+  showcase:   { coins:35, xp:20, label:"Showcase" },
+  calc:       { coins:10, xp:8,  label:"Calculadora" },
+  cotizador:  { coins:12, xp:8,  label:"Cotizador" },
+  playlist:   { coins:15, xp:10, label:"Playlist" },
+  scale:      { coins:20, xp:12, label:"Detector Escala" },
+  simulator:  { coins:18, xp:12, label:"Simulador" },
+};
 
 const MILESTONES = [
   { id:"first_buy",   icon:"🛒", name:"Primera Compra",    desc:"Compra tu primer equipo",           req:v=>v.totalPurchases>=1 },
@@ -504,10 +523,19 @@ let S = defaultState();
 
 async function loadState() {
   try {
-    const r = await window.storage.get(SAVE_KEY);
-    if (r && r.value) S = { ...defaultState(), ...JSON.parse(r.value) };
+    // Primary: Telegram storage
+    if (window.storage) {
+      const r = await window.storage.get(SAVE_KEY);
+      if (r && r.value) { S = { ...defaultState(), ...JSON.parse(r.value) }; }
+    }
   } catch(e) {}
-  // Recalc coinsPerHour
+  // Fallback: localStorage
+  if (S.totalEarned === 0) {
+    try {
+      const local = localStorage.getItem(SAVE_KEY);
+      if (local) S = { ...defaultState(), ...JSON.parse(local) };
+    } catch(e) {}
+  }
   S.coinsPerHour = calcRate();
   checkDailyLogin();
   render();
@@ -515,7 +543,12 @@ async function loadState() {
 }
 
 async function saveState() {
-  try { await window.storage.set(SAVE_KEY, JSON.stringify(S)); } catch(e) {}
+  const data = JSON.stringify(S);
+  // Save to both storages
+  try { localStorage.setItem(SAVE_KEY, data); } catch(e) {}
+  try {
+    if (window.storage) await window.storage.set(SAVE_KEY, data);
+  } catch(e) {}
 }
 
 // ══════════════════════════════════════════════════════════
@@ -697,21 +730,29 @@ function startTick() {
     updateStats();
   }, 1000);
 
-  // Update coins display live every 100ms
+  // Live coins counter - updates smoothly
   setInterval(() => {
     const rate    = calcRate();
+    if (rate === 0) return;
     const perMs   = rate / 3600000;
     const elapsed = Math.min(Date.now() - S.lastCollect, 8 * 3600000);
-    const live    = S.coins + Math.floor(perMs * elapsed);
+    const pending = Math.floor(perMs * elapsed);
+    const live    = S.coins + pending;
     const el      = document.getElementById("coins-display");
     if (el) {
       const prev = parseInt(el.dataset.prev || "0");
-      if (live > prev) {
-        el.textContent = fmtNum(live);
+      if (live !== prev) {
+        el.textContent  = fmtNum(live);
         el.dataset.prev = live;
       }
     }
-  }, 200);
+    // Update collect button live
+    const btn = document.getElementById("collect-btn");
+    if (btn && pending > 0) {
+      btn.className   = "collect-btn";
+      btn.textContent = `RECOGER +${fmtNum(pending)} 🪙`;
+    }
+  }, 500);
 }
 
 let particleTimer = 0;
