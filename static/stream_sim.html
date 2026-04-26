@@ -312,6 +312,11 @@ input[type=range]::-webkit-slider-thumb {
   <div class="section-title">Proyección de ganancias</div>
   <div class="earnings-grid">
     <div class="earn-card">
+      <div class="earn-platform">☀️ Diario</div>
+      <div class="earn-amount" id="earn-day">$0</div>
+      <div class="earn-eur" id="earn-day-eur">€0</div>
+    </div>
+    <div class="earn-card">
       <div class="earn-platform">📅 Mensual</div>
       <div class="earn-amount" id="earn-month">$0</div>
       <div class="earn-eur" id="earn-month-eur">€0</div>
@@ -330,6 +335,11 @@ input[type=range]::-webkit-slider-thumb {
       <div class="earn-platform">🎵 Por canción</div>
       <div class="earn-amount" id="earn-per-song">$0</div>
       <div class="earn-eur" id="earn-per-song-eur">€0</div>
+    </div>
+    <div class="earn-card">
+      <div class="earn-platform">🔁 Por repetición</div>
+      <div class="earn-amount" id="earn-per-rep">$0</div>
+      <div class="earn-eur" id="earn-per-rep-eur">€0</div>
     </div>
   </div>
 
@@ -424,10 +434,14 @@ function update() {
   document.getElementById("f-rep").textContent       = rep;
 
   // Earnings
-  const monthly    = total * currentRate;
-  const yearly     = monthly * 12;
-  const perSong    = monthly / canciones;
+  const monthly  = total * currentRate;
+  const daily    = monthly / 30;
+  const yearly   = monthly * 12;
+  const perSong  = canciones > 0 ? monthly / canciones : 0;
+  const perRep   = total > 0 ? monthly / (oyentes * rep || 1) : 0;
 
+  document.getElementById("earn-day").textContent       = fmtMoney(daily);
+  document.getElementById("earn-day-eur").textContent   = "€" + (daily * EUR).toFixed(2);
   document.getElementById("earn-month").textContent     = fmtMoney(monthly);
   document.getElementById("earn-month-eur").textContent = "€" + (monthly * EUR).toFixed(2);
   document.getElementById("earn-year").textContent      = fmtMoney(yearly);
@@ -435,6 +449,8 @@ function update() {
   document.getElementById("earn-rate").textContent      = "$" + currentRate.toFixed(6);
   document.getElementById("earn-per-song").textContent  = fmtMoney(perSong);
   document.getElementById("earn-per-song-eur").textContent = "€" + (perSong * EUR).toFixed(2);
+  document.getElementById("earn-per-rep").textContent   = fmtMoney(perRep);
+  document.getElementById("earn-per-rep-eur").textContent = "€" + (perRep * EUR).toFixed(2);
 
   // Milestones
   const ms = document.getElementById("milestones");
@@ -475,17 +491,46 @@ function showTab(id) {
 
 function shareResults() {
   const canciones = document.getElementById("sl-canciones").value;
-  const oyentes   = fmtNum(parseInt(document.getElementById("sl-oyentes").value));
+  const slPos     = parseInt(document.getElementById("sl-oyentes").value);
+  const oyentes   = fmtNum(logSliderToOyentes(slPos));
   const rep       = document.getElementById("sl-rep").value;
   const total     = document.getElementById("total-streams").textContent;
   const monthly   = document.getElementById("earn-month").textContent;
-  const msg = `🎵 Mi simulación en Mkeyz Studio\n\n${canciones} canciones × ${oyentes} oyentes × ${rep} rep = ${total} streams\n💰 ${monthly}/mes en ${currentPlatName}\n\n@MkeyzDAWbot`;
-  if (tg) {
-    tg.switchInlineQuery(msg);
+  const daily     = document.getElementById("earn-day").textContent;
+  const yearly    = document.getElementById("earn-year").textContent;
+
+  const msg = `🎵 Mi simulación — Mkeyz Studio\n\n📊 ${canciones} canciones × ${oyentes} oyentes × ${rep} rep\n🎧 ${total} streams/mes\n\n💵 Diario: ${daily}\n💵 Mensual: ${monthly}\n💵 Anual: ${yearly}\n📱 ${currentPlatName}\n\n🤖 @MkeyzDAWbot`;
+
+  if (navigator.share) {
+    navigator.share({ title: "Mkeyz Studio — Simulador", text: msg })
+      .catch(() => copyToClipboard(msg));
   } else {
-    navigator.clipboard?.writeText(msg);
-    alert("Copiado al portapapeles");
+    copyToClipboard(msg);
   }
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text)
+    .then(() => showShareToast())
+    .catch(() => {
+      // Fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      showShareToast();
+    });
+}
+
+function showShareToast() {
+  const toast = document.createElement("div");
+  toast.textContent = "✅ Resultados copiados";
+  toast.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:700;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.5)";
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
 }
 
 // Init
