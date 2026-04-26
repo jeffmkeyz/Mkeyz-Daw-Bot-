@@ -215,12 +215,12 @@ input[type=range]::-webkit-slider-thumb {
 
 <!-- TOTAL -->
 <div class="total-box">
-  <div class="total-label">Total de Streams</div>
+  <div class="total-label">Streams diarios</div>
   <div class="total-streams" id="total-streams">0</div>
   <div class="total-formula">
     <span id="f-canciones">0</span> canciones ×
     <span id="f-oyentes">0</span> oyentes ×
-    <span id="f-rep">0</span> repeticiones
+    <span id="f-rep">0</span> rep = <span id="f-total-day" style="color:var(--gold)">0</span> streams/día
   </div>
 </div>
 
@@ -309,7 +309,7 @@ input[type=range]::-webkit-slider-thumb {
     </div>
   </div>
 
-  <div class="section-title">Proyección de ganancias</div>
+  <div class="section-title">Proyección de ganancias (base diaria)</div>
   <div class="earnings-grid">
     <div class="earn-card">
       <div class="earn-platform">☀️ Diario</div>
@@ -456,42 +456,44 @@ function update() {
   void el.offsetWidth;
   el.classList.add("pulse");
 
-  document.getElementById("f-canciones").textContent = canciones;
-  document.getElementById("f-oyentes").textContent   = fmtNum(oyentes);
-  document.getElementById("f-rep").textContent       = rep;
+  document.getElementById("f-canciones").textContent  = canciones;
+  document.getElementById("f-oyentes").textContent    = fmtNum(oyentes);
+  document.getElementById("f-rep").textContent        = rep;
+  document.getElementById("f-total-day").textContent  = fmtNum(total);
 
-  // Earnings
-  const monthly  = total * currentRate;
-  const daily    = monthly / 30;
-  const yearly   = monthly * 12;
-  const perSong  = canciones > 0 ? monthly / canciones : 0;
-  const perRep   = total > 0 ? monthly / (oyentes * rep || 1) : 0;
+  // total = streams PER DAY (canciones × oyentes × repeticiones)
+  const daily    = total * currentRate;
+  const monthly  = daily * 30;
+  const yearly   = daily * 365;
+  const perSong  = canciones > 0 ? daily / canciones : 0;
+  const perRep   = (oyentes * rep) > 0 ? daily / (oyentes * rep) : 0;
 
-  document.getElementById("earn-day").textContent       = fmtMoney(daily);
-  document.getElementById("earn-day-eur").textContent   = "€" + (daily * EUR).toFixed(2);
-  document.getElementById("earn-month").textContent     = fmtMoney(monthly);
-  document.getElementById("earn-month-eur").textContent = "€" + (monthly * EUR).toFixed(2);
-  document.getElementById("earn-year").textContent      = fmtMoney(yearly);
-  document.getElementById("earn-year-eur").textContent  = "€" + (yearly * EUR).toFixed(2);
-  document.getElementById("earn-rate").textContent      = "$" + currentRate.toFixed(6);
-  document.getElementById("earn-per-song").textContent  = fmtMoney(perSong);
-  document.getElementById("earn-per-song-eur").textContent = "€" + (perSong * EUR).toFixed(2);
-  document.getElementById("earn-per-rep").textContent   = fmtMoney(perRep);
-  document.getElementById("earn-per-rep-eur").textContent = "€" + (perRep * EUR).toFixed(2);
+  document.getElementById("earn-day").textContent          = fmtMoney(daily);
+  document.getElementById("earn-day-eur").textContent      = "€" + (daily * EUR).toFixed(4);
+  document.getElementById("earn-month").textContent        = fmtMoney(monthly);
+  document.getElementById("earn-month-eur").textContent    = "€" + (monthly * EUR).toFixed(2);
+  document.getElementById("earn-year").textContent         = fmtMoney(yearly);
+  document.getElementById("earn-year-eur").textContent     = "€" + (yearly * EUR).toFixed(2);
+  document.getElementById("earn-rate").textContent         = "$" + currentRate.toFixed(6);
+  document.getElementById("earn-plat-name").textContent    = currentPlatName;
+  document.getElementById("earn-per-song").textContent     = fmtMoney(perSong);
+  document.getElementById("earn-per-song-eur").textContent = "€" + (perSong * EUR).toFixed(4);
+  document.getElementById("earn-per-rep").textContent      = fmtMoney(perRep);
+  document.getElementById("earn-per-rep-eur").textContent  = "€" + (perRep * EUR).toFixed(6);
 
-  // Total all platforms (weighted average)
-  const allRates = [0.001106, 0.005799, 0.003433, 0.007441, 0.003197, 0.010574, 0.000850, 0.001144, 0.001705];
-  const avgRate  = allRates.reduce((a,b) => a+b, 0) / allRates.length;
-  const totalMonthly = total * avgRate;
-  const totalDaily   = totalMonthly / 30;
-  const totalYearly  = totalMonthly * 12;
+  // Total all platforms
+  const allRates    = [0.001106,0.005799,0.003433,0.007441,0.003197,0.010574,0.000850,0.001144,0.001705];
+  const avgRate     = allRates.reduce((a,b) => a+b, 0) / allRates.length;
+  const totalDaily  = total * avgRate;
+  const totalMonth  = totalDaily * 30;
+  const totalYear   = totalDaily * 365;
 
-  document.getElementById("total-day").textContent      = fmtMoney(totalDaily);
-  document.getElementById("total-day-eur").textContent  = "€" + (totalDaily * EUR).toFixed(2);
-  document.getElementById("total-month").textContent    = fmtMoney(totalMonthly);
-  document.getElementById("total-month-eur").textContent = "€" + (totalMonthly * EUR).toFixed(2);
-  document.getElementById("total-year").textContent     = fmtMoney(totalYearly);
-  document.getElementById("total-year-eur").textContent = "€" + (totalYearly * EUR).toFixed(2);
+  document.getElementById("total-day").textContent       = fmtMoney(totalDaily);
+  document.getElementById("total-day-eur").textContent   = "€" + (totalDaily * EUR).toFixed(4);
+  document.getElementById("total-month").textContent     = fmtMoney(totalMonth);
+  document.getElementById("total-month-eur").textContent = "€" + (totalMonth * EUR).toFixed(2);
+  document.getElementById("total-year").textContent      = fmtMoney(totalYear);
+  document.getElementById("total-year-eur").textContent  = "€" + (totalYear * EUR).toFixed(2);
 
   // Milestones
   const ms = document.getElementById("milestones");
