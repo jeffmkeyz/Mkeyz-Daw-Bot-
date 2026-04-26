@@ -751,6 +751,7 @@ def kb_sub_info():
         [InlineKeyboardButton("🃏  Tarjeta de Artista", callback_data="sec_card")],
         [InlineKeyboardButton("📲  Compartir Bot",     callback_data="sec_qr")],
         [InlineKeyboardButton("🎬  Showcase del Bot",  callback_data="sec_showcase")],
+        [InlineKeyboardButton("✨  Intro del Bot",      callback_data="sec_intro")],
         [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
     ])
 
@@ -1185,6 +1186,23 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 ]))
         else:
             await edit(q, "🎚️ No disponible.", kb_back())
+        return
+
+    # ── Intro ──────────────────────────────────────────────
+    if d == "sec_intro":
+        game_url = (GAME_URL.rstrip("/") + "/intro") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "✨ *Intro del Bot*\n\n"
+                "Animación corta y directa para compartir.\n\n"
+                "Logo · Features en flash · CTA final\n"
+                "_Ideal para historias de Instagram_",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("▶️ Ver Intro", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Jeff Mkeyz", callback_data="sub_info")],
+                ]))
+        else:
+            await edit(q, "✨ No disponible.", kb_back())
         return
 
     # ── Showcase ───────────────────────────────────────────
