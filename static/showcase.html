@@ -225,29 +225,45 @@ html, body {
   </div>
 </div>
 
-<!-- SCENE 2: DAW -->
+<!-- SCENE 2: DAW with animated EQ -->
 <div class="scene" id="s2">
-  <div class="feat-icon" id="fi2">🎛️</div>
-  <div class="feat-title" id="ft2">Mini DAW</div>
-  <div class="feat-desc" id="fd2">Pitch · Speed · Reverb · EQ · Delay<br>Procesa audio directamente en el chat</div>
-  <div class="feat-tags" id="ftags2">
-    <span class="feat-tag" style="background:#1a1500;color:#f5c518;border:1px solid #f5c51844">Pitch Shift</span>
-    <span class="feat-tag" style="background:#1a1500;color:#f5c518;border:1px solid #f5c51844">Reverb</span>
-    <span class="feat-tag" style="background:#1a1500;color:#f5c518;border:1px solid #f5c51844">EQ</span>
-    <span class="feat-tag" style="background:#1a1500;color:#f5c518;border:1px solid #f5c51844">Delay</span>
+  <div class="feat-title" id="ft2" style="font-size:22px;margin-bottom:16px">🎛️ Mini DAW</div>
+  <canvas id="daw-canvas" width="300" height="120" style="border-radius:12px;background:#050505;border:1px solid #1f1f1f;margin-bottom:14px;opacity:0;transition:opacity 0.5s 0.2s" id="daw-cnv"></canvas>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;opacity:0;transition:opacity 0.5s 0.5s" id="daw-btns">
+    <span style="padding:6px 14px;border-radius:100px;background:#1a1500;color:#f5c518;border:1px solid #f5c51844;font-size:12px;font-weight:700">🎵 Pitch Shift</span>
+    <span style="padding:6px 14px;border-radius:100px;background:#1a1500;color:#f5c518;border:1px solid #f5c51844;font-size:12px;font-weight:700">🌊 Reverb</span>
+    <span style="padding:6px 14px;border-radius:100px;background:#1a1500;color:#f5c518;border:1px solid #f5c51844;font-size:12px;font-weight:700">🎚️ EQ</span>
+    <span style="padding:6px 14px;border-radius:100px;background:#1a1500;color:#f5c518;border:1px solid #f5c51844;font-size:12px;font-weight:700">⏱️ Delay</span>
   </div>
+  <div class="feat-desc" id="fd2" style="margin-top:12px">Procesa audio directamente en el chat</div>
 </div>
 
-<!-- SCENE 3: CHORD GENERATOR -->
+<!-- SCENE 3: CHORD GENERATOR animated -->
 <div class="scene" id="s3">
-  <div class="feat-icon" id="fi3">🎹</div>
-  <div class="feat-title" id="ft3">Chord Generator</div>
-  <div class="feat-desc" id="fd3">Progresiones de acordes por género<br>Export directo a MIDI para FL Studio</div>
-  <div class="feat-tags" id="ftags3">
-    <span class="feat-tag" style="background:#1a0040;color:#a78bfa;border:1px solid #a78bfa44">Trap</span>
-    <span class="feat-tag" style="background:#1a0040;color:#a78bfa;border:1px solid #a78bfa44">R&B</span>
-    <span class="feat-tag" style="background:#1a0040;color:#a78bfa;border:1px solid #a78bfa44">Lo-Fi</span>
-    <span class="feat-tag" style="background:#1a0040;color:#a78bfa;border:1px solid #a78bfa44">.MIDI</span>
+  <div class="feat-title" id="ft3" style="font-size:22px;margin-bottom:14px">🎹 Chord Generator</div>
+  <div id="chord-display" style="display:flex;gap:10px;margin-bottom:14px;opacity:0;transition:opacity 0.5s 0.2s">
+    <div class="chord-anim-card" id="cc1" style="min-width:64px;padding:14px 10px;border-radius:14px;text-align:center;background:#1a0040;border:1px solid #a78bfa44;transform:translateY(30px);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1)">
+      <div style="font-size:20px;font-weight:900;color:#a78bfa">Am</div>
+      <div style="font-size:10px;color:#555;margin-top:2px">I</div>
+    </div>
+    <div class="chord-anim-card" id="cc2" style="min-width:64px;padding:14px 10px;border-radius:14px;text-align:center;background:#1a0040;border:1px solid #a78bfa44;transform:translateY(30px);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.15s">
+      <div style="font-size:20px;font-weight:900;color:#a78bfa">F</div>
+      <div style="font-size:10px;color:#555;margin-top:2px">VI</div>
+    </div>
+    <div class="chord-anim-card" id="cc3" style="min-width:64px;padding:14px 10px;border-radius:14px;text-align:center;background:#1a0040;border:1px solid #a78bfa44;transform:translateY(30px);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.3s">
+      <div style="font-size:20px;font-weight:900;color:#a78bfa">C</div>
+      <div style="font-size:10px;color:#555;margin-top:2px">III</div>
+    </div>
+    <div class="chord-anim-card" id="cc4" style="min-width:64px;padding:14px 10px;border-radius:14px;text-align:center;background:#1a0040;border:1px solid #a78bfa44;transform:translateY(30px);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.45s">
+      <div style="font-size:20px;font-weight:900;color:#a78bfa">E</div>
+      <div style="font-size:10px;color:#555;margin-top:2px">V</div>
+    </div>
+  </div>
+  <canvas id="chord-wave" width="300" height="60" style="border-radius:10px;background:#050505;border:1px solid #1f1f1f;margin-bottom:12px;opacity:0;transition:opacity 0.5s 0.5s"></canvas>
+  <div style="display:flex;gap:8px;justify-content:center;opacity:0;transition:opacity 0.5s 0.7s" id="chord-tags">
+    <span style="padding:6px 14px;border-radius:100px;background:#1a0040;color:#a78bfa;border:1px solid #a78bfa44;font-size:12px;font-weight:700">A Menor</span>
+    <span style="padding:6px 14px;border-radius:100px;background:#1a0040;color:#a78bfa;border:1px solid #a78bfa44;font-size:12px;font-weight:700">Trap</span>
+    <span style="padding:6px 14px;border-radius:100px;background:#1a0040;color:#a78bfa;border:1px solid #a78bfa44;font-size:12px;font-weight:700">⬇️ .MIDI</span>
   </div>
 </div>
 
@@ -263,15 +279,25 @@ html, body {
   </div>
 </div>
 
-<!-- SCENE 5: GAMES -->
+<!-- SCENE 5: BEAT BATTLE animated -->
 <div class="scene" id="s5">
-  <div class="feat-icon" id="fi5">🎮</div>
-  <div class="feat-title" id="ft5">Beat Battle Arena</div>
-  <div class="feat-desc" id="fd5">Sube tu beat y que la comunidad vote<br>Ranking global · 24 horas por batalla</div>
-  <div class="feat-tags" id="ftags5">
-    <span class="feat-tag" style="background:#1a0000;color:#ff4d4d;border:1px solid #ff4d4d44">🔥 Fuego</span>
-    <span class="feat-tag" style="background:#1a0000;color:#ff4d4d;border:1px solid #ff4d4d44">💀 Skip</span>
-    <span class="feat-tag" style="background:#1a0000;color:#ff4d4d;border:1px solid #ff4d4d44">🏆 Ranking</span>
+  <div class="feat-title" id="ft5" style="font-size:22px;margin-bottom:16px">🎮 Beat Battle Arena</div>
+  <div style="background:#111;border:1px solid #1f1f1f;border-radius:16px;padding:16px;width:100%;max-width:300px;opacity:0;transition:opacity 0.5s 0.2s" id="battle-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700">🎵 Jeff Mkeyz - Dark Trap</div>
+      <div style="font-size:10px;color:#f5c518;background:#1a1500;padding:3px 8px;border-radius:100px">⏱ 18h</div>
+    </div>
+    <div style="background:#1f1f1f;border-radius:100px;height:8px;margin-bottom:6px;overflow:hidden">
+      <div id="battle-bar" style="height:100%;border-radius:100px;background:linear-gradient(90deg,#ff4d4d,#ff8c00);width:0%;transition:width 1.5s cubic-bezier(0.34,1.56,0.64,1)"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:#555;margin-bottom:12px">
+      <span id="fire-count" style="color:#ff4d4d;font-weight:700">🔥 0 votos</span>
+      <span id="skip-count">💀 12</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="padding:12px;border-radius:12px;background:linear-gradient(135deg,#ff4d4d,#ff8c00);text-align:center;font-size:13px;font-weight:800;color:#fff">🔥 Fuego</div>
+      <div style="padding:12px;border-radius:12px;background:#1f1f1f;text-align:center;font-size:13px;font-weight:700;color:#555">💀 Skip</div>
+    </div>
   </div>
 </div>
 
@@ -284,6 +310,36 @@ html, body {
     <span class="feat-tag" style="background:#1a1500;color:#f5c518;border:1px solid #f5c51844">Beat 140 BPM</span>
     <span class="feat-tag" style="background:#1a1500;color:#f5c518;border:1px solid #f5c51844">Freestyle</span>
     <span class="feat-tag" style="background:#1a1500;color:#f5c518;border:1px solid #f5c51844">Sample Flip</span>
+  </div>
+</div>
+
+<!-- SCENE 6b: STREAM SIMULATOR -->
+<div class="scene" id="s6b">
+  <div class="feat-title" id="ft6b" style="font-size:22px;margin-bottom:16px">📊 Stream Simulator</div>
+  <div style="background:#111;border:1px solid #1a1500;border-radius:16px;padding:16px;width:100%;max-width:300px;opacity:0;transition:opacity 0.5s 0.2s" id="sim-card">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px;text-align:center">
+      <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px">
+        <div style="font-size:9px;color:#555;margin-bottom:4px">CANCIONES</div>
+        <div style="font-size:18px;font-weight:900;color:#f5c518" id="sim-songs">9</div>
+      </div>
+      <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px">
+        <div style="font-size:9px;color:#555;margin-bottom:4px">OYENTES</div>
+        <div style="font-size:18px;font-weight:900;color:#00e676" id="sim-listeners">1K</div>
+      </div>
+      <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px">
+        <div style="font-size:9px;color:#555;margin-bottom:4px">REP×DÍA</div>
+        <div style="font-size:18px;font-weight:900;color:#4fc3f7" id="sim-reps">4×</div>
+      </div>
+    </div>
+    <div style="background:#1a1500;border:1px solid #f5c51844;border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:10px;color:#555;margin-bottom:4px">STREAMS/DÍA</div>
+      <div style="font-size:32px;font-weight:900;color:#f5c518;letter-spacing:-1px" id="sim-total">0</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
+        <div><div style="font-size:9px;color:#555">DIARIO</div><div style="font-size:13px;font-weight:800;color:#00e676" id="sim-day">$0</div></div>
+        <div><div style="font-size:9px;color:#555">MENSUAL</div><div style="font-size:13px;font-weight:800;color:#00e676" id="sim-month">$0</div></div>
+        <div><div style="font-size:9px;color:#555">ANUAL</div><div style="font-size:13px;font-weight:800;color:#00e676" id="sim-year">$0</div></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -484,6 +540,7 @@ const SCENES = [
   { id:"s4", duration:3000, enter: enterFeature.bind(null,4) },
   { id:"s5", duration:3000, enter: enterFeature.bind(null,5) },
   { id:"s6", duration:3000, enter: enterFeature.bind(null,6) },
+  { id:"s6b", duration:3500, enter: enterSimulator },
   { id:"s7", duration:3500, enter: enterS7 },
   { id:"s8", duration:5000, enter: enterFinale },
 ];
@@ -527,6 +584,40 @@ function enterS1() {
 
 function enterFeature(n) {
   playWhoosh();
+  if (n === 2) {
+    setTimeout(() => {
+      document.getElementById("ft2").classList.add("show");
+      document.getElementById("daw-canvas").style.opacity = "1";
+      document.getElementById("daw-btns").style.opacity = "1";
+      document.getElementById("fd2").classList.add("show");
+      startDawAnim();
+    }, 100);
+    return;
+  }
+  if (n === 3) {
+    setTimeout(() => {
+      document.getElementById("ft3").classList.add("show");
+      document.getElementById("chord-display").style.opacity = "1";
+      document.getElementById("chord-wave").style.opacity = "1";
+      document.getElementById("chord-tags").style.opacity = "1";
+      // Animate chords
+      ["cc1","cc2","cc3","cc4"].forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.transform = "translateY(0)";
+          playHihat();
+        }, 300 + i * 150);
+      });
+      startChordAnim();
+    }, 100);
+    return;
+  }
+  if (n === 5) {
+    setTimeout(() => {
+      document.getElementById("ft5").classList.add("show");
+      animateBattle();
+    }, 100);
+    return;
+  }
   setTimeout(() => { document.getElementById("fi"+n).classList.add("show"); playKick(); }, 100);
   setTimeout(() => { document.getElementById("ft"+n).classList.add("show"); }, 300);
   setTimeout(() => { document.getElementById("fd"+n).classList.add("show"); }, 500);
@@ -555,6 +646,124 @@ function enterFinale() {
   setTimeout(() => { document.getElementById("finale-url").classList.add("show"); }, 800);
   setTimeout(() => { document.getElementById("finale-cta").classList.add("show"); }, 1200);
   if (tg) tg.HapticFeedback?.notificationOccurred("success");
+}
+
+// ── DAW EQ ANIMATION ─────────────────────────────────────────
+let dawAnimId;
+function startDawAnim() {
+  const canvas = document.getElementById("daw-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  const bars = 32;
+  let phase = 0;
+
+  function draw() {
+    dawAnimId = requestAnimationFrame(draw);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#050505";
+    ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < bars; i++) {
+      const val = 0.3 + 0.7 * Math.abs(Math.sin(phase + i * 0.4 + Math.sin(i * 0.2) * 2));
+      const bh  = val * (H - 8);
+      const x   = i * (W / bars);
+      const bw  = W / bars - 2;
+      const hue = 40 + val * 20;
+      ctx.fillStyle = `hsla(${hue},100%,${50+val*20}%,${0.5+val*0.5})`;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, H - bh, bw, bh, 2);
+      else ctx.rect(x, H - bh, bw, bh);
+      ctx.fill();
+    }
+    phase += 0.08;
+  }
+  draw();
+}
+
+// ── CHORD WAVE ANIMATION ──────────────────────────────────────
+let chordAnimId;
+function startChordAnim() {
+  const canvas = document.getElementById("chord-wave");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  let phase = 0;
+
+  function draw() {
+    chordAnimId = requestAnimationFrame(draw);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#050505";
+    ctx.fillRect(0, 0, W, H);
+
+    // Draw 3 overlapping waves
+    [[240,0.8,"#a78bfa"],[200,0.5,"#7c3aed"],[180,0.3,"#4c1d95"]].forEach(([speed,amp,color]) => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      for (let x = 0; x < W; x++) {
+        const y = H/2 + Math.sin((x/W)*Math.PI*4 + phase*(speed/200)) * H * amp * 0.35;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    });
+    phase += 0.05;
+  }
+  draw();
+}
+
+// ── SIMULATOR ANIMATION ───────────────────────────────────────
+function enterSimulator() {
+  playWhoosh();
+  setTimeout(() => {
+    document.getElementById("ft6b").classList.add("show");
+    document.getElementById("sim-card").style.opacity = "1";
+
+    // Animate numbers counting up
+    let songs = 0, listeners = 0, reps = 0;
+    const targetSongs = 9, targetListeners = 1000, targetReps = 4;
+    let frame = 0;
+    const countUp = setInterval(() => {
+      frame++;
+      songs     = Math.min(targetSongs,     Math.round(frame * targetSongs / 20));
+      listeners = Math.min(targetListeners, Math.round(frame * targetListeners / 20));
+      reps      = Math.min(targetReps,      Math.round(frame * targetReps / 20));
+
+      const total   = songs * listeners * reps;
+      const daily   = total * 0.001106;
+      const monthly = daily * 30;
+      const yearly  = daily * 365;
+
+      document.getElementById("sim-songs").textContent     = songs;
+      document.getElementById("sim-listeners").textContent = listeners >= 1000 ? (listeners/1000).toFixed(1)+"K" : listeners;
+      document.getElementById("sim-reps").textContent      = reps + "×";
+      document.getElementById("sim-total").textContent     = total.toLocaleString();
+      document.getElementById("sim-day").textContent       = "$" + daily.toFixed(3);
+      document.getElementById("sim-month").textContent     = "$" + monthly.toFixed(2);
+      document.getElementById("sim-year").textContent      = "$" + yearly.toFixed(0);
+
+      if (frame >= 20) clearInterval(countUp);
+    }, 80);
+  }, 100);
+}
+
+// ── BATTLE ANIMATION ──────────────────────────────────────────
+function animateBattle() {
+  setTimeout(() => {
+    document.getElementById("battle-card").style.opacity = "1";
+    setTimeout(() => {
+      document.getElementById("battle-bar").style.width = "72%";
+      let votes = 0;
+      const countVotes = setInterval(() => {
+        votes++;
+        document.getElementById("fire-count").textContent = "🔥 " + votes + " votos";
+        playHihat();
+        if (votes >= 47) clearInterval(countVotes);
+      }, 40);
+    }, 600);
+  }, 200);
 }
 
 function goToFinale() {
