@@ -1716,24 +1716,22 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     # ── Sobre mí ───────────────────────────────────────────
     if d == "sec_about":
-        text = (
-            "🎛️ *Sobre Jeff Mkeyz*\n\n"
-            "Productor musical y cantautor independiente\n\n"
-            "🎚️ Géneros: Pop Latino · Trap · Lo-Fi · Afrobeats\n"
-            "🎤 DAW: FL Studio\n"
-            "🎙️ Universal Audio Volt 2 · Lewitt LCT 440 PURE\n"
-            "📦 Distribución: DistroKid\n"
-            "🇪🇸 España · 🇩🇴 República Dominicana"
-        )
-        # Mostrar foto, esperar 4 seg, borrar y mostrar info
-        try:
-            await q.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup([[]]))
-        except: pass
-        try:
-            await q.message.reply_photo(photo=BANNER_URL, caption=text,
-                                         parse_mode="Markdown", reply_markup=kb_back())
-        except:
-            await q.message.reply_text(text, parse_mode="Markdown", reply_markup=kb_back())
+        game_url = (GAME_URL.rstrip("/") + "/about") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "🎛️ *Jeff Mkeyz*\n\n"
+                "Productor · Cantautor · 🇩🇴 🇪🇸\n\n"
+                "Pop Latino · Trap · Afrobeats · Lo-Fi",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("👤 Ver perfil completo", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Jeff Mkeyz", callback_data="sub_info")],
+                ]))
+        else:
+            await edit(q,
+                "🎛️ *Sobre Jeff Mkeyz*\n\nProductor musical y cantautor independiente\n\n"
+                "🎚️ Pop Latino · Trap · Lo-Fi · Afrobeats\n"
+                "🇪🇸 España · 🇩🇴 República Dominicana",
+                kb_back())
         return
 
     # ── Contacto ───────────────────────────────────────────
