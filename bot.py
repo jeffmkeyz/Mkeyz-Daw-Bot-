@@ -750,6 +750,7 @@ def kb_sub_info():
         [InlineKeyboardButton("📩  Contacto",          callback_data="sec_contact")],
         [InlineKeyboardButton("🃏  Tarjeta de Artista", callback_data="sec_card")],
         [InlineKeyboardButton("📲  Compartir Bot",     callback_data="sec_qr")],
+        [InlineKeyboardButton("🎬  Showcase del Bot",  callback_data="sec_showcase")],
         [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
     ])
 
@@ -1184,6 +1185,25 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 ]))
         else:
             await edit(q, "🎚️ No disponible.", kb_back())
+        return
+
+    # ── Showcase ───────────────────────────────────────────
+    if d == "sec_showcase":
+        game_url = (GAME_URL.rstrip("/") + "/showcase") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "🎬 *Showcase — Mkeyz Studio*\n\n"
+                "Trailer cinematográfico del bot para compartir en redes.\n\n"
+                "⏱️ 30 segundos · Estilo premium\n"
+                "🎵 Beat + efectos de sonido\n"
+                "✨ Animaciones de todas las features\n\n"
+                "_Graba la pantalla de tu móvil para compartir en TikTok e Instagram_",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("▶️ Ver Showcase", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Jeff Mkeyz", callback_data="sub_info")],
+                ]))
+        else:
+            await edit(q, "🎬 No disponible.", kb_back())
         return
 
     # ── QR Compartir ───────────────────────────────────────
