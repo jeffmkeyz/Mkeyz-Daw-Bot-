@@ -678,7 +678,7 @@ function showTab(id) {
 }
 
 function shareResults() {
-  const canciones = document.getElementById("sl-canciones").value;
+  const canciones = currentCanciones;
   const oyentes   = fmtNum(currentOyentes);
   const rep       = document.getElementById("sl-rep").value;
   const total     = document.getElementById("total-streams").textContent;
