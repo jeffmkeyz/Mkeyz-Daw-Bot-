@@ -741,6 +741,7 @@ def kb_sub_juegos():
         [InlineKeyboardButton("🎮  Beat Battle  🔥",   callback_data="sec_battle")],
         [InlineKeyboardButton("🥁  Adivina el BPM",    callback_data="sec_bpm")],
         [InlineKeyboardButton("🏆  Reto Semanal",      callback_data="sec_reto")],
+        [InlineKeyboardButton("🏗️  Mkeyz Studio RPG",  callback_data="sec_rpg")],
         [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
     ])
 
@@ -1554,6 +1555,26 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await edit(q,
                 "🥁 *Adivina el BPM*\n\nJuego no disponible aún.",
                 kb_back())
+        return
+
+    # ── Studio RPG ─────────────────────────────────────────
+    if d == "sec_rpg":
+        game_url = (GAME_URL.rstrip("/") + "/game2") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "🏗️ *Mkeyz Studio — The Game* \[BETA\]\n\n"
+                "Construye tu estudio desde cero y genera MKEYZ coins:\n\n"
+                "🎚️ Compra equipos — cada uno genera coins/hora\n"
+                "⬆️ Sube de nivel hasta 100\n"
+                "🔥 Racha diaria — bonus por entrar cada día\n"
+                "🏆 Logros desbloqueables\n\n"
+                "_Token oficial próximamente — acumula ahora_",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎮 Jugar ahora", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Juegos", callback_data="sub_juegos")],
+                ]))
+        else:
+            await edit(q, "🏗️ No disponible.", kb_back())
         return
 
     # ── Beat Battle ────────────────────────────────────────
