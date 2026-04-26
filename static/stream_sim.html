@@ -115,6 +115,15 @@ input[type=range] {
   height: 6px; border-radius: 100px;
   background: var(--border); outline: none; cursor: pointer;
 }
+.preset-btn {
+  padding:6px 10px; border:none; border-radius:8px; font-size:12px;
+  font-weight:700; cursor:pointer; transition:all 0.15s;
+}
+.preset-btn.gold  { background:#2a2000; color:var(--gold); border:1px solid var(--gold)44; }
+.preset-btn.green { background:#002a12; color:var(--green); border:1px solid var(--green)44; }
+.preset-btn.blue  { background:#001a2a; color:var(--blue); border:1px solid var(--blue)44; }
+.preset-btn:active { transform:scale(0.92); }
+
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none; width: 24px; height: 24px;
   border-radius: 50%; cursor: pointer;
@@ -243,11 +252,15 @@ input[type=range]::-webkit-slider-thumb {
   <div class="slider-card">
     <div class="slider-header">
       <div class="slider-name">Canciones</div>
-      <div class="slider-val" id="val-canciones">1</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="canciones-input" min="1" max="10000" value="1"
+          style="width:70px;background:var(--border);border:1px solid #333;border-radius:8px;padding:6px 8px;color:#fff;font-size:16px;font-weight:800;text-align:center;outline:none"
+          oninput="setCancionesManual(this.value)">
+      </div>
     </div>
     <input type="range" class="slider-canciones" id="sl-canciones"
-           min="1" max="1000" value="1" oninput="update()">
-    <div class="slider-labels"><span>1</span><span>100</span><span>250</span><span>500</span><span>1000</span></div>
+           min="1" max="1000" value="1" oninput="setCancionesSlider(this.value)">
+    <div class="slider-labels"><span>1</span><span>100</span><span>250</span><span>500</span><span>1000+</span></div>
   </div>
 
   <div class="section-title">⏱️ Duración de canciones (promedio)</div>
@@ -478,7 +491,24 @@ function fmtMoney(n) {
   return "$" + n.toFixed(2);
 }
 
-let currentOyentes  = 0;
+let currentOyentes   = 0;
+let currentCanciones = 1;
+
+function setCanciones(n) {
+  currentCanciones = n;
+  document.getElementById("canciones-input").value = n;
+  document.getElementById("val-canciones-display").textContent = n;
+  update();
+}
+
+function setCancionesManual(val) {
+  const n = parseInt(val);
+  if (!isNaN(n) && n >= 1) {
+    currentCanciones = n;
+    document.getElementById("val-canciones-display").textContent = n;
+    update();
+  }
+}
 let duracionSecs    = 210; // 3:30 default
 
 function parseDuration(val) {
@@ -514,11 +544,11 @@ function setOyentesManual(val) {
 }
 
 function update() {
-  const canciones = parseInt(document.getElementById("sl-canciones").value);
+  const canciones = currentCanciones;
   const oyentes   = currentOyentes;
   const rep       = parseInt(document.getElementById("sl-rep").value);
 
-  document.getElementById("val-canciones").textContent = canciones;
+  document.getElementById("val-canciones-display") && (document.getElementById("val-canciones-display").textContent = canciones);
   document.getElementById("val-oyentes").textContent   = fmtNum(oyentes);
   document.getElementById("val-rep").textContent       = rep + "×";
 
