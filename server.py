@@ -201,6 +201,10 @@ def serve_showcase():
 def serve_intro():
     return send_from_directory("static", "intro.html")
 
+@app.route("/playlist")
+def serve_playlist():
+    return send_from_directory("static", "playlist_gen.html")
+
 @app.route("/api/artist/profile")
 def api_artist_profile():
     user_id = request.args.get("user_id")
