@@ -27,7 +27,7 @@ def is_admin(user_id: int) -> bool:
     return ADMIN_ID != 0 and user_id == ADMIN_ID
 EUR_RATE = 0.92
 
-BANNER_URL = "https://ibb.co/mCqxB4fg"
+BANNER_URL = "https://i.ibb.co/Fqxk8NHZ/chromatic-haze-portrait-1f1314d5-273f-6550-a10c-a923b265cbc7-0-0.png"
 
 LINKS = {
     "beatstars": "https://beatstars.com/jeffmkeyz",
@@ -749,6 +749,7 @@ def kb_sub_info():
         [InlineKeyboardButton("📱  Redes",             callback_data="sec_redes")],
         [InlineKeyboardButton("📩  Contacto",          callback_data="sec_contact")],
         [InlineKeyboardButton("🃏  Tarjeta de Artista", callback_data="sec_card")],
+        [InlineKeyboardButton("📲  Compartir Bot",     callback_data="sec_qr")],
         [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
     ])
 
@@ -1183,6 +1184,25 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 ]))
         else:
             await edit(q, "🎚️ No disponible.", kb_back())
+        return
+
+    # ── QR Compartir ───────────────────────────────────────
+    if d == "sec_qr":
+        game_url = (GAME_URL.rstrip("/") + "/qr") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "📲 *Compartir Mkeyz Studio Bot*\n\n"
+                "Comparte el bot con otros artistas y productores.\n\n"
+                "✅ QR personalizable — 6 colores\n"
+                "✅ 3 tamaños disponibles\n"
+                "⬇️ Descarga solo el QR o la tarjeta completa\n"
+                "✈️ Comparte directo por Telegram",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("📲 Abrir", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Jeff Mkeyz", callback_data="sub_info")],
+                ]))
+        else:
+            await edit(q, "📲 No disponible.", kb_back())
         return
 
     # ── Tarjeta de Artista ─────────────────────────────────
