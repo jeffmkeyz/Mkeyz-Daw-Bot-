@@ -343,6 +343,33 @@ input[type=range]::-webkit-slider-thumb {
     </div>
   </div>
 
+  <div class="section-title" style="margin-top:20px">📊 Total estimado — todas las plataformas</div>
+  <div class="earn-card" style="margin-bottom:12px;border-color:var(--gold);background:#1a1500">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:13px;color:var(--muted)">Si distribuyes en todas las plataformas</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+      <div>
+        <div style="font-size:10px;color:var(--muted)">☀️ Diario</div>
+        <div style="font-size:16px;font-weight:900;color:var(--gold)" id="total-day">$0</div>
+        <div style="font-size:10px;color:var(--muted)" id="total-day-eur">€0</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted)">📅 Mensual</div>
+        <div style="font-size:16px;font-weight:900;color:var(--gold)" id="total-month">$0</div>
+        <div style="font-size:10px;color:var(--muted)" id="total-month-eur">€0</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted)">📆 Anual</div>
+        <div style="font-size:16px;font-weight:900;color:var(--gold)" id="total-year">$0</div>
+        <div style="font-size:10px;color:var(--muted)" id="total-year-eur">€0</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center">
+      _Promedio ponderado de todas las plataformas_
+    </div>
+  </div>
+
   <button class="btn-share" onclick="shareResults()">📤 Compartir resultados</button>
 </div>
 
@@ -452,6 +479,20 @@ function update() {
   document.getElementById("earn-per-rep").textContent   = fmtMoney(perRep);
   document.getElementById("earn-per-rep-eur").textContent = "€" + (perRep * EUR).toFixed(2);
 
+  // Total all platforms (weighted average)
+  const allRates = [0.001106, 0.005799, 0.003433, 0.007441, 0.003197, 0.010574, 0.000850, 0.001144, 0.001705];
+  const avgRate  = allRates.reduce((a,b) => a+b, 0) / allRates.length;
+  const totalMonthly = total * avgRate;
+  const totalDaily   = totalMonthly / 30;
+  const totalYearly  = totalMonthly * 12;
+
+  document.getElementById("total-day").textContent      = fmtMoney(totalDaily);
+  document.getElementById("total-day-eur").textContent  = "€" + (totalDaily * EUR).toFixed(2);
+  document.getElementById("total-month").textContent    = fmtMoney(totalMonthly);
+  document.getElementById("total-month-eur").textContent = "€" + (totalMonthly * EUR).toFixed(2);
+  document.getElementById("total-year").textContent     = fmtMoney(totalYearly);
+  document.getElementById("total-year-eur").textContent = "€" + (totalYearly * EUR).toFixed(2);
+
   // Milestones
   const ms = document.getElementById("milestones");
   ms.innerHTML = MILESTONES.map(m => {
@@ -499,7 +540,10 @@ function shareResults() {
   const daily     = document.getElementById("earn-day").textContent;
   const yearly    = document.getElementById("earn-year").textContent;
 
-  const msg = `🎵 Mi simulación — Mkeyz Studio\n\n📊 ${canciones} canciones × ${oyentes} oyentes × ${rep} rep\n🎧 ${total} streams/mes\n\n💵 Diario: ${daily}\n💵 Mensual: ${monthly}\n💵 Anual: ${yearly}\n📱 ${currentPlatName}\n\n🤖 @MkeyzDAWbot`;
+  const totalDay   = document.getElementById("total-day").textContent;
+  const totalMonth = document.getElementById("total-month").textContent;
+  const totalYear  = document.getElementById("total-year").textContent;
+  const msg = `🎵 Mi simulación — Mkeyz Studio\n\n📊 ${canciones} canciones × ${oyentes} oyentes × ${rep} rep\n🎧 ${total} streams/mes\n\n📱 ${currentPlatName}:\n☀️ Diario: ${daily} · 📅 Mensual: ${monthly}\n\n🌍 Todas las plataformas:\n☀️ Diario: ${totalDay} · 📅 Mensual: ${totalMonth} · 📆 Anual: ${totalYear}\n\n🤖 @MkeyzDAWbot`;
 
   if (navigator.share) {
     navigator.share({ title: "Mkeyz Studio — Simulador", text: msg })
