@@ -197,6 +197,10 @@ def serve_qr():
 def serve_showcase():
     return send_from_directory("static", "showcase.html")
 
+@app.route("/intro")
+def serve_intro():
+    return send_from_directory("static", "intro.html")
+
 @app.route("/api/artist/profile")
 def api_artist_profile():
     user_id = request.args.get("user_id")
