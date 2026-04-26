@@ -29,7 +29,7 @@ def is_admin(user_id: int) -> bool:
     return ADMIN_ID != 0 and user_id == ADMIN_ID
 EUR_RATE = 0.92
 
-BANNER_URL = "https://ibb.co/mCqxB4fg"
+BANNER_URL = "https://i.ibb.co/mCqxB4fg"
 
 LINKS = {
     "beatstars": "https://beatstars.com/jeffmkeyz",
@@ -113,6 +113,36 @@ MODE_RETO       = "reto"
 MODE_COTIZADOR  = "cotizador"
 MODE_BATTLE     = "battle"
 GAME_URL        = os.getenv("GAME_URL", "")
+
+# ── MKEYZ Token Rewards (por acción en el bot) ─────────────────
+MKEYZ_REWARDS = {
+    "daw_effect":    25,   # Usar efecto en el DAW
+    "analyze":       15,   # Analizar audio
+    "search_song":   10,   # Buscar canción
+    "chord_gen":     20,   # Generar acordes
+    "voice_rec":     30,   # Grabar en Voice Studio
+    "beat_battle":   40,   # Subir beat al Battle
+    "reto_submit":   50,   # Participar en el Reto Semanal
+    "bpm_game":      15,   # Jugar Adivina el BPM
+    "showcase":      35,   # Publicar showcase
+    "calc_royalties":10,   # Usar calculadora
+    "cotizador":     10,   # Usar cotizador
+    "playlist_gen":  15,   # Generar playlist
+    "scale_detect":  20,   # Usar detector de escala
+}
+
+async def award_mkeyz(tg_id: int, action: str):
+    """Envía recompensa MKEYZ al juego por usar una herramienta."""
+    if not GAME_URL: return
+    amount = MKEYZ_REWARDS.get(action, 0)
+    if not amount: return
+    try:
+        requests.post(
+            GAME_URL.rstrip("/") + "/api/mkeyz/award",
+            json={"tg_id": tg_id, "action": action, "amount": amount},
+            timeout=3
+        )
+    except: pass
 
 # ── Cotizador de licencias ─────────────────────────────────
 LICENCIAS = {
@@ -2008,6 +2038,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             if result_ogg:
                 result_wav = await asyncio.to_thread(ogg_to_wav, result_ogg)
                 old_wav    = ctx.user_data.get("wav")
+                asyncio.create_task(award_mkeyz(q.from_user.id, "daw_effect"))
                 with open(result_ogg, "rb") as f:
                     await q.message.reply_voice(voice=f,
                         caption=f"{result_caption} ✅\n_Siguiente efecto se aplica sobre este_",
@@ -2479,7 +2510,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             buttons.append([InlineKeyboardButton("🔍 Buscar otra", callback_data="sec_spotify")])
             buttons.append([InlineKeyboardButton("‹ Menú principal",             callback_data="sec_main")])
             await status.edit_text("\n".join(lines) + "\n\nSelecciona una canción:",
-                parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(buttons))
+                    parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(buttons))
         except Exception as e:
             log.error(f"Search: {e}")
             await status.edit_text("❌ Error en la búsqueda.")
@@ -2526,6 +2557,7 @@ async def on_audio(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             else:
                 reto = get_current_reto()
                 ctx.user_data["mode"] = MODE_NONE
+                asyncio.create_task(award_mkeyz(u.id, "reto_submit"))
                 await status.edit_text(
                     f"✅ *¡Participación enviada!*\n\n"
                     f"🏆 *{reto['titulo']}*\n\n"
