@@ -779,6 +779,7 @@ def kb_sub_comunidad():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🎤  Zona Artistas",     callback_data="sec_artists")],
         [InlineKeyboardButton("🏆  Reto Semanal",      callback_data="sec_reto")],
+        [InlineKeyboardButton("📈  Mis Views",         callback_data="sec_views")],
         [InlineKeyboardButton("← Menú principal",     callback_data="sec_main")],
     ])
 
@@ -1468,6 +1469,25 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if d.startswith("titulo_copy_"):
         titulo = d[12:]
         await q.answer(f"✅ '{titulo}' copiado!", show_alert=True)
+        return
+
+    # ── Views Tracker ──────────────────────────────────────
+    if d == "sec_views":
+        game_url = (GAME_URL.rstrip("/") + "/views") if GAME_URL else None
+        if game_url:
+            await edit(q,
+                "📈 *Mis Views*\n\n"
+                "Registra y visualiza el crecimiento de tus views:\n\n"
+                "🕯️ Gráfico de velas · 〰️ Onda · 📊 Barras\n"
+                "📅 7D · 28D · 3M · 6M · 1 Año\n"
+                "📊 TikTok · Instagram · YouTube · Spotify\n"
+                "💾 Guardado automático",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("📈 Abrir Views Tracker", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("← Comunidad", callback_data="sub_comunidad")],
+                ]))
+        else:
+            await edit(q, "📈 No disponible.", kb_back())
         return
 
     # ── Reto Semanal ───────────────────────────────────────
