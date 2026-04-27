@@ -47,12 +47,12 @@ PLAN_STUDIO = "studio"
 PLAN_PRICES = {PLAN_PRO: 50, PLAN_STUDIO: 150}
 PLAN_LABELS = {
     PLAN_FREE:   "🆓 Free",
-    PLAN_PRO:    "⭐ Pro — 50 Stars/mes",
-    PLAN_STUDIO: "🎛️ Studio — 150 Stars/mes",
+    PLAN_PRO:    "⭐ Pro — 300 Stars/mes",
+    PLAN_STUDIO: "🎛️ Studio — 750 Stars/mes",
 }
 
 PLAN_PERMS = {
-    "sec_calc":      PLAN_PRO,
+    "sec_calc":      PLAN_STUDIO,
     "sec_daw":       PLAN_PRO,
     "sec_analyze":   PLAN_PRO,
     "sec_spotify":   PLAN_FREE,
@@ -64,6 +64,7 @@ PLAN_PERMS = {
     "sec_card":      PLAN_PRO,
     "sec_chords":    PLAN_PRO,
     "sec_voice":     PLAN_PRO,
+    "sec_views":     PLAN_STUDIO,
 }
 
 # ── Plataformas de streaming ───────────────────────────────
@@ -800,8 +801,8 @@ def kb_back():
 
 def kb_planes():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("⭐ Pro — 50 Stars/mes (~$0.65)",    callback_data="buy_pro")],
-        [InlineKeyboardButton("🎛️ Studio — 150 Stars/mes (~$2)", callback_data="buy_studio")],
+        [InlineKeyboardButton("⭐ Pro — 300 Stars/mes (~$4)",    callback_data="buy_pro")],
+        [InlineKeyboardButton("🎛️ Studio — 750 Stars/mes (~$10)", callback_data="buy_studio")],
         [InlineKeyboardButton("‹ Menú principal",                 callback_data="sec_main")],
     ])
 
@@ -1057,8 +1058,8 @@ async def cmd_planes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     plan = db_get_plan(update.effective_user.id)
     await update.message.reply_text(
         f"💳 *Planes de Mkeyz Studio*\n\nTu plan actual: *{PLAN_LABELS.get(plan, plan)}*\n\n"
-        "⭐ *Pro — 50 Stars/mes (~$0.65)*\n🎛️ DAW · 📊 Analizador · 🧮 Calculadora\n\n"
-        "🎛️ *Studio — 150 Stars/mes (~$2)*\nTodo lo Pro + 🎤 Zona Artistas",
+        "⭐ *Pro — 300 Stars/mes (~$4)*\n🎛️ DAW · 📊 Analizador · 🧮 Calculadora\n\n"
+        "🎛️ *Studio — 750 Stars/mes (~$10)*\nTodo lo Pro + 🎤 Zona Artistas",
         parse_mode="Markdown", reply_markup=kb_planes())
 
 async def cmd_mipan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1686,9 +1687,9 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await edit(q,
             f"💳 *Planes de Mkeyz Studio*\n\nTu plan: *{PLAN_LABELS.get(plan)}*\n\n"
             "🆓 *Free* — Menú público · Buscar canciones\n\n"
-            "⭐ *Pro — 50 Stars/mes (~$0.65)*\n"
+            "⭐ *Pro — 300 Stars/mes (~$4)*\n"
             "✅ Mini DAW completo\n✅ Analizador\n✅ Calculadora\n✅ Proyección\n\n"
-            "🎛️ *Studio — 150 Stars/mes (~$2)*\n"
+            "🎛️ *Studio — 750 Stars/mes (~$10)*\n"
             "✅ Todo lo Pro\n✅ Zona Artistas\n✅ Colabs · Showcases",
             kb_planes())
         return
