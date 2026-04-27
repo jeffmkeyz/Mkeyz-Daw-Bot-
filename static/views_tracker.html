@@ -132,6 +132,7 @@ canvas#chart { width:100%; border-radius:14px; display:block; background:var(--p
       <input type="file" accept=".csv" id="csv-input" style="display:none" onchange="importCSV(this)">
     </label>
     <div class="import-status" id="csv-status">Sube tu CSV para cargar los datos automáticamente</div>
+    <button onclick="clearAll()" style="width:100%;margin-top:8px;padding:9px;background:transparent;border:1px solid #ff4d4d44;border-radius:8px;color:#ff4d4d88;font-size:12px;font-weight:700;cursor:pointer">🗑️ Limpiar todos los datos</button>
   </div>
 
   <div class="add-card">
@@ -506,6 +507,17 @@ function renderHistory() {
       <span class="hist-del" onclick="deleteEntry(${realIdx})">✕</span>
     </div>`;
   }).join("");
+}
+
+function clearAll() {
+  if (!entries.length) { showToast("No hay datos que limpiar"); return; }
+  const count = entries.length;
+  entries = [];
+  save(); render();
+  document.getElementById("csv-status").textContent = "Sube tu CSV para cargar los datos automáticamente";
+  document.getElementById("csv-input").value = "";
+  showToast(`🗑️ ${count} registros eliminados`);
+  if (tg) tg.HapticFeedback?.notificationOccurred("warning");
 }
 
 function showToast(msg) {
