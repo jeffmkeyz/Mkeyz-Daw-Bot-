@@ -1742,7 +1742,15 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             currency="XTR",
             prices=[LabeledPrice(label=title, amount=stars)],
         )
-        asyncio.create_task(delete_after(invoice_msg, 10))
+        # Edit menu message to avoid "colgado"
+        try:
+            await q.edit_message_text(
+                "💳 Factura enviada arriba 👆\n\n_Completa el pago con Telegram Stars._",
+                parse_mode="Markdown",
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("← Menú principal", callback_data="sec_main")
+                ]]))
+        except: pass
         return
 
     # ── Beats ──────────────────────────────────────────────
@@ -2766,8 +2774,11 @@ async def on_payment(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     else:
         return
     log.info(f"Pago: {tg_id} → {payload}")
+    duration = "12 meses" if "year" in payload else "30 días"
     await update.message.reply_text(
-        f"✅ *¡Plan {plan_name} activado!*\n\nTienes acceso completo durante 30 días 🎛️",
+        f"✅ *¡Plan {plan_name} activado!*\n\n"
+        f"Tienes acceso completo durante {duration} 🎛️\n\n"
+        f"¿Qué quieres explorar primero? 👇",
         parse_mode="Markdown", reply_markup=kb_main())
 
 # ══════════════════════════════════════════════════════════
