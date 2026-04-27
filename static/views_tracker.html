@@ -7,115 +7,73 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-:root {
-  --bg:#07080d; --panel:#0d0f1a; --card:#111420; --border:#1c1f30;
-  --gold:#f5c518; --green:#00e676; --fire:#ff4d4d; --blue:#4fc3f7;
-  --purple:#9c27b0; --text:#e8eaf6; --muted:#4a4f6a;
-}
-body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; min-height:100vh; padding-bottom:40px; }
+:root { --bg:#07080d; --panel:#0d0f1a; --card:#111420; --border:#1c1f30; --gold:#f5c518; --green:#00e676; --fire:#ff4d4d; --blue:#4fc3f7; --text:#e8eaf6; --muted:#4a4f6a; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; min-height:100vh; }
 
-/* HEADER */
-.hdr { padding:16px; border-bottom:1px solid var(--border); background:var(--panel); position:sticky; top:0; z-index:50; }
-.hdr-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.hdr-title { font-size:18px; font-weight:800; }
-.total-box { text-align:right; }
-.total-num { font-size:22px; font-weight:900; color:var(--gold); line-height:1; }
-.total-lbl { font-size:10px; color:var(--muted); }
-
-/* PERIOD TABS */
-.period-tabs { display:flex; gap:6px; }
-.ptab {
-  flex:1; padding:8px 4px; border-radius:10px; border:1px solid var(--border);
-  background:var(--card); color:var(--muted); font-size:12px; font-weight:700;
-  cursor:pointer; text-align:center; transition:all 0.2s;
-}
+.hdr { padding:14px 16px 10px; border-bottom:1px solid var(--border); background:var(--panel); position:sticky; top:0; z-index:50; }
+.hdr-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.hdr-title { font-size:16px; font-weight:800; }
+.period-tabs { display:flex; gap:4px; }
+.ptab { flex:1; padding:7px 2px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-size:11px; font-weight:700; cursor:pointer; text-align:center; transition:all 0.2s; }
 .ptab.active { background:#1a1500; color:var(--gold); border-color:var(--gold)55; }
 
-/* CHART AREA */
-.chart-wrap {
-  padding:16px; position:relative;
-}
-canvas#chart {
-  width:100%; border-radius:16px; display:block;
-  background:var(--panel); border:1px solid var(--border);
-}
+/* METRIC */
+.metric-row { display:flex; gap:6px; overflow-x:auto; padding:10px 16px 8px; scrollbar-width:none; }
+.metric-row::-webkit-scrollbar { display:none; }
+.mpill { flex-shrink:0; padding:6px 14px; border-radius:100px; font-size:12px; font-weight:700; border:1px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; transition:all 0.15s; }
+.mpill.active { color:#000; border-color:transparent; }
 
-/* CHART TYPE TOGGLE */
-.chart-toggle { display:flex; gap:8px; padding:0 16px 12px; }
-.ctog {
-  flex:1; padding:8px; border-radius:10px; border:1px solid var(--border);
-  background:var(--card); color:var(--muted); font-size:12px; font-weight:700;
-  cursor:pointer; text-align:center; transition:all 0.2s;
-}
-.ctog.active { background:#001a2a; color:var(--blue); border-color:var(--blue)55; }
+/* CHART */
+.chart-section { padding:8px 16px 4px; position:relative; }
+canvas#chart { width:100%; border-radius:14px; display:block; background:var(--panel); border:1px solid var(--border); touch-action:none; }
+.tooltip { position:absolute; background:rgba(13,15,26,0.96); border:1px solid var(--gold)77; border-radius:10px; padding:8px 14px; pointer-events:none; z-index:20; display:none; white-space:nowrap; }
+.tt-date { font-size:11px; color:var(--muted); }
+.tt-val  { font-size:18px; font-weight:900; }
+.tt-earn { font-size:12px; color:var(--green); margin-top:2px; }
+.crosshair { position:absolute; top:0; bottom:0; width:1px; background:var(--gold)66; pointer-events:none; display:none; }
 
-/* STATS ROW */
-.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:0 16px 16px; }
-.stat-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; text-align:center; }
-.stat-n { font-size:18px; font-weight:900; color:var(--gold); }
-.stat-l { font-size:10px; color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:0.5px; }
+/* EARNING BOX */
+.earn-box { margin:8px 16px; background:linear-gradient(135deg,#0d1f0d,#111420); border:1px solid #00e67644; border-radius:14px; padding:14px; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center; }
+.earn-item .earn-n { font-size:16px; font-weight:900; color:var(--green); }
+.earn-item .earn-l { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
 
-/* ADD VIEW FORM */
-.add-section { padding:0 16px 16px; }
-.add-card { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:16px; }
-.add-title { font-size:13px; font-weight:700; color:var(--muted); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; }
-.add-row { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
-.add-label { font-size:12px; color:var(--muted); width:60px; flex-shrink:0; }
-.add-input {
-  flex:1; background:#1a1a2a; border:1px solid var(--border);
-  border-radius:10px; padding:10px 12px; color:var(--text);
-  font-size:15px; font-weight:700; outline:none; transition:border-color 0.2s;
-}
+/* STATS */
+.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:8px 16px; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; text-align:center; }
+.stat-n { font-size:15px; font-weight:900; color:var(--gold); }
+.stat-l { font-size:9px; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:0.5px; }
+
+/* PLATFORM */
+.plat-row { display:flex; gap:6px; overflow-x:auto; padding:4px 16px 8px; scrollbar-width:none; }
+.plat-row::-webkit-scrollbar { display:none; }
+.ppill { flex-shrink:0; padding:6px 14px; border-radius:100px; font-size:12px; font-weight:700; border:1px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; transition:all 0.15s; }
+.ppill.active { color:#000; }
+
+/* IMPORT + ADD */
+.section { padding:0 16px 10px; }
+.import-card { background:linear-gradient(135deg,#001a2a,#111420); border:1px solid #4fc3f744; border-radius:14px; padding:14px; margin-bottom:10px; }
+.import-label { display:block; width:100%; padding:11px; background:#001a2a; border:1px dashed #4fc3f766; border-radius:10px; text-align:center; cursor:pointer; font-size:13px; font-weight:700; color:var(--blue); }
+.import-status { font-size:10px; color:var(--muted); text-align:center; margin-top:6px; }
+.add-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; }
+.add-row { display:flex; gap:8px; margin-bottom:8px; }
+.add-input { flex:1; background:#1a1a2a; border:1px solid var(--border); border-radius:8px; padding:9px 10px; color:var(--text); font-size:14px; font-weight:700; outline:none; min-width:0; }
+.add-input[type=date] { color-scheme:dark; font-size:12px; }
 .add-input:focus { border-color:var(--gold); }
-.add-input[type=date] { color-scheme:dark; }
-.btn-add {
-  width:100%; padding:14px; border:none; border-radius:14px;
-  background:linear-gradient(135deg,var(--gold),#ff8c00);
-  font-size:15px; font-weight:800; color:#000; cursor:pointer;
-  transition:all 0.15s; margin-top:4px;
-}
-.btn-add:active { transform:scale(0.97); }
+.btn-add { width:100%; padding:12px; border:none; border-radius:10px; background:linear-gradient(135deg,var(--gold),#ff8c00); font-size:14px; font-weight:800; color:#000; cursor:pointer; }
 
 /* HISTORY */
-.history-section { padding:0 16px; }
-.hist-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
-.hist-item {
-  display:flex; align-items:center; gap:12px;
-  background:var(--card); border:1px solid var(--border);
-  border-radius:12px; padding:12px 14px; margin-bottom:8px;
-  transition:all 0.15s;
-}
-.hist-date { font-size:12px; color:var(--muted); min-width:70px; }
-.hist-platform { font-size:11px; }
-.hist-val { font-size:16px; font-weight:800; color:var(--gold); margin-left:auto; }
-.hist-change { font-size:11px; margin-left:8px; font-weight:700; }
-.hist-change.up { color:var(--green); }
-.hist-change.down { color:var(--fire); }
-.hist-del { color:var(--muted); font-size:16px; cursor:pointer; padding:4px; margin-left:4px; }
-.hist-del:active { color:var(--fire); }
+.hist-section { padding:0 16px 40px; }
+.hist-title { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+.hist-item { display:flex; align-items:center; gap:8px; padding:9px 12px; background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:6px; }
+.hist-date { font-size:11px; color:var(--muted); min-width:58px; }
+.hist-val  { font-size:14px; font-weight:800; color:var(--gold); margin-left:auto; }
+.hist-earn { font-size:10px; color:var(--green); font-weight:700; }
+.hist-chg.up { color:var(--green); font-size:10px; font-weight:700; }
+.hist-chg.dn { color:var(--fire); font-size:10px; font-weight:700; }
+.hist-del { color:var(--muted); font-size:14px; cursor:pointer; padding:2px 4px; }
 
-/* PLATFORM PILLS */
-.plat-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
-.plat-pill {
-  padding:6px 14px; border-radius:100px; font-size:11px; font-weight:700;
-  border:1px solid var(--border); background:var(--card); color:var(--muted);
-  cursor:pointer; transition:all 0.15s;
-}
-.plat-pill.active { color:#000; border-color:transparent; }
-.plat-pill:active { transform:scale(0.95); }
-
-/* TOOLTIP */
-.chart-tooltip {
-  position:absolute; background:var(--panel); border:1px solid var(--gold)55;
-  border-radius:10px; padding:8px 12px; pointer-events:none; z-index:10;
-  font-size:12px; font-weight:700; display:none; white-space:nowrap;
-}
-
-/* TOAST */
-.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#fff; color:#000; padding:12px 20px; border-radius:100px; font-size:14px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#fff; color:#000; padding:10px 18px; border-radius:100px; font-size:13px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; }
 .toast.show { transform:translateX(-50%) translateY(0); }
-
-.empty-state { text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
 </style>
 </head>
 <body>
@@ -123,9 +81,9 @@ canvas#chart {
 <div class="hdr">
   <div class="hdr-top">
     <div class="hdr-title">📊 Views Tracker</div>
-    <div class="total-box">
-      <div class="total-num" id="total-views">0</div>
-      <div class="total-lbl">views totales</div>
+    <div style="text-align:right">
+      <div style="font-size:18px;font-weight:900;color:var(--gold)" id="total-views">—</div>
+      <div style="font-size:10px;color:var(--muted)" id="total-lbl">período actual</div>
     </div>
   </div>
   <div class="period-tabs">
@@ -137,50 +95,56 @@ canvas#chart {
   </div>
 </div>
 
-<div class="chart-wrap">
-  <canvas id="chart" height="200"></canvas>
-  <div class="chart-tooltip" id="tooltip"></div>
+<div class="metric-row" id="metric-row"></div>
+<div class="plat-row"   id="plat-row"></div>
+
+<div class="chart-section">
+  <canvas id="chart" height="180"></canvas>
+  <div class="crosshair" id="crosshair"></div>
+  <div class="tooltip"   id="tooltip">
+    <div class="tt-date" id="tt-date"></div>
+    <div class="tt-val"  id="tt-val"></div>
+    <div class="tt-earn" id="tt-earn"></div>
+  </div>
 </div>
 
-<div class="chart-toggle">
-  <div class="ctog active" onclick="setChartType('candle',this)">🕯️ Velas</div>
-  <div class="ctog" onclick="setChartType('wave',this)">〰️ Onda</div>
-  <div class="ctog" onclick="setChartType('bars',this)">📊 Barras</div>
+<!-- EARNINGS -->
+<div class="earn-box" id="earn-box">
+  <div class="earn-item"><div class="earn-n" id="e-day">$0</div><div class="earn-l">☀️ Diario</div></div>
+  <div class="earn-item"><div class="earn-n" id="e-month">$0</div><div class="earn-l">📅 Mensual</div></div>
+  <div class="earn-item"><div class="earn-n" id="e-year">$0</div><div class="earn-l">📆 Anual</div></div>
 </div>
 
 <div class="stats-row">
-  <div class="stat-card">
-    <div class="stat-n" id="st-avg">0</div>
-    <div class="stat-l">Promedio/día</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-n" id="st-max">0</div>
-    <div class="stat-l">Mejor día</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-n" id="st-growth" style="color:var(--green)">+0%</div>
-    <div class="stat-l">Crecimiento</div>
-  </div>
+  <div class="stat-card"><div class="stat-n" id="st-avg">—</div><div class="stat-l">Promedio</div></div>
+  <div class="stat-card"><div class="stat-n" id="st-max">—</div><div class="stat-l">Mejor día</div></div>
+  <div class="stat-card"><div class="stat-n" id="st-growth">—</div><div class="stat-l">Crecimiento</div></div>
 </div>
 
-<div class="add-section">
+<div class="section">
+  <div class="import-card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="font-size:20px">🎵</div>
+      <div><div style="font-size:13px;font-weight:700;color:var(--blue)">Importar CSV de Spotify</div><div style="font-size:10px;color:var(--muted)">audience-timeline.csv · Spotify for Artists</div></div>
+    </div>
+    <label class="import-label">
+      📁 Seleccionar archivo CSV
+      <input type="file" accept=".csv" id="csv-input" style="display:none" onchange="importCSV(this)">
+    </label>
+    <div class="import-status" id="csv-status">Sube tu CSV para cargar los datos automáticamente</div>
+  </div>
+
   <div class="add-card">
-    <div class="add-title">📌 Añadir registro</div>
-    <div class="plat-row" id="plat-row"></div>
     <div class="add-row">
-      <span class="add-label">📅 Fecha</span>
       <input class="add-input" type="date" id="inp-date">
+      <input class="add-input" type="number" id="inp-views" placeholder="Views" min="0" style="max-width:120px">
     </div>
-    <div class="add-row">
-      <span class="add-label">👁️ Views</span>
-      <input class="add-input" type="number" id="inp-views" placeholder="Ej: 15000" min="0">
-    </div>
-    <button class="btn-add" onclick="addEntry()">+ Añadir</button>
+    <button class="btn-add" onclick="addEntry()">+ Añadir registro manual</button>
   </div>
 </div>
 
-<div class="history-section" style="margin-top:16px">
-  <div class="hist-title">Historial</div>
+<div class="hist-section">
+  <div class="hist-title">Historial reciente</div>
   <div id="hist-list"></div>
 </div>
 
@@ -190,324 +154,355 @@ canvas#chart {
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#07080d"); tg.setBackgroundColor("#07080d"); }
 
-const SAVE_KEY  = "views_tracker_v1";
-const PLATFORMS = [
-  { id:"tiktok",    label:"TikTok",    emoji:"🎬", color:"#69C9D0" },
-  { id:"instagram", label:"Instagram", emoji:"📸", color:"#e91e63" },
-  { id:"youtube",   label:"YouTube",   emoji:"▶️",  color:"#ff0000" },
-  { id:"spotify",   label:"Spotify",   emoji:"🎵", color:"#1db954" },
-  { id:"all",       label:"General",   emoji:"📊", color:"#f5c518" },
+const SAVE_KEY = "views_tracker_v2";
+
+const METRICS = [
+  { id:"streams",   label:"Streams",      color:"#f5c518", emoji:"🎧" },
+  { id:"listeners", label:"Oyentes/día",  color:"#00e676", emoji:"👥" },
+  { id:"monthly",   label:"Oyentes mes",  color:"#4fc3f7", emoji:"📅" },
+  { id:"followers", label:"Seguidores",   color:"#e91e63", emoji:"❤️" },
+  { id:"saves",     label:"Saves",        color:"#9c27b0", emoji:"💾" },
+  { id:"views",     label:"Manual",       color:"#ff9800", emoji:"👁️" },
 ];
 
-let entries      = [];
+const PLATFORMS = [
+  { id:"all",       label:"Todo",      emoji:"📊", color:"#f5c518",  rate:0.003 },
+  { id:"spotify",   label:"Spotify",   emoji:"🎵", color:"#1db954",  rate:0.001106 },
+  { id:"tiktok",    label:"TikTok",    emoji:"🎬", color:"#69C9D0",  rate:0.000850 },
+  { id:"instagram", label:"Instagram", emoji:"📸", color:"#e91e63",  rate:0 },
+  { id:"youtube",   label:"YouTube",   emoji:"▶️",  color:"#ff0000",  rate:0.003197 },
+];
+
+let entries       = [];
 let currentPeriod = 7;
-let chartType    = "candle";
-let selPlatform  = "all";
+let currentMetric = "streams";
+let selPlatform   = "all";
+let chartData     = [];
 
-// Build platform pills
-const platRow = document.getElementById("plat-row");
-PLATFORMS.forEach(p => {
-  const pill = document.createElement("div");
-  pill.className = "plat-pill" + (p.id === "all" ? " active" : "");
-  pill.textContent = p.emoji + " " + p.label;
-  if (p.id === "all") pill.style.background = p.color;
-  pill.onclick = () => {
-    document.querySelectorAll(".plat-pill").forEach(x => { x.classList.remove("active"); x.style.background=""; x.style.color=""; });
-    pill.classList.add("active");
-    pill.style.background = p.color;
-    pill.style.color = "#000";
-    selPlatform = p.id;
-    if (tg) tg.HapticFeedback?.impactOccurred("light");
-  };
-  platRow.appendChild(pill);
-});
+// Build pills
+function buildPills(containerId, items, getActive, onClick) {
+  const row = document.getElementById(containerId);
+  items.forEach(item => {
+    const pill = document.createElement("div");
+    pill.className = "mpill" + (getActive(item) ? " active" : "");
+    pill.textContent = item.emoji + " " + item.label;
+    if (getActive(item)) { pill.style.background = item.color; pill.style.color = "#000"; }
+    pill.onclick = () => {
+      row.querySelectorAll(".mpill,.ppill").forEach(p => { p.classList.remove("active"); p.style.background=""; p.style.color=""; });
+      pill.classList.add("active"); pill.style.background = item.color; pill.style.color = "#000";
+      onClick(item);
+      if (tg) tg.HapticFeedback?.impactOccurred("light");
+    };
+    row.appendChild(pill);
+  });
+}
 
-// Set today as default date
+buildPills("metric-row", METRICS, m => m.id === "streams", m => { currentMetric = m.id; render(); });
+buildPills("plat-row",   PLATFORMS, p => p.id === "all",  p => { selPlatform = p.id; render(); });
+
 document.getElementById("inp-date").value = new Date().toISOString().split("T")[0];
 
-// Load
+// ── STORAGE ──
 async function load() {
-  try {
-    const local = localStorage.getItem(SAVE_KEY);
-    if (local) entries = JSON.parse(local);
-  } catch(e) {}
-  try {
-    if (window.storage) {
-      const r = await window.storage.get(SAVE_KEY);
-      if (r?.value) entries = JSON.parse(r.value);
-    }
-  } catch(e) {}
+  try { const l = localStorage.getItem(SAVE_KEY); if (l) entries = JSON.parse(l); } catch(e) {}
+  try { if (window.storage) { const r = await window.storage.get(SAVE_KEY); if (r?.value) entries = JSON.parse(r.value); } } catch(e) {}
   render();
 }
-
 async function save() {
-  const data = JSON.stringify(entries);
-  try { localStorage.setItem(SAVE_KEY, data); } catch(e) {}
-  try { if (window.storage) await window.storage.set(SAVE_KEY, data); } catch(e) {}
+  const d = JSON.stringify(entries);
+  try { localStorage.setItem(SAVE_KEY, d); } catch(e) {}
+  try { if (window.storage) await window.storage.set(SAVE_KEY, d); } catch(e) {}
 }
 
-function addEntry() {
-  const date  = document.getElementById("inp-date").value;
-  const views = parseInt(document.getElementById("inp-views").value);
-  if (!date) { showToast("Elige una fecha"); return; }
-  if (!views || views < 0) { showToast("Escribe el número de views"); return; }
-
-  // Remove existing entry for same date+platform
-  entries = entries.filter(e => !(e.date === date && e.platform === selPlatform));
-  entries.push({ date, views, platform: selPlatform });
-  entries.sort((a,b) => a.date.localeCompare(b.date));
-
-  save();
-  render();
-  document.getElementById("inp-views").value = "";
-  document.getElementById("inp-date").value = new Date().toISOString().split("T")[0];
-  showToast(`✅ +${fmtNum(views)} views registradas`);
-  if (tg) tg.HapticFeedback?.notificationOccurred("success");
-}
-
-function deleteEntry(idx) {
-  entries.splice(idx, 1);
-  save(); render();
-  if (tg) tg.HapticFeedback?.impactOccurred("light");
-}
-
-function setPeriod(days, btn) {
-  currentPeriod = days;
-  document.querySelectorAll(".ptab").forEach(t => t.classList.remove("active"));
-  btn.classList.add("active");
-  render();
-}
-
-function setChartType(type, btn) {
-  chartType = type;
-  document.querySelectorAll(".ctog").forEach(t => t.classList.remove("active"));
-  btn.classList.add("active");
-  drawChart(getFilteredData());
-}
-
+// ── HELPERS ──
+function getVal(e) { return Math.max(0, e[currentMetric] ?? e.views ?? 0); }
 function fmtNum(n) {
+  if (!n && n !== 0) return "—";
+  n = Math.floor(n);
   if (n >= 1000000) return (n/1000000).toFixed(1)+"M";
   if (n >= 1000)    return (n/1000).toFixed(1)+"K";
-  return n?.toString() || "0";
+  return n.toString();
 }
-
-function getFilteredData() {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - currentPeriod);
+function fmtMoney(n) {
+  if (!n) return "$0.00";
+  if (n >= 1000) return "$"+(n/1000).toFixed(1)+"K";
+  return "$"+n.toFixed(2);
+}
+function getRate() {
+  const p = PLATFORMS.find(x => x.id === selPlatform);
+  // Only streams generate money
+  if (currentMetric !== "streams") return 0;
+  return p?.rate || 0;
+}
+function getFiltered() {
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - currentPeriod);
   const cutStr = cutoff.toISOString().split("T")[0];
-  return entries.filter(e => e.date >= cutStr);
+  let f = entries.filter(e => e.date >= cutStr);
+  if (selPlatform !== "all") f = f.filter(e => e.platform === selPlatform);
+  return f;
 }
 
+// ── RENDER ──
 function render() {
-  const data = getFilteredData();
-  // Stats
-  const total = entries.reduce((s,e) => s + e.views, 0);
-  document.getElementById("total-views").textContent = fmtNum(total);
+  const data = getFiltered();
+  chartData  = data;
+  const vals  = data.map(e => getVal(e));
+  const total = vals.reduce((a,b) => a+b, 0);
+  const avg   = vals.length ? Math.round(total/vals.length) : 0;
+  const max   = vals.length ? Math.max(...vals) : 0;
 
-  const vals = data.map(e => e.views);
-  const avg  = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
-  const max  = vals.length ? Math.max(...vals) : 0;
-
-  // Growth: compare first half vs second half
   let growth = 0;
   if (data.length >= 2) {
-    const half = Math.floor(data.length/2);
-    const first  = data.slice(0,half).reduce((s,e)=>s+e.views,0) / half;
-    const second = data.slice(half).reduce((s,e)=>s+e.views,0) / (data.length-half);
-    growth = first > 0 ? Math.round(((second-first)/first)*100) : 0;
+    const h1 = Math.floor(data.length/2);
+    const a1 = data.slice(0,h1).reduce((s,e)=>s+getVal(e),0)/h1;
+    const a2 = data.slice(h1).reduce((s,e)=>s+getVal(e),0)/(data.length-h1);
+    growth = a1 > 0 ? Math.round(((a2-a1)/a1)*100) : 0;
   }
 
+  document.getElementById("total-views").textContent = fmtNum(total);
   document.getElementById("st-avg").textContent = fmtNum(avg);
   document.getElementById("st-max").textContent = fmtNum(max);
   const gEl = document.getElementById("st-growth");
   gEl.textContent = (growth >= 0 ? "+" : "") + growth + "%";
   gEl.style.color = growth >= 0 ? "var(--green)" : "var(--fire)";
 
+  // Earnings
+  const rate    = getRate();
+  const dayEarn = avg * rate;
+  document.getElementById("e-day").textContent   = fmtMoney(dayEarn);
+  document.getElementById("e-month").textContent = fmtMoney(dayEarn * 30);
+  document.getElementById("e-year").textContent  = fmtMoney(dayEarn * 365);
+  document.getElementById("earn-box").style.display = rate > 0 ? "grid" : "none";
+
   drawChart(data);
   renderHistory();
 }
 
+// ── CHART ──
 function drawChart(data) {
   const canvas = document.getElementById("chart");
   const ctx    = canvas.getContext("2d");
   const dpr    = window.devicePixelRatio || 1;
   const W      = canvas.offsetWidth * dpr;
-  const H      = 200 * dpr;
+  const H      = 180 * dpr;
   canvas.width = W; canvas.height = H;
 
-  ctx.clearRect(0,0,W,H);
   ctx.fillStyle = "#0d0f1a";
   ctx.fillRect(0,0,W,H);
 
   if (!data.length) {
-    ctx.fillStyle = "#4a4f6a";
-    ctx.font = `${14*dpr}px -apple-system`;
-    ctx.textAlign = "center";
-    ctx.fillText("Sin datos — añade tu primer registro", W/2, H/2);
-    return;
+    ctx.fillStyle = "#4a4f6a"; ctx.font = `${12*dpr}px -apple-system`; ctx.textAlign = "center";
+    ctx.fillText("Carga tu CSV o añade un registro 👆", W/2, H/2); return;
   }
 
-  const pad    = { t:20*dpr, b:30*dpr, l:10*dpr, r:10*dpr };
-  const cW     = W - pad.l - pad.r;
-  const cH     = H - pad.t - pad.b;
-  const maxVal = Math.max(...data.map(e=>e.views)) * 1.15 || 1;
-  const minVal = 0;
+  const pad  = { t:16*dpr, b:28*dpr, l:8*dpr, r:8*dpr };
+  const cW   = W - pad.l - pad.r;
+  const cH   = H - pad.t - pad.b;
+  const vals = data.map(e => getVal(e));
+  const maxV = Math.max(...vals) * 1.15 || 1;
+  const toX  = i => pad.l + (i / Math.max(data.length-1,1)) * cW;
+  const toY  = v => pad.t + cH - (v / maxV) * cH;
 
-  const toX = i => pad.l + (i / Math.max(data.length-1,1)) * cW;
-  const toY = v => pad.t + cH - ((v - minVal) / (maxVal - minVal)) * cH;
+  const m = METRICS.find(x => x.id === currentMetric) || METRICS[0];
 
-  // Grid lines
-  ctx.strokeStyle = "#1c1f30";
-  ctx.lineWidth = dpr;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.t + (cH / 4) * i;
-    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W-pad.r, y); ctx.stroke();
-    const val = maxVal - (maxVal / 4) * i;
-    ctx.fillStyle = "#4a4f6a";
-    ctx.font = `${9*dpr}px -apple-system`;
-    ctx.textAlign = "right";
-    ctx.fillText(fmtNum(val), W-pad.r-2, y-3);
+  // Grid
+  ctx.strokeStyle = "#1c1f30"; ctx.lineWidth = dpr;
+  for (let i=0; i<=3; i++) {
+    const y = pad.t + (cH/3)*i;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+    if (i < 3) {
+      const v = maxV - (maxV/3)*i;
+      ctx.fillStyle = "#4a4f6a"; ctx.font = `${8*dpr}px -apple-system`; ctx.textAlign = "right";
+      ctx.fillText(fmtNum(v), W-pad.r-2, y-2);
+    }
   }
 
-  if (chartType === "wave") {
-    // Gradient fill
-    const grad = ctx.createLinearGradient(0, pad.t, 0, H-pad.b);
-    grad.addColorStop(0, "rgba(79,195,247,0.5)");
-    grad.addColorStop(1, "rgba(79,195,247,0.02)");
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, pad.t, 0, H-pad.b);
+  grad.addColorStop(0, m.color+"66"); grad.addColorStop(1, m.color+"04");
+  ctx.beginPath();
+  ctx.moveTo(toX(0), H-pad.b);
+  data.forEach((e,i) => ctx.lineTo(toX(i), toY(getVal(e))));
+  ctx.lineTo(toX(data.length-1), H-pad.b);
+  ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
 
-    ctx.beginPath();
-    ctx.moveTo(toX(0), H-pad.b);
-    data.forEach((e,i) => ctx.lineTo(toX(i), toY(e.views)));
-    ctx.lineTo(toX(data.length-1), H-pad.b);
-    ctx.closePath();
-    ctx.fillStyle = grad;
-    ctx.fill();
+  // Line
+  ctx.beginPath(); ctx.strokeStyle = m.color; ctx.lineWidth = 2*dpr; ctx.lineJoin = "round";
+  ctx.shadowColor = m.color; ctx.shadowBlur = 6*dpr;
+  data.forEach((e,i) => i===0 ? ctx.moveTo(toX(i),toY(getVal(e))) : ctx.lineTo(toX(i),toY(getVal(e))));
+  ctx.stroke(); ctx.shadowBlur = 0;
 
-    // Line
-    ctx.beginPath();
-    ctx.strokeStyle = "#4fc3f7";
-    ctx.lineWidth = 2.5*dpr;
-    ctx.lineJoin = "round";
-    ctx.shadowColor = "#4fc3f7";
-    ctx.shadowBlur = 8*dpr;
-    data.forEach((e,i) => i===0 ? ctx.moveTo(toX(i),toY(e.views)) : ctx.lineTo(toX(i),toY(e.views)));
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // Dots
-    data.forEach((e,i) => {
-      ctx.beginPath();
-      ctx.arc(toX(i), toY(e.views), 4*dpr, 0, Math.PI*2);
-      ctx.fillStyle = "#4fc3f7";
-      ctx.fill();
-    });
-
-  } else if (chartType === "bars") {
-    const bw = Math.max(4, (cW / data.length) * 0.7);
-    data.forEach((e,i) => {
-      const x  = toX(i) - bw/2;
-      const y  = toY(e.views);
-      const bh = H - pad.b - y;
-      const grad = ctx.createLinearGradient(0, y, 0, H-pad.b);
-      grad.addColorStop(0, "#f5c518");
-      grad.addColorStop(1, "#ff8c0044");
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x, y, bw, bh, 3*dpr);
-      else ctx.rect(x, y, bw, bh);
-      ctx.fill();
-    });
-
-  } else {
-    // CANDLE CHART
-    // Group by week if period > 28
-    const grouped = currentPeriod > 28 ? groupByWeek(data) : data.map(e => ({ date:e.date, open:e.views, close:e.views, high:e.views, low:e.views, views:e.views }));
-
-    const bw = Math.max(6, (cW / grouped.length) * 0.6);
-    grouped.forEach((g,i) => {
-      const x    = toX(i);
-      const open = toY(g.open || g.views);
-      const close= toY(g.close || g.views);
-      const high = toY(g.high || g.views);
-      const low  = toY(g.low || g.views);
-      const up   = (g.close || g.views) >= (g.open || g.views);
-      const color= up ? "#00e676" : "#ff4d4d";
-
-      // Wick
-      ctx.strokeStyle = color;
-      ctx.lineWidth   = dpr;
-      ctx.beginPath();
-      ctx.moveTo(x, high); ctx.lineTo(x, low);
-      ctx.stroke();
-
-      // Body
-      const bodyY = Math.min(open, close);
-      const bodyH = Math.max(Math.abs(open-close), 2*dpr);
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x - bw/2, bodyY, bw, bodyH, 2*dpr);
-      else ctx.rect(x - bw/2, bodyY, bw, bodyH);
-      ctx.fill();
-    });
-  }
-
-  // X axis labels
-  ctx.fillStyle = "#4a4f6a";
-  ctx.font = `${9*dpr}px -apple-system`;
-  ctx.textAlign = "center";
-  const step = Math.max(1, Math.floor(data.length / 5));
+  // X labels
+  ctx.fillStyle = "#4a4f6a"; ctx.font = `${8*dpr}px -apple-system`; ctx.textAlign = "center";
+  const step = Math.max(1, Math.floor(data.length/5));
   data.forEach((e,i) => {
     if (i % step === 0 || i === data.length-1) {
       const d = new Date(e.date+"T00:00:00");
-      const label = `${d.getDate()}/${d.getMonth()+1}`;
-      ctx.fillText(label, toX(i), H-pad.b+12*dpr);
+      ctx.fillText(`${d.getDate()}/${d.getMonth()+1}`, toX(i), H-pad.b+10*dpr);
     }
   });
 }
 
-function groupByWeek(data) {
-  const weeks = {};
-  data.forEach(e => {
-    const d   = new Date(e.date+"T00:00:00");
-    const day = d.getDay();
-    const mon = new Date(d); mon.setDate(d.getDate() - day);
-    const key = mon.toISOString().split("T")[0];
-    if (!weeks[key]) weeks[key] = [];
-    weeks[key].push(e.views);
-  });
-  return Object.entries(weeks).sort((a,b)=>a[0].localeCompare(b[0])).map(([date, vals]) => ({
-    date, open:vals[0], close:vals[vals.length-1],
-    high:Math.max(...vals), low:Math.min(...vals), views:vals[vals.length-1]
-  }));
-}
+// ── TOUCH TOOLTIP ──
+function setupTooltip() {
+  const canvas    = document.getElementById("chart");
+  const tooltip   = document.getElementById("tooltip");
+  const crosshair = document.getElementById("crosshair");
 
-function renderHistory() {
-  const list = document.getElementById("hist-list");
-  if (!entries.length) {
-    list.innerHTML = '<div class="empty-state">Sin registros aún.<br>Añade tu primera entrada arriba 👆</div>';
-    return;
+  function onTouch(e) {
+    if (!chartData.length) return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const px = clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, px / rect.width));
+    const idx = Math.round(pct * (chartData.length - 1));
+    const entry = chartData[idx];
+    if (!entry) return;
+
+    const val  = getVal(entry);
+    const m    = METRICS.find(x => x.id === currentMetric) || METRICS[0];
+    const rate = getRate();
+    const earn = rate > 0 ? ` · ${fmtMoney(val * rate)}` : "";
+
+    const d = new Date(entry.date+"T00:00:00");
+    const dateStr = d.toLocaleDateString("es-ES", { weekday:"short", day:"numeric", month:"short", year:"numeric" });
+
+    document.getElementById("tt-date").textContent = dateStr;
+    document.getElementById("tt-val").textContent  = fmtNum(val) + " " + m.emoji;
+    document.getElementById("tt-val").style.color  = m.color;
+    document.getElementById("tt-earn").textContent = earn ? "💰 " + fmtMoney(val * rate) : "";
+
+    const ttW = 160;
+    let ttLeft = px - ttW/2;
+    ttLeft = Math.max(0, Math.min(rect.width - ttW, ttLeft));
+    tooltip.style.left    = ttLeft + "px";
+    tooltip.style.top     = "8px";
+    tooltip.style.display = "block";
+    crosshair.style.left    = px + "px";
+    crosshair.style.display = "block";
+    if (tg) tg.HapticFeedback?.selectionChanged();
   }
 
-  const sorted = [...entries].reverse();
-  list.innerHTML = sorted.map((e,i) => {
+  function onEnd() {
+    setTimeout(() => { tooltip.style.display="none"; crosshair.style.display="none"; }, 1500);
+  }
+
+  canvas.addEventListener("touchstart",  onTouch, { passive:false });
+  canvas.addEventListener("touchmove",   onTouch, { passive:false });
+  canvas.addEventListener("touchend",    onEnd);
+  canvas.addEventListener("mousemove",   onTouch);
+  canvas.addEventListener("mouseleave",  onEnd);
+}
+
+// ── ADD ENTRY ──
+function addEntry() {
+  const date  = document.getElementById("inp-date").value;
+  const views = parseInt(document.getElementById("inp-views").value);
+  if (!date)  { showToast("Elige una fecha"); return; }
+  if (!views || views < 0) { showToast("Escribe el número de views"); return; }
+  entries = entries.filter(e => !(e.date === date && e.platform === selPlatform));
+  entries.push({ date, platform: selPlatform === "all" ? "general" : selPlatform, views });
+  entries.sort((a,b) => a.date.localeCompare(b.date));
+  save(); render();
+  document.getElementById("inp-views").value = "";
+  showToast("✅ Registro añadido");
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+}
+
+function deleteEntry(idx) {
+  entries.splice(idx, 1); save(); render();
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+// ── IMPORT CSV ──
+function importCSV(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const text   = e.target.result;
+      const lines  = text.trim().split("\n");
+      const header = lines[0].replace(/^\uFEFF/,"").split(",").map(h => h.trim());
+      const idx    = h => header.findIndex(x => x === h);
+
+      const iDate   = idx("date");
+      const iStream = idx("streams");
+      const iListen = idx("listeners");
+      const iMonthly= header.findIndex(h => h.includes("monthly listeners") && !h.includes("active"));
+      const iFollow = idx("followers");
+      const iSaves  = idx("saves");
+
+      if (iDate === -1) { showToast("❌ CSV no reconocido"); return; }
+
+      let added = 0;
+      lines.slice(1).forEach(line => {
+        if (!line.trim()) return;
+        const c = line.split(",");
+        const date = c[iDate]?.trim();
+        if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+        entries = entries.filter(ex => !(ex.date === date && ex.platform === "spotify"));
+        entries.push({
+          date, platform:"spotify",
+          streams:   parseInt(c[iStream])  || 0,
+          listeners: parseInt(c[iListen])  || 0,
+          monthly:   parseInt(c[iMonthly]) || 0,
+          followers: parseInt(c[iFollow])  || 0,
+          saves:     parseInt(c[iSaves])   || 0,
+          views:     parseInt(c[iStream])  || 0,
+        });
+        added++;
+      });
+
+      entries.sort((a,b) => a.date.localeCompare(b.date));
+      selPlatform = "spotify";
+      document.querySelectorAll(".ppill").forEach(p => { p.classList.remove("active"); p.style.background=""; p.style.color=""; });
+      const sp = [...document.querySelectorAll("#plat-row .mpill")].find(p => p.textContent.includes("Spotify"));
+      if (sp) { sp.classList.add("active"); sp.style.background="#1db954"; sp.style.color="#000"; }
+      save(); render();
+      document.getElementById("csv-status").textContent = `✅ ${added} días importados de Spotify`;
+      showToast(`✅ ${added} días importados`);
+      if (tg) tg.HapticFeedback?.notificationOccurred("success");
+    } catch(err) { showToast("❌ Error: " + err.message); }
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
+function setPeriod(days, btn) {
+  currentPeriod = days;
+  document.querySelectorAll(".ptab").forEach(t => t.classList.remove("active"));
+  btn.classList.add("active"); render();
+}
+
+// ── HISTORY ──
+function renderHistory() {
+  const list   = document.getElementById("hist-list");
+  const sorted = [...entries].reverse().slice(0, 30);
+  const rate   = getRate();
+  if (!sorted.length) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Sin registros aún.<br>Importa tu CSV o añade un registro.</div>';
+    return;
+  }
+  list.innerHTML = sorted.map((e, i) => {
     const realIdx = entries.length - 1 - i;
-    const plat    = PLATFORMS.find(p => p.id === e.platform) || PLATFORMS[4];
+    const plat    = PLATFORMS.find(p => p.id === e.platform) || PLATFORMS[0];
+    const val     = getVal(e);
     const prev    = entries[realIdx - 1];
-    let changeHtml = "";
+    let chgHtml = "";
     if (prev) {
-      const diff = e.views - prev.views;
-      const pct  = prev.views > 0 ? Math.round((diff/prev.views)*100) : 0;
-      const cls  = diff >= 0 ? "up" : "down";
-      const sign = diff >= 0 ? "▲" : "▼";
-      changeHtml = `<span class="hist-change ${cls}">${sign}${pct}%</span>`;
+      const diff = val - getVal(prev);
+      const pct  = getVal(prev) > 0 ? Math.round((diff/getVal(prev))*100) : 0;
+      chgHtml = `<span class="hist-chg ${diff>=0?'up':'dn'}">${diff>=0?'▲':'▼'}${Math.abs(pct)}%</span>`;
     }
     const d = new Date(e.date+"T00:00:00");
     const dateStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear().toString().slice(2)}`;
+    const earnStr = rate > 0 ? `<span class="hist-earn">${fmtMoney(val*rate)}</span>` : "";
     return `<div class="hist-item">
       <span class="hist-date">${dateStr}</span>
-      <span class="hist-platform">${plat.emoji} ${plat.label}</span>
-      <span class="hist-val">${fmtNum(e.views)}</span>
-      ${changeHtml}
+      <span style="font-size:14px">${plat.emoji}</span>
+      <span class="hist-val">${fmtNum(val)}</span>
+      ${earnStr}
+      ${chgHtml}
       <span class="hist-del" onclick="deleteEntry(${realIdx})">✕</span>
     </div>`;
   }).join("");
@@ -519,6 +514,8 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove("show"), 2500);
 }
 
+window.addEventListener("resize", () => render());
+setupTooltip();
 load();
 </script>
 </body>
