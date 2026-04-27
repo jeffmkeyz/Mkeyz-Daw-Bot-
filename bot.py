@@ -1742,10 +1742,12 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             currency="XTR",
             prices=[LabeledPrice(label=title, amount=stars)],
         )
-        # Edit menu message to avoid "colgado"
+        # Auto-delete invoice after 10s if not paid
+        asyncio.create_task(delete_after(invoice_msg, 10))
+        # Edit menu message
         try:
             await q.edit_message_text(
-                "💳 Factura enviada arriba 👆\n\n_Completa el pago con Telegram Stars._",
+                "💳 Factura enviada 👆\n\n_Se borra en 10 seg si no completas el pago._",
                 parse_mode="Markdown",
                 reply_markup=InlineKeyboardMarkup([[
                     InlineKeyboardButton("← Menú principal", callback_data="sec_main")
