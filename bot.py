@@ -698,24 +698,48 @@ async def edit(query, text, kb):
     except Exception:
         await query.message.reply_text(text, parse_mode="Markdown", reply_markup=kb)
 
+def kb_upgrade(required_plan):
+    """Keyboard showing ONLY the required plan — no other options."""
+    if required_plan == PLAN_PRO:
+        return InlineKeyboardMarkup([
+            [InlineKeyboardButton("⭐ Pro — 300 Stars/mes (~$4)",    callback_data="buy_pro")],
+            [InlineKeyboardButton("⭐ Pro — 3,000 Stars/año 🔥",     callback_data="buy_pro_year")],
+            [InlineKeyboardButton("← Menú principal",               callback_data="sec_main")],
+        ])
+    else:
+        return InlineKeyboardMarkup([
+            [InlineKeyboardButton("🎛️ Studio — 750 Stars/mes (~$10)", callback_data="buy_studio")],
+            [InlineKeyboardButton("🎛️ Studio — 7,500 Stars/año 🔥",   callback_data="buy_studio_year")],
+            [InlineKeyboardButton("← Menú principal",                callback_data="sec_main")],
+        ])
+
 async def ask_upgrade(query, required_plan):
-    perks = {
-        PLAN_PRO: "🎛️ Mini DAW\n📊 Analizador\n🧮 Calculadora\n📈 Proyección",
-        PLAN_STUDIO: "Todo lo Pro +\n🎤 Zona Artistas\n🤝 Colabs · Showcases",
-    }
-    plan_name = {PLAN_PRO: "Pro ⭐", PLAN_STUDIO: "Studio 🎛️"}.get(required_plan, required_plan)
+    PRO_TOOLS    = "🎛️ Mini DAW · 📊 Analizador · 🎹 Chord Generator + MIDI\n🎤 Voice Studio · 🎚️ Visualizador · 🔍 Detector Escala\n🃏 Tarjeta de Artista · 🎧 Playlist Generator"
+    STUDIO_TOOLS = "🧮 Calculadora · 📊 Simulador de Streams · 📈 Mis Views\n📈 Comparador de Artistas · 🎤 Zona Artistas · 🤝 Colabs"
+
+    if required_plan == PLAN_PRO:
+        plan_name  = "Pro ⭐"
+        price_info = "300 Stars/mes · 3,000 Stars/año (2 meses gratis 🎁)"
+        tools      = PRO_TOOLS
+    else:
+        plan_name  = "Studio 🎛️"
+        price_info = "750 Stars/mes · 7,500 Stars/año (2 meses gratis 🎁)"
+        tools      = STUDIO_TOOLS
+
     text = (
         f"🔒 *Esta función requiere el plan {plan_name}*\n\n"
-        f"{perks.get(required_plan,'')}\n\n"
+        f"💰 *{price_info}*\n\n"
+        f"{tools}\n\n"
         "¿Quieres acceder? 👇"
     )
+    kb = kb_upgrade(required_plan)
     try:
         if query.message.photo:
-            await query.edit_message_caption(caption=text, parse_mode="Markdown", reply_markup=kb_planes())
+            await query.edit_message_caption(caption=text, parse_mode="Markdown", reply_markup=kb)
         else:
-            await query.edit_message_text(text, parse_mode="Markdown", reply_markup=kb_planes())
+            await query.edit_message_text(text, parse_mode="Markdown", reply_markup=kb)
     except Exception:
-        await query.message.reply_text(text, parse_mode="Markdown", reply_markup=kb_planes())
+        await query.message.reply_text(text, parse_mode="Markdown", reply_markup=kb)
 
 # ══════════════════════════════════════════════════════════
 #  TECLADOS
