@@ -213,6 +213,10 @@ def serve_game2():
 def serve_about():
     return send_from_directory("static", "about.html")
 
+@app.route("/views")
+def serve_views():
+    return send_from_directory("static", "views_tracker.html")
+
 # ── MKEYZ Token Economy ────────────────────────────────────────
 TOTAL_SUPPLY = 21_000_000  # Like Bitcoin — fixed supply
 
