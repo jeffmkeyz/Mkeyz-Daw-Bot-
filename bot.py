@@ -825,9 +825,11 @@ def kb_back():
 
 def kb_planes():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("⭐ Pro — 300 Stars/mes (~$4)",    callback_data="buy_pro")],
-        [InlineKeyboardButton("🎛️ Studio — 750 Stars/mes (~$10)", callback_data="buy_studio")],
-        [InlineKeyboardButton("‹ Menú principal",                 callback_data="sec_main")],
+        [InlineKeyboardButton("⭐ Pro — 300 Stars/mes (~$4)",          callback_data="buy_pro")],
+        [InlineKeyboardButton("⭐ Pro — 3,000 Stars/año (2 meses gratis)", callback_data="buy_pro_year")],
+        [InlineKeyboardButton("🎛️ Studio — 750 Stars/mes (~$10)",       callback_data="buy_studio")],
+        [InlineKeyboardButton("🎛️ Studio — 7,500 Stars/año (2 meses gratis)", callback_data="buy_studio_year")],
+        [InlineKeyboardButton("← Menú principal",                      callback_data="sec_main")],
     ])
 
 def kb_cotizador_genero():
@@ -1718,29 +1720,29 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             kb_planes())
         return
 
-    if d in ("buy_pro", "buy_studio"):
-        plan  = PLAN_PRO if d == "buy_pro" else PLAN_STUDIO
-        stars = PLAN_PRICES[plan]
+    if d in ("buy_pro", "buy_studio", "buy_pro_year", "buy_studio_year"):
+        is_annual = "year" in d
+        plan  = PLAN_STUDIO if "studio" in d else PLAN_PRO
         label = PLAN_LABELS[plan]
+        if is_annual:
+            stars   = 7500 if "studio" in d else 3000
+            title   = f"Mkeyz Studio — {label} Anual"
+            desc    = "Acceso anual completo. 2 meses gratis vs mensual."
+            payload = f"studio_year" if "studio" in d else "pro_year"
+        else:
+            stars   = PLAN_PRICES[plan]
+            title   = f"Mkeyz Studio — {label}"
+            desc    = "Acceso mensual a las herramientas profesionales de Mkeyz Studio."
+            payload = f"sub_{plan}"
         invoice_msg = await q.message.reply_invoice(
-            title=f"Mkeyz Studio — {label}",
-            description="Acceso mensual a las herramientas profesionales de Mkeyz Studio.",
-            payload=f"sub_{plan}",
+            title=title,
+            description=desc,
+            payload=payload,
             provider_token="",
             currency="XTR",
-            prices=[LabeledPrice(label=label, amount=stars)],
+            prices=[LabeledPrice(label=title, amount=stars)],
         )
-        try: await q.edit_message_text("💳 Factura enviada 👆\n\n_Se cierra en 10 seg si no completas el pago._", parse_mode="Markdown")
-        except: pass
-
-        # Auto-borrar la factura después de 10 segundos si no se pagó
-        async def auto_delete():
-            await asyncio.sleep(10)
-            try:
-                await invoice_msg.delete()
-            except Exception:
-                pass
-        asyncio.create_task(auto_delete())
+        asyncio.create_task(delete_after(invoice_msg, 10))
         return
 
     # ── Beats ──────────────────────────────────────────────
@@ -2755,12 +2757,12 @@ async def on_pre_checkout(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def on_payment(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     payload = update.message.successful_payment.invoice_payload
     tg_id   = update.effective_user.id
-    if payload == "sub_pro":
-        db_set_plan(tg_id, PLAN_PRO, months=1)
-        plan_name = "⭐ Pro"
-    elif payload == "sub_studio":
-        db_set_plan(tg_id, PLAN_STUDIO, months=1)
-        plan_name = "🎛️ Studio"
+    if payload in ("sub_pro", "pro_year"):
+        db_set_plan(tg_id, PLAN_PRO, months=12 if "year" in payload else 1)
+        plan_name = "⭐ Pro" + (" Anual" if "year" in payload else "")
+    elif payload in ("sub_studio", "studio_year"):
+        db_set_plan(tg_id, PLAN_STUDIO, months=12 if "year" in payload else 1)
+        plan_name = "🎛️ Studio" + (" Anual" if "year" in payload else "")
     else:
         return
     log.info(f"Pago: {tg_id} → {payload}")
