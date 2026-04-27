@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Views Tracker — Mkeyz Studio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#07080d; --panel:#0d0f1a; --card:#111420; --border:#1c1f30;
+  --gold:#f5c518; --green:#00e676; --fire:#ff4d4d; --blue:#4fc3f7;
+  --purple:#9c27b0; --text:#e8eaf6; --muted:#4a4f6a;
+}
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; min-height:100vh; padding-bottom:40px; }
+
+/* HEADER */
+.hdr { padding:16px; border-bottom:1px solid var(--border); background:var(--panel); position:sticky; top:0; z-index:50; }
+.hdr-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.hdr-title { font-size:18px; font-weight:800; }
+.total-box { text-align:right; }
+.total-num { font-size:22px; font-weight:900; color:var(--gold); line-height:1; }
+.total-lbl { font-size:10px; color:var(--muted); }
+
+/* PERIOD TABS */
+.period-tabs { display:flex; gap:6px; }
+.ptab {
+  flex:1; padding:8px 4px; border-radius:10px; border:1px solid var(--border);
+  background:var(--card); color:var(--muted); font-size:12px; font-weight:700;
+  cursor:pointer; text-align:center; transition:all 0.2s;
+}
+.ptab.active { background:#1a1500; color:var(--gold); border-color:var(--gold)55; }
+
+/* CHART AREA */
+.chart-wrap {
+  padding:16px; position:relative;
+}
+canvas#chart {
+  width:100%; border-radius:16px; display:block;
+  background:var(--panel); border:1px solid var(--border);
+}
+
+/* CHART TYPE TOGGLE */
+.chart-toggle { display:flex; gap:8px; padding:0 16px 12px; }
+.ctog {
+  flex:1; padding:8px; border-radius:10px; border:1px solid var(--border);
+  background:var(--card); color:var(--muted); font-size:12px; font-weight:700;
+  cursor:pointer; text-align:center; transition:all 0.2s;
+}
+.ctog.active { background:#001a2a; color:var(--blue); border-color:var(--blue)55; }
+
+/* STATS ROW */
+.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:0 16px 16px; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; text-align:center; }
+.stat-n { font-size:18px; font-weight:900; color:var(--gold); }
+.stat-l { font-size:10px; color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:0.5px; }
+
+/* ADD VIEW FORM */
+.add-section { padding:0 16px 16px; }
+.add-card { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:16px; }
+.add-title { font-size:13px; font-weight:700; color:var(--muted); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; }
+.add-row { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+.add-label { font-size:12px; color:var(--muted); width:60px; flex-shrink:0; }
+.add-input {
+  flex:1; background:#1a1a2a; border:1px solid var(--border);
+  border-radius:10px; padding:10px 12px; color:var(--text);
+  font-size:15px; font-weight:700; outline:none; transition:border-color 0.2s;
+}
+.add-input:focus { border-color:var(--gold); }
+.add-input[type=date] { color-scheme:dark; }
+.btn-add {
+  width:100%; padding:14px; border:none; border-radius:14px;
+  background:linear-gradient(135deg,var(--gold),#ff8c00);
+  font-size:15px; font-weight:800; color:#000; cursor:pointer;
+  transition:all 0.15s; margin-top:4px;
+}
+.btn-add:active { transform:scale(0.97); }
+
+/* HISTORY */
+.history-section { padding:0 16px; }
+.hist-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+.hist-item {
+  display:flex; align-items:center; gap:12px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:12px 14px; margin-bottom:8px;
+  transition:all 0.15s;
+}
+.hist-date { font-size:12px; color:var(--muted); min-width:70px; }
+.hist-platform { font-size:11px; }
+.hist-val { font-size:16px; font-weight:800; color:var(--gold); margin-left:auto; }
+.hist-change { font-size:11px; margin-left:8px; font-weight:700; }
+.hist-change.up { color:var(--green); }
+.hist-change.down { color:var(--fire); }
+.hist-del { color:var(--muted); font-size:16px; cursor:pointer; padding:4px; margin-left:4px; }
+.hist-del:active { color:var(--fire); }
+
+/* PLATFORM PILLS */
+.plat-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+.plat-pill {
+  padding:6px 14px; border-radius:100px; font-size:11px; font-weight:700;
+  border:1px solid var(--border); background:var(--card); color:var(--muted);
+  cursor:pointer; transition:all 0.15s;
+}
+.plat-pill.active { color:#000; border-color:transparent; }
+.plat-pill:active { transform:scale(0.95); }
+
+/* TOOLTIP */
+.chart-tooltip {
+  position:absolute; background:var(--panel); border:1px solid var(--gold)55;
+  border-radius:10px; padding:8px 12px; pointer-events:none; z-index:10;
+  font-size:12px; font-weight:700; display:none; white-space:nowrap;
+}
+
+/* TOAST */
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#fff; color:#000; padding:12px 20px; border-radius:100px; font-size:14px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+.empty-state { text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="hdr-title">📊 Views Tracker</div>
+    <div class="total-box">
+      <div class="total-num" id="total-views">0</div>
+      <div class="total-lbl">views totales</div>
+    </div>
+  </div>
+  <div class="period-tabs">
+    <div class="ptab active" onclick="setPeriod(7,this)">7D</div>
+    <div class="ptab" onclick="setPeriod(28,this)">28D</div>
+    <div class="ptab" onclick="setPeriod(90,this)">3M</div>
+    <div class="ptab" onclick="setPeriod(180,this)">6M</div>
+    <div class="ptab" onclick="setPeriod(365,this)">1A</div>
+  </div>
+</div>
+
+<div class="chart-wrap">
+  <canvas id="chart" height="200"></canvas>
+  <div class="chart-tooltip" id="tooltip"></div>
+</div>
+
+<div class="chart-toggle">
+  <div class="ctog active" onclick="setChartType('candle',this)">🕯️ Velas</div>
+  <div class="ctog" onclick="setChartType('wave',this)">〰️ Onda</div>
+  <div class="ctog" onclick="setChartType('bars',this)">📊 Barras</div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-n" id="st-avg">0</div>
+    <div class="stat-l">Promedio/día</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-n" id="st-max">0</div>
+    <div class="stat-l">Mejor día</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-n" id="st-growth" style="color:var(--green)">+0%</div>
+    <div class="stat-l">Crecimiento</div>
+  </div>
+</div>
+
+<div class="add-section">
+  <div class="add-card">
+    <div class="add-title">📌 Añadir registro</div>
+    <div class="plat-row" id="plat-row"></div>
+    <div class="add-row">
+      <span class="add-label">📅 Fecha</span>
+      <input class="add-input" type="date" id="inp-date">
+    </div>
+    <div class="add-row">
+      <span class="add-label">👁️ Views</span>
+      <input class="add-input" type="number" id="inp-views" placeholder="Ej: 15000" min="0">
+    </div>
+    <button class="btn-add" onclick="addEntry()">+ Añadir</button>
+  </div>
+</div>
+
+<div class="history-section" style="margin-top:16px">
+  <div class="hist-title">Historial</div>
+  <div id="hist-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#07080d"); tg.setBackgroundColor("#07080d"); }
+
+const SAVE_KEY  = "views_tracker_v1";
+const PLATFORMS = [
+  { id:"tiktok",    label:"TikTok",    emoji:"🎬", color:"#69C9D0" },
+  { id:"instagram", label:"Instagram", emoji:"📸", color:"#e91e63" },
+  { id:"youtube",   label:"YouTube",   emoji:"▶️",  color:"#ff0000" },
+  { id:"spotify",   label:"Spotify",   emoji:"🎵", color:"#1db954" },
+  { id:"all",       label:"General",   emoji:"📊", color:"#f5c518" },
+];
+
+let entries      = [];
+let currentPeriod = 7;
+let chartType    = "candle";
+let selPlatform  = "all";
+
+// Build platform pills
+const platRow = document.getElementById("plat-row");
+PLATFORMS.forEach(p => {
+  const pill = document.createElement("div");
+  pill.className = "plat-pill" + (p.id === "all" ? " active" : "");
+  pill.textContent = p.emoji + " " + p.label;
+  if (p.id === "all") pill.style.background = p.color;
+  pill.onclick = () => {
+    document.querySelectorAll(".plat-pill").forEach(x => { x.classList.remove("active"); x.style.background=""; x.style.color=""; });
+    pill.classList.add("active");
+    pill.style.background = p.color;
+    pill.style.color = "#000";
+    selPlatform = p.id;
+    if (tg) tg.HapticFeedback?.impactOccurred("light");
+  };
+  platRow.appendChild(pill);
+});
+
+// Set today as default date
+document.getElementById("inp-date").value = new Date().toISOString().split("T")[0];
+
+// Load
+async function load() {
+  try {
+    const local = localStorage.getItem(SAVE_KEY);
+    if (local) entries = JSON.parse(local);
+  } catch(e) {}
+  try {
+    if (window.storage) {
+      const r = await window.storage.get(SAVE_KEY);
+      if (r?.value) entries = JSON.parse(r.value);
+    }
+  } catch(e) {}
+  render();
+}
+
+async function save() {
+  const data = JSON.stringify(entries);
+  try { localStorage.setItem(SAVE_KEY, data); } catch(e) {}
+  try { if (window.storage) await window.storage.set(SAVE_KEY, data); } catch(e) {}
+}
+
+function addEntry() {
+  const date  = document.getElementById("inp-date").value;
+  const views = parseInt(document.getElementById("inp-views").value);
+  if (!date) { showToast("Elige una fecha"); return; }
+  if (!views || views < 0) { showToast("Escribe el número de views"); return; }
+
+  // Remove existing entry for same date+platform
+  entries = entries.filter(e => !(e.date === date && e.platform === selPlatform));
+  entries.push({ date, views, platform: selPlatform });
+  entries.sort((a,b) => a.date.localeCompare(b.date));
+
+  save();
+  render();
+  document.getElementById("inp-views").value = "";
+  document.getElementById("inp-date").value = new Date().toISOString().split("T")[0];
+  showToast(`✅ +${fmtNum(views)} views registradas`);
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+}
+
+function deleteEntry(idx) {
+  entries.splice(idx, 1);
+  save(); render();
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+function setPeriod(days, btn) {
+  currentPeriod = days;
+  document.querySelectorAll(".ptab").forEach(t => t.classList.remove("active"));
+  btn.classList.add("active");
+  render();
+}
+
+function setChartType(type, btn) {
+  chartType = type;
+  document.querySelectorAll(".ctog").forEach(t => t.classList.remove("active"));
+  btn.classList.add("active");
+  drawChart(getFilteredData());
+}
+
+function fmtNum(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1)+"M";
+  if (n >= 1000)    return (n/1000).toFixed(1)+"K";
+  return n?.toString() || "0";
+}
+
+function getFilteredData() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - currentPeriod);
+  const cutStr = cutoff.toISOString().split("T")[0];
+  return entries.filter(e => e.date >= cutStr);
+}
+
+function render() {
+  const data = getFilteredData();
+  // Stats
+  const total = entries.reduce((s,e) => s + e.views, 0);
+  document.getElementById("total-views").textContent = fmtNum(total);
+
+  const vals = data.map(e => e.views);
+  const avg  = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+  const max  = vals.length ? Math.max(...vals) : 0;
+
+  // Growth: compare first half vs second half
+  let growth = 0;
+  if (data.length >= 2) {
+    const half = Math.floor(data.length/2);
+    const first  = data.slice(0,half).reduce((s,e)=>s+e.views,0) / half;
+    const second = data.slice(half).reduce((s,e)=>s+e.views,0) / (data.length-half);
+    growth = first > 0 ? Math.round(((second-first)/first)*100) : 0;
+  }
+
+  document.getElementById("st-avg").textContent = fmtNum(avg);
+  document.getElementById("st-max").textContent = fmtNum(max);
+  const gEl = document.getElementById("st-growth");
+  gEl.textContent = (growth >= 0 ? "+" : "") + growth + "%";
+  gEl.style.color = growth >= 0 ? "var(--green)" : "var(--fire)";
+
+  drawChart(data);
+  renderHistory();
+}
+
+function drawChart(data) {
+  const canvas = document.getElementById("chart");
+  const ctx    = canvas.getContext("2d");
+  const dpr    = window.devicePixelRatio || 1;
+  const W      = canvas.offsetWidth * dpr;
+  const H      = 200 * dpr;
+  canvas.width = W; canvas.height = H;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = "#0d0f1a";
+  ctx.fillRect(0,0,W,H);
+
+  if (!data.length) {
+    ctx.fillStyle = "#4a4f6a";
+    ctx.font = `${14*dpr}px -apple-system`;
+    ctx.textAlign = "center";
+    ctx.fillText("Sin datos — añade tu primer registro", W/2, H/2);
+    return;
+  }
+
+  const pad    = { t:20*dpr, b:30*dpr, l:10*dpr, r:10*dpr };
+  const cW     = W - pad.l - pad.r;
+  const cH     = H - pad.t - pad.b;
+  const maxVal = Math.max(...data.map(e=>e.views)) * 1.15 || 1;
+  const minVal = 0;
+
+  const toX = i => pad.l + (i / Math.max(data.length-1,1)) * cW;
+  const toY = v => pad.t + cH - ((v - minVal) / (maxVal - minVal)) * cH;
+
+  // Grid lines
+  ctx.strokeStyle = "#1c1f30";
+  ctx.lineWidth = dpr;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (cH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W-pad.r, y); ctx.stroke();
+    const val = maxVal - (maxVal / 4) * i;
+    ctx.fillStyle = "#4a4f6a";
+    ctx.font = `${9*dpr}px -apple-system`;
+    ctx.textAlign = "right";
+    ctx.fillText(fmtNum(val), W-pad.r-2, y-3);
+  }
+
+  if (chartType === "wave") {
+    // Gradient fill
+    const grad = ctx.createLinearGradient(0, pad.t, 0, H-pad.b);
+    grad.addColorStop(0, "rgba(79,195,247,0.5)");
+    grad.addColorStop(1, "rgba(79,195,247,0.02)");
+
+    ctx.beginPath();
+    ctx.moveTo(toX(0), H-pad.b);
+    data.forEach((e,i) => ctx.lineTo(toX(i), toY(e.views)));
+    ctx.lineTo(toX(data.length-1), H-pad.b);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.strokeStyle = "#4fc3f7";
+    ctx.lineWidth = 2.5*dpr;
+    ctx.lineJoin = "round";
+    ctx.shadowColor = "#4fc3f7";
+    ctx.shadowBlur = 8*dpr;
+    data.forEach((e,i) => i===0 ? ctx.moveTo(toX(i),toY(e.views)) : ctx.lineTo(toX(i),toY(e.views)));
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Dots
+    data.forEach((e,i) => {
+      ctx.beginPath();
+      ctx.arc(toX(i), toY(e.views), 4*dpr, 0, Math.PI*2);
+      ctx.fillStyle = "#4fc3f7";
+      ctx.fill();
+    });
+
+  } else if (chartType === "bars") {
+    const bw = Math.max(4, (cW / data.length) * 0.7);
+    data.forEach((e,i) => {
+      const x  = toX(i) - bw/2;
+      const y  = toY(e.views);
+      const bh = H - pad.b - y;
+      const grad = ctx.createLinearGradient(0, y, 0, H-pad.b);
+      grad.addColorStop(0, "#f5c518");
+      grad.addColorStop(1, "#ff8c0044");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, bw, bh, 3*dpr);
+      else ctx.rect(x, y, bw, bh);
+      ctx.fill();
+    });
+
+  } else {
+    // CANDLE CHART
+    // Group by week if period > 28
+    const grouped = currentPeriod > 28 ? groupByWeek(data) : data.map(e => ({ date:e.date, open:e.views, close:e.views, high:e.views, low:e.views, views:e.views }));
+
+    const bw = Math.max(6, (cW / grouped.length) * 0.6);
+    grouped.forEach((g,i) => {
+      const x    = toX(i);
+      const open = toY(g.open || g.views);
+      const close= toY(g.close || g.views);
+      const high = toY(g.high || g.views);
+      const low  = toY(g.low || g.views);
+      const up   = (g.close || g.views) >= (g.open || g.views);
+      const color= up ? "#00e676" : "#ff4d4d";
+
+      // Wick
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = dpr;
+      ctx.beginPath();
+      ctx.moveTo(x, high); ctx.lineTo(x, low);
+      ctx.stroke();
+
+      // Body
+      const bodyY = Math.min(open, close);
+      const bodyH = Math.max(Math.abs(open-close), 2*dpr);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x - bw/2, bodyY, bw, bodyH, 2*dpr);
+      else ctx.rect(x - bw/2, bodyY, bw, bodyH);
+      ctx.fill();
+    });
+  }
+
+  // X axis labels
+  ctx.fillStyle = "#4a4f6a";
+  ctx.font = `${9*dpr}px -apple-system`;
+  ctx.textAlign = "center";
+  const step = Math.max(1, Math.floor(data.length / 5));
+  data.forEach((e,i) => {
+    if (i % step === 0 || i === data.length-1) {
+      const d = new Date(e.date+"T00:00:00");
+      const label = `${d.getDate()}/${d.getMonth()+1}`;
+      ctx.fillText(label, toX(i), H-pad.b+12*dpr);
+    }
+  });
+}
+
+function groupByWeek(data) {
+  const weeks = {};
+  data.forEach(e => {
+    const d   = new Date(e.date+"T00:00:00");
+    const day = d.getDay();
+    const mon = new Date(d); mon.setDate(d.getDate() - day);
+    const key = mon.toISOString().split("T")[0];
+    if (!weeks[key]) weeks[key] = [];
+    weeks[key].push(e.views);
+  });
+  return Object.entries(weeks).sort((a,b)=>a[0].localeCompare(b[0])).map(([date, vals]) => ({
+    date, open:vals[0], close:vals[vals.length-1],
+    high:Math.max(...vals), low:Math.min(...vals), views:vals[vals.length-1]
+  }));
+}
+
+function renderHistory() {
+  const list = document.getElementById("hist-list");
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty-state">Sin registros aún.<br>Añade tu primera entrada arriba 👆</div>';
+    return;
+  }
+
+  const sorted = [...entries].reverse();
+  list.innerHTML = sorted.map((e,i) => {
+    const realIdx = entries.length - 1 - i;
+    const plat    = PLATFORMS.find(p => p.id === e.platform) || PLATFORMS[4];
+    const prev    = entries[realIdx - 1];
+    let changeHtml = "";
+    if (prev) {
+      const diff = e.views - prev.views;
+      const pct  = prev.views > 0 ? Math.round((diff/prev.views)*100) : 0;
+      const cls  = diff >= 0 ? "up" : "down";
+      const sign = diff >= 0 ? "▲" : "▼";
+      changeHtml = `<span class="hist-change ${cls}">${sign}${pct}%</span>`;
+    }
+    const d = new Date(e.date+"T00:00:00");
+    const dateStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear().toString().slice(2)}`;
+    return `<div class="hist-item">
+      <span class="hist-date">${dateStr}</span>
+      <span class="hist-platform">${plat.emoji} ${plat.label}</span>
+      <span class="hist-val">${fmtNum(e.views)}</span>
+      ${changeHtml}
+      <span class="hist-del" onclick="deleteEntry(${realIdx})">✕</span>
+    </div>`;
+  }).join("");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+load();
+</script>
+</body>
+</html>
