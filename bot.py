@@ -145,6 +145,16 @@ async def award_mkeyz(tg_id: int, action: str):
         )
     except: pass
 
+# ── Utilities ─────────────────────────────────────────────
+
+async def delete_after(msg, seconds: int = 10):
+    """Delete a message after N seconds silently."""
+    await asyncio.sleep(seconds)
+    try:
+        await msg.delete()
+    except Exception:
+        pass
+
 # ── Cotizador de licencias ─────────────────────────────────
 LICENCIAS = {
     "Básica":    {"precio": 49,  "streams": "100K", "vids": "1 video", "radio": "No", "desc": "YouTube · Redes · No comercial"},
@@ -1742,17 +1752,20 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             currency="XTR",
             prices=[LabeledPrice(label=title, amount=stars)],
         )
-        # Auto-delete invoice after 10s if not paid
+        # Auto-delete invoice after 10 seconds if not paid
         asyncio.create_task(delete_after(invoice_msg, 10))
-        # Edit menu message
+        # Update the menu message to show status + back button
         try:
             await q.edit_message_text(
-                "💳 Factura enviada 👆\n\n_Se borra en 10 seg si no completas el pago._",
+                "💳 *Factura enviada* 👆\n\n"
+                "_Se cancela automáticamente en 10 segundos_\n"
+                "_si no completas el pago._",
                 parse_mode="Markdown",
                 reply_markup=InlineKeyboardMarkup([[
                     InlineKeyboardButton("← Menú principal", callback_data="sec_main")
                 ]]))
-        except: pass
+        except Exception as e:
+            log.error(f"edit invoice menu: {e}")
         return
 
     # ── Beats ──────────────────────────────────────────────
