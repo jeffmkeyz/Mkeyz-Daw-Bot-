@@ -6,105 +6,143 @@
 <title>Views Tracker — Mkeyz Studio</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-:root { --bg:#07080d; --panel:#0d0f1a; --card:#111420; --border:#1c1f30; --gold:#f5c518; --green:#00e676; --fire:#ff4d4d; --blue:#4fc3f7; --text:#e8eaf6; --muted:#4a4f6a; }
-body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; min-height:100vh; }
+:root {
+  --bg:#07080d; --panel:#0d0f1a; --card:#111420; --border:#1c1f30;
+  --gold:#f5c518; --green:#00e676; --fire:#ff4d4d; --blue:#4fc3f7;
+  --purple:#b06afc; --text:#e8eaf6; --muted:#4a4f6a;
+}
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; min-height:100vh; padding-bottom:40px; }
 
-.hdr { padding:14px 16px 10px; border-bottom:1px solid var(--border); background:var(--panel); position:sticky; top:0; z-index:50; }
+#bg-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+
+/* HEADER */
+.hdr { padding:12px 16px 10px; border-bottom:1px solid var(--border); background:rgba(13,15,26,0.95); position:sticky; top:0; z-index:50; backdrop-filter:blur(10px); }
 .hdr-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-.hdr-title { font-size:16px; font-weight:800; }
+.hdr-title { font-family:'Orbitron',monospace; font-size:13px; font-weight:900; color:var(--gold); letter-spacing:1px; }
+.total-box { text-align:right; }
+.total-num { font-size:18px; font-weight:900; color:var(--gold); line-height:1; }
+.total-lbl { font-size:9px; color:var(--muted); margin-top:2px; }
 .period-tabs { display:flex; gap:4px; }
 .ptab { flex:1; padding:7px 2px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-size:11px; font-weight:700; cursor:pointer; text-align:center; transition:all 0.2s; }
 .ptab.active { background:#1a1500; color:var(--gold); border-color:var(--gold)55; }
 
-/* METRIC */
-.metric-row { display:flex; gap:6px; overflow-x:auto; padding:10px 16px 8px; scrollbar-width:none; }
+/* METRIC PILLS */
+.metric-row { display:flex; gap:6px; overflow-x:auto; padding:10px 16px 6px; scrollbar-width:none; position:relative; z-index:1; }
 .metric-row::-webkit-scrollbar { display:none; }
 .mpill { flex-shrink:0; padding:6px 14px; border-radius:100px; font-size:12px; font-weight:700; border:1px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; transition:all 0.15s; }
 .mpill.active { color:#000; border-color:transparent; }
+.mpill:active { transform:scale(0.93); }
 
-/* CHART */
-.chart-section { padding:8px 16px 4px; position:relative; }
-canvas#chart { width:100%; border-radius:14px; display:block; background:var(--panel); border:1px solid var(--border); touch-action:none; }
-.tooltip { position:absolute; background:rgba(13,15,26,0.96); border:1px solid var(--gold)77; border-radius:10px; padding:8px 14px; pointer-events:none; z-index:20; display:none; white-space:nowrap; }
-.tt-date { font-size:11px; color:var(--muted); }
-.tt-val  { font-size:18px; font-weight:900; }
-.tt-earn { font-size:12px; color:var(--green); margin-top:2px; }
-.crosshair { position:absolute; top:0; bottom:0; width:1px; background:var(--gold)66; pointer-events:none; display:none; }
-
-/* EARNING BOX */
-.earn-box { margin:8px 16px; background:linear-gradient(135deg,#0d1f0d,#111420); border:1px solid #00e67644; border-radius:14px; padding:14px; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center; }
-.earn-item .earn-n { font-size:16px; font-weight:900; color:var(--green); }
-.earn-item .earn-l { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
-
-/* STATS */
-.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:8px 16px; }
-.stat-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; text-align:center; }
-.stat-n { font-size:15px; font-weight:900; color:var(--gold); }
-.stat-l { font-size:9px; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:0.5px; }
-
-/* PLATFORM */
-.plat-row { display:flex; gap:6px; overflow-x:auto; padding:4px 16px 8px; scrollbar-width:none; }
+/* PLATFORM PILLS */
+.plat-row { display:flex; gap:6px; overflow-x:auto; padding:4px 16px 8px; scrollbar-width:none; position:relative; z-index:1; }
 .plat-row::-webkit-scrollbar { display:none; }
 .ppill { flex-shrink:0; padding:6px 14px; border-radius:100px; font-size:12px; font-weight:700; border:1px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; transition:all 0.15s; }
 .ppill.active { color:#000; }
+.ppill:active { transform:scale(0.93); }
 
-/* IMPORT + ADD */
-.section { padding:0 16px 10px; }
-.import-card { background:linear-gradient(135deg,#001a2a,#111420); border:1px solid #4fc3f744; border-radius:14px; padding:14px; margin-bottom:10px; }
-.import-label { display:block; width:100%; padding:11px; background:#001a2a; border:1px dashed #4fc3f766; border-radius:10px; text-align:center; cursor:pointer; font-size:13px; font-weight:700; color:var(--blue); }
+/* CHART */
+.chart-section { padding:8px 16px 4px; position:relative; z-index:1; }
+canvas#chart { width:100%; border-radius:14px; display:block; background:var(--panel); border:1px solid var(--border); touch-action:none; }
+.tooltip { position:absolute; background:rgba(13,15,26,0.97); border:1px solid var(--gold)88; border-radius:12px; padding:10px 14px; pointer-events:none; z-index:20; display:none; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+.tt-date { font-size:11px; color:var(--muted); margin-bottom:2px; }
+.tt-val  { font-size:18px; font-weight:900; }
+.tt-earn { font-size:12px; color:var(--green); margin-top:2px; }
+.crosshair { position:absolute; top:8px; bottom:4px; width:1px; background:rgba(245,197,24,0.5); pointer-events:none; display:none; }
+
+/* EARNINGS */
+.earn-box { margin:8px 16px; background:linear-gradient(135deg,#0d1f0d,#111420); border:1px solid #00e67644; border-radius:14px; padding:14px; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center; position:relative; z-index:1; animation:fadeSlideIn 0.4s ease; }
+@keyframes fadeSlideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.earn-item .earn-n { font-size:15px; font-weight:900; color:var(--green); }
+.earn-item .earn-l { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+
+/* STATS */
+.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:8px 16px; position:relative; z-index:1; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; text-align:center; transition:all 0.2s; }
+.stat-card:active { transform:scale(0.96); border-color:var(--gold)55; }
+.stat-n { font-size:15px; font-weight:900; color:var(--gold); }
+.stat-l { font-size:9px; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:0.5px; }
+
+/* BOTTOM TABS */
+.bottom-tabs { display:flex; gap:0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:var(--panel); position:sticky; top:0; z-index:10; margin-top:8px; }
+.btab { flex:1; padding:12px 4px; text-align:center; font-size:12px; font-weight:700; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; }
+.btab.active { color:var(--gold); border-bottom-color:var(--gold); }
+
+/* TAB CONTENT */
+.btab-content { display:none; position:relative; z-index:1; }
+.btab-content.active { display:block; }
+
+/* IMPORT CARDS */
+.import-card { background:linear-gradient(135deg,#001a2a,#111420); border:1px solid var(--blue)44; border-radius:14px; padding:14px; margin:12px 16px 0; }
+.import-card.amazon { background:linear-gradient(135deg,#1a0f00,#111420); border-color:#ff990044; }
+.import-card.songs  { background:linear-gradient(135deg,#1a0a2a,#111420); border-color:var(--purple)44; }
+.import-label { display:block; width:100%; padding:11px; border-radius:10px; text-align:center; cursor:pointer; font-size:13px; font-weight:700; }
+.import-label.spotify { background:#001a2a; border:1px dashed var(--blue)55; color:var(--blue); }
+.import-label.amazon  { background:#1a0f00; border:1px dashed #ff990055; color:#ff9900; }
+.import-label.songs   { background:#1a0a2a; border:1px dashed var(--purple)55; color:var(--purple); }
 .import-status { font-size:10px; color:var(--muted); text-align:center; margin-top:6px; }
-.add-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; }
+.btn-clear { width:100%; margin-top:8px; padding:9px; background:transparent; border:1px solid #ff4d4d33; border-radius:8px; color:#ff4d4d77; font-size:12px; font-weight:700; cursor:pointer; }
+
+/* ADD FORM */
+.add-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; margin:12px 16px 0; }
 .add-row { display:flex; gap:8px; margin-bottom:8px; }
 .add-input { flex:1; background:#1a1a2a; border:1px solid var(--border); border-radius:8px; padding:9px 10px; color:var(--text); font-size:14px; font-weight:700; outline:none; min-width:0; }
 .add-input[type=date] { color-scheme:dark; font-size:12px; }
 .add-input:focus { border-color:var(--gold); }
-.btn-add { width:100%; padding:12px; border:none; border-radius:10px; background:linear-gradient(135deg,var(--gold),#ff8c00); font-size:14px; font-weight:800; color:#000; cursor:pointer; }
+.btn-add { width:100%; padding:12px; border:none; border-radius:10px; background:linear-gradient(135deg,var(--gold),#ff8c00); font-size:14px; font-weight:800; color:#000; cursor:pointer; transition:all 0.15s; }
+.btn-add:active { transform:scale(0.97); }
 
 /* HISTORY */
-.hist-section { padding:0 16px 40px; }
-.hist-title { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
-.hist-item { display:flex; align-items:center; gap:8px; padding:9px 12px; background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:6px; }
-.hist-date { font-size:11px; color:var(--muted); min-width:58px; }
+.hist-list { padding:12px 16px; }
+.hist-item { display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:6px; transition:all 0.2s; }
+.hist-item:active { border-color:var(--gold)44; }
+.hist-date { font-size:11px; color:var(--muted); min-width:60px; }
+.hist-plat { font-size:14px; }
 .hist-val  { font-size:14px; font-weight:800; color:var(--gold); margin-left:auto; }
 .hist-earn { font-size:10px; color:var(--green); font-weight:700; }
 .hist-chg.up { color:var(--green); font-size:10px; font-weight:700; }
 .hist-chg.dn { color:var(--fire); font-size:10px; font-weight:700; }
-.hist-del { color:var(--muted); font-size:14px; cursor:pointer; padding:2px 4px; }
-
-.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#fff; color:#000; padding:10px 18px; border-radius:100px; font-size:13px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; }
-.toast.show { transform:translateX(-50%) translateY(0); }
+.hist-del  { color:var(--muted); font-size:14px; cursor:pointer; padding:2px 6px; }
+.hist-del:active { color:var(--fire); }
 
 /* SONGS */
-.songs-section { padding:0 16px 40px; }
-.songs-title { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
-.songs-import-card { background:linear-gradient(135deg,#1a0a2a,#111420); border:1px solid #9c27b044; border-radius:14px; padding:14px; margin-bottom:10px; }
-.songs-import-label { display:block; width:100%; padding:11px; background:#1a0a2a; border:1px dashed #9c27b066; border-radius:10px; text-align:center; cursor:pointer; font-size:13px; font-weight:700; color:#ce93d8; }
-.song-item { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:6px; }
-.song-rank { font-size:11px; font-weight:900; color:var(--muted); min-width:20px; text-align:center; }
-.song-rank.gold { color:var(--gold); }
+.songs-sort { display:flex; gap:6px; padding:12px 16px 8px; }
+.ssort-btn { flex:1; padding:7px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-size:11px; font-weight:700; cursor:pointer; text-align:center; transition:all 0.15s; }
+.ssort-btn.active { background:#1a0a2a; color:var(--purple); border-color:var(--purple)55; }
+.song-item { display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--card); border:1px solid var(--border); border-radius:12px; margin:0 16px 8px; transition:all 0.2s; }
+.song-item:active { transform:scale(0.98); border-color:var(--purple)44; }
+.song-rank { font-size:14px; font-weight:900; min-width:24px; text-align:center; }
+.song-rank.gold   { color:var(--gold); }
 .song-rank.silver { color:#aaa; }
 .song-rank.bronze { color:#cd7f32; }
+.song-rank.other  { color:var(--muted); font-size:11px; }
 .song-info { flex:1; min-width:0; }
-.song-name { font-size:13px; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.song-meta { font-size:10px; color:var(--muted); margin-top:2px; }
-.song-stats { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
-.song-streams { font-size:14px; font-weight:900; color:var(--gold); }
-.song-listeners { font-size:10px; color:#00e676; font-weight:700; }
-.song-saves { font-size:10px; color:#9c27b0; font-weight:700; }
-.songs-sort-row { display:flex; gap:6px; margin-bottom:10px; }
-.sort-btn { padding:5px 12px; border-radius:100px; font-size:11px; font-weight:700; border:1px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; transition:all 0.15s; }
-.sort-btn.active { background:#9c27b0; color:#fff; border-color:#9c27b0; }
+.song-name { font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.song-bar-wrap { height:3px; background:var(--border); border-radius:2px; margin:5px 0 3px; }
+.song-bar { height:3px; border-radius:2px; background:linear-gradient(90deg,var(--purple),#ce93d8); transition:width 0.5s ease; }
+.song-meta { font-size:10px; color:var(--muted); }
+.song-streams { font-size:15px; font-weight:900; color:var(--gold); }
+.song-saves { font-size:10px; color:var(--muted); }
+
+/* TOAST */
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#fff; color:#000; padding:10px 18px; border-radius:100px; font-size:13px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+.section-sep { height:1px; background:var(--border); margin:12px 0; }
+.empty-state { text-align:center; padding:32px 20px; color:var(--muted); font-size:13px; line-height:1.8; }
 </style>
 </head>
 <body>
 
+<canvas id="bg-canvas"></canvas>
+
 <div class="hdr">
   <div class="hdr-top">
-    <div class="hdr-title">📊 Views Tracker</div>
-    <div style="text-align:right">
-      <div style="font-size:18px;font-weight:900;color:var(--gold)" id="total-views">—</div>
-      <div style="font-size:10px;color:var(--muted)" id="total-lbl">período actual</div>
+    <div class="hdr-title">📊 VIEWS TRACKER</div>
+    <div class="total-box">
+      <div class="total-num" id="total-views">—</div>
+      <div class="total-lbl" id="total-lbl">total período</div>
     </div>
   </div>
   <div class="period-tabs">
@@ -122,15 +160,14 @@ canvas#chart { width:100%; border-radius:14px; display:block; background:var(--p
 <div class="chart-section">
   <canvas id="chart" height="180"></canvas>
   <div class="crosshair" id="crosshair"></div>
-  <div class="tooltip"   id="tooltip">
+  <div class="tooltip" id="tooltip">
     <div class="tt-date" id="tt-date"></div>
     <div class="tt-val"  id="tt-val"></div>
     <div class="tt-earn" id="tt-earn"></div>
   </div>
 </div>
 
-<!-- EARNINGS -->
-<div class="earn-box" id="earn-box">
+<div class="earn-box" id="earn-box" style="display:none">
   <div class="earn-item"><div class="earn-n" id="e-day">$0</div><div class="earn-l">☀️ Diario</div></div>
   <div class="earn-item"><div class="earn-n" id="e-month">$0</div><div class="earn-l">📅 Mensual</div></div>
   <div class="earn-item"><div class="earn-n" id="e-year">$0</div><div class="earn-l">📆 Anual</div></div>
@@ -142,52 +179,89 @@ canvas#chart { width:100%; border-radius:14px; display:block; background:var(--p
   <div class="stat-card"><div class="stat-n" id="st-growth">—</div><div class="stat-l">Crecimiento</div></div>
 </div>
 
-<div class="section">
+<!-- BOTTOM TABS -->
+<div class="bottom-tabs">
+  <div class="btab active" onclick="showBTab('import',this)">📥 Datos</div>
+  <div class="btab" onclick="showBTab('history',this)">📋 Historial</div>
+  <div class="btab" onclick="showBTab('songs',this)">🎵 Top Songs</div>
+</div>
+
+<!-- TAB: DATOS -->
+<div class="btab-content active" id="btab-import">
+
+  <!-- SPOTIFY IMPORT -->
   <div class="import-card">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <div style="font-size:20px">🎵</div>
-      <div><div style="font-size:13px;font-weight:700;color:var(--blue)">Importar CSV de Spotify</div><div style="font-size:10px;color:var(--muted)">audience-timeline.csv · Spotify for Artists</div></div>
+      <span style="font-size:22px">🎵</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--blue)">Importar CSV Spotify</div>
+        <div style="font-size:10px;color:var(--muted)">audience-timeline.csv · Trendlines CSV</div>
+      </div>
     </div>
-    <label class="import-label">
-      📁 Seleccionar archivo CSV
-      <input type="file" accept=".csv" id="csv-input" style="display:none" onchange="importCSV(this)">
+    <label class="import-label spotify">
+      📁 Seleccionar CSV de Spotify
+      <input type="file" accept=".csv" id="spotify-csv" style="display:none" onchange="importSpotifyCSV(this)">
     </label>
-    <div class="import-status" id="csv-status">Sube tu CSV para cargar los datos automáticamente</div>
-    <button onclick="clearAll()" style="width:100%;margin-top:8px;padding:9px;background:transparent;border:1px solid #ff4d4d44;border-radius:8px;color:#ff4d4d88;font-size:12px;font-weight:700;cursor:pointer">🗑️ Limpiar todos los datos</button>
+    <div class="import-status" id="spotify-status">Sube tu CSV de Spotify for Artists</div>
+    <button class="btn-clear" onclick="clearPlatform('spotify')">🗑️ Limpiar datos Spotify</button>
   </div>
 
+  <!-- AMAZON IMPORT -->
+  <div class="import-card amazon">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:22px">📦</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#ff9900">Importar CSV Amazon Music</div>
+        <div style="font-size:10px;color:var(--muted)">Trendlines · Fecha, Reproducciones, Oyentes</div>
+      </div>
+    </div>
+    <label class="import-label amazon">
+      📁 Seleccionar CSV de Amazon
+      <input type="file" accept=".csv" id="amazon-csv" style="display:none" onchange="importAmazonCSV(this)">
+    </label>
+    <div class="import-status" id="amazon-status">Sube tu CSV de Amazon Music for Artists</div>
+    <button class="btn-clear" onclick="clearPlatform('amazon')">🗑️ Limpiar datos Amazon</button>
+  </div>
+
+  <!-- ADD MANUAL -->
   <div class="add-card">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📝 Añadir manualmente</div>
     <div class="add-row">
       <input class="add-input" type="date" id="inp-date">
       <input class="add-input" type="number" id="inp-views" placeholder="Views" min="0" style="max-width:120px">
     </div>
-    <button class="btn-add" onclick="addEntry()">+ Añadir registro manual</button>
+    <button class="btn-add" onclick="addEntry()">+ Añadir registro</button>
   </div>
+
 </div>
 
-<div class="hist-section">
-  <div class="hist-title">Historial reciente</div>
-  <div id="hist-list"></div>
+<!-- TAB: HISTORIAL -->
+<div class="btab-content" id="btab-history">
+  <div style="padding:12px 16px 8px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Registros recientes</div>
+  <div id="hist-list" class="hist-list"></div>
 </div>
 
-<div class="songs-section">
-  <div class="hist-title">🎵 Top Canciones</div>
-  <div class="songs-import-card">
+<!-- TAB: TOP SONGS -->
+<div class="btab-content" id="btab-songs">
+  <div class="import-card songs" style="margin-top:12px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <div style="font-size:20px">🎤</div>
-      <div><div style="font-size:13px;font-weight:700;color:#ce93d8">Importar CSV de Canciones</div><div style="font-size:10px;color:var(--muted)">songs-28day.csv · Spotify for Artists</div></div>
+      <span style="font-size:22px">🎤</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--purple)">Top Canciones</div>
+        <div style="font-size:10px;color:var(--muted)">songs-28day.csv · Spotify for Artists</div>
+      </div>
     </div>
-    <label class="songs-import-label">
-      📁 Seleccionar archivo CSV de canciones
-      <input type="file" accept=".csv" id="songs-csv-input" style="display:none" onchange="importSongsCSV(this)">
+    <label class="import-label songs">
+      📁 Importar CSV de canciones
+      <input type="file" accept=".csv" id="songs-csv" style="display:none" onchange="importSongsCSV(this)">
     </label>
-    <div class="import-status" id="songs-csv-status">Sube tu CSV de canciones para ver el ranking</div>
-    <button onclick="clearSongs()" style="width:100%;margin-top:8px;padding:9px;background:transparent;border:1px solid #ff4d4d44;border-radius:8px;color:#ff4d4d88;font-size:12px;font-weight:700;cursor:pointer">🗑️ Limpiar canciones</button>
+    <div class="import-status" id="songs-status">Sube tu CSV para ver el ranking de canciones</div>
+    <button class="btn-clear" onclick="clearSongs()">🗑️ Limpiar ranking</button>
   </div>
-  <div class="songs-sort-row" id="songs-sort-row" style="display:none">
-    <button class="sort-btn active" onclick="sortSongs('streams',this)">🎧 Streams</button>
-    <button class="sort-btn" onclick="sortSongs('listeners',this)">👥 Oyentes</button>
-    <button class="sort-btn" onclick="sortSongs('saves',this)">💾 Saves</button>
+  <div class="songs-sort" id="songs-sort-row" style="display:none">
+    <button class="ssort-btn active" onclick="setSongsSort('streams',this)">🎧 Streams</button>
+    <button class="ssort-btn" onclick="setSongsSort('listeners',this)">👥 Oyentes</button>
+    <button class="ssort-btn" onclick="setSongsSort('saves',this)">💾 Saves</button>
   </div>
   <div id="songs-list"></div>
 </div>
@@ -198,490 +272,576 @@ canvas#chart { width:100%; border-radius:14px; display:block; background:var(--p
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#07080d"); tg.setBackgroundColor("#07080d"); }
 
-const SAVE_KEY = "views_tracker_v2";
+const USER_ID  = tg?.initDataUnsafe?.user?.id || "guest";
+const SAVE_KEY = `views_v4_${USER_ID}`;
+const SONGS_KEY= `songs_v2_${USER_ID}`;
+
+// ── BG CANVAS ────────────────────────────────────────────
+const bgC = document.getElementById("bg-canvas");
+const bgCtx = bgC.getContext("2d");
+let bgPts = [];
+function resizeBg() { bgC.width=innerWidth; bgC.height=innerHeight; }
+resizeBg(); window.addEventListener("resize", resizeBg);
+function drawBg() {
+  requestAnimationFrame(drawBg);
+  bgCtx.fillStyle="rgba(7,8,13,0.15)"; bgCtx.fillRect(0,0,bgC.width,bgC.height);
+  if (Math.random()<0.03 && bgPts.length<20)
+    bgPts.push({x:Math.random()*bgC.width,y:bgC.height+5,r:Math.random()*1.5+0.5,speed:Math.random()*0.5+0.2,hue:40+Math.random()*40});
+  bgPts = bgPts.filter(p=>p.y>-10);
+  bgPts.forEach(p => {
+    p.y-=p.speed;
+    bgCtx.beginPath(); bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgCtx.fillStyle=`hsla(${p.hue},100%,70%,0.25)`; bgCtx.fill();
+  });
+}
+drawBg();
+
+// ── PLATFORMS ─────────────────────────────────────────────
+const PLATFORMS = [
+  { id:"all",       label:"Todo",       emoji:"📊", color:"#f5c518", rate:0 },
+  { id:"spotify",   label:"Spotify",    emoji:"🎵", color:"#1db954", rate:0.001106 },
+  { id:"amazon",    label:"Amazon",     emoji:"📦", color:"#ff9900", rate:0.010574 },
+  { id:"youtube",   label:"YouTube",    emoji:"▶️",  color:"#ff0000", rate:0.003197 },
+  { id:"tiktok",    label:"TikTok",     emoji:"🎬", color:"#69C9D0", rate:0 },
+  { id:"instagram", label:"Instagram",  emoji:"📸", color:"#e91e63", rate:0 },
+  { id:"manual",    label:"Manual",     emoji:"✏️",  color:"#aaa",    rate:0 },
+];
 
 const METRICS = [
-  { id:"streams",   label:"Streams",      color:"#f5c518", emoji:"🎧" },
-  { id:"listeners", label:"Oyentes/día",  color:"#00e676", emoji:"👥" },
-  { id:"monthly",   label:"Oyentes mes",  color:"#4fc3f7", emoji:"📅" },
-  { id:"followers", label:"Seguidores",   color:"#e91e63", emoji:"❤️" },
-  { id:"saves",     label:"Saves",        color:"#9c27b0", emoji:"💾" },
-  { id:"views",     label:"Manual",       color:"#ff9800", emoji:"👁️" },
+  { id:"streams",   label:"Streams",    color:"#f5c518", emoji:"🎧" },
+  { id:"listeners", label:"Oyentes/día",color:"#00e676", emoji:"👥" },
+  { id:"monthly",   label:"Oyentes mes",color:"#4fc3f7", emoji:"📅" },
+  { id:"followers", label:"Seguidores", color:"#e91e63", emoji:"❤️" },
+  { id:"saves",     label:"Saves",      color:"#b06afc", emoji:"💾" },
+  { id:"views",     label:"Views",      color:"#ff9800", emoji:"👁️" },
 ];
 
-const PLATFORMS = [
-  { id:"all",       label:"Todo",      emoji:"📊", color:"#f5c518",  rate:0.003 },
-  { id:"spotify",   label:"Spotify",   emoji:"🎵", color:"#1db954",  rate:0.001106 },
-  { id:"tiktok",    label:"TikTok",    emoji:"🎬", color:"#69C9D0",  rate:0.000850 },
-  { id:"instagram", label:"Instagram", emoji:"📸", color:"#e91e63",  rate:0 },
-  { id:"youtube",   label:"YouTube",   emoji:"▶️",  color:"#ff0000",  rate:0.003197 },
-];
-
-let entries       = [];
+let entries       = [];  // [{date, platform, streams, listeners, monthly, followers, saves, views}]
+let songs         = [];
 let currentPeriod = 7;
 let currentMetric = "streams";
 let selPlatform   = "all";
-let chartData     = [];
+let songsSortBy   = "streams";
 
-// Build pills
-function buildPills(containerId, items, getActive, onClick) {
-  const row = document.getElementById(containerId);
-  items.forEach(item => {
+// ── BUILD PILLS ───────────────────────────────────────────
+function buildPills() {
+  // Metric pills
+  const mRow = document.getElementById("metric-row");
+  mRow.innerHTML = "";
+  METRICS.forEach(m => {
     const pill = document.createElement("div");
-    pill.className = "mpill" + (getActive(item) ? " active" : "");
-    pill.textContent = item.emoji + " " + item.label;
-    if (getActive(item)) { pill.style.background = item.color; pill.style.color = "#000"; }
+    pill.className = "mpill" + (m.id===currentMetric?" active":"");
+    pill.textContent = m.emoji+" "+m.label;
+    if (m.id===currentMetric) { pill.style.background=m.color; pill.style.color="#000"; }
     pill.onclick = () => {
-      row.querySelectorAll(".mpill,.ppill").forEach(p => { p.classList.remove("active"); p.style.background=""; p.style.color=""; });
-      pill.classList.add("active"); pill.style.background = item.color; pill.style.color = "#000";
-      onClick(item);
+      document.querySelectorAll(".mpill").forEach(p=>{ p.classList.remove("active"); p.style.background=""; p.style.color=""; });
+      pill.classList.add("active"); pill.style.background=m.color; pill.style.color="#000";
+      currentMetric=m.id; render();
       if (tg) tg.HapticFeedback?.impactOccurred("light");
     };
-    row.appendChild(pill);
+    mRow.appendChild(pill);
+  });
+  // Platform pills
+  const pRow = document.getElementById("plat-row");
+  pRow.innerHTML = "";
+  PLATFORMS.forEach(p => {
+    const pill = document.createElement("div");
+    pill.className = "ppill" + (p.id===selPlatform?" active":"");
+    pill.textContent = p.emoji+" "+p.label;
+    if (p.id===selPlatform) { pill.style.background=p.color; pill.style.color="#000"; }
+    pill.onclick = () => {
+      document.querySelectorAll(".ppill").forEach(x=>{ x.classList.remove("active"); x.style.background=""; x.style.color=""; });
+      pill.classList.add("active"); pill.style.background=p.color; pill.style.color="#000";
+      selPlatform=p.id; render();
+      if (tg) tg.HapticFeedback?.impactOccurred("light");
+    };
+    pRow.appendChild(pill);
   });
 }
 
-buildPills("metric-row", METRICS, m => m.id === "streams", m => { currentMetric = m.id; render(); });
-buildPills("plat-row",   PLATFORMS, p => p.id === "all",  p => { selPlatform = p.id; render(); });
-
-document.getElementById("inp-date").value = new Date().toISOString().split("T")[0];
-
-// ── STORAGE ──
+// ── STORAGE ───────────────────────────────────────────────
 async function load() {
-  try { const l = localStorage.getItem(SAVE_KEY); if (l) entries = JSON.parse(l); } catch(e) {}
-  try { if (window.storage) { const r = await window.storage.get(SAVE_KEY); if (r?.value) entries = JSON.parse(r.value); } } catch(e) {}
-  render();
-}
-async function save() {
-  const d = JSON.stringify(entries);
-  try { localStorage.setItem(SAVE_KEY, d); } catch(e) {}
-  try { if (window.storage) await window.storage.set(SAVE_KEY, d); } catch(e) {}
+  try { const l=localStorage.getItem(SAVE_KEY); if (l) entries=JSON.parse(l); } catch(e) {}
+  try { if (window.storage) { const r=await window.storage.get(SAVE_KEY); if (r?.value) entries=JSON.parse(r.value); } } catch(e) {}
+  try { const l=localStorage.getItem(SONGS_KEY); if (l) songs=JSON.parse(l); } catch(e) {}
+  try { if (window.storage) { const r=await window.storage.get(SONGS_KEY); if (r?.value) songs=JSON.parse(r.value); } } catch(e) {}
+  buildPills();
+  document.getElementById("inp-date").value = new Date().toISOString().split("T")[0];
+  render(); renderHistory(); renderSongs();
 }
 
-// ── HELPERS ──
-function getVal(e) { return Math.max(0, e[currentMetric] ?? e.views ?? 0); }
+async function save() {
+  const d=JSON.stringify(entries);
+  try { localStorage.setItem(SAVE_KEY,d); } catch(e) {}
+  try { if (window.storage) await window.storage.set(SAVE_KEY,d); } catch(e) {}
+}
+async function saveSongs() {
+  const d=JSON.stringify(songs);
+  try { localStorage.setItem(SONGS_KEY,d); } catch(e) {}
+  try { if (window.storage) await window.storage.set(SONGS_KEY,d); } catch(e) {}
+}
+
+// ── HELPERS ───────────────────────────────────────────────
 function fmtNum(n) {
-  if (!n && n !== 0) return "—";
-  n = Math.floor(n);
-  if (n >= 1000000) return (n/1000000).toFixed(1)+"M";
-  if (n >= 1000)    return (n/1000).toFixed(1)+"K";
+  if (!n&&n!==0) return "—"; n=Math.floor(n);
+  if (n>=1000000) return (n/1000000).toFixed(1)+"M";
+  if (n>=1000)    return (n/1000).toFixed(1)+"K";
   return n.toString();
 }
 function fmtMoney(n) {
   if (!n) return "$0.00";
-  if (n >= 1000) return "$"+(n/1000).toFixed(1)+"K";
+  if (n>=1000) return "$"+(n/1000).toFixed(1)+"K";
   return "$"+n.toFixed(2);
 }
-function getRate() {
-  const p = PLATFORMS.find(x => x.id === selPlatform);
-  // Only streams generate money
-  if (currentMetric !== "streams") return 0;
-  return p?.rate || 0;
+function cutoff() {
+  const d=new Date(); d.setDate(d.getDate()-currentPeriod);
+  return d.toISOString().split("T")[0];
 }
+function getVal(e) { return e[currentMetric]??e.streams??e.views??0; }
 function getFiltered() {
-  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - currentPeriod);
-  const cutStr = cutoff.toISOString().split("T")[0];
-  let f = entries.filter(e => e.date >= cutStr);
-  if (selPlatform !== "all") f = f.filter(e => e.platform === selPlatform);
-  return f;
+  const cut=cutoff();
+  let f=entries.filter(e=>e.date>=cut);
+  if (selPlatform!=="all") f=f.filter(e=>e.platform===selPlatform);
+  return f.sort((a,b)=>a.date.localeCompare(b.date));
 }
 
-// ── RENDER ──
+// ── RENDER ────────────────────────────────────────────────
 function render() {
-  const data = getFiltered();
-  chartData  = data;
-  const vals  = data.map(e => getVal(e));
-  const total = vals.reduce((a,b) => a+b, 0);
-  const avg   = vals.length ? Math.round(total/vals.length) : 0;
-  const max   = vals.length ? Math.max(...vals) : 0;
+  const data=getFiltered();
+  const vals=data.map(e=>getVal(e));
+  const total=vals.reduce((a,b)=>a+b,0);
+  const avg  =vals.length?Math.round(total/vals.length):0;
+  const max  =vals.length?Math.max(...vals):0;
 
-  let growth = 0;
-  if (data.length >= 2) {
-    const h1 = Math.floor(data.length/2);
-    const a1 = data.slice(0,h1).reduce((s,e)=>s+getVal(e),0)/h1;
-    const a2 = data.slice(h1).reduce((s,e)=>s+getVal(e),0)/(data.length-h1);
-    growth = a1 > 0 ? Math.round(((a2-a1)/a1)*100) : 0;
+  // Growth
+  let growth=0;
+  if (data.length>=2) {
+    const h=Math.floor(data.length/2);
+    const a1=data.slice(0,h).reduce((s,e)=>s+getVal(e),0)/h;
+    const a2=data.slice(h).reduce((s,e)=>s+getVal(e),0)/(data.length-h);
+    growth=a1>0?Math.round(((a2-a1)/a1)*100):0;
   }
 
-  document.getElementById("total-views").textContent = fmtNum(total);
-  document.getElementById("st-avg").textContent = fmtNum(avg);
-  document.getElementById("st-max").textContent = fmtNum(max);
-  const gEl = document.getElementById("st-growth");
-  gEl.textContent = (growth >= 0 ? "+" : "") + growth + "%";
-  gEl.style.color = growth >= 0 ? "var(--green)" : "var(--fire)";
+  document.getElementById("total-views").textContent=fmtNum(total);
+  document.getElementById("st-avg").textContent=fmtNum(avg);
+  document.getElementById("st-max").textContent=fmtNum(max);
+  const gEl=document.getElementById("st-growth");
+  gEl.textContent=(growth>=0?"+":"")+growth+"%";
+  gEl.style.color=growth>=0?"var(--green)":"var(--fire)";
 
   // Earnings
-  const rate    = getRate();
-  const dayEarn = avg * rate;
-  document.getElementById("e-day").textContent   = fmtMoney(dayEarn);
-  document.getElementById("e-month").textContent = fmtMoney(dayEarn * 30);
-  document.getElementById("e-year").textContent  = fmtMoney(dayEarn * 365);
-  document.getElementById("earn-box").style.display = rate > 0 ? "grid" : "none";
+  const plat=PLATFORMS.find(p=>p.id===selPlatform);
+  const rate=currentMetric==="streams"&&plat?plat.rate:0;
+  const dayEarn=avg*rate;
+  const earnBox=document.getElementById("earn-box");
+  if (rate>0&&total>0) {
+    earnBox.style.display="grid";
+    document.getElementById("e-day").textContent  =fmtMoney(dayEarn);
+    document.getElementById("e-month").textContent=fmtMoney(dayEarn*30);
+    document.getElementById("e-year").textContent =fmtMoney(dayEarn*365);
+  } else {
+    earnBox.style.display="none";
+  }
 
   drawChart(data);
-  renderHistory();
 }
 
-// ── CHART ──
 function drawChart(data) {
-  const canvas = document.getElementById("chart");
-  const ctx    = canvas.getContext("2d");
-  const dpr    = window.devicePixelRatio || 1;
-  const W      = canvas.offsetWidth * dpr;
-  const H      = 180 * dpr;
-  canvas.width = W; canvas.height = H;
-
-  ctx.fillStyle = "#0d0f1a";
-  ctx.fillRect(0,0,W,H);
+  const canvas=document.getElementById("chart");
+  const ctx=canvas.getContext("2d");
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth*dpr; const H=180*dpr;
+  canvas.width=W; canvas.height=H;
+  ctx.fillStyle="#0d0f1a"; ctx.fillRect(0,0,W,H);
 
   if (!data.length) {
-    ctx.fillStyle = "#4a4f6a"; ctx.font = `${12*dpr}px -apple-system`; ctx.textAlign = "center";
-    ctx.fillText("Carga tu CSV o añade un registro 👆", W/2, H/2); return;
+    ctx.fillStyle="#4a4f6a"; ctx.font=`${12*dpr}px -apple-system`; ctx.textAlign="center";
+    ctx.fillText("Importa un CSV o añade datos 👇", W/2, H/2); return;
   }
 
-  const pad  = { t:16*dpr, b:28*dpr, l:8*dpr, r:8*dpr };
-  const cW   = W - pad.l - pad.r;
-  const cH   = H - pad.t - pad.b;
-  const vals = data.map(e => getVal(e));
-  const maxV = Math.max(...vals) * 1.15 || 1;
-  const toX  = i => pad.l + (i / Math.max(data.length-1,1)) * cW;
-  const toY  = v => pad.t + cH - (v / maxV) * cH;
-
-  const m = METRICS.find(x => x.id === currentMetric) || METRICS[0];
+  const vals=data.map(e=>getVal(e));
+  const maxV=Math.max(...vals)*1.15||1;
+  const pad={t:14*dpr,b:24*dpr,l:8*dpr,r:8*dpr};
+  const cW=W-pad.l-pad.r; const cH=H-pad.t-pad.b;
+  const toX=i=>pad.l+(i/Math.max(data.length-1,1))*cW;
+  const toY=v=>pad.t+cH-(v/maxV)*cH;
+  const m=METRICS.find(x=>x.id===currentMetric)||METRICS[0];
 
   // Grid
-  ctx.strokeStyle = "#1c1f30"; ctx.lineWidth = dpr;
-  for (let i=0; i<=3; i++) {
-    const y = pad.t + (cH/3)*i;
+  ctx.strokeStyle="#1c1f30"; ctx.lineWidth=dpr;
+  [0,1,2,3].forEach(i => {
+    const y=pad.t+(cH/3)*i;
     ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
-    if (i < 3) {
-      const v = maxV - (maxV/3)*i;
-      ctx.fillStyle = "#4a4f6a"; ctx.font = `${8*dpr}px -apple-system`; ctx.textAlign = "right";
-      ctx.fillText(fmtNum(v), W-pad.r-2, y-2);
-    }
-  }
-
-  // Gradient fill
-  const grad = ctx.createLinearGradient(0, pad.t, 0, H-pad.b);
-  grad.addColorStop(0, m.color+"66"); grad.addColorStop(1, m.color+"04");
-  ctx.beginPath();
-  ctx.moveTo(toX(0), H-pad.b);
-  data.forEach((e,i) => ctx.lineTo(toX(i), toY(getVal(e))));
-  ctx.lineTo(toX(data.length-1), H-pad.b);
-  ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
-
-  // Line
-  ctx.beginPath(); ctx.strokeStyle = m.color; ctx.lineWidth = 2*dpr; ctx.lineJoin = "round";
-  ctx.shadowColor = m.color; ctx.shadowBlur = 6*dpr;
-  data.forEach((e,i) => i===0 ? ctx.moveTo(toX(i),toY(getVal(e))) : ctx.lineTo(toX(i),toY(getVal(e))));
-  ctx.stroke(); ctx.shadowBlur = 0;
-
-  // X labels
-  ctx.fillStyle = "#4a4f6a"; ctx.font = `${8*dpr}px -apple-system`; ctx.textAlign = "center";
-  const step = Math.max(1, Math.floor(data.length/5));
-  data.forEach((e,i) => {
-    if (i % step === 0 || i === data.length-1) {
-      const d = new Date(e.date+"T00:00:00");
-      ctx.fillText(`${d.getDate()}/${d.getMonth()+1}`, toX(i), H-pad.b+10*dpr);
+    if (i<3) {
+      ctx.fillStyle="#4a4f6a"; ctx.font=`${8*dpr}px -apple-system`; ctx.textAlign="right";
+      ctx.fillText(fmtNum(maxV-(maxV/3)*i), W-pad.r-2, y-2);
     }
   });
+
+  // Gradient fill
+  const grad=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+  grad.addColorStop(0,m.color+"77"); grad.addColorStop(1,m.color+"04");
+  ctx.beginPath(); ctx.moveTo(toX(0),H-pad.b);
+  data.forEach((_,i)=>ctx.lineTo(toX(i),toY(vals[i])));
+  ctx.lineTo(toX(data.length-1),H-pad.b); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+
+  // Line with glow
+  ctx.beginPath(); ctx.strokeStyle=m.color; ctx.lineWidth=2.5*dpr; ctx.lineJoin="round";
+  ctx.shadowColor=m.color; ctx.shadowBlur=10*dpr;
+  data.forEach((_,i)=>i===0?ctx.moveTo(toX(i),toY(vals[i])):ctx.lineTo(toX(i),toY(vals[i])));
+  ctx.stroke(); ctx.shadowBlur=0;
+
+  // Dots on data points (if few enough)
+  if (data.length<=20) {
+    data.forEach((_,i) => {
+      ctx.beginPath(); ctx.arc(toX(i),toY(vals[i]),3*dpr,0,Math.PI*2);
+      ctx.fillStyle=m.color; ctx.shadowColor=m.color; ctx.shadowBlur=6*dpr; ctx.fill();
+      ctx.shadowBlur=0;
+    });
+  }
+
+  // X labels
+  ctx.fillStyle="#4a4f6a"; ctx.font=`${8*dpr}px -apple-system`; ctx.textAlign="center";
+  const step=Math.max(1,Math.floor(data.length/5));
+  data.forEach((e,i) => {
+    if (i%step===0||i===data.length-1) {
+      const dt=new Date(e.date+"T00:00:00");
+      ctx.fillText(`${dt.getDate()}/${dt.getMonth()+1}`, toX(i), H-pad.b+10*dpr);
+    }
+  });
+
+  canvas._data=data; canvas._vals=vals; canvas._m=m;
 }
 
-// ── TOUCH TOOLTIP ──
+// ── TOOLTIP ───────────────────────────────────────────────
 function setupTooltip() {
-  const canvas    = document.getElementById("chart");
-  const tooltip   = document.getElementById("tooltip");
-  const crosshair = document.getElementById("crosshair");
+  const canvas=document.getElementById("chart");
+  const tooltip=document.getElementById("tooltip");
+  const crosshair=document.getElementById("crosshair");
 
-  function onTouch(e) {
-    if (!chartData.length) return;
+  function onMove(e) {
+    const d=canvas._data; const v=canvas._vals;
+    if (!d?.length) return;
     e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const px = clientX - rect.left;
-    const pct = Math.max(0, Math.min(1, px / rect.width));
-    const idx = Math.round(pct * (chartData.length - 1));
-    const entry = chartData[idx];
-    if (!entry) return;
+    const rect=canvas.getBoundingClientRect();
+    const cx=e.touches?.[0]?.clientX??e.clientX;
+    const pct=Math.max(0,Math.min(1,(cx-rect.left)/rect.width));
+    const idx=Math.round(pct*(d.length-1));
+    const entry=d[idx]; const val=v[idx];
+    const m=canvas._m||METRICS[0];
+    const plat=PLATFORMS.find(p=>p.id===selPlatform);
+    const rate=currentMetric==="streams"&&plat?plat.rate:0;
 
-    const val  = getVal(entry);
-    const m    = METRICS.find(x => x.id === currentMetric) || METRICS[0];
-    const rate = getRate();
-    const earn = rate > 0 ? ` · ${fmtMoney(val * rate)}` : "";
+    const dt=new Date(entry.date+"T00:00:00");
+    document.getElementById("tt-date").textContent=dt.toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short",year:"2-digit"});
+    document.getElementById("tt-val").textContent=fmtNum(val)+" "+m.emoji;
+    document.getElementById("tt-val").style.color=m.color;
+    document.getElementById("tt-earn").textContent=rate>0?`💰 ${fmtMoney(val*rate)}`:"";
 
-    const d = new Date(entry.date+"T00:00:00");
-    const dateStr = d.toLocaleDateString("es-ES", { weekday:"short", day:"numeric", month:"short", year:"numeric" });
-
-    document.getElementById("tt-date").textContent = dateStr;
-    document.getElementById("tt-val").textContent  = fmtNum(val) + " " + m.emoji;
-    document.getElementById("tt-val").style.color  = m.color;
-    document.getElementById("tt-earn").textContent = earn ? "💰 " + fmtMoney(val * rate) : "";
-
-    const ttW = 160;
-    let ttLeft = px - ttW/2;
-    ttLeft = Math.max(0, Math.min(rect.width - ttW, ttLeft));
-    tooltip.style.left    = ttLeft + "px";
-    tooltip.style.top     = "8px";
-    tooltip.style.display = "block";
-    crosshair.style.left    = px + "px";
-    crosshair.style.display = "block";
+    const ttW=170; let ttL=cx-rect.left-ttW/2;
+    ttL=Math.max(0,Math.min(rect.width-ttW,ttL));
+    tooltip.style.left=ttL+"px"; tooltip.style.top="6px"; tooltip.style.display="block";
+    crosshair.style.left=(cx-rect.left)+"px"; crosshair.style.display="block";
     if (tg) tg.HapticFeedback?.selectionChanged();
   }
+  function onEnd() { setTimeout(()=>{ tooltip.style.display="none"; crosshair.style.display="none"; },1800); }
 
-  function onEnd() {
-    setTimeout(() => { tooltip.style.display="none"; crosshair.style.display="none"; }, 1500);
-  }
-
-  canvas.addEventListener("touchstart",  onTouch, { passive:false });
-  canvas.addEventListener("touchmove",   onTouch, { passive:false });
-  canvas.addEventListener("touchend",    onEnd);
-  canvas.addEventListener("mousemove",   onTouch);
-  canvas.addEventListener("mouseleave",  onEnd);
+  canvas.addEventListener("touchstart",onMove,{passive:false});
+  canvas.addEventListener("touchmove", onMove,{passive:false});
+  canvas.addEventListener("touchend",  onEnd);
+  canvas.addEventListener("mousemove", onMove);
+  canvas.addEventListener("mouseleave",onEnd);
 }
 
-// ── ADD ENTRY ──
+// ── ADD ENTRY ─────────────────────────────────────────────
 function addEntry() {
-  const date  = document.getElementById("inp-date").value;
-  const views = parseInt(document.getElementById("inp-views").value);
-  if (!date)  { showToast("Elige una fecha"); return; }
-  if (!views || views < 0) { showToast("Escribe el número de views"); return; }
-  entries = entries.filter(e => !(e.date === date && e.platform === selPlatform));
-  entries.push({ date, platform: selPlatform === "all" ? "general" : selPlatform, views });
-  entries.sort((a,b) => a.date.localeCompare(b.date));
-  save(); render();
-  document.getElementById("inp-views").value = "";
-  showToast("✅ Registro añadido");
+  const date=document.getElementById("inp-date").value;
+  const views=parseInt(document.getElementById("inp-views").value);
+  if (!date) { showToast("Elige una fecha"); return; }
+  if (!views||views<0) { showToast("Escribe el valor"); return; }
+  const plat=selPlatform==="all"?"manual":selPlatform;
+  entries=entries.filter(e=>!(e.date===date&&e.platform===plat));
+  const entry={date,platform:plat}; entry[currentMetric]=views;
+  entries.push(entry); entries.sort((a,b)=>a.date.localeCompare(b.date));
+  save(); render(); renderHistory();
+  document.getElementById("inp-views").value="";
+  showToast("✅ Dato añadido");
   if (tg) tg.HapticFeedback?.notificationOccurred("success");
 }
 
-function deleteEntry(idx) {
-  entries.splice(idx, 1); save(); render();
-  if (tg) tg.HapticFeedback?.impactOccurred("light");
-}
-
-// ── IMPORT CSV ──
-function importCSV(input) {
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
+// ── IMPORT CSV: SPOTIFY ───────────────────────────────────
+function importSpotifyCSV(input) {
+  const file=input.files[0]; if (!file) return;
+  const reader=new FileReader();
+  reader.onload=e => {
     try {
-      const text   = e.target.result;
-      const lines  = text.trim().split("\n");
-      const header = lines[0].replace(/^\uFEFF/,"").split(",").map(h => h.trim());
-      const idx    = h => header.findIndex(x => x === h);
+      const text=e.target.result;
+      const lines=text.trim().split("\n");
+      const header=lines[0].replace(/^\uFEFF/,"").split(",").map(h=>h.trim());
+      let added=0;
 
-      const iDate   = idx("date");
-      const iStream = idx("streams");
-      const iListen = idx("listeners");
-      const iMonthly= header.findIndex(h => h.includes("monthly listeners") && !h.includes("active"));
-      const iFollow = idx("followers");
-      const iSaves  = idx("saves");
+      // Format A: audience-timeline.csv (date, streams, listeners, ...)
+      const iDate   =header.findIndex(h=>h==="date");
+      const iStream =header.findIndex(h=>h==="streams");
+      const iListen =header.findIndex(h=>h==="listeners");
+      const iMonthly=header.findIndex(h=>h.includes("monthly listeners")&&!h.includes("active"));
+      const iFollow =header.findIndex(h=>h==="followers");
+      const iSaves  =header.findIndex(h=>h==="saves");
 
-      if (iDate === -1) { showToast("❌ CSV no reconocido"); return; }
+      // Format B: Trendlines CSV (Fecha DD/MM/YYYY, Reproducciones, Oyentes)
+      const iFecha  =header.findIndex(h=>h==="Fecha"||h==="fecha");
+      const iReprod =header.findIndex(h=>h.includes("Reproducciones")||h.includes("reproducciones"));
+      const iOyentes=header.findIndex(h=>h.includes("Oyentes")&&!h.includes("Mensuales"));
 
-      let added = 0;
-      lines.slice(1).forEach(line => {
-        if (!line.trim()) return;
-        const c = line.split(",");
-        const date = c[iDate]?.trim();
-        if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
-        entries = entries.filter(ex => !(ex.date === date && ex.platform === "spotify"));
-        entries.push({
-          date, platform:"spotify",
-          streams:   parseInt(c[iStream])  || 0,
-          listeners: parseInt(c[iListen])  || 0,
-          monthly:   parseInt(c[iMonthly]) || 0,
-          followers: parseInt(c[iFollow])  || 0,
-          saves:     parseInt(c[iSaves])   || 0,
-          views:     parseInt(c[iStream])  || 0,
+      if (iDate!==-1&&iStream!==-1) {
+        // Format A
+        lines.slice(1).forEach(line => {
+          if (!line.trim()) return;
+          const c=line.split(",");
+          const date=c[iDate]?.trim();
+          if (!date||!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+          entries=entries.filter(ex=>!(ex.date===date&&ex.platform==="spotify"));
+          const entry={date,platform:"spotify"};
+          if (iStream>=0)  entry.streams  =parseInt(c[iStream].replace(/"/g,""))||0;
+          if (iListen>=0)  entry.listeners=parseInt(c[iListen].replace(/"/g,""))||0;
+          if (iMonthly>=0) entry.monthly  =parseInt(c[iMonthly].replace(/"/g,""))||0;
+          if (iFollow>=0)  entry.followers=parseInt(c[iFollow].replace(/"/g,""))||0;
+          if (iSaves>=0)   entry.saves    =parseInt(c[iSaves].replace(/"/g,""))||0;
+          entries.push(entry); added++;
         });
-        added++;
-      });
+      } else if (iFecha!==-1&&iReprod!==-1) {
+        // Format B: DD/MM/YYYY
+        lines.slice(1).forEach(line => {
+          if (!line.trim()) return;
+          const c=line.split(",").map(x=>x.trim().replace(/"/g,""));
+          const parts=c[iFecha]?.split("/");
+          if (!parts||parts.length!==3) return;
+          const date=`${parts[2]}-${parts[1].padStart(2,"0")}-${parts[0].padStart(2,"0")}`;
+          entries=entries.filter(ex=>!(ex.date===date&&ex.platform==="spotify"));
+          const entry={date,platform:"spotify"};
+          entry.streams  =parseInt(c[iReprod])||0;
+          if (iOyentes>=0) entry.listeners=parseInt(c[iOyentes])||0;
+          entries.push(entry); added++;
+        });
+      } else { showToast("❌ Formato no reconocido"); return; }
 
-      entries.sort((a,b) => a.date.localeCompare(b.date));
-      selPlatform = "spotify";
-      document.querySelectorAll(".ppill").forEach(p => { p.classList.remove("active"); p.style.background=""; p.style.color=""; });
-      const sp = [...document.querySelectorAll("#plat-row .mpill")].find(p => p.textContent.includes("Spotify"));
+      entries.sort((a,b)=>a.date.localeCompare(b.date));
+      // Auto-switch to Spotify
+      selPlatform="spotify";
+      document.querySelectorAll(".ppill").forEach(p=>{p.classList.remove("active");p.style.background="";p.style.color="";});
+      const sp=[...document.querySelectorAll(".ppill")].find(p=>p.textContent.includes("Spotify"));
       if (sp) { sp.classList.add("active"); sp.style.background="#1db954"; sp.style.color="#000"; }
-      save(); render();
-      document.getElementById("csv-status").textContent = `✅ ${added} días importados de Spotify`;
+      save(); render(); renderHistory();
+      document.getElementById("spotify-status").textContent=`✅ ${added} días importados`;
       showToast(`✅ ${added} días importados`);
       if (tg) tg.HapticFeedback?.notificationOccurred("success");
-    } catch(err) { showToast("❌ Error: " + err.message); }
+    } catch(err) { showToast("❌ Error: "+err.message); }
   };
-  reader.readAsText(file, "UTF-8");
+  reader.readAsText(file,"UTF-8");
 }
 
-function setPeriod(days, btn) {
-  currentPeriod = days;
-  document.querySelectorAll(".ptab").forEach(t => t.classList.remove("active"));
-  btn.classList.add("active"); render();
+// ── IMPORT CSV: AMAZON ────────────────────────────────────
+function importAmazonCSV(input) {
+  const file=input.files[0]; if (!file) return;
+  const reader=new FileReader();
+  reader.onload=e => {
+    try {
+      const text=e.target.result;
+      const lines=text.trim().split("\n");
+      const header=lines[0].replace(/^\uFEFF/,"").split(",").map(h=>h.trim());
+      let added=0;
+
+      // Amazon format: Fecha (DD/MM/YYYY), Reproducciones, Oyentes
+      const iFecha  =header.findIndex(h=>h==="Fecha"||h==="fecha"||h==="Date"||h==="date");
+      const iReprod =header.findIndex(h=>h.includes("Reproducciones")||h.includes("Streams")||h.includes("streams")||h.includes("Plays"));
+      const iOyentes=header.findIndex(h=>h.includes("Oyentes")||h.includes("Listeners"));
+
+      if (iFecha===-1) { showToast("❌ CSV Amazon no reconocido"); return; }
+
+      lines.slice(1).forEach(line => {
+        if (!line.trim()) return;
+        const c=line.split(",").map(x=>x.trim().replace(/"/g,""));
+        const raw=c[iFecha];
+        if (!raw) return;
+
+        let date;
+        // Try DD/MM/YYYY
+        const p1=raw.split("/");
+        if (p1.length===3) {
+          date=`${p1[2]}-${p1[1].padStart(2,"0")}-${p1[0].padStart(2,"0")}`;
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+          date=raw; // Already YYYY-MM-DD
+        } else return;
+
+        entries=entries.filter(ex=>!(ex.date===date&&ex.platform==="amazon"));
+        const entry={date,platform:"amazon"};
+        if (iReprod>=0)  entry.streams  =parseInt(c[iReprod])||0;
+        if (iOyentes>=0) entry.listeners=parseInt(c[iOyentes])||0;
+        entries.push(entry); added++;
+      });
+
+      entries.sort((a,b)=>a.date.localeCompare(b.date));
+      // Auto-switch to Amazon
+      selPlatform="amazon";
+      document.querySelectorAll(".ppill").forEach(p=>{p.classList.remove("active");p.style.background="";p.style.color="";});
+      const am=[...document.querySelectorAll(".ppill")].find(p=>p.textContent.includes("Amazon"));
+      if (am) { am.classList.add("active"); am.style.background="#ff9900"; am.style.color="#000"; }
+      save(); render(); renderHistory();
+      document.getElementById("amazon-status").textContent=`✅ ${added} días importados`;
+      showToast(`✅ ${added} días Amazon importados`);
+      if (tg) tg.HapticFeedback?.notificationOccurred("success");
+    } catch(err) { showToast("❌ Error: "+err.message); }
+  };
+  reader.readAsText(file,"UTF-8");
 }
 
-// ── HISTORY ──
+// ── HISTORY ───────────────────────────────────────────────
 function renderHistory() {
-  const list   = document.getElementById("hist-list");
-  const sorted = [...entries].reverse().slice(0, 30);
-  const rate   = getRate();
+  const list=document.getElementById("hist-list");
+  const sorted=[...entries].reverse().slice(0,50);
   if (!sorted.length) {
-    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Sin registros aún.<br>Importa tu CSV o añade un registro.</div>';
+    list.innerHTML='<div class="empty-state">Sin registros aún.<br>Importa un CSV o añade datos en la pestaña Datos 📥</div>';
     return;
   }
-  list.innerHTML = sorted.map((e, i) => {
-    const realIdx = entries.length - 1 - i;
-    const plat    = PLATFORMS.find(p => p.id === e.platform) || PLATFORMS[0];
-    const val     = getVal(e);
-    const prev    = entries[realIdx - 1];
-    let chgHtml = "";
+  const rate=PLATFORMS.find(p=>p.id===selPlatform)?.rate||0;
+  list.innerHTML=sorted.map((e,i) => {
+    const realIdx=entries.length-1-i;
+    const plat=PLATFORMS.find(p=>p.id===e.platform)||PLATFORMS[0];
+    const val=getVal(e);
+    const prev=entries[realIdx-1];
+    let chg="";
     if (prev) {
-      const diff = val - getVal(prev);
-      const pct  = getVal(prev) > 0 ? Math.round((diff/getVal(prev))*100) : 0;
-      chgHtml = `<span class="hist-chg ${diff>=0?'up':'dn'}">${diff>=0?'▲':'▼'}${Math.abs(pct)}%</span>`;
+      const diff=val-getVal(prev);
+      const pct=getVal(prev)>0?Math.round((diff/getVal(prev))*100):0;
+      chg=`<span class="hist-chg ${diff>=0?'up':'dn'}">${diff>=0?"▲":"▼"}${Math.abs(pct)}%</span>`;
     }
-    const d = new Date(e.date+"T00:00:00");
-    const dateStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear().toString().slice(2)}`;
-    const earnStr = rate > 0 ? `<span class="hist-earn">${fmtMoney(val*rate)}</span>` : "";
+    const dt=new Date(e.date+"T00:00:00");
+    const ds=`${dt.getDate()}/${dt.getMonth()+1}/${dt.getFullYear().toString().slice(2)}`;
+    const earnStr=rate>0&&currentMetric==="streams"?`<span class="hist-earn">${fmtMoney(val*rate)}</span>`:"";
     return `<div class="hist-item">
-      <span class="hist-date">${dateStr}</span>
-      <span style="font-size:14px">${plat.emoji}</span>
+      <span class="hist-date">${ds}</span>
+      <span class="hist-plat">${plat.emoji}</span>
       <span class="hist-val">${fmtNum(val)}</span>
-      ${earnStr}
-      ${chgHtml}
+      ${earnStr}${chg}
       <span class="hist-del" onclick="deleteEntry(${realIdx})">✕</span>
     </div>`;
   }).join("");
 }
 
-function clearAll() {
-  if (!entries.length) { showToast("No hay datos que limpiar"); return; }
-  const count = entries.length;
-  entries = [];
-  save(); render();
-  document.getElementById("csv-status").textContent = "Sube tu CSV para cargar los datos automáticamente";
-  document.getElementById("csv-input").value = "";
-  showToast(`🗑️ ${count} registros eliminados`);
-  if (tg) tg.HapticFeedback?.notificationOccurred("warning");
+function deleteEntry(idx) {
+  entries.splice(idx,1); save(); render(); renderHistory();
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
 }
 
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2500);
-}
-
-window.addEventListener("resize", () => render());
-setupTooltip();
-load();
-
-// ── SONGS ──
-const SONGS_KEY = "views_tracker_songs_v1";
-let songs = [];
-let songsSortBy = "streams";
-
-async function loadSongs() {
-  try { const l = localStorage.getItem(SONGS_KEY); if (l) songs = JSON.parse(l); } catch(e) {}
-  try { if (window.storage) { const r = await window.storage.get(SONGS_KEY); if (r?.value) songs = JSON.parse(r.value); } } catch(e) {}
-  renderSongs();
-}
-async function saveSongs() {
-  const d = JSON.stringify(songs);
-  try { localStorage.setItem(SONGS_KEY, d); } catch(e) {}
-  try { if (window.storage) await window.storage.set(SONGS_KEY, d); } catch(e) {}
-}
-
+// ── SONGS ─────────────────────────────────────────────────
 function importSongsCSV(input) {
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
+  const file=input.files[0]; if (!file) return;
+  const reader=new FileReader();
+  reader.onload=e => {
     try {
-      const text   = e.target.result;
-      const lines  = text.trim().split("\n");
-      const header = lines[0].replace(/^\uFEFF/,"").split(",").map(h => h.trim().replace(/^"|"$/g,""));
-      const idx    = h => header.findIndex(x => x === h);
-
-      const iSong    = idx("song");
-      const iListen  = idx("listeners");
-      const iStream  = idx("streams");
-      const iSaves   = idx("saves");
-      const iRelease = idx("release_date");
-
-      if (iSong === -1) { showToast("❌ CSV de canciones no reconocido"); return; }
-
-      songs = [];
+      const text=e.target.result;
+      const lines=text.trim().split("\n");
+      const header=lines[0].replace(/^\uFEFF/,"").split(",").map(h=>h.trim().replace(/^"|"$/g,""));
+      const idx=h=>header.findIndex(x=>x===h);
+      const iSong=idx("song"); const iListen=idx("listeners"); const iStream=idx("streams");
+      const iSaves=idx("saves"); const iRelease=idx("release_date");
+      if (iSong===-1) { showToast("❌ CSV de canciones no reconocido"); return; }
+      songs=[];
       lines.slice(1).forEach(line => {
         if (!line.trim()) return;
-        // Handle quoted fields
-        const c = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g) || line.split(",");
-        const clean = v => (v || "").trim().replace(/^"|"$/g, "");
-        songs.push({
-          song:         clean(c[iSong]),
-          listeners:    parseInt(clean(c[iListen]))  || 0,
-          streams:      parseInt(clean(c[iStream]))  || 0,
-          saves:        parseInt(clean(c[iSaves]))   || 0,
-          release_date: clean(c[iRelease]),
-        });
+        const c=line.match(/(\"[^\"]*\"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g)||line.split(",");
+        const clean=v=>(v||"").trim().replace(/^"|"$/g,"");
+        songs.push({ song:clean(c[iSong]), listeners:parseInt(clean(c[iListen]))||0,
+          streams:parseInt(clean(c[iStream]))||0, saves:parseInt(clean(c[iSaves]))||0,
+          release_date:clean(c[iRelease]) });
       });
-
       saveSongs(); renderSongs();
-      document.getElementById("songs-csv-status").textContent = `✅ ${songs.length} canciones importadas`;
+      document.getElementById("songs-status").textContent=`✅ ${songs.length} canciones importadas`;
       showToast(`✅ ${songs.length} canciones cargadas`);
       if (tg) tg.HapticFeedback?.notificationOccurred("success");
-    } catch(err) { showToast("❌ Error: " + err.message); }
+    } catch(err) { showToast("❌ Error: "+err.message); }
   };
-  reader.readAsText(file, "UTF-8");
-}
-
-function sortSongs(by, btn) {
-  songsSortBy = by;
-  document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  renderSongs();
+  reader.readAsText(file,"UTF-8");
 }
 
 function renderSongs() {
-  const list = document.getElementById("songs-list");
-  const sortRow = document.getElementById("songs-sort-row");
+  const list=document.getElementById("songs-list");
+  const sortRow=document.getElementById("songs-sort-row");
   if (!songs.length) {
-    sortRow.style.display = "none";
-    list.innerHTML = "";
+    sortRow.style.display="none";
+    list.innerHTML='<div class="empty-state">Importa tu songs-28day.csv<br>para ver el ranking de canciones 🎤</div>';
     return;
   }
-  sortRow.style.display = "flex";
-  const sorted = [...songs].sort((a,b) => b[songsSortBy] - a[songsSortBy]);
-  const maxVal = sorted[0]?.[songsSortBy] || 1;
-  list.innerHTML = sorted.map((s, i) => {
-    const rankClass = i === 0 ? "gold" : i === 1 ? "silver" : i === 2 ? "bronze" : "";
-    const rankEmoji = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i+1}`;
-    const barPct = Math.round((s[songsSortBy] / maxVal) * 100);
-    const year = s.release_date ? s.release_date.split("-")[0] : "";
-    const validYear = year && parseInt(year) > 1970 ? year : "";
+  sortRow.style.display="flex";
+  const sorted=[...songs].sort((a,b)=>b[songsSortBy]-a[songsSortBy]);
+  const maxVal=sorted[0]?.[songsSortBy]||1;
+  list.innerHTML=sorted.map((s,i) => {
+    const rankClass=i===0?"gold":i===1?"silver":i===2?"bronze":"other";
+    const rankEmoji=i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`;
+    const barPct=Math.round((s[songsSortBy]/maxVal)*100);
+    const year=s.release_date?.split("-")[0];
+    const validYear=year&&parseInt(year)>1970?year:"";
     return `<div class="song-item">
       <div class="song-rank ${rankClass}">${rankEmoji}</div>
       <div class="song-info">
         <div class="song-name">${s.song}</div>
-        <div style="height:4px;background:var(--border);border-radius:2px;margin-top:5px;margin-bottom:3px">
-          <div style="height:4px;width:${barPct}%;background:linear-gradient(90deg,#9c27b0,#ce93d8);border-radius:2px;transition:width 0.4s"></div>
-        </div>
-        <div class="song-meta">${validYear ? validYear + " · " : ""}🎧 ${fmtNum(s.streams)} streams · 👥 ${fmtNum(s.listeners)} oyentes</div>
+        <div class="song-bar-wrap"><div class="song-bar" style="width:${barPct}%"></div></div>
+        <div class="song-meta">${validYear?validYear+" · ":""}🎧 ${fmtNum(s.streams)} · 👥 ${fmtNum(s.listeners)}</div>
       </div>
-      <div class="song-stats">
+      <div style="text-align:right">
         <div class="song-streams">${fmtNum(s[songsSortBy])}</div>
-        ${s.saves > 0 ? `<div class="song-saves">💾 ${fmtNum(s.saves)}</div>` : ""}
+        ${s.saves>0?`<div class="song-saves">💾 ${fmtNum(s.saves)}</div>`:""}
       </div>
     </div>`;
   }).join("");
 }
 
-function clearSongs() {
-  if (!songs.length) { showToast("No hay canciones que limpiar"); return; }
-  songs = [];
-  saveSongs(); renderSongs();
-  document.getElementById("songs-csv-status").textContent = "Sube tu CSV de canciones para ver el ranking";
-  document.getElementById("songs-csv-input").value = "";
-  showToast("🗑️ Canciones eliminadas");
+function setSongsSort(by, btn) {
+  songsSortBy=by;
+  document.querySelectorAll(".ssort-btn").forEach(b=>{b.classList.remove("active");});
+  btn.classList.add("active");
+  renderSongs();
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
 }
 
-loadSongs();
+function clearSongs() {
+  if (!songs.length) { showToast("Sin canciones"); return; }
+  songs=[]; saveSongs(); renderSongs();
+  document.getElementById("songs-status").textContent="Sube tu CSV de canciones para ver el ranking";
+  showToast("🗑️ Ranking limpiado");
+}
+
+function clearPlatform(platId) {
+  const before=entries.length;
+  entries=entries.filter(e=>e.platform!==platId);
+  if (entries.length===before) { showToast("Sin datos de "+platId); return; }
+  save(); render(); renderHistory();
+  showToast("🗑️ Datos de "+platId+" eliminados");
+}
+
+function setPeriod(days, btn) {
+  currentPeriod=days;
+  document.querySelectorAll(".ptab").forEach(t=>t.classList.remove("active")); btn.classList.add("active");
+  render(); renderHistory();
+}
+
+function showBTab(name, btn) {
+  document.querySelectorAll(".btab").forEach(t=>t.classList.remove("active")); btn.classList.add("active");
+  document.querySelectorAll(".btab-content").forEach(c=>c.classList.remove("active"));
+  document.getElementById("btab-"+name).classList.add("active");
+  if (name==="history") renderHistory();
+  if (name==="songs")   renderSongs();
+}
+
+function showToast(msg) {
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2500);
+}
+
+window.addEventListener("resize",()=>{ const d=getFiltered(); drawChart(d); });
+setupTooltip();
+load();
 </script>
 </body>
 </html>
