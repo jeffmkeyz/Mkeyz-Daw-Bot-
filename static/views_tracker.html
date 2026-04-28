@@ -295,6 +295,8 @@ canvas#chart {
     <div class="ptab" onclick="setPeriod(90,this)">3M</div>
     <div class="ptab" onclick="setPeriod(180,this)">6M</div>
     <div class="ptab" onclick="setPeriod(365,this)">1A</div>
+    <div class="ptab" onclick="setPeriod(730,this)">2A</div>
+    <div class="ptab" onclick="setPeriod(1095,this)">3A</div>
   </div>
 </div>
 
@@ -769,14 +771,37 @@ function importSpotifyCSV(input) {
         });
       } else { showToast("❌ Formato no reconocido"); return; }
 
+      if (added===0) { showToast("❌ No se pudieron leer filas"); return; }
       entries.sort((a,b)=>a.date.localeCompare(b.date));
+
+      // Detect available metrics
+      const spEntries=entries.filter(e=>e.platform==="spotify");
+      const avail=[];
+      if (spEntries.some(e=>e.streams>0))   avail.push("streams");
+      if (spEntries.some(e=>e.listeners>0)) avail.push("listeners");
+      if (spEntries.some(e=>e.monthly>0))   avail.push("monthly");
+      if (spEntries.some(e=>e.followers>0)) avail.push("followers");
+      if (spEntries.some(e=>e.saves>0))     avail.push("saves");
+      if (avail.length) currentMetric=avail[0];
+
+      // Auto-period
+      if (added>365) currentPeriod=730;
+      else if (added>180) currentPeriod=365;
+      else if (added>90) currentPeriod=180;
+      else if (added>28) currentPeriod=90;
+      else currentPeriod=Math.max(7,added);
+
+      document.querySelectorAll(".ptab").forEach(t=>t.classList.remove("active"));
+      const pMap={7:0,28:1,90:2,180:3,365:4,730:5,1095:6};
+      const tabs=document.querySelectorAll(".ptab");
+      const ti=pMap[currentPeriod]??4;
+      if (tabs[ti]) tabs[ti].classList.add("active");
+
       // Auto-switch to Spotify
       selPlatform="spotify";
-      document.querySelectorAll(".ppill").forEach(p=>{p.classList.remove("active");p.style.background="";p.style.color="";});
-      const sp=[...document.querySelectorAll(".ppill")].find(p=>p.textContent.includes("Spotify"));
-      if (sp) { sp.classList.add("active"); sp.style.background="#1db954"; sp.style.color="#000"; }
+      buildPills();
       save(); render(); renderHistory();
-      document.getElementById("spotify-status").textContent=`✅ ${added} días importados`;
+      document.getElementById("spotify-status").textContent=`✅ ${added} días · ${avail.join(", ")}`;
       showToast(`✅ ${added} días importados`);
       if (tg) tg.HapticFeedback?.notificationOccurred("success");
     } catch(err) { showToast("❌ Error: "+err.message); }
@@ -791,50 +816,84 @@ function importAmazonCSV(input) {
   reader.onload=e => {
     try {
       const text=e.target.result;
-      const lines=text.trim().split("\n");
-      const header=lines[0].replace(/^\uFEFF/,"").split(",").map(h=>h.trim());
+      const lines=text.trim().split("\n").filter(l=>l.trim());
+      if (lines.length < 2) { showToast("❌ CSV vacío"); return; }
+
+      const header=lines[0].replace(/^\uFEFF/,"").split(",").map(h=>h.trim().replace(/"/g,""));
+
+      // Find columns flexibly
+      const iFecha  =header.findIndex(h=>/fecha|date/i.test(h));
+      const iReprod =header.findIndex(h=>/reproducciones|streams|plays|streams/i.test(h));
+      const iOyentes=header.findIndex(h=>/oyentes|listeners/i.test(h));
+
+      if (iFecha===-1) { showToast("❌ No se encontró columna de fecha"); return; }
+      if (iReprod===-1 && iOyentes===-1) { showToast("❌ No se encontraron métricas"); return; }
+
       let added=0;
-
-      // Amazon format: Fecha (DD/MM/YYYY), Reproducciones, Oyentes
-      const iFecha  =header.findIndex(h=>h==="Fecha"||h==="fecha"||h==="Date"||h==="date");
-      const iReprod =header.findIndex(h=>h.includes("Reproducciones")||h.includes("Streams")||h.includes("streams")||h.includes("Plays"));
-      const iOyentes=header.findIndex(h=>h.includes("Oyentes")||h.includes("Listeners"));
-
-      if (iFecha===-1) { showToast("❌ CSV Amazon no reconocido"); return; }
-
       lines.slice(1).forEach(line => {
         if (!line.trim()) return;
         const c=line.split(",").map(x=>x.trim().replace(/"/g,""));
-        const raw=c[iFecha];
+        const raw=(c[iFecha]||"").trim();
         if (!raw) return;
 
         let date;
-        // Try DD/MM/YYYY
         const p1=raw.split("/");
-        if (p1.length===3) {
+        if (p1.length===3 && p1[2].length===4) {
+          // DD/MM/YYYY
           date=`${p1[2]}-${p1[1].padStart(2,"0")}-${p1[0].padStart(2,"0")}`;
+        } else if (p1.length===3 && p1[0].length===4) {
+          // YYYY/MM/DD
+          date=`${p1[0]}-${p1[1].padStart(2,"0")}-${p1[2].padStart(2,"0")}`;
         } else if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-          date=raw; // Already YYYY-MM-DD
+          date=raw;
         } else return;
+
+        // Validate date
+        if (isNaN(new Date(date).getTime())) return;
 
         entries=entries.filter(ex=>!(ex.date===date&&ex.platform==="amazon"));
         const entry={date,platform:"amazon"};
-        if (iReprod>=0)  entry.streams  =parseInt(c[iReprod])||0;
-        if (iOyentes>=0) entry.listeners=parseInt(c[iOyentes])||0;
+        if (iReprod>=0  && c[iReprod])  entry.streams  =parseInt(c[iReprod])||0;
+        if (iOyentes>=0 && c[iOyentes]) entry.listeners=parseInt(c[iOyentes])||0;
         entries.push(entry); added++;
       });
 
+      if (added===0) { showToast("❌ No se pudieron leer filas"); return; }
+
       entries.sort((a,b)=>a.date.localeCompare(b.date));
-      // Auto-switch to Amazon
+
+      // Detect available metrics from loaded data
+      const amazonEntries=entries.filter(e=>e.platform==="amazon");
+      const hasStreams  =amazonEntries.some(e=>e.streams>0);
+      const hasListeners=amazonEntries.some(e=>e.listeners>0);
+
+      // Auto-switch metric to what's available
+      if (hasStreams) currentMetric="streams";
+      else if (hasListeners) currentMetric="listeners";
+
+      // Auto-switch platform pill
       selPlatform="amazon";
-      document.querySelectorAll(".ppill").forEach(p=>{p.classList.remove("active");p.style.background="";p.style.color="";});
-      const am=[...document.querySelectorAll(".ppill")].find(p=>p.textContent.includes("Amazon"));
-      if (am) { am.classList.add("active"); am.style.background="#ff9900"; am.style.color="#000"; }
+      buildPills();
+
+      // Auto-adjust period to show all loaded data
+      if (added>365) currentPeriod=730;
+      else if (added>180) currentPeriod=365;
+      else if (added>90) currentPeriod=180;
+      else if (added>28) currentPeriod=90;
+      else currentPeriod=Math.max(7,added);
+
+      // Update period tab highlight
+      document.querySelectorAll(".ptab").forEach(t=>t.classList.remove("active"));
+      const periodMap={7:0,28:1,90:2,180:3,365:4,730:5,1095:6};
+      const tabIdx=periodMap[currentPeriod]??4;
+      const tabs=document.querySelectorAll(".ptab");
+      if (tabs[tabIdx]) tabs[tabIdx].classList.add("active");
+
       save(); render(); renderHistory();
-      document.getElementById("amazon-status").textContent=`✅ ${added} días importados`;
-      showToast(`✅ ${added} días Amazon importados`);
+      document.getElementById("amazon-status").textContent=`✅ ${added} días · ${hasStreams?"Streams":""}${hasStreams&&hasListeners?" + ":""}${hasListeners?"Oyentes":""}`;
+      showToast(`✅ ${added} días importados de Amazon`);
       if (tg) tg.HapticFeedback?.notificationOccurred("success");
-    } catch(err) { showToast("❌ Error: "+err.message); }
+    } catch(err) { showToast("❌ Error: "+err.message); console.error(err); }
   };
   reader.readAsText(file,"UTF-8");
 }
