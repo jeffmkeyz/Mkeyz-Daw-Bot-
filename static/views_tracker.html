@@ -416,4 +416,576 @@ canvas#chart {
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#07080d"); tg.setBackgroundColor("#07080d"); }
 
-const USER_ID  = tg?
+const USER_ID  = tg?.initDataUnsafe?.user?.id || "guest";
+const SAVE_KEY = `views_v4_${USER_ID}`;
+const SONGS_KEY= `songs_v2_${USER_ID}`;
+
+// ── BG CANVAS ────────────────────────────────────────────
+const bgC = document.getElementById("bg-canvas");
+const bgCtx = bgC.getContext("2d");
+let bgPts = [];
+function resizeBg() { bgC.width=innerWidth; bgC.height=innerHeight; }
+resizeBg(); window.addEventListener("resize", resizeBg);
+function drawBg() {
+  requestAnimationFrame(drawBg);
+  bgCtx.fillStyle="rgba(7,8,13,0.15)"; bgCtx.fillRect(0,0,bgC.width,bgC.height);
+  if (Math.random()<0.03 && bgPts.length<20)
+    bgPts.push({x:Math.random()*bgC.width,y:bgC.height+5,r:Math.random()*1.5+0.5,speed:Math.random()*0.5+0.2,hue:40+Math.random()*40});
+  bgPts = bgPts.filter(p=>p.y>-10);
+  bgPts.forEach(p => {
+    p.y-=p.speed;
+    bgCtx.beginPath(); bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgCtx.fillStyle=`hsla(${p.hue},100%,70%,0.25)`; bgCtx.fill();
+  });
+}
+drawBg();
+
+// ── PLATFORMS ─────────────────────────────────────────────
+const PLATFORMS = [
+  { id:"all",       label:"Todo",       emoji:"📊", color:"#f5c518", rate:0 },
+  { id:"spotify",   label:"Spotify",    emoji:"🎵", color:"#1db954", rate:0.001106 },
+  { id:"amazon",    label:"Amazon",     emoji:"📦", color:"#ff9900", rate:0.010574 },
+  { id:"youtube",   label:"YouTube",    emoji:"▶️",  color:"#ff0000", rate:0.003197 },
+  { id:"tiktok",    label:"TikTok",     emoji:"🎬", color:"#69C9D0", rate:0 },
+  { id:"instagram", label:"Instagram",  emoji:"📸", color:"#e91e63", rate:0 },
+  { id:"manual",    label:"Manual",     emoji:"✏️",  color:"#aaa",    rate:0 },
+];
+
+const METRICS = [
+  { id:"streams",   label:"Streams",    color:"#f5c518", emoji:"🎧" },
+  { id:"listeners", label:"Oyentes/día",color:"#00e676", emoji:"👥" },
+  { id:"monthly",   label:"Oyentes mes",color:"#4fc3f7", emoji:"📅" },
+  { id:"followers", label:"Seguidores", color:"#e91e63", emoji:"❤️" },
+  { id:"saves",     label:"Saves",      color:"#b06afc", emoji:"💾" },
+  { id:"views",     label:"Views",      color:"#ff9800", emoji:"👁️" },
+];
+
+let entries       = [];  // [{date, platform, streams, listeners, monthly, followers, saves, views}]
+let songs         = [];
+let currentPeriod = 7;
+let currentMetric = "streams";
+let selPlatform   = "all";
+let songsSortBy   = "streams";
+
+// ── BUILD PILLS ───────────────────────────────────────────
+function buildPills() {
+  // Metric pills
+  const mRow = document.getElementById("metric-row");
+  mRow.innerHTML = "";
+  METRICS.forEach(m => {
+    const pill = document.createElement("div");
+    pill.className = "mpill" + (m.id===currentMetric?" active":"");
+    pill.textContent = m.emoji+" "+m.label;
+    if (m.id===currentMetric) { pill.style.background=m.color; pill.style.color="#000"; }
+    pill.onclick = () => {
+      document.querySelectorAll(".mpill").forEach(p=>{ p.classList.remove("active"); p.style.background=""; p.style.color=""; });
+      pill.classList.add("active"); pill.style.background=m.color; pill.style.color="#000";
+      currentMetric=m.id; render();
+      if (tg) tg.HapticFeedback?.impactOccurred("light");
+    };
+    mRow.appendChild(pill);
+  });
+  // Platform pills
+  const pRow = document.getElementById("plat-row");
+  pRow.innerHTML = "";
+  PLATFORMS.forEach(p => {
+    const pill = document.createElement("div");
+    pill.className = "ppill" + (p.id===selPlatform?" active":"");
+    pill.textContent = p.emoji+" "+p.label;
+    if (p.id===selPlatform) { pill.style.background=p.color; pill.style.color="#000"; }
+    pill.onclick = () => {
+      document.querySelectorAll(".ppill").forEach(x=>{ x.classList.remove("active"); x.style.background=""; x.style.color=""; });
+      pill.classList.add("active"); pill.style.background=p.color; pill.style.color="#000";
+      selPlatform=p.id; render();
+      if (tg) tg.HapticFeedback?.impactOccurred("light");
+    };
+    pRow.appendChild(pill);
+  });
+}
+
+// ── STORAGE ───────────────────────────────────────────────
+async function load() {
+  try { const l=localStorage.getItem(SAVE_KEY); if (l) entries=JSON.parse(l); } catch(e) {}
+  try { if (window.storage) { const r=await window.storage.get(SAVE_KEY); if (r?.value) entries=JSON.parse(r.value); } } catch(e) {}
+  try { const l=localStorage.getItem(SONGS_KEY); if (l) songs=JSON.parse(l); } catch(e) {}
+  try { if (window.storage) { const r=await window.storage.get(SONGS_KEY); if (r?.value) songs=JSON.parse(r.value); } } catch(e) {}
+  buildPills();
+  document.getElementById("inp-date").value = new Date().toISOString().split("T")[0];
+  render(); renderHistory(); renderSongs();
+}
+
+async function save() {
+  const d=JSON.stringify(entries);
+  try { localStorage.setItem(SAVE_KEY,d); } catch(e) {}
+  try { if (window.storage) await window.storage.set(SAVE_KEY,d); } catch(e) {}
+}
+async function saveSongs() {
+  const d=JSON.stringify(songs);
+  try { localStorage.setItem(SONGS_KEY,d); } catch(e) {}
+  try { if (window.storage) await window.storage.set(SONGS_KEY,d); } catch(e) {}
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function fmtNum(n) {
+  if (!n&&n!==0) return "—"; n=Math.floor(n);
+  if (n>=1000000) return (n/1000000).toFixed(1)+"M";
+  if (n>=1000)    return (n/1000).toFixed(1)+"K";
+  return n.toString();
+}
+function fmtMoney(n) {
+  if (!n) return "$0.00";
+  if (n>=1000) return "$"+(n/1000).toFixed(1)+"K";
+  return "$"+n.toFixed(2);
+}
+function cutoff() {
+  const d=new Date(); d.setDate(d.getDate()-currentPeriod);
+  return d.toISOString().split("T")[0];
+}
+function getVal(e) { return e[currentMetric]??e.streams??e.views??0; }
+function getFiltered() {
+  const cut=cutoff();
+  let f=entries.filter(e=>e.date>=cut);
+  if (selPlatform!=="all") f=f.filter(e=>e.platform===selPlatform);
+  return f.sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+  const data=getFiltered();
+  const vals=data.map(e=>getVal(e));
+  const total=vals.reduce((a,b)=>a+b,0);
+  const avg  =vals.length?Math.round(total/vals.length):0;
+  const max  =vals.length?Math.max(...vals):0;
+
+  // Growth
+  let growth=0;
+  if (data.length>=2) {
+    const h=Math.floor(data.length/2);
+    const a1=data.slice(0,h).reduce((s,e)=>s+getVal(e),0)/h;
+    const a2=data.slice(h).reduce((s,e)=>s+getVal(e),0)/(data.length-h);
+    growth=a1>0?Math.round(((a2-a1)/a1)*100):0;
+  }
+
+  document.getElementById("total-views").textContent=fmtNum(total);
+  document.getElementById("st-avg").textContent=fmtNum(avg);
+  document.getElementById("st-max").textContent=fmtNum(max);
+  const gEl=document.getElementById("st-growth");
+  gEl.textContent=(growth>=0?"+":"")+growth+"%";
+  gEl.style.color=growth>=0?"var(--green)":"var(--fire)";
+
+  // Earnings
+  const plat=PLATFORMS.find(p=>p.id===selPlatform);
+  const rate=currentMetric==="streams"&&plat?plat.rate:0;
+  const dayEarn=avg*rate;
+  const earnBox=document.getElementById("earn-box");
+  if (rate>0&&total>0) {
+    earnBox.style.display="grid";
+    document.getElementById("e-day").textContent  =fmtMoney(dayEarn);
+    document.getElementById("e-month").textContent=fmtMoney(dayEarn*30);
+    document.getElementById("e-year").textContent =fmtMoney(dayEarn*365);
+  } else {
+    earnBox.style.display="none";
+  }
+
+  drawChart(data);
+}
+
+function drawChart(data) {
+  const canvas=document.getElementById("chart");
+  const ctx=canvas.getContext("2d");
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth*dpr; const H=180*dpr;
+  canvas.width=W; canvas.height=H;
+  ctx.fillStyle="#0d0f1a"; ctx.fillRect(0,0,W,H);
+
+  if (!data.length) {
+    ctx.fillStyle="#4a4f6a"; ctx.font=`${12*dpr}px -apple-system`; ctx.textAlign="center";
+    ctx.fillText("Importa un CSV o añade datos 👇", W/2, H/2); return;
+  }
+
+  const vals=data.map(e=>getVal(e));
+  const maxV=Math.max(...vals)*1.15||1;
+  const pad={t:14*dpr,b:24*dpr,l:8*dpr,r:8*dpr};
+  const cW=W-pad.l-pad.r; const cH=H-pad.t-pad.b;
+  const toX=i=>pad.l+(i/Math.max(data.length-1,1))*cW;
+  const toY=v=>pad.t+cH-(v/maxV)*cH;
+  const m=METRICS.find(x=>x.id===currentMetric)||METRICS[0];
+
+  // Grid
+  ctx.strokeStyle="#1c1f30"; ctx.lineWidth=dpr;
+  [0,1,2,3].forEach(i => {
+    const y=pad.t+(cH/3)*i;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+    if (i<3) {
+      ctx.fillStyle="#4a4f6a"; ctx.font=`${8*dpr}px -apple-system`; ctx.textAlign="right";
+      ctx.fillText(fmtNum(maxV-(maxV/3)*i), W-pad.r-2, y-2);
+    }
+  });
+
+  // Gradient fill
+  const grad=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+  grad.addColorStop(0,m.color+"77"); grad.addColorStop(1,m.color+"04");
+  ctx.beginPath(); ctx.moveTo(toX(0),H-pad.b);
+  data.forEach((_,i)=>ctx.lineTo(toX(i),toY(vals[i])));
+  ctx.lineTo(toX(data.length-1),H-pad.b); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+
+  // Line with glow
+  ctx.beginPath(); ctx.strokeStyle=m.color; ctx.lineWidth=2.5*dpr; ctx.lineJoin="round";
+  ctx.shadowColor=m.color; ctx.shadowBlur=10*dpr;
+  data.forEach((_,i)=>i===0?ctx.moveTo(toX(i),toY(vals[i])):ctx.lineTo(toX(i),toY(vals[i])));
+  ctx.stroke(); ctx.shadowBlur=0;
+
+  // Dots on data points (if few enough)
+  if (data.length<=20) {
+    data.forEach((_,i) => {
+      ctx.beginPath(); ctx.arc(toX(i),toY(vals[i]),3*dpr,0,Math.PI*2);
+      ctx.fillStyle=m.color; ctx.shadowColor=m.color; ctx.shadowBlur=6*dpr; ctx.fill();
+      ctx.shadowBlur=0;
+    });
+  }
+
+  // X labels
+  ctx.fillStyle="#4a4f6a"; ctx.font=`${8*dpr}px -apple-system`; ctx.textAlign="center";
+  const step=Math.max(1,Math.floor(data.length/5));
+  data.forEach((e,i) => {
+    if (i%step===0||i===data.length-1) {
+      const dt=new Date(e.date+"T00:00:00");
+      ctx.fillText(`${dt.getDate()}/${dt.getMonth()+1}`, toX(i), H-pad.b+10*dpr);
+    }
+  });
+
+  canvas._data=data; canvas._vals=vals; canvas._m=m;
+}
+
+// ── TOOLTIP ───────────────────────────────────────────────
+function setupTooltip() {
+  const canvas=document.getElementById("chart");
+  const tooltip=document.getElementById("tooltip");
+  const crosshair=document.getElementById("crosshair");
+
+  function onMove(e) {
+    const d=canvas._data; const v=canvas._vals;
+    if (!d?.length) return;
+    e.preventDefault();
+    const rect=canvas.getBoundingClientRect();
+    const cx=e.touches?.[0]?.clientX??e.clientX;
+    const pct=Math.max(0,Math.min(1,(cx-rect.left)/rect.width));
+    const idx=Math.round(pct*(d.length-1));
+    const entry=d[idx]; const val=v[idx];
+    const m=canvas._m||METRICS[0];
+    const plat=PLATFORMS.find(p=>p.id===selPlatform);
+    const rate=currentMetric==="streams"&&plat?plat.rate:0;
+
+    const dt=new Date(entry.date+"T00:00:00");
+    document.getElementById("tt-date").textContent=dt.toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short",year:"2-digit"});
+    document.getElementById("tt-val").textContent=fmtNum(val)+" "+m.emoji;
+    document.getElementById("tt-val").style.color=m.color;
+    document.getElementById("tt-earn").textContent=rate>0?`💰 ${fmtMoney(val*rate)}`:"";
+
+    const ttW=170; let ttL=cx-rect.left-ttW/2;
+    ttL=Math.max(0,Math.min(rect.width-ttW,ttL));
+    tooltip.style.left=ttL+"px"; tooltip.style.top="6px"; tooltip.style.display="block";
+    crosshair.style.left=(cx-rect.left)+"px"; crosshair.style.display="block";
+    if (tg) tg.HapticFeedback?.selectionChanged();
+  }
+  function onEnd() { setTimeout(()=>{ tooltip.style.display="none"; crosshair.style.display="none"; },1800); }
+
+  canvas.addEventListener("touchstart",onMove,{passive:false});
+  canvas.addEventListener("touchmove", onMove,{passive:false});
+  canvas.addEventListener("touchend",  onEnd);
+  canvas.addEventListener("mousemove", onMove);
+  canvas.addEventListener("mouseleave",onEnd);
+}
+
+// ── ADD ENTRY ─────────────────────────────────────────────
+function addEntry() {
+  const date=document.getElementById("inp-date").value;
+  const views=parseInt(document.getElementById("inp-views").value);
+  if (!date) { showToast("Elige una fecha"); return; }
+  if (!views||views<0) { showToast("Escribe el valor"); return; }
+  const plat=selPlatform==="all"?"manual":selPlatform;
+  entries=entries.filter(e=>!(e.date===date&&e.platform===plat));
+  const entry={date,platform:plat}; entry[currentMetric]=views;
+  entries.push(entry); entries.sort((a,b)=>a.date.localeCompare(b.date));
+  save(); render(); renderHistory();
+  document.getElementById("inp-views").value="";
+  showToast("✅ Dato añadido");
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+}
+
+// ── IMPORT CSV: SPOTIFY ───────────────────────────────────
+function importSpotifyCSV(input) {
+  const file=input.files[0]; if (!file) return;
+  const reader=new FileReader();
+  reader.onload=e => {
+    try {
+      const text=e.target.result;
+      const lines=text.trim().split("\n");
+      const header=lines[0].replace(/^\uFEFF/,"").split(",").map(h=>h.trim());
+      let added=0;
+
+      // Format A: audience-timeline.csv (date, streams, listeners, ...)
+      const iDate   =header.findIndex(h=>h==="date");
+      const iStream =header.findIndex(h=>h==="streams");
+      const iListen =header.findIndex(h=>h==="listeners");
+      const iMonthly=header.findIndex(h=>h.includes("monthly listeners")&&!h.includes("active"));
+      const iFollow =header.findIndex(h=>h==="followers");
+      const iSaves  =header.findIndex(h=>h==="saves");
+
+      // Format B: Trendlines CSV (Fecha DD/MM/YYYY, Reproducciones, Oyentes)
+      const iFecha  =header.findIndex(h=>h==="Fecha"||h==="fecha");
+      const iReprod =header.findIndex(h=>h.includes("Reproducciones")||h.includes("reproducciones"));
+      const iOyentes=header.findIndex(h=>h.includes("Oyentes")&&!h.includes("Mensuales"));
+
+      if (iDate!==-1&&iStream!==-1) {
+        // Format A
+        lines.slice(1).forEach(line => {
+          if (!line.trim()) return;
+          const c=line.split(",");
+          const date=c[iDate]?.trim();
+          if (!date||!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+          entries=entries.filter(ex=>!(ex.date===date&&ex.platform==="spotify"));
+          const entry={date,platform:"spotify"};
+          if (iStream>=0)  entry.streams  =parseInt(c[iStream].replace(/"/g,""))||0;
+          if (iListen>=0)  entry.listeners=parseInt(c[iListen].replace(/"/g,""))||0;
+          if (iMonthly>=0) entry.monthly  =parseInt(c[iMonthly].replace(/"/g,""))||0;
+          if (iFollow>=0)  entry.followers=parseInt(c[iFollow].replace(/"/g,""))||0;
+          if (iSaves>=0)   entry.saves    =parseInt(c[iSaves].replace(/"/g,""))||0;
+          entries.push(entry); added++;
+        });
+      } else if (iFecha!==-1&&iReprod!==-1) {
+        // Format B: DD/MM/YYYY
+        lines.slice(1).forEach(line => {
+          if (!line.trim()) return;
+          const c=line.split(",").map(x=>x.trim().replace(/"/g,""));
+          const parts=c[iFecha]?.split("/");
+          if (!parts||parts.length!==3) return;
+          const date=`${parts[2]}-${parts[1].padStart(2,"0")}-${parts[0].padStart(2,"0")}`;
+          entries=entries.filter(ex=>!(ex.date===date&&ex.platform==="spotify"));
+          const entry={date,platform:"spotify"};
+          entry.streams  =parseInt(c[iReprod])||0;
+          if (iOyentes>=0) entry.listeners=parseInt(c[iOyentes])||0;
+          entries.push(entry); added++;
+        });
+      } else { showToast("❌ Formato no reconocido"); return; }
+
+      entries.sort((a,b)=>a.date.localeCompare(b.date));
+      // Auto-switch to Spotify
+      selPlatform="spotify";
+      document.querySelectorAll(".ppill").forEach(p=>{p.classList.remove("active");p.style.background="";p.style.color="";});
+      const sp=[...document.querySelectorAll(".ppill")].find(p=>p.textContent.includes("Spotify"));
+      if (sp) { sp.classList.add("active"); sp.style.background="#1db954"; sp.style.color="#000"; }
+      save(); render(); renderHistory();
+      document.getElementById("spotify-status").textContent=`✅ ${added} días importados`;
+      showToast(`✅ ${added} días importados`);
+      if (tg) tg.HapticFeedback?.notificationOccurred("success");
+    } catch(err) { showToast("❌ Error: "+err.message); }
+  };
+  reader.readAsText(file,"UTF-8");
+}
+
+// ── IMPORT CSV: AMAZON ────────────────────────────────────
+function importAmazonCSV(input) {
+  const file=input.files[0]; if (!file) return;
+  const reader=new FileReader();
+  reader.onload=e => {
+    try {
+      const text=e.target.result;
+      const lines=text.trim().split("\n");
+      const header=lines[0].replace(/^\uFEFF/,"").split(",").map(h=>h.trim());
+      let added=0;
+
+      // Amazon format: Fecha (DD/MM/YYYY), Reproducciones, Oyentes
+      const iFecha  =header.findIndex(h=>h==="Fecha"||h==="fecha"||h==="Date"||h==="date");
+      const iReprod =header.findIndex(h=>h.includes("Reproducciones")||h.includes("Streams")||h.includes("streams")||h.includes("Plays"));
+      const iOyentes=header.findIndex(h=>h.includes("Oyentes")||h.includes("Listeners"));
+
+      if (iFecha===-1) { showToast("❌ CSV Amazon no reconocido"); return; }
+
+      lines.slice(1).forEach(line => {
+        if (!line.trim()) return;
+        const c=line.split(",").map(x=>x.trim().replace(/"/g,""));
+        const raw=c[iFecha];
+        if (!raw) return;
+
+        let date;
+        // Try DD/MM/YYYY
+        const p1=raw.split("/");
+        if (p1.length===3) {
+          date=`${p1[2]}-${p1[1].padStart(2,"0")}-${p1[0].padStart(2,"0")}`;
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+          date=raw; // Already YYYY-MM-DD
+        } else return;
+
+        entries=entries.filter(ex=>!(ex.date===date&&ex.platform==="amazon"));
+        const entry={date,platform:"amazon"};
+        if (iReprod>=0)  entry.streams  =parseInt(c[iReprod])||0;
+        if (iOyentes>=0) entry.listeners=parseInt(c[iOyentes])||0;
+        entries.push(entry); added++;
+      });
+
+      entries.sort((a,b)=>a.date.localeCompare(b.date));
+      // Auto-switch to Amazon
+      selPlatform="amazon";
+      document.querySelectorAll(".ppill").forEach(p=>{p.classList.remove("active");p.style.background="";p.style.color="";});
+      const am=[...document.querySelectorAll(".ppill")].find(p=>p.textContent.includes("Amazon"));
+      if (am) { am.classList.add("active"); am.style.background="#ff9900"; am.style.color="#000"; }
+      save(); render(); renderHistory();
+      document.getElementById("amazon-status").textContent=`✅ ${added} días importados`;
+      showToast(`✅ ${added} días Amazon importados`);
+      if (tg) tg.HapticFeedback?.notificationOccurred("success");
+    } catch(err) { showToast("❌ Error: "+err.message); }
+  };
+  reader.readAsText(file,"UTF-8");
+}
+
+// ── HISTORY ───────────────────────────────────────────────
+function renderHistory() {
+  const list=document.getElementById("hist-list");
+  const sorted=[...entries].reverse().slice(0,50);
+  if (!sorted.length) {
+    list.innerHTML='<div class="empty-state">Sin registros aún.<br>Importa un CSV o añade datos en la pestaña Datos 📥</div>';
+    return;
+  }
+  const rate=PLATFORMS.find(p=>p.id===selPlatform)?.rate||0;
+  list.innerHTML=sorted.map((e,i) => {
+    const realIdx=entries.length-1-i;
+    const plat=PLATFORMS.find(p=>p.id===e.platform)||PLATFORMS[0];
+    const val=getVal(e);
+    const prev=entries[realIdx-1];
+    let chg="";
+    if (prev) {
+      const diff=val-getVal(prev);
+      const pct=getVal(prev)>0?Math.round((diff/getVal(prev))*100):0;
+      chg=`<span class="hist-chg ${diff>=0?'up':'dn'}">${diff>=0?"▲":"▼"}${Math.abs(pct)}%</span>`;
+    }
+    const dt=new Date(e.date+"T00:00:00");
+    const ds=`${dt.getDate()}/${dt.getMonth()+1}/${dt.getFullYear().toString().slice(2)}`;
+    const earnStr=rate>0&&currentMetric==="streams"?`<span class="hist-earn">${fmtMoney(val*rate)}</span>`:"";
+    return `<div class="hist-item" style="--plat-color:${neon}">
+      <span class="hist-date">${ds}</span>
+      <span class="hist-plat">${plat.emoji}</span>
+      <span class="hist-val">${fmtNum(val)}</span>
+      ${earnStr}${chg}
+      <span class="hist-del" onclick="deleteEntry(${realIdx})">✕</span>
+    </div>`;
+  }).join("");
+}
+
+function deleteEntry(idx) {
+  entries.splice(idx,1); save(); render(); renderHistory();
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+// ── SONGS ─────────────────────────────────────────────────
+function importSongsCSV(input) {
+  const file=input.files[0]; if (!file) return;
+  const reader=new FileReader();
+  reader.onload=e => {
+    try {
+      const text=e.target.result;
+      const lines=text.trim().split("\n");
+      const header=lines[0].replace(/^\uFEFF/,"").split(",").map(h=>h.trim().replace(/^"|"$/g,""));
+      const idx=h=>header.findIndex(x=>x===h);
+      const iSong=idx("song"); const iListen=idx("listeners"); const iStream=idx("streams");
+      const iSaves=idx("saves"); const iRelease=idx("release_date");
+      if (iSong===-1) { showToast("❌ CSV de canciones no reconocido"); return; }
+      songs=[];
+      lines.slice(1).forEach(line => {
+        if (!line.trim()) return;
+        const c=line.match(/(\"[^\"]*\"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g)||line.split(",");
+        const clean=v=>(v||"").trim().replace(/^"|"$/g,"");
+        songs.push({ song:clean(c[iSong]), listeners:parseInt(clean(c[iListen]))||0,
+          streams:parseInt(clean(c[iStream]))||0, saves:parseInt(clean(c[iSaves]))||0,
+          release_date:clean(c[iRelease]) });
+      });
+      saveSongs(); renderSongs();
+      document.getElementById("songs-status").textContent=`✅ ${songs.length} canciones importadas`;
+      showToast(`✅ ${songs.length} canciones cargadas`);
+      if (tg) tg.HapticFeedback?.notificationOccurred("success");
+    } catch(err) { showToast("❌ Error: "+err.message); }
+  };
+  reader.readAsText(file,"UTF-8");
+}
+
+function renderSongs() {
+  const list=document.getElementById("songs-list");
+  const sortRow=document.getElementById("songs-sort-row");
+  if (!songs.length) {
+    sortRow.style.display="none";
+    list.innerHTML='<div class="empty-state">Importa tu songs-28day.csv<br>para ver el ranking de canciones 🎤</div>';
+    return;
+  }
+  sortRow.style.display="flex";
+  const sorted=[...songs].sort((a,b)=>b[songsSortBy]-a[songsSortBy]);
+  const maxVal=sorted[0]?.[songsSortBy]||1;
+  list.innerHTML=sorted.map((s,i) => {
+    const rankClass=i===0?"gold":i===1?"silver":i===2?"bronze":"other";
+    const rankEmoji=i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`;
+    const barPct=Math.round((s[songsSortBy]/maxVal)*100);
+    const year=s.release_date?.split("-")[0];
+    const validYear=year&&parseInt(year)>1970?year:"";
+    return `<div class="song-item">
+      <div class="song-rank ${rankClass}">${rankEmoji}</div>
+      <div class="song-info">
+        <div class="song-name">${s.song}</div>
+        <div class="song-bar-wrap"><div class="song-bar" style="width:${barPct}%"></div></div>
+        <div class="song-meta">${validYear?validYear+" · ":""}🎧 ${fmtNum(s.streams)} · 👥 ${fmtNum(s.listeners)}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="song-streams">${fmtNum(s[songsSortBy])}</div>
+        ${s.saves>0?`<div class="song-saves">💾 ${fmtNum(s.saves)}</div>`:""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function setSongsSort(by, btn) {
+  songsSortBy=by;
+  document.querySelectorAll(".ssort-btn").forEach(b=>{b.classList.remove("active");});
+  btn.classList.add("active");
+  renderSongs();
+  if (tg) tg.HapticFeedback?.impactOccurred("light");
+}
+
+function clearSongs() {
+  if (!songs.length) { showToast("Sin canciones"); return; }
+  songs=[]; saveSongs(); renderSongs();
+  document.getElementById("songs-status").textContent="Sube tu CSV de canciones para ver el ranking";
+  showToast("🗑️ Ranking limpiado");
+}
+
+function clearPlatform(platId) {
+  const before=entries.length;
+  entries=entries.filter(e=>e.platform!==platId);
+  if (entries.length===before) { showToast("Sin datos de "+platId); return; }
+  save(); render(); renderHistory();
+  showToast("🗑️ Datos de "+platId+" eliminados");
+}
+
+function setPeriod(days, btn) {
+  currentPeriod=days;
+  document.querySelectorAll(".ptab").forEach(t=>t.classList.remove("active")); btn.classList.add("active");
+  render(); renderHistory();
+}
+
+function showBTab(name, btn) {
+  document.querySelectorAll(".btab").forEach(t=>t.classList.remove("active")); btn.classList.add("active");
+  document.querySelectorAll(".btab-content").forEach(c=>c.classList.remove("active"));
+  document.getElementById("btab-"+name).classList.add("active");
+  if (name==="history") renderHistory();
+  if (name==="songs")   renderSongs();
+}
+
+function showToast(msg) {
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2500);
+}
+
+window.addEventListener("resize",()=>{ const d=getFiltered(); drawChart(d); });
+setupTooltip();
+load();
+</script>
+</body>
+</html>
