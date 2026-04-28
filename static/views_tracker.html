@@ -74,6 +74,27 @@ canvas#chart { width:100%; border-radius:14px; display:block; background:var(--p
 
 .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#fff; color:#000; padding:10px 18px; border-radius:100px; font-size:13px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; }
 .toast.show { transform:translateX(-50%) translateY(0); }
+
+/* SONGS */
+.songs-section { padding:0 16px 40px; }
+.songs-title { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+.songs-import-card { background:linear-gradient(135deg,#1a0a2a,#111420); border:1px solid #9c27b044; border-radius:14px; padding:14px; margin-bottom:10px; }
+.songs-import-label { display:block; width:100%; padding:11px; background:#1a0a2a; border:1px dashed #9c27b066; border-radius:10px; text-align:center; cursor:pointer; font-size:13px; font-weight:700; color:#ce93d8; }
+.song-item { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:6px; }
+.song-rank { font-size:11px; font-weight:900; color:var(--muted); min-width:20px; text-align:center; }
+.song-rank.gold { color:var(--gold); }
+.song-rank.silver { color:#aaa; }
+.song-rank.bronze { color:#cd7f32; }
+.song-info { flex:1; min-width:0; }
+.song-name { font-size:13px; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.song-meta { font-size:10px; color:var(--muted); margin-top:2px; }
+.song-stats { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+.song-streams { font-size:14px; font-weight:900; color:var(--gold); }
+.song-listeners { font-size:10px; color:#00e676; font-weight:700; }
+.song-saves { font-size:10px; color:#9c27b0; font-weight:700; }
+.songs-sort-row { display:flex; gap:6px; margin-bottom:10px; }
+.sort-btn { padding:5px 12px; border-radius:100px; font-size:11px; font-weight:700; border:1px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; transition:all 0.15s; }
+.sort-btn.active { background:#9c27b0; color:#fff; border-color:#9c27b0; }
 </style>
 </head>
 <body>
@@ -147,6 +168,28 @@ canvas#chart { width:100%; border-radius:14px; display:block; background:var(--p
 <div class="hist-section">
   <div class="hist-title">Historial reciente</div>
   <div id="hist-list"></div>
+</div>
+
+<div class="songs-section">
+  <div class="hist-title">🎵 Top Canciones</div>
+  <div class="songs-import-card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="font-size:20px">🎤</div>
+      <div><div style="font-size:13px;font-weight:700;color:#ce93d8">Importar CSV de Canciones</div><div style="font-size:10px;color:var(--muted)">songs-28day.csv · Spotify for Artists</div></div>
+    </div>
+    <label class="songs-import-label">
+      📁 Seleccionar archivo CSV de canciones
+      <input type="file" accept=".csv" id="songs-csv-input" style="display:none" onchange="importSongsCSV(this)">
+    </label>
+    <div class="import-status" id="songs-csv-status">Sube tu CSV de canciones para ver el ranking</div>
+    <button onclick="clearSongs()" style="width:100%;margin-top:8px;padding:9px;background:transparent;border:1px solid #ff4d4d44;border-radius:8px;color:#ff4d4d88;font-size:12px;font-weight:700;cursor:pointer">🗑️ Limpiar canciones</button>
+  </div>
+  <div class="songs-sort-row" id="songs-sort-row" style="display:none">
+    <button class="sort-btn active" onclick="sortSongs('streams',this)">🎧 Streams</button>
+    <button class="sort-btn" onclick="sortSongs('listeners',this)">👥 Oyentes</button>
+    <button class="sort-btn" onclick="sortSongs('saves',this)">💾 Saves</button>
+  </div>
+  <div id="songs-list"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -529,6 +572,116 @@ function showToast(msg) {
 window.addEventListener("resize", () => render());
 setupTooltip();
 load();
+
+// ── SONGS ──
+const SONGS_KEY = "views_tracker_songs_v1";
+let songs = [];
+let songsSortBy = "streams";
+
+async function loadSongs() {
+  try { const l = localStorage.getItem(SONGS_KEY); if (l) songs = JSON.parse(l); } catch(e) {}
+  try { if (window.storage) { const r = await window.storage.get(SONGS_KEY); if (r?.value) songs = JSON.parse(r.value); } } catch(e) {}
+  renderSongs();
+}
+async function saveSongs() {
+  const d = JSON.stringify(songs);
+  try { localStorage.setItem(SONGS_KEY, d); } catch(e) {}
+  try { if (window.storage) await window.storage.set(SONGS_KEY, d); } catch(e) {}
+}
+
+function importSongsCSV(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const text   = e.target.result;
+      const lines  = text.trim().split("\n");
+      const header = lines[0].replace(/^\uFEFF/,"").split(",").map(h => h.trim().replace(/^"|"$/g,""));
+      const idx    = h => header.findIndex(x => x === h);
+
+      const iSong    = idx("song");
+      const iListen  = idx("listeners");
+      const iStream  = idx("streams");
+      const iSaves   = idx("saves");
+      const iRelease = idx("release_date");
+
+      if (iSong === -1) { showToast("❌ CSV de canciones no reconocido"); return; }
+
+      songs = [];
+      lines.slice(1).forEach(line => {
+        if (!line.trim()) return;
+        // Handle quoted fields
+        const c = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g) || line.split(",");
+        const clean = v => (v || "").trim().replace(/^"|"$/g, "");
+        songs.push({
+          song:         clean(c[iSong]),
+          listeners:    parseInt(clean(c[iListen]))  || 0,
+          streams:      parseInt(clean(c[iStream]))  || 0,
+          saves:        parseInt(clean(c[iSaves]))   || 0,
+          release_date: clean(c[iRelease]),
+        });
+      });
+
+      saveSongs(); renderSongs();
+      document.getElementById("songs-csv-status").textContent = `✅ ${songs.length} canciones importadas`;
+      showToast(`✅ ${songs.length} canciones cargadas`);
+      if (tg) tg.HapticFeedback?.notificationOccurred("success");
+    } catch(err) { showToast("❌ Error: " + err.message); }
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
+function sortSongs(by, btn) {
+  songsSortBy = by;
+  document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderSongs();
+}
+
+function renderSongs() {
+  const list = document.getElementById("songs-list");
+  const sortRow = document.getElementById("songs-sort-row");
+  if (!songs.length) {
+    sortRow.style.display = "none";
+    list.innerHTML = "";
+    return;
+  }
+  sortRow.style.display = "flex";
+  const sorted = [...songs].sort((a,b) => b[songsSortBy] - a[songsSortBy]);
+  const maxVal = sorted[0]?.[songsSortBy] || 1;
+  list.innerHTML = sorted.map((s, i) => {
+    const rankClass = i === 0 ? "gold" : i === 1 ? "silver" : i === 2 ? "bronze" : "";
+    const rankEmoji = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i+1}`;
+    const barPct = Math.round((s[songsSortBy] / maxVal) * 100);
+    const year = s.release_date ? s.release_date.split("-")[0] : "";
+    const validYear = year && parseInt(year) > 1970 ? year : "";
+    return `<div class="song-item">
+      <div class="song-rank ${rankClass}">${rankEmoji}</div>
+      <div class="song-info">
+        <div class="song-name">${s.song}</div>
+        <div style="height:4px;background:var(--border);border-radius:2px;margin-top:5px;margin-bottom:3px">
+          <div style="height:4px;width:${barPct}%;background:linear-gradient(90deg,#9c27b0,#ce93d8);border-radius:2px;transition:width 0.4s"></div>
+        </div>
+        <div class="song-meta">${validYear ? validYear + " · " : ""}🎧 ${fmtNum(s.streams)} streams · 👥 ${fmtNum(s.listeners)} oyentes</div>
+      </div>
+      <div class="song-stats">
+        <div class="song-streams">${fmtNum(s[songsSortBy])}</div>
+        ${s.saves > 0 ? `<div class="song-saves">💾 ${fmtNum(s.saves)}</div>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function clearSongs() {
+  if (!songs.length) { showToast("No hay canciones que limpiar"); return; }
+  songs = [];
+  saveSongs(); renderSongs();
+  document.getElementById("songs-csv-status").textContent = "Sube tu CSV de canciones para ver el ranking";
+  document.getElementById("songs-csv-input").value = "";
+  showToast("🗑️ Canciones eliminadas");
+}
+
+loadSongs();
 </script>
 </body>
 </html>
