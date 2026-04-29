@@ -91,15 +91,17 @@ canvas#chart {
   box-shadow:inset 0 0 40px rgba(0,0,0,0.4);
 }
 .tooltip {
-  position:absolute; background:rgba(10,12,24,0.97);
-  border:1px solid rgba(245,197,24,0.5); border-radius:14px;
-  padding:10px 16px; pointer-events:none; z-index:20; display:none;
-  white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(245,197,24,0.1);
+  position:absolute; background:rgba(10,12,24,0.95);
+  border:1px solid rgba(245,197,24,0.4); border-radius:10px;
+  padding:5px 10px; pointer-events:none; z-index:20; display:none;
+  white-space:nowrap; box-shadow:0 4px 16px rgba(0,0,0,0.5);
+  display:none; align-items:center; gap:6px;
 }
-.tt-date { font-size:11px; color:var(--muted); margin-bottom:3px; }
-.tt-val  { font-size:20px; font-weight:900; }
-.tt-earn { font-size:12px; color:var(--green); margin-top:3px; font-weight:700; }
+.tt-date { font-size:10px; color:var(--muted); }
+.tt-val  { font-size:13px; font-weight:900; }
+.tt-earn { font-size:10px; color:var(--green); font-weight:700; }
 .crosshair { position:absolute; top:8px; bottom:6px; width:1px; background:rgba(245,197,24,0.45); pointer-events:none; display:none; box-shadow:0 0 8px rgba(245,197,24,0.3); }
+.chart-dot { position:absolute; width:8px; height:8px; border-radius:50%; pointer-events:none; display:none; transform:translate(-50%,-50%); border:2px solid #fff; box-shadow:0 0 8px currentColor, 0 0 16px currentColor; z-index:10; }
 
 /* EARNINGS */
 .earn-box {
@@ -393,10 +395,11 @@ canvas#chart {
 <div class="chart-section">
   <canvas id="chart" height="180"></canvas>
   <div class="crosshair" id="crosshair"></div>
+  <div class="chart-dot" id="chart-dot"></div>
   <div class="tooltip" id="tooltip">
-    <div class="tt-date" id="tt-date"></div>
-    <div class="tt-val"  id="tt-val"></div>
-    <div class="tt-earn" id="tt-earn"></div>
+    <span class="tt-date" id="tt-date"></span>
+    <span class="tt-val"  id="tt-val"></span>
+    <span class="tt-earn" id="tt-earn"></span>
   </div>
 </div>
 
@@ -690,7 +693,7 @@ function drawChart(data) {
   ctx.fillStyle="#0d0f1a"; ctx.fillRect(0,0,W,H);
 
   if (!data.length) {
-    canvas._data=null; canvas._vals=null;
+    canvas._data=null; canvas._vals=null; canvas._pts=null;
     ctx.fillStyle="#4a4f6a"; ctx.font=`${12*dpr}px -apple-system`; ctx.textAlign="center";
     ctx.fillText("Importa un CSV o añade datos 👇", W/2, H/2); return;
   }
@@ -746,6 +749,11 @@ function drawChart(data) {
     }
   });
 
+  // Store point positions in CSS pixels for the dot indicator
+  canvas._pts=data.map((_,i)=>({
+    x: toX(i)/dpr,
+    y: toY(vals[i])/dpr
+  }));
   canvas._data=data; canvas._vals=vals; canvas._m=m;
 }
 
@@ -760,7 +768,11 @@ function setupTooltip() {
     if (!d?.length) return;
     e.preventDefault();
     const rect=canvas.getBoundingClientRect();
+    const section=canvas.parentElement;
+    const secRect=section.getBoundingClientRect();
     const cx=e.touches?.[0]?.clientX??e.clientX;
+
+    // pct relative to canvas (where data is drawn)
     const pct=Math.max(0,Math.min(1,(cx-rect.left)/rect.width));
     const idx=Math.round(pct*(d.length-1));
     const entry=d[idx]; const val=v[idx];
@@ -774,13 +786,36 @@ function setupTooltip() {
     document.getElementById("tt-val").style.color=m.color;
     document.getElementById("tt-earn").textContent=rate>0?`💰 ${fmtMoney(val*rate)}`:"";
 
-    const ttW=170; let ttL=cx-rect.left-ttW/2;
-    ttL=Math.max(0,Math.min(rect.width-ttW,ttL));
-    tooltip.style.left=ttL+"px"; tooltip.style.top="6px"; tooltip.style.display="block";
-    crosshair.style.left=(cx-rect.left)+"px"; crosshair.style.display="block";
+    // Position crosshair and tooltip relative to section (their offsetParent)
+    const xInSection=cx-secRect.left;
+    crosshair.style.left=xInSection+"px"; crosshair.style.display="block";
+
+    // Dot on the exact data point
+    const dot=document.getElementById("chart-dot");
+    const pts=canvas._pts;
+    if (dot&&pts&&pts[idx]) {
+      const canvasOffX=rect.left-secRect.left;
+      const canvasOffY=rect.top-secRect.top;
+      dot.style.left=(canvasOffX+pts[idx].x)+"px";
+      dot.style.top =(canvasOffY+pts[idx].y)+"px";
+      dot.style.color=m.color;
+      dot.style.background=m.color;
+      dot.style.display="block";
+    }
+
+    const ttW=140;
+    let ttL=xInSection-ttW/2;
+    ttL=Math.max(0,Math.min(secRect.width-ttW,ttL));
+    tooltip.style.left=ttL+"px";
+    // Position tooltip just above the dot
+    const pts2=canvas._pts;
+    const dotY=pts2&&pts2[idx]?(rect.top-secRect.top+pts2[idx].y):30;
+    const ttTop=Math.max(4, dotY-38);
+    tooltip.style.top=ttTop+"px";
+    tooltip.style.display="flex";
     if (tg) tg.HapticFeedback?.selectionChanged();
   }
-  function onEnd() { setTimeout(()=>{ tooltip.style.display="none"; crosshair.style.display="none"; },1800); }
+  function onEnd() { setTimeout(()=>{ tooltip.style.display="none"; crosshair.style.display="none"; document.getElementById("chart-dot").style.display="none"; },1800); }
 
   canvas.addEventListener("touchstart",onMove,{passive:false});
   canvas.addEventListener("touchmove", onMove,{passive:false});
