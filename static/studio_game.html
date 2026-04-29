@@ -232,6 +232,17 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#07080d"); tg.setBackgroundColor("#07080d"); }
 
+// Global error catch - show error instead of blank screen
+window.onerror = function(msg, src, line) {
+  document.body.innerHTML = `<div style="padding:24px;font-family:sans-serif;color:#fff;background:#07080d;min-height:100vh">
+    <div style="color:#ff4d4d;font-size:16px;font-weight:700;margin-bottom:8px">❌ Error al cargar</div>
+    <div style="font-size:12px;color:#666;margin-bottom:4px">${msg}</div>
+    <div style="font-size:11px;color:#444">Línea ${line}</div>
+    <button onclick="location.reload()" style="margin-top:16px;padding:12px 24px;background:#f5c518;color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer">🔄 Reintentar</button>
+  </div>`;
+  return false;
+};
+
 // ── USER ID ───────────────────────────────────────────────
 const USER_ID  = tg?.initDataUnsafe?.user?.id || localStorage.getItem("mkeyz_uid") || "guest_" + Math.random().toString(36).slice(2,8);
 if (!tg?.initDataUnsafe?.user?.id) localStorage.setItem("mkeyz_uid", USER_ID);
@@ -278,8 +289,4 @@ const EQUIPMENT = [
   { id:"bass",       emoji:"🎸", name:"Bajo Eléctrico",   desc:"Frecuencias que mueven.",          coinsPerHour:26,   cost:2500,   maxLevel:5, xpGain:35, unlockLevel:7  },
   { id:"monitors",   emoji:"🔊", name:"Monitores",        desc:"Mezcla con precisión.",            coinsPerHour:38,   cost:5000,   maxLevel:5, xpGain:40, unlockLevel:10 },
   { id:"synth",      emoji:"🎛️", name:"Sintetizador",     desc:"Sonidos únicos.",                 coinsPerHour:55,   cost:9000,   maxLevel:5, xpGain:50, unlockLevel:12 },
-  { id:"audio_int",  emoji:"🎚️", name:"Audio Interface",  desc:"Calidad profesional.",            coinsPerHour:80,   cost:15000,  maxLevel:5, xpGain:60, unlockLevel:15 },
-  { id:"console",    emoji:"🖥️", name:"Consola de Mezcla",desc:"Corazón del estudio.",            coinsPerHour:115,  cost:28000,  maxLevel:5, xpGain:75, unlockLevel:20 },
-  { id:"sampler",    emoji:"🎵", name:"Sampler",          desc:"Cualquier sonido en música.",     coinsPerHour:165,  cost:50000,  maxLevel:5, xpGain:90, unlockLevel:25 },
-  { id:"vocoder",    emoji:"🤖", name:"Vocoder",          desc:"Voz del futuro.",                 coinsPerHour:230,  cost:85000,  maxLevel:5, xpGain:100, unlockLevel:30 },
-  { id:"mpc",        emoji:"🟫", nam
+  { id:"audio_int",  emoj
