@@ -11,21 +11,7 @@ logging.basicConfig(level=logging.WARNING)  # Reduce log noise
 app = Flask(__name__, static_folder="static")
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 3600  # Cache static files 1 hour
 
-# Gzip compression for responses
-from flask import after_request
-import gzip, io
-@after_request
-def compress(response):
-    if response.status_code < 200 or response.status_code >= 300:
-        return response
-    if 'Content-Encoding' in response.headers:
-        return response
-    if response.content_type.startswith('text/html') or response.content_type.startswith('application/json'):
-        content = gzip.compress(response.get_data(), compresslevel=6)
-        response.set_data(content)
-        response.headers['Content-Encoding'] = 'gzip'
-        response.headers['Content-Length'] = len(content)
-    return response
+
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mkeyz.db")
 
 def get_db():
@@ -377,4 +363,4 @@ def api_artist_profile():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
-        
+    
