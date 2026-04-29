@@ -81,6 +81,18 @@ body { background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans
 }
 .ppill.active { color:#000; border-color:transparent; box-shadow:0 0 18px rgba(0,0,0,0.3); }
 .ppill:active { transform:scale(0.92); }
+.ppill.toggled { opacity:1; }
+.ppill.toggled-off { opacity:0.32; filter:grayscale(0.6); }
+.toggle-row { display:flex; gap:5px; overflow-x:auto; padding:0 16px 8px; scrollbar-width:none; }
+.toggle-row::-webkit-scrollbar { display:none; }
+.tpill {
+  display:flex; align-items:center; gap:5px; padding:4px 10px;
+  border-radius:100px; font-size:11px; font-weight:700; cursor:pointer;
+  border:1.5px solid; white-space:nowrap; transition:all 0.2s; flex-shrink:0;
+  user-select:none;
+}
+.tpill.on  { color:#000; }
+.tpill.off { opacity:0.35; filter:grayscale(0.5); background:transparent !important; }
 
 /* CHART */
 .chart-section { padding:8px 16px 6px; position:relative; z-index:1; }
@@ -396,8 +408,9 @@ canvas#chart {
   </div>
 </div>
 
-<div class="metric-row" id="metric-row"></div>
 <div class="plat-row"   id="plat-row"></div>
+<div class="metric-row" id="metric-row"></div>
+<div class="toggle-row" id="toggle-row" style="display:none"></div>
 
 <div class="chart-section">
   <canvas id="chart" height="180"></canvas>
@@ -431,7 +444,7 @@ canvas#chart {
 </div>
 
 <!-- TAB: DATOS — hidden import cards (keep inputs alive for file API) -->
-<div style="display:none" aria-hidden="true">
+<div style="position:fixed;opacity:0;pointer-events:none;width:0;height:0;overflow:hidden">
   <input type="file" accept=".csv" id="spotify-csv"      onchange="importSpotifyCSV(this)">
   <input type="file" accept=".csv" id="amazon-csv"       onchange="importAmazonCSV(this)">
   <input type="file" accept=".csv" id="amazon-prime-csv" onchange="importAmazonPrimeCSV(this)">
@@ -544,13 +557,12 @@ const PLATFORMS = [
 ];
 
 const METRICS = [
-  { id:"streams",   label:"Streams",    color:"#f5c518", emoji:"🎧" },
-  { id:"listeners", label:"Oyentes/día",color:"#00e676", emoji:"👥" },
-  { id:"monthly",   label:"Oyentes mes",color:"#4fc3f7", emoji:"📅" },
-  { id:"followers", label:"Seguidores", color:"#e91e63", emoji:"❤️" },
-  { id:"saves",     label:"Saves",      color:"#b06afc", emoji:"💾" },
-  { id:"views",       label:"Views",        color:"#ff9800", emoji:"👁️" },
-  { id:"playlist_adds",label:"Playlist Adds",color:"#4fc3f7", emoji:"➕" },
+  { id:"streams",      label:"Reproducciones", color:"#f5c518", emoji:"🎧" },
+  { id:"listeners",    label:"Oyentes/día",    color:"#00e676", emoji:"👥" },
+  { id:"monthly",      label:"Oyentes mes",    color:"#4fc3f7", emoji:"📅" },
+  { id:"followers",    label:"Seguidores",     color:"#e91e63", emoji:"❤️" },
+  { id:"saves",        label:"Saves",          color:"#b06afc", emoji:"💾" },
+  { id:"playlist_adds",label:"Playlist Adds",  color:"#4fc3f7", emoji:"➕" },
 ];
 
 let entries       = [];  // [{date, platform, streams, listeners, monthly, followers, saves, views}]
@@ -559,6 +571,7 @@ let payments      = [];  // [{reporting_date, sale_month, platform, streams, ear
 let currentPeriod = 7;
 let currentMetric = "streams";
 let selPlatform   = "all";
+let activePlats   = new Set(); // which platforms are visible in Todo mode
 let songsSortBy   = "streams";
 
 // ── BUILD PILLS ───────────────────────────────────────────
@@ -591,20 +604,59 @@ function buildPills() {
   // Platform pills
   const pRow = document.getElementById("plat-row");
   pRow.innerHTML = "";
+  const tRow = document.getElementById("toggle-row");
+
+  // Platforms that have data loaded
+  const chartPlats = ["spotify","youtube"]; // daily data, can be charted
+  const loadedAll  = PLATFORMS.filter(p=>p.id!=="all"&&entries.some(e=>e.platform===p.id));
+
   PLATFORMS.forEach(p => {
+    if (p.id==="manual") return; // Manual: in Datos tab, not a pill
     const pill = document.createElement("div");
-    pill.className = "ppill" + (p.id===selPlatform?" active":"");
+    const isActive = p.id===selPlatform;
+    pill.className = "ppill" + (isActive?" active":"");
     pill.textContent = p.emoji+" "+p.label;
-    if (p.id===selPlatform) { pill.style.background=p.color; pill.style.color="#000"; }
+    if (isActive) { pill.style.background=p.color; pill.style.color="#000"; }
     pill.onclick = () => {
       document.querySelectorAll(".ppill").forEach(x=>{ x.classList.remove("active"); x.style.background=""; x.style.color=""; });
       pill.classList.add("active"); pill.style.background=p.color; pill.style.color="#000";
-      selPlatform=p.id; buildPills(); render();
-      if(document.getElementById('btab-import')?.classList.contains('active')) renderDatosPanel();
+      selPlatform=p.id; activePlats.clear(); buildPills(); render();
+      if(document.getElementById("btab-import")?.classList.contains("active")) renderDatosPanel();
       if (tg) tg.HapticFeedback?.impactOccurred("light");
     };
     pRow.appendChild(pill);
   });
+
+  // Toggle row — shown in Todo mode, one toggle per chart-compatible loaded platform
+  const toggleable = PLATFORMS.filter(p=>chartPlats.includes(p.id)&&entries.some(e=>e.platform===p.id));
+  if (selPlatform==="all" && toggleable.length>=1) {
+    if (!activePlats.size) toggleable.forEach(p=>activePlats.add(p.id));
+    tRow.innerHTML = '<span style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;align-self:center;padding-right:4px">Ocultar:</span>';
+    toggleable.forEach(p => {
+      const on = activePlats.has(p.id);
+      const t = document.createElement("div");
+      t.className = "tpill "+(on?"on":"off");
+      t.style.borderColor = p.color;
+      t.style.background  = on ? p.color : "transparent";
+      t.style.color       = on ? "#000" : p.color;
+      t.textContent = p.emoji+" "+p.label;
+      t.onclick = () => {
+        if (activePlats.has(p.id)) {
+          if (activePlats.size===1) return; // keep at least one
+          activePlats.delete(p.id);
+        } else {
+          activePlats.add(p.id);
+        }
+        buildPills(); render();
+        if (tg) tg.HapticFeedback?.impactOccurred("light");
+      };
+      tRow.appendChild(t);
+    });
+    tRow.style.display = "flex";
+  } else {
+    tRow.style.display = "none";
+    activePlats.clear();
+  }
 }
 
 // ── STORAGE ───────────────────────────────────────────────
@@ -671,10 +723,13 @@ function getFiltered() {
   if (selPlatform!=="all") {
     f=f.filter(e=>e.platform===selPlatform);
   } else {
-    // In Todo mode: exclude Amazon/Apple reporting-date entries (they aggregate
-    // months into single dates and create misleading spikes on the chart).
-    // YouTube daily data is fine to include.
-    f=f.filter(e=>!["amazon","amazon_prime","apple"].includes(e.platform));
+    // Exclude reporting-date spike platforms; respect activePlats toggles
+    const noSpike=["amazon","amazon_prime","apple"];
+    f=f.filter(e=>{
+      if (noSpike.includes(e.platform)) return false;
+      if (activePlats.size>0 && !activePlats.has(e.platform)) return false;
+      return true;
+    });
   }
   return f.sort((a,b)=>a.date.localeCompare(b.date));
 }
@@ -1458,11 +1513,22 @@ function updatePayStatus() {
 }
 
 function clearAllPayments() {
-  if (!payments.length) { showToast("Sin pagos que limpiar"); return; }
   payments=[];
-  savePayments().then(()=>{ try{updatePayStatus();}catch(e){} });
+  try { localStorage.removeItem(PAY_KEY); } catch(e) {}
+  if (window.storage) { try { window.storage.delete(PAY_KEY); } catch(e) {} }
+  try { updatePayStatus(); } catch(e) {}
   if(document.getElementById("btab-pagos")?.classList.contains("active")) renderPagos();
+  if(document.getElementById("btab-import")?.classList.contains("active")) renderDatosPanel();
   showToast("🗑️ Pagos reales eliminados");
+}
+
+function clearOnePlatformPayments(platId) {
+  payments=payments.filter(p=>p.platform!==platId);
+  savePayments();
+  try { updatePayStatus(); } catch(e) {}
+  if(document.getElementById("btab-pagos")?.classList.contains("active")) renderPagos();
+  if(document.getElementById("btab-import")?.classList.contains("active")) renderDatosPanel();
+  showToast("🗑️ Pagos de "+platId+" eliminados");
 }
 
 
@@ -1534,7 +1600,10 @@ function renderDatosPanel() {
           </div>
         </div>
         <div style="font-size:10px;color:var(--muted);text-align:right">
-          ${hasData?`<span style="cursor:pointer;color:#e55" onclick="${c.clear}">🗑️</span>`:""}
+          <div style="display:flex;gap:8px">
+            ${hasData?`<span style="cursor:pointer;color:#e55;font-size:12px" title="Borrar streams" onclick="${c.clear}">🗑️</span>`:`<span style="opacity:0.15;font-size:12px">🗑️</span>`}
+            ${hasPay?`<span style="cursor:pointer;color:rgba(229,85,85,0.6);font-size:11px" title="Borrar pagos" onclick="clearOnePlatformPayments('${pid}')">💸</span>`:""}
+          </div>
         </div>
       </div>`;
     }).join("");
@@ -1576,7 +1645,7 @@ function renderDatosPanel() {
           📁 Seleccionar CSV de ${c.platLabel}
         </label>
         <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:8px">${statusTxt||"Sube tu archivo CSV"}</div>
-        ${hasData?`<button class="btn-clear" onclick="${c.clear}">🗑️ Limpiar datos ${c.platLabel}</button>`:""}
+        <button class="btn-clear" onclick="${c.clear}" ${hasData?"":"disabled style='opacity:0.3;cursor:default'"}>🗑️ Limpiar datos ${c.platLabel}</button>
       </div>
 
       <!-- Pagos reales card -->
@@ -1590,7 +1659,10 @@ function renderDatosPanel() {
             <div style="font-size:11px;font-weight:700;color:${hasPay?"var(--green)":"var(--muted)"}">${hasPay?"✅ "+payStatusTxt:"Sin pagos cargados"}</div>
             <div style="font-size:9px;color:var(--muted)">results_${selPlatform}.csv de DistroKid</div>
           </div>
-          <div style="font-size:10px;color:var(--muted);padding:4px 8px;border:1px solid var(--border);border-radius:8px;white-space:nowrap">📁 CSV</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <div style="font-size:10px;color:var(--muted);padding:4px 8px;border:1px solid var(--border);border-radius:8px;white-space:nowrap">📁 CSV</div>
+            ${hasPay?`<div style="font-size:10px;color:#e55;padding:4px 8px;border:1px solid rgba(229,85,85,0.3);border-radius:8px;cursor:pointer;white-space:nowrap" onclick="event.stopPropagation();clearOnePlatformPayments('${selPlatform}')">🗑️</div>`:""}
+          </div>
         </label>
       </div>
 
