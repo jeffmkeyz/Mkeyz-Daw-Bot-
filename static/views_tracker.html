@@ -460,6 +460,23 @@ canvas#chart {
     <button class="btn-clear" onclick="clearPlatform('amazon')">🗑️ Limpiar datos Amazon</button>
   </div>
 
+  <!-- YOUTUBE IMPORT -->
+  <div class="import-card" style="background:linear-gradient(135deg,rgba(255,51,51,0.07),rgba(10,12,24,0.9));border:1px solid rgba(255,51,51,0.25);box-shadow:0 0 30px rgba(255,51,51,0.06);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:22px">▶️</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#ff3333">Importar CSV YouTube</div>
+        <div style="font-size:10px;color:var(--muted)">Datos_del_gráfico.csv · YouTube Studio</div>
+      </div>
+    </div>
+    <label class="import-label" style="background:rgba(255,51,51,0.08);border:1px dashed rgba(255,51,51,0.4);color:#ff3333;">
+      📁 Seleccionar CSV de YouTube
+      <input type="file" accept=".csv" id="youtube-csv" style="display:none" onchange="importYouTubeCSV(this)">
+    </label>
+    <div class="import-status" id="youtube-status">Sube tu CSV de YouTube Studio</div>
+    <button class="btn-clear" onclick="clearPlatform('youtube')">🗑️ Limpiar datos YouTube</button>
+  </div>
+
   <!-- ADD MANUAL -->
   <div class="add-card">
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📝 Añadir manualmente</div>
@@ -1119,6 +1136,78 @@ function renderPagos() {
   `;
 }
 
+
+// ── IMPORT CSV: YOUTUBE ───────────────────────────────────
+function importYouTubeCSV(input) {
+  const file=input.files[0]; if (!file) return;
+  const reader=new FileReader();
+  reader.onload=e => {
+    try {
+      const text=e.target.result;
+      const lines=text.trim().split("\n").filter(l=>l.trim());
+      if (lines.length<2) { showToast("❌ CSV vacío"); return; }
+
+      // Parse quoted CSV row
+      const parseRow=line=>{
+        const c=[]; let cur="",inQ=false;
+        for(const ch of line+","){
+          if(ch==='"'){inQ=!inQ;}
+          else if(ch===","&&!inQ){c.push(cur.trim());cur="";}
+          else{cur+=ch;}
+        }
+        return c;
+      };
+
+      const header=parseRow(lines[0].replace(/^\uFEFF/,""));
+      const iFecha=header.findIndex(h=>/^fecha$/i.test(h)||/^date$/i.test(h));
+      const iViews=header.findIndex(h=>/visualizaciones|views/i.test(h));
+
+      if (iFecha===-1||iViews===-1) { showToast("❌ Formato YouTube no reconocido"); return; }
+
+      // Group by date, sum views across all videos
+      const byDate={};
+      lines.slice(1).forEach(line=>{
+        const c=parseRow(line);
+        const date=(c[iFecha]||"").trim();
+        if (!date||!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+        const views=parseInt(c[iViews])||0;
+        byDate[date]=(byDate[date]||0)+views;
+      });
+
+      if (!Object.keys(byDate).length) { showToast("❌ No se pudieron leer filas"); return; }
+
+      // Remove existing youtube entries and push new
+      entries=entries.filter(ex=>ex.platform!=="youtube");
+      let added=0;
+      Object.entries(byDate).forEach(([date,views])=>{
+        entries.push({date,platform:"youtube",views,streams:views});
+        added++;
+      });
+
+      entries.sort((a,b)=>a.date.localeCompare(b.date));
+
+      // Auto period
+      if (added>365) currentPeriod=730;
+      else if (added>180) currentPeriod=365;
+      else if (added>90) currentPeriod=180;
+      else if (added>28) currentPeriod=90;
+      else currentPeriod=Math.max(7,added);
+      document.querySelectorAll(".ptab").forEach(t=>t.classList.remove("active"));
+      const pMap={7:0,28:1,90:2,180:3,365:4,730:5,1095:6};
+      const tabs=document.querySelectorAll(".ptab");
+      if(tabs[pMap[currentPeriod]??4]) tabs[pMap[currentPeriod]??4].classList.add("active");
+
+      selPlatform="youtube"; currentMetric="views";
+      buildPills(); save(); render(); renderHistory();
+      const total=Object.values(byDate).reduce((a,b)=>a+b,0);
+      document.getElementById("youtube-status").textContent=`✅ ${added} días · ${total.toLocaleString()} views`;
+      showToast(`✅ ${added} días importados de YouTube`);
+      if (tg) tg.HapticFeedback?.notificationOccurred("success");
+    } catch(err) { showToast("❌ Error: "+err.message); console.error(err); }
+  };
+  reader.readAsText(file,"UTF-8");
+}
+
 // ── HISTORY ───────────────────────────────────────────────
 function renderHistory() {
   const list=document.getElementById("hist-list");
@@ -1258,6 +1347,24 @@ function clearPlatform(platId) {
   const before=entries.length;
   entries=entries.filter(e=>e.platform!==platId);
   if (entries.length===before) { showToast("Sin datos de "+platId); return; }
+
+  // Reset status text and file input for this platform
+  const statusMap={
+    spotify:  {el:"spotify-status",  txt:"Sube tu CSV de Spotify for Artists",     inp:"spotify-csv"},
+    amazon:   {el:"amazon-status",   txt:"Sube tu CSV de Amazon Music for Artists", inp:"amazon-csv"},
+    youtube:  {el:"youtube-status",  txt:"Sube tu CSV de YouTube Studio",           inp:"youtube-csv"},
+  };
+  const m=statusMap[platId];
+  if (m) {
+    const s=document.getElementById(m.el); if(s) s.textContent=m.txt;
+    const i=document.getElementById(m.inp); if(i) i.value="";
+  }
+
+  // If viewing this platform, switch to all
+  if (selPlatform===platId) {
+    selPlatform="all"; buildPills();
+  }
+
   save(); render(); renderHistory();
   showToast("🗑️ Datos de "+platId+" eliminados");
 }
