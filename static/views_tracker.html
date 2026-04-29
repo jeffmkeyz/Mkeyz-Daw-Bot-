@@ -336,7 +336,7 @@ canvas#chart {
 <div class="btab-content active" id="btab-import">
 
   <!-- SPOTIFY IMPORT -->
-  <div class="import-card">
+  <div class="import-card spotify">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <span style="font-size:22px">🎵</span>
       <div>
@@ -425,22 +425,15 @@ const SONGS_KEY= `songs_v2_${USER_ID}`;
 // ── BG CANVAS ────────────────────────────────────────────
 const bgC = document.getElementById("bg-canvas");
 const bgCtx = bgC.getContext("2d");
-let bgPts = [];
-function resizeBg() { bgC.width=innerWidth; bgC.height=innerHeight; }
-resizeBg(); window.addEventListener("resize", resizeBg);
-function drawBg() {
-  requestAnimationFrame(drawBg);
-  bgCtx.fillStyle="rgba(7,8,13,0.15)"; bgCtx.fillRect(0,0,bgC.width,bgC.height);
-  if (Math.random()<0.03 && bgPts.length<20)
-    bgPts.push({x:Math.random()*bgC.width,y:bgC.height+5,r:Math.random()*1.5+0.5,speed:Math.random()*0.5+0.2,hue:40+Math.random()*40});
-  bgPts = bgPts.filter(p=>p.y>-10);
-  bgPts.forEach(p => {
-    p.y-=p.speed;
-    bgCtx.beginPath(); bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    bgCtx.fillStyle=`hsla(${p.hue},100%,70%,0.25)`; bgCtx.fill();
-  });
+function resizeBg() {
+  bgC.width=innerWidth; bgC.height=innerHeight;
+  const g=bgCtx.createRadialGradient(bgC.width*0.5,0,0,bgC.width*0.5,bgC.height,bgC.height);
+  g.addColorStop(0,"rgba(245,197,24,0.03)");
+  g.addColorStop(1,"rgba(6,8,16,0)");
+  bgCtx.clearRect(0,0,bgC.width,bgC.height);
+  bgCtx.fillStyle=g; bgCtx.fillRect(0,0,bgC.width,bgC.height);
 }
-drawBg();
+resizeBg(); window.addEventListener("resize", resizeBg);
 
 // ── PLATFORMS ─────────────────────────────────────────────
 const PLATFORMS = [
@@ -459,7 +452,8 @@ const METRICS = [
   { id:"monthly",   label:"Oyentes mes",color:"#4fc3f7", emoji:"📅" },
   { id:"followers", label:"Seguidores", color:"#e91e63", emoji:"❤️" },
   { id:"saves",     label:"Saves",      color:"#b06afc", emoji:"💾" },
-  { id:"views",     label:"Views",      color:"#ff9800", emoji:"👁️" },
+  { id:"views",       label:"Views",        color:"#ff9800", emoji:"👁️" },
+  { id:"playlist_adds",label:"Playlist Adds",color:"#4fc3f7", emoji:"➕" },
 ];
 
 let entries       = [];  // [{date, platform, streams, listeners, monthly, followers, saves, views}]
@@ -601,6 +595,7 @@ function drawChart(data) {
   ctx.fillStyle="#0d0f1a"; ctx.fillRect(0,0,W,H);
 
   if (!data.length) {
+    canvas._data=null; canvas._vals=null;
     ctx.fillStyle="#4a4f6a"; ctx.font=`${12*dpr}px -apple-system`; ctx.textAlign="center";
     ctx.fillText("Importa un CSV o añade datos 👇", W/2, H/2); return;
   }
@@ -706,9 +701,12 @@ function addEntry() {
   if (!date) { showToast("Elige una fecha"); return; }
   if (!views||views<0) { showToast("Escribe el valor"); return; }
   const plat=selPlatform==="all"?"manual":selPlatform;
-  entries=entries.filter(e=>!(e.date===date&&e.platform===plat));
-  const entry={date,platform:plat}; entry[currentMetric]=views;
-  entries.push(entry); entries.sort((a,b)=>a.date.localeCompare(b.date));
+  let existing=entries.find(e=>e.date===date&&e.platform===plat);
+  if(existing){existing[currentMetric]=views;}else{
+    const entry={date,platform:plat}; entry[currentMetric]=views;
+    entries.push(entry);
+  }
+  entries.sort((a,b)=>a.date.localeCompare(b.date));
   save(); render(); renderHistory();
   document.getElementById("inp-views").value="";
   showToast("✅ Dato añadido");
@@ -727,12 +725,13 @@ function importSpotifyCSV(input) {
       let added=0;
 
       // Format A: audience-timeline.csv (date, streams, listeners, ...)
-      const iDate   =header.findIndex(h=>h==="date");
-      const iStream =header.findIndex(h=>h==="streams");
-      const iListen =header.findIndex(h=>h==="listeners");
-      const iMonthly=header.findIndex(h=>h.includes("monthly listeners")&&!h.includes("active"));
-      const iFollow =header.findIndex(h=>h==="followers");
-      const iSaves  =header.findIndex(h=>h==="saves");
+      const iDate   =header.findIndex(h=>/^date$/i.test(h));
+      const iStream =header.findIndex(h=>/^streams$/i.test(h));
+      const iListen =header.findIndex(h=>/^listeners$/i.test(h));
+      const iMonthly=header.findIndex(h=>/monthly listeners/i.test(h)&&!/active/i.test(h));
+      const iFollow =header.findIndex(h=>/^followers$/i.test(h));
+      const iSaves  =header.findIndex(h=>/^saves$/i.test(h));
+      const iPlAdds =header.findIndex(h=>/playlist.?adds/i.test(h));
 
       // Format B: Trendlines CSV (Fecha DD/MM/YYYY, Reproducciones, Oyentes)
       const iFecha  =header.findIndex(h=>h==="Fecha"||h==="fecha");
@@ -748,11 +747,12 @@ function importSpotifyCSV(input) {
           if (!date||!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
           entries=entries.filter(ex=>!(ex.date===date&&ex.platform==="spotify"));
           const entry={date,platform:"spotify"};
-          if (iStream>=0)  entry.streams  =parseInt(c[iStream].replace(/"/g,""))||0;
-          if (iListen>=0)  entry.listeners=parseInt(c[iListen].replace(/"/g,""))||0;
-          if (iMonthly>=0) entry.monthly  =parseInt(c[iMonthly].replace(/"/g,""))||0;
-          if (iFollow>=0)  entry.followers=parseInt(c[iFollow].replace(/"/g,""))||0;
-          if (iSaves>=0)   entry.saves    =parseInt(c[iSaves].replace(/"/g,""))||0;
+          if (iStream>=0)  entry.streams      =parseInt(c[iStream].replace(/"/g,""))||0;
+          if (iListen>=0)  entry.listeners    =parseInt(c[iListen].replace(/"/g,""))||0;
+          if (iMonthly>=0) entry.monthly      =parseInt(c[iMonthly].replace(/"/g,""))||0;
+          if (iFollow>=0)  entry.followers    =parseInt(c[iFollow].replace(/"/g,""))||0;
+          if (iSaves>=0)   entry.saves        =parseInt(c[iSaves].replace(/"/g,""))||0;
+          if (iPlAdds>=0)  entry.playlist_adds=parseInt(c[iPlAdds].replace(/"/g,""))||0;
           entries.push(entry); added++;
         });
       } else if (iFecha!==-1&&iReprod!==-1) {
@@ -777,11 +777,12 @@ function importSpotifyCSV(input) {
       // Detect available metrics
       const spEntries=entries.filter(e=>e.platform==="spotify");
       const avail=[];
-      if (spEntries.some(e=>e.streams>0))   avail.push("streams");
-      if (spEntries.some(e=>e.listeners>0)) avail.push("listeners");
-      if (spEntries.some(e=>e.monthly>0))   avail.push("monthly");
-      if (spEntries.some(e=>e.followers>0)) avail.push("followers");
-      if (spEntries.some(e=>e.saves>0))     avail.push("saves");
+      if (spEntries.some(e=>e.streams>0))       avail.push("streams");
+      if (spEntries.some(e=>e.listeners>0))     avail.push("listeners");
+      if (spEntries.some(e=>e.monthly>0))       avail.push("monthly");
+      if (spEntries.some(e=>e.followers>0))     avail.push("followers");
+      if (spEntries.some(e=>e.saves>0))         avail.push("saves");
+      if (spEntries.some(e=>e.playlist_adds>0)) avail.push("playlist_adds");
       if (avail.length) currentMetric=avail[0];
 
       // Auto-period
@@ -823,7 +824,7 @@ function importAmazonCSV(input) {
 
       // Find columns flexibly
       const iFecha  =header.findIndex(h=>/fecha|date/i.test(h));
-      const iReprod =header.findIndex(h=>/reproducciones|streams|plays|streams/i.test(h));
+      const iReprod =header.findIndex(h=>/reproducciones|streams|plays/i.test(h));
       const iOyentes=header.findIndex(h=>/oyentes|listeners/i.test(h));
 
       if (iFecha===-1) { showToast("❌ No se encontró columna de fecha"); return; }
@@ -921,7 +922,7 @@ function renderHistory() {
     const dt=new Date(e.date+"T00:00:00");
     const ds=`${dt.getDate()}/${dt.getMonth()+1}/${dt.getFullYear().toString().slice(2)}`;
     const earnStr=rate>0&&currentMetric==="streams"?`<span class="hist-earn">${fmtMoney(val*rate)}</span>`:"";
-    return `<div class="hist-item" style="--plat-color:${neon}">
+    return `<div class="hist-item" style="--plat-color:${plat.color}">
       <span class="hist-date">${ds}</span>
       <span class="hist-plat">${plat.emoji}</span>
       <span class="hist-val">${fmtNum(val)}</span>
@@ -952,7 +953,13 @@ function importSongsCSV(input) {
       songs=[];
       lines.slice(1).forEach(line => {
         if (!line.trim()) return;
-        const c=line.match(/(\"[^\"]*\"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g)||line.split(",");
+        // Robust quoted CSV parser
+        const c=[]; let cur="",inQ=false;
+        for(const ch of line+","){
+          if(ch==='"'){inQ=!inQ;}
+          else if(ch===","&&!inQ){c.push(cur);cur="";}
+          else{cur+=ch;}
+        }
         const clean=v=>(v||"").trim().replace(/^"|"$/g,"");
         songs.push({ song:clean(c[iSong]), listeners:parseInt(clean(c[iListen]))||0,
           streams:parseInt(clean(c[iStream]))||0, saves:parseInt(clean(c[iSaves]))||0,
