@@ -1,1 +1,2 @@
-web: gunicorn server:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120 & python bot.py & wait
+web: gunicorn server:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 60 --log-level warning
+worker: python bot.py
