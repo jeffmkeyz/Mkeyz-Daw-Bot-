@@ -15,10 +15,8 @@
 }
 body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-serif; min-height:100vh; overflow-x:hidden; padding-bottom:40px; }
 
-/* BG CANVAS */
 #bg-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
 
-/* HEADER */
 .hdr { background:rgba(13,15,26,0.95); padding:12px 16px 14px; position:sticky; top:0; z-index:50; border-bottom:1px solid var(--border); backdrop-filter:blur(10px); }
 .hdr-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
 .game-title { font-family:'Orbitron',monospace; font-size:13px; font-weight:900; color:var(--gold); letter-spacing:2px; }
@@ -30,7 +28,6 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 .xp-fill { height:100%; border-radius:100px; background:linear-gradient(90deg,var(--gold),var(--gold2)); transition:width 0.6s ease; }
 .xp-text { font-size:10px; color:var(--muted); flex-shrink:0; font-family:'Orbitron',monospace; }
 
-/* STUDIO ROOM */
 .studio-room { position:relative; z-index:1; margin:12px 16px; background:linear-gradient(135deg,#0a0c18,#07080d); border-radius:20px; border:1px solid var(--border); padding:16px; overflow:hidden; min-height:200px; }
 .studio-room::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%,rgba(245,197,24,0.08) 0%,transparent 60%); pointer-events:none; }
 .studio-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; position:relative; z-index:1; }
@@ -47,18 +44,13 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 .mining-beam { position:absolute; bottom:0; left:50%; width:2px; transform:translateX(-50%); background:linear-gradient(0deg,transparent,var(--gold)99); border-radius:2px; animation:beamUp 1.8s ease-in-out infinite; }
 @keyframes beamUp { 0%,100%{height:0;opacity:0} 50%{height:28px;opacity:1} }
 
-/* COLLECT */
 .collect-wrap { position:relative; z-index:1; padding:0 16px 12px; }
 .pending-info { text-align:center; font-size:11px; color:var(--muted); margin-bottom:6px; font-family:'Orbitron',monospace; }
 .pending-info span { color:var(--gold); font-weight:700; }
-.collect-btn { width:100%; padding:18px; border:none; border-radius:18px; background:linear-gradient(135deg,var(--gold),var(--gold2)); font-family:'Orbitron',monospace; font-size:15px; font-weight:900; color:#000; cursor:pointer; transition:all 0.15s; letter-spacing:1px; position:relative; overflow:hidden; }
-.collect-btn::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.2),transparent); animation:btnShine 2s linear infinite; }
-@keyframes btnShine { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+.collect-btn { width:100%; padding:18px; border:none; border-radius:18px; background:linear-gradient(135deg,var(--gold),var(--gold2)); font-family:'Orbitron',monospace; font-size:15px; font-weight:900; color:#000; cursor:pointer; transition:all 0.15s; letter-spacing:1px; }
 .collect-btn.empty { background:var(--card); color:var(--muted); border:1px solid var(--border); }
-.collect-btn.empty::after { display:none; }
 .collect-btn:active { transform:scale(0.97); }
 
-/* STREAK */
 .streak-banner { position:relative; z-index:1; margin:0 16px 12px; background:linear-gradient(135deg,#1a0800,#1a1500); border:1px solid var(--gold)44; border-radius:16px; padding:14px 16px; display:flex; align-items:center; gap:12px; }
 .streak-info { flex:1; }
 .streak-title { font-size:14px; font-weight:700; color:var(--gold); }
@@ -67,7 +59,6 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 .streak-btn:active { transform:scale(0.95); }
 .streak-btn.claimed { background:var(--border); color:var(--muted); cursor:default; }
 
-/* REWARDS */
 .rewards-section { position:relative; z-index:1; margin:0 16px 12px; }
 .rewards-title { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
 .rewards-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
@@ -80,12 +71,10 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 .reward-coins { font-size:11px; color:var(--green); font-family:'Orbitron',monospace; font-weight:700; margin-top:2px; }
 .reward-badge { position:absolute; top:4px; right:4px; background:var(--green); color:#000; font-size:8px; font-weight:900; padding:2px 5px; border-radius:4px; }
 
-/* TABS */
 .tabs { position:relative; z-index:1; display:flex; padding:0 16px; gap:6px; margin-bottom:12px; }
 .tab { flex:1; padding:10px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; text-align:center; }
 .tab.active { background:#1a1500; color:var(--gold); border-color:var(--gold)55; }
 
-/* SHOP */
 .shop-list { position:relative; z-index:1; padding:0 16px; }
 .shop-item { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:14px; margin-bottom:10px; display:flex; align-items:center; gap:12px; transition:all 0.2s; }
 .shop-item.affordable { border-color:var(--gold)44; box-shadow:0 0 12px rgba(245,197,24,0.08); }
@@ -104,14 +93,12 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 .shop-buy.maxed-btn { background:var(--purple)33; color:var(--purple); cursor:default; }
 .shop-buy:active:not(.cant-buy):not(.maxed-btn) { transform:scale(0.95); }
 
-/* STATS */
 .stats-section { position:relative; z-index:1; padding:0 16px; }
 .stat-row { display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--border); font-size:14px; }
 .stat-row:last-child { border-bottom:none; }
 .stat-row .s-label { color:var(--muted); }
 .stat-row .s-val { font-family:'Orbitron',monospace; font-weight:700; color:var(--gold); }
 
-/* MILESTONES */
 .ms-list { position:relative; z-index:1; padding:0 16px; }
 .ms-item { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:13px; margin-bottom:8px; display:flex; align-items:center; gap:12px; }
 .ms-item.reached { border-color:var(--gold)55; background:linear-gradient(135deg,#1a1500,var(--card)); }
@@ -119,7 +106,6 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 .ms-name { font-size:14px; font-weight:700; }
 .ms-req  { font-size:11px; color:var(--muted); margin-top:2px; }
 
-/* PARTICLES */
 .coin-float { position:fixed; pointer-events:none; z-index:999; font-family:'Orbitron',monospace; font-size:14px; font-weight:700; color:var(--gold); text-shadow:0 0 8px var(--gold); animation:floatUp 1.2s ease-out forwards; }
 @keyframes floatUp { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-100px) scale(0.7)} }
 .mining-particle { position:fixed; pointer-events:none; z-index:98; font-size:11px; font-family:'Orbitron',monospace; color:var(--gold); animation:mineUp 1.8s ease-out forwards; }
@@ -129,7 +115,6 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 .coin-rain { position:fixed; pointer-events:none; z-index:95; font-size:16px; animation:rainFall linear forwards; }
 @keyframes rainFall { 0%{opacity:1;transform:translateY(0) rotate(0)} 100%{opacity:0;transform:translateY(160px) rotate(360deg)} }
 
-/* POPUP */
 .popup-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:200; display:none; align-items:center; justify-content:center; padding:24px; }
 .popup-overlay.show { display:flex; }
 .popup-box { background:var(--panel); border:1px solid var(--gold)66; border-radius:24px; padding:32px 24px; text-align:center; width:100%; max-width:320px; animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
@@ -139,10 +124,8 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 .popup-desc { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:20px; }
 .popup-btn { width:100%; padding:16px; border:none; border-radius:14px; background:linear-gradient(135deg,var(--gold),var(--gold2)); font-family:'Orbitron',monospace; font-size:14px; font-weight:700; color:#000; cursor:pointer; }
 
-/* TOAST */
 .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#fff; color:#000; padding:12px 20px; border-radius:100px; font-size:14px; font-weight:700; z-index:999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5); font-family:'Rajdhani',sans-serif; }
 .toast.show { transform:translateX(-50%) translateY(0); }
-
 .section-label { position:relative; z-index:1; font-family:'Orbitron',monospace; font-size:9px; font-weight:700; color:var(--muted); letter-spacing:2px; text-transform:uppercase; padding:0 16px; margin-bottom:8px; }
 </style>
 </head>
@@ -174,16 +157,15 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
   <button class="collect-btn empty" id="collect-btn" onclick="collectCoins()">RECOGER COINS</button>
 </div>
 
-<div class="streak-banner" id="streak-banner">
+<div class="streak-banner">
   <div style="font-size:28px" id="streak-icon">🔥</div>
   <div class="streak-info">
     <div class="streak-title" id="streak-title">Racha diaria</div>
-    <div class="streak-sub"  id="streak-sub">Entra cada día para multiplicar</div>
+    <div class="streak-sub" id="streak-sub">Entra cada día para multiplicar</div>
   </div>
   <button class="streak-btn" id="streak-btn" onclick="claimStreak()">CLAIM</button>
 </div>
 
-<!-- DAILY REWARDS -->
 <div class="rewards-section">
   <div class="rewards-title">🎁 Recompensas diarias</div>
   <div class="rewards-grid" id="rewards-grid"></div>
@@ -199,7 +181,6 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
   <div class="section-label">Equipa tu estudio</div>
   <div class="shop-list" id="shop-list"></div>
 </div>
-
 <div id="tab-stats" style="display:none">
   <div class="stats-section">
     <div class="stat-row"><span class="s-label">🪙 Total ganado</span><span class="s-val" id="st-total">0</span></div>
@@ -208,10 +189,9 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
     <div class="stat-row"><span class="s-label">🏆 Mejor racha</span><span class="s-val" id="st-best">0 días</span></div>
     <div class="stat-row"><span class="s-label">🎚️ Equipos</span><span class="s-val" id="st-equip">0</span></div>
     <div class="stat-row"><span class="s-label">📅 Días jugando</span><span class="s-val" id="st-days">0</span></div>
-    <div class="stat-row"><span class="s-label">👤 ID jugador</span><span class="s-val" id="st-uid" style="font-size:9px">—</span></div>
+    <div class="stat-row"><span class="s-label">👤 ID</span><span class="s-val" id="st-uid" style="font-size:9px">—</span></div>
   </div>
 </div>
-
 <div id="tab-milestones" style="display:none">
   <div class="section-label">Logros</div>
   <div class="ms-list" id="ms-list"></div>
@@ -225,68 +205,59 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
     <button class="popup-btn" onclick="closePopup()">¡GENIAL!</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#07080d"); tg.setBackgroundColor("#07080d"); }
 
-// Global error catch - show error instead of blank screen
-window.onerror = function(msg, src, line) {
-  document.body.innerHTML = `<div style="padding:24px;font-family:sans-serif;color:#fff;background:#07080d;min-height:100vh">
-    <div style="color:#ff4d4d;font-size:16px;font-weight:700;margin-bottom:8px">❌ Error al cargar</div>
-    <div style="font-size:12px;color:#666;margin-bottom:4px">${msg}</div>
-    <div style="font-size:11px;color:#444">Línea ${line}</div>
-    <button onclick="location.reload()" style="margin-top:16px;padding:12px 24px;background:#f5c518;color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer">🔄 Reintentar</button>
-  </div>`;
-  return false;
-};
-
-// ── USER ID ───────────────────────────────────────────────
-const USER_ID  = tg?.initDataUnsafe?.user?.id || localStorage.getItem("mkeyz_uid") || "guest_" + Math.random().toString(36).slice(2,8);
+// ── USER ID (per-user save) ───────────────────────────────
+const USER_ID  = tg?.initDataUnsafe?.user?.id || localStorage.getItem("mkeyz_uid") || "g_" + Math.random().toString(36).slice(2,8);
 if (!tg?.initDataUnsafe?.user?.id) localStorage.setItem("mkeyz_uid", USER_ID);
-const SAVE_KEY = `mkeyz_game_v3_${USER_ID}`;
+const SAVE_KEY = "mkeyz_game_v3_" + USER_ID;
 
 // ── BG CANVAS ─────────────────────────────────────────────
-const bgC   = document.getElementById("bg-canvas");
+const bgC = document.getElementById("bg-canvas");
 const bgCtx = bgC.getContext("2d");
-let bgPhase = 0;
-let bgParticles = [];
-
-function resizeBg() { bgC.width = window.innerWidth; bgC.height = window.innerHeight; }
-resizeBg(); window.addEventListener("resize", resizeBg);
-let bgActive = true;
+let bgPts = [], bgPh = 0, bgActive = true;
 document.addEventListener("visibilitychange", () => { bgActive = !document.hidden; });
-
+function resizeBg() { bgC.width=innerWidth; bgC.height=innerHeight; }
+resizeBg(); window.addEventListener("resize", resizeBg);
 function drawBg() {
-  if (!bgActive) { requestAnimationFrame(drawBg); return; }
   requestAnimationFrame(drawBg);
-  bgCtx.fillStyle = "rgba(7,8,13,0.15)";
-  bgCtx.fillRect(0,0,bgC.width,bgC.height);
-  // Floating orbs
-  if (Math.random() < 0.04 && bgParticles.length < 30) {
-    bgParticles.push({ x:Math.random()*bgC.width, y:bgC.height+5, r:Math.random()*2+0.5, speed:Math.random()*0.6+0.2, hue:40+Math.random()*40, life:1 });
-  }
-  bgParticles = bgParticles.filter(p => p.y > -10);
-  bgParticles.forEach(p => {
-    p.y -= p.speed; p.x += Math.sin(bgPhase + p.y*0.02)*0.3;
+  if (!bgActive) return;
+  bgCtx.fillStyle = "rgba(7,8,13,0.15)"; bgCtx.fillRect(0,0,bgC.width,bgC.height);
+  if (Math.random()<0.04 && bgPts.length<25)
+    bgPts.push({x:Math.random()*bgC.width, y:bgC.height+5, r:Math.random()*2+0.5, sp:Math.random()*0.7+0.3, h:35+Math.random()*50});
+  bgPts = bgPts.filter(p=>p.y>-10);
+  bgPts.forEach(p => {
+    p.y -= p.sp; p.x += Math.sin(bgPh+p.y*0.02)*0.4;
     bgCtx.beginPath(); bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    bgCtx.fillStyle = `hsla(${p.hue},100%,70%,0.3)`;
-    bgCtx.fill();
+    bgCtx.fillStyle = `hsla(${p.h},100%,70%,0.35)`; bgCtx.fill();
   });
-  bgPhase += 0.01;
+  bgPh += 0.01;
 }
 drawBg();
 
 // ── EQUIPMENT ─────────────────────────────────────────────
 const EQUIPMENT = [
-  { id:"laptop",     emoji:"💻", name:"Laptop",           desc:"Tu primer setup.",                  coinsPerHour:2,    cost:0,      maxLevel:5, xpGain:10, unlockLevel:1  },
-  { id:"headphones", emoji:"🎧", name:"Auriculares",      desc:"Escucha cada detalle.",             coinsPerHour:4,    cost:80,     maxLevel:5, xpGain:15, unlockLevel:1  },
-  { id:"mic",        emoji:"🎙️", name:"Micrófono",        desc:"Graba voces y samples.",           coinsPerHour:7,    cost:250,    maxLevel:5, xpGain:20, unlockLevel:2  },
-  { id:"keyboard",   emoji:"🎹", name:"Teclado MIDI",     desc:"Compone melodías pro.",            coinsPerHour:12,   cost:600,    maxLevel:5, xpGain:25, unlockLevel:3  },
-  { id:"drums",      emoji:"🥁", name:"Drum Machine",     desc:"Ritmos perfectos.",                coinsPerHour:18,   cost:1200,   maxLevel:5, xpGain:30, unlockLevel:5  },
-  { id:"bass",       emoji:"🎸", name:"Bajo Eléctrico",   desc:"Frecuencias que mueven.",          coinsPerHour:26,   cost:2500,   maxLevel:5, xpGain:35, unlockLevel:7  },
-  { id:"monitors",   emoji:"🔊", name:"Monitores",        desc:"Mezcla con precisión.",            coinsPerHour:38,   cost:5000,   maxLevel:5, xpGain:40, unlockLevel:10 },
-  { id:"synth",      emoji:"🎛️", name:"Sintetizador",     desc:"Sonidos únicos.",                 coinsPerHour:55,   cost:9000,   maxLevel:5, xpGain:50, unlockLevel:12 },
-  { id:"audio_int",  emoj
+  { id:"laptop",     emoji:"💻", name:"Laptop",            desc:"Tu primer setup.",              coinsPerHour:2,    cost:0,      maxLevel:5, xpGain:10,  unlockLevel:1  },
+  { id:"headphones", emoji:"🎧", name:"Auriculares",       desc:"Escucha cada detalle.",          coinsPerHour:4,    cost:80,     maxLevel:5, xpGain:15,  unlockLevel:1  },
+  { id:"mic",        emoji:"🎙️", name:"Micrófono",         desc:"Graba voces y samples.",        coinsPerHour:7,    cost:250,    maxLevel:5, xpGain:20,  unlockLevel:2  },
+  { id:"keyboard",   emoji:"🎹", name:"Teclado MIDI",      desc:"Compone melodías pro.",          coinsPerHour:12,   cost:600,    maxLevel:5, xpGain:25,  unlockLevel:3  },
+  { id:"drums",      emoji:"🥁", name:"Drum Machine",      desc:"Ritmos perfectos.",              coinsPerHour:18,   cost:1200,   maxLevel:5, xpGain:30,  unlockLevel:5  },
+  { id:"bass",       emoji:"🎸", name:"Bajo Eléctrico",    desc:"Frecuencias que mueven.",        coinsPerHour:26,   cost:2500,   maxLevel:5, xpGain:35,  unlockLevel:7  },
+  { id:"monitors",   emoji:"🔊", name:"Monitores",         desc:"Mezcla con precisión.",          coinsPerHour:38,   cost:5000,   maxLevel:5, xpGain:40,  unlockLevel:10 },
+  { id:"synth",      emoji:"🎛️", name:"Sintetizador",      desc:"Sonidos únicos.",               coinsPerHour:55,   cost:9000,   maxLevel:5, xpGain:50,  unlockLevel:12 },
+  { id:"audio_int",  emoji:"🎚️", name:"Audio Interface",   desc:"Calidad profesional.",           coinsPerHour:80,   cost:15000,  maxLevel:5, xpGain:60,  unlockLevel:15 },
+  { id:"console",    emoji:"🖥️", name:"Consola de Mezcla", desc:"Corazón del estudio.",           coinsPerHour:115,  cost:28000,  maxLevel:5, xpGain:75,  unlockLevel:20 },
+  { id:"sampler",    emoji:"🎵", name:"Sampler",           desc:"Cualquier sonido en música.",    coinsPerHour:165,  cost:50000,  maxLevel:5, xpGain:90,  unlockLevel:25 },
+  { id:"vocoder",    emoji:"🤖", name:"Vocoder",           desc:"Voz del futuro.",               coinsPerHour:230,  cost:85000,  maxLevel:5, xpGain:100, unlockLevel:30 },
+  { id:"mpc",        emoji:"🟫", name:"MPC",               desc:"El instrumento legendario.",     coinsPerHour:320,  cost:150000, maxLevel:5, xpGain:120, unlockLevel:40 },
+  { id:"fl_studio",  emoji:"🌈", name:"FL Studio Pro",     desc:"El DAW definitivo.",            coinsPerHour:450,  cost:280000, maxLevel:5, xpGain:150, unlockLevel:50 },
+  { id:"studio_room",emoji:"🏠", name:"Sala de Mezcla",    desc:"Tu espacio profesional.",       coinsPerHour:650,  cost:500000, maxLevel:3, xpGain:200, unlockLevel:60 },
+  { id:"label",      emoji:"🏷️", name:"Sello Discográfico",desc:"Lanza artistas. Todo.",         coinsPerHour:1000, cost:1000000,maxLevel:3, xpGain:300, unlockLevel:80 },
+];
+
+const DAILY_REWARDS = [
+  { id:"r_daw",      emoji:"🎛️", label:"Usar DAW",      coins:25,  xp:15 
