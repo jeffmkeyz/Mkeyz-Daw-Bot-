@@ -51,11 +51,12 @@ body { background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans
 /* CHART */
 .chart-section { padding:8px 16px 6px; position:relative; z-index:1; }
 canvas#chart { width:100%; border-radius:18px; display:block; background:var(--panel); border:1px solid var(--border); touch-action:none; box-shadow:inset 0 0 40px rgba(0,0,0,0.5); }
-.tooltip { position:absolute; background:rgba(10,12,24,0.97); border:1px solid rgba(245,197,24,0.4); border-radius:14px; padding:10px 16px; pointer-events:none; z-index:20; display:none; white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.6),0 0 20px rgba(245,197,24,0.08); }
+.tooltip { position:absolute; background:rgba(6,8,16,0.98); border:1px solid rgba(245,197,24,0.7); border-radius:14px; padding:10px 16px; pointer-events:none; z-index:30; display:none; white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.8), 0 0 24px rgba(245,197,24,0.2); backdrop-filter:blur(12px); }
 .tt-date { font-size:11px; color:var(--muted); margin-bottom:3px; }
 .tt-val  { font-size:20px; font-weight:900; }
 .tt-earn { font-size:12px; color:var(--green); margin-top:3px; font-weight:700; text-shadow:0 0 8px rgba(0,230,118,0.4); }
-.crosshair { position:absolute; top:8px; bottom:6px; width:1px; background:rgba(245,197,24,0.4); pointer-events:none; display:none; box-shadow:0 0 8px rgba(245,197,24,0.3); }
+.crosshair { position:absolute; top:8px; bottom:6px; width:2px; background:rgba(245,197,24,0.8); pointer-events:none; display:none; box-shadow:0 0 12px rgba(245,197,24,0.6), 0 0 4px #fff; border-radius:1px; }
+.chart-dot { position:absolute; width:14px; height:14px; border-radius:50%; background:#fff; border:2px solid var(--gold); pointer-events:none; display:none; transform:translate(-50%,-50%); box-shadow:0 0 12px rgba(245,197,24,0.8), 0 0 20px rgba(245,197,24,0.4); z-index:25; }
 
 /* EARNINGS */
 .earn-box { margin:10px 16px; border-radius:18px; padding:16px; display:grid; grid-template-columns:repeat(3,1fr); gap:10px; text-align:center; position:relative; z-index:1; background:linear-gradient(135deg,rgba(0,230,118,0.07),rgba(0,188,212,0.04)); border:1px solid rgba(0,230,118,0.18); box-shadow:0 0 30px rgba(0,230,118,0.05); animation:fadeUp 0.4s ease; }
@@ -201,6 +202,7 @@ canvas#chart { width:100%; border-radius:18px; display:block; background:var(--p
 <div class="chart-section">
   <canvas id="chart" height="180"></canvas>
   <div class="crosshair" id="crosshair"></div>
+  <div class="chart-dot" id="chart-dot"></div>
   <div class="chart-dot" id="chart-dot"></div>
   <div class="tooltip" id="tooltip">
     <span class="tt-date" id="tt-date"></span>
