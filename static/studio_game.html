@@ -245,8 +245,11 @@ let bgParticles = [];
 
 function resizeBg() { bgC.width = window.innerWidth; bgC.height = window.innerHeight; }
 resizeBg(); window.addEventListener("resize", resizeBg);
+let bgActive = true;
+document.addEventListener("visibilitychange", () => { bgActive = !document.hidden; });
 
 function drawBg() {
+  if (!bgActive) { requestAnimationFrame(drawBg); return; }
   requestAnimationFrame(drawBg);
   bgCtx.fillStyle = "rgba(7,8,13,0.15)";
   bgCtx.fillRect(0,0,bgC.width,bgC.height);
@@ -279,5 +282,4 @@ const EQUIPMENT = [
   { id:"console",    emoji:"🖥️", name:"Consola de Mezcla",desc:"Corazón del estudio.",            coinsPerHour:115,  cost:28000,  maxLevel:5, xpGain:75, unlockLevel:20 },
   { id:"sampler",    emoji:"🎵", name:"Sampler",          desc:"Cualquier sonido en música.",     coinsPerHour:165,  cost:50000,  maxLevel:5, xpGain:90, unlockLevel:25 },
   { id:"vocoder",    emoji:"🤖", name:"Vocoder",          desc:"Voz del futuro.",                 coinsPerHour:230,  cost:85000,  maxLevel:5, xpGain:100, unlockLevel:30 },
-  { id:"mpc",        emoji:"🟫", name:"MPC",              desc:"El instrumento legendario.",      coinsPerHour:320,  cost:150000, maxLevel:5, xpGain:120, unlockLevel:40 },
-  { id:"fl_studio",  emoji:"🌈",
+  { id:"mpc",        emoji:"🟫", nam
