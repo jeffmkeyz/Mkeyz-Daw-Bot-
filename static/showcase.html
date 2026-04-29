@@ -6,810 +6,392 @@
 <title>Mkeyz Studio — Showcase</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:#060810;overflow:hidden;font-family:'Space Grotesk',sans-serif;color:#fff;}
+canvas#bg{position:fixed;inset:0;z-index:0;}
+.scan{position:fixed;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(245,197,24,0.25),transparent);z-index:4;pointer-events:none;animation:scan 5s linear infinite;}
+@keyframes scan{from{top:-1px}to{top:100%}}
+#prog{position:fixed;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#b06afc,#f5c518,#ff4d4d);z-index:100;box-shadow:0 0 10px #f5c518;transition:width .1s linear;}
+#skip{position:fixed;top:14px;right:14px;z-index:200;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:100px;padding:7px 16px;color:rgba(255,255,255,0.35);font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(8px);}
 
-:root {
-  --gold:#f5c518;
-  --purple:#9c27b0;
-  --green:#00e676;
-  --fire:#ff4d4d;
-}
+/* SCENES */
+.sc{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.sc.on{opacity:1;pointer-events:all;}
 
-html, body {
-  width:100%; height:100%;
-  background:#000;
-  overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
-  color:#fff;
-}
+/* INTRO */
+.logo{font-family:'Orbitron',monospace;font-size:54px;font-weight:900;text-align:center;line-height:.9;letter-spacing:-2px;background:linear-gradient(135deg,#fff 0%,#f5c518 55%,#ff9f1c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;opacity:0;transform:scale(.55);transition:all .8s cubic-bezier(.34,1.56,.64,1);}
+.logo.in{opacity:1;transform:scale(1);}
+.sub{font-size:12px;color:rgba(255,255,255,.35);margin-top:14px;letter-spacing:4px;text-transform:uppercase;opacity:0;transition:all .5s ease .4s;}
+.sub.in{opacity:1;}
+.line{width:0;height:1px;background:linear-gradient(90deg,transparent,#f5c518,transparent);margin-top:20px;transition:width 1s ease .7s;}
+.line.in{width:160px;}
 
-/* ── CANVAS BACKGROUND ── */
-#bg-canvas {
-  position:fixed; inset:0; z-index:0;
-}
+/* TAGLINE */
+.tl-wrap{text-align:center;}
+.tl{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;display:block;letter-spacing:-1px;opacity:0;transform:translateY(32px);transition:all .55s cubic-bezier(.34,1.56,.64,1);}
+.tl.in{opacity:1;transform:translateY(0);}
+.tl .g{background:linear-gradient(135deg,#f5c518,#ff9f1c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.tl .p{background:linear-gradient(135deg,#b06afc,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 
-/* ── SCENES ── */
-.scene {
-  position:fixed; inset:0; z-index:10;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  padding:40px 28px;
-  opacity:0; pointer-events:none;
-  transition:none;
-}
-.scene.active { opacity:1; pointer-events:all; }
+/* FEATURE WRAPPER */
+.fw{width:100%;max-width:340px;}
+.flabel{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:100px;padding:5px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px;opacity:0;transform:translateY(-8px);transition:all .4s ease;}
+.flabel.in{opacity:1;transform:translateY(0);}
+.ftitle{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;margin-bottom:8px;line-height:1.1;opacity:0;transform:translateX(-28px);transition:all .5s ease .1s;}
+.ftitle.in{opacity:1;transform:translateX(0);}
+.fdesc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:14px;opacity:0;transition:all .4s ease .25s;}
+.fdesc.in{opacity:1;}
 
-/* ── SCENE 0: INTRO ── */
-.intro-logo {
-  font-size:48px; font-weight:900; letter-spacing:-2px;
-  background:linear-gradient(135deg,#fff 0%,var(--gold) 60%);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  opacity:0; transform:scale(0.7);
-  transition:all 0.8s cubic-bezier(0.34,1.56,0.64,1);
-  text-align:center; line-height:1;
-}
-.intro-logo.show { opacity:1; transform:scale(1); }
+/* TOOLS GRID */
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;opacity:0;transition:opacity .4s ease .3s;}
+.tgrid.in{opacity:1;}
+.tc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(14px);transition:all .4s cubic-bezier(.34,1.56,.64,1);}
+.tc.in{opacity:1;transform:translateY(0);}
+.tc-e{font-size:22px;flex-shrink:0;}
+.tc-n{font-size:12px;font-weight:700;}
+.tc-d{font-size:10px;color:rgba(255,255,255,.35);margin-top:2px;}
 
-.intro-sub {
-  font-size:14px; color:rgba(255,255,255,0.5); margin-top:12px;
-  letter-spacing:4px; text-transform:uppercase;
-  opacity:0; transform:translateY(20px);
-  transition:all 0.6s ease 0.4s;
-  text-align:center;
-}
-.intro-sub.show { opacity:1; transform:translateY(0); }
+/* EQ */
+.eq-box{width:100%;height:76px;background:rgba(0,0,0,.35);border-radius:14px;overflow:hidden;border:1px solid rgba(245,197,24,.1);margin-bottom:12px;opacity:0;transition:opacity .4s ease .2s;box-shadow:0 0 20px rgba(245,197,24,.06);}
+.eq-box.in{opacity:1;}
+canvas.eq{width:100%;height:100%;}
 
-.intro-line {
-  width:0; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent);
-  margin-top:24px; transition:width 1s ease 0.8s;
-}
-.intro-line.show { width:200px; }
+/* CHORD */
+.chord-row{display:flex;gap:8px;margin-bottom:12px;opacity:0;transition:opacity .4s ease .2s;}
+.chord-row.in{opacity:1;}
+.chc{flex:1;background:rgba(176,106,252,.1);border:1px solid rgba(176,106,252,.22);border-radius:14px;padding:14px 6px;text-align:center;transform:translateY(18px);transition:all .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 14px rgba(176,106,252,.08);}
+.chc.in{transform:translateY(0);}
+.ch-n{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#b06afc;}
+.ch-r{font-size:9px;color:rgba(255,255,255,.25);margin-top:2px;}
 
-/* ── SCENE 1: TAGLINE ── */
-.tagline {
-  font-size:32px; font-weight:900; text-align:center; line-height:1.2;
-  letter-spacing:-1px;
-}
-.tagline .line {
-  display:block; overflow:hidden; opacity:0; transform:translateY(40px);
-  transition:all 0.6s cubic-bezier(0.34,1.56,0.64,1);
-}
-.tagline .line.show { opacity:1; transform:translateY(0); }
-.tagline .highlight { color:var(--gold); }
+/* VIEWS PANEL */
+.vp{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(0,230,118,.12);border-radius:14px;padding:14px;margin-bottom:12px;opacity:0;transition:opacity .4s ease .2s;box-shadow:0 0 20px rgba(0,230,118,.05);}
+.vp.in{opacity:1;}
+.vp-row{display:flex;justify-content:space-between;margin-bottom:10px;}
+.vp-s .vp-n{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;}
+.vp-s .vp-l{font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+canvas.vc{width:100%;height:46px;border-radius:8px;display:block;}
 
-/* ── FEATURE SCENES ── */
-.feat-icon {
-  font-size:72px; opacity:0; transform:scale(0.5) rotate(-10deg);
-  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  margin-bottom:20px;
-}
-.feat-icon.show { opacity:1; transform:scale(1) rotate(0); }
+/* PAGOS PANEL */
+.pago-panel{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(79,195,247,.15);border-radius:14px;padding:14px;margin-bottom:12px;opacity:0;transition:opacity .4s ease .2s;box-shadow:0 0 20px rgba(79,195,247,.05);}
+.pago-panel.in{opacity:1;}
+.pago-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.pago-row:last-child{border-bottom:none;}
+.pr-left{display:flex;align-items:center;gap:8px;}
+.pr-plat{font-size:14px;}
+.pr-name{font-size:12px;font-weight:700;}
+.pr-date{font-size:10px;color:rgba(255,255,255,.3);}
+.pr-earn{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;}
+.pr-badge{font-size:9px;padding:3px 8px;border-radius:100px;font-weight:700;margin-left:6px;}
+.pr-badge.paid{background:rgba(0,230,118,.12);color:#00e676;}
+.pr-badge.soon{background:rgba(245,197,24,.12);color:#f5c518;}
 
-.feat-title {
-  font-size:28px; font-weight:900; text-align:center;
-  opacity:0; transform:translateX(-40px);
-  transition:all 0.5s ease 0.2s;
-  letter-spacing:-0.5px;
-}
-.feat-title.show { opacity:1; transform:translateX(0); }
+/* BATTLE */
+.bc{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(255,77,77,.12);border-radius:14px;padding:14px;margin-bottom:12px;opacity:0;transition:opacity .4s ease .2s;box-shadow:0 0 20px rgba(255,77,77,.05);}
+.bc.in{opacity:1;}
+.bc-t{font-size:13px;font-weight:700;margin-bottom:10px;}
+.bc-bar-bg{background:rgba(255,255,255,.06);border-radius:100px;height:8px;margin-bottom:6px;overflow:hidden;}
+.bc-bar{height:100%;border-radius:100px;background:linear-gradient(90deg,#ff4d4d,#ff9f1c);transition:width 1.6s cubic-bezier(.34,1.56,.64,1);}
+.bc-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.bcb{padding:12px;border-radius:12px;text-align:center;font-size:13px;font-weight:800;}
+.bcb.f{background:linear-gradient(135deg,#ff4d4d,#ff9f1c);color:#000;}
+.bcb.s{background:rgba(255,255,255,.05);color:rgba(255,255,255,.3);}
 
-.feat-desc {
-  font-size:15px; color:rgba(255,255,255,0.6); text-align:center;
-  margin-top:10px; line-height:1.6;
-  opacity:0; transform:translateY(20px);
-  transition:all 0.5s ease 0.35s;
-  max-width:280px;
-}
-.feat-desc.show { opacity:1; transform:translateY(0); }
+/* PLANS */
+.plans{display:flex;gap:8px;width:100%;max-width:340px;}
+.plan{flex:1;border-radius:18px;padding:16px 8px;text-align:center;opacity:0;transform:translateY(28px);transition:all .5s cubic-bezier(.34,1.56,.64,1);}
+.plan.in{opacity:1;transform:translateY(0);}
+.plan-e{font-size:26px;margin-bottom:8px;}
+.plan-n{font-size:12px;font-weight:800;margin-bottom:3px;}
+.plan-p{font-size:9px;opacity:.45;}
 
-.feat-tags {
-  display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:16px;
-}
-.feat-tag {
-  padding:6px 14px; border-radius:100px; font-size:12px; font-weight:700;
-  opacity:0; transform:scale(0.8);
-  transition:all 0.3s ease;
-}
-.feat-tag.show { opacity:1; transform:scale(1); }
-
-/* ── SCENE: PLANS ── */
-.plans-row {
-  display:flex; gap:12px; width:100%; max-width:340px;
-}
-.plan-card {
-  flex:1; border-radius:16px; padding:16px 10px; text-align:center;
-  opacity:0; transform:translateY(40px);
-  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-}
-.plan-card.show { opacity:1; transform:translateY(0); }
-.plan-emoji { font-size:28px; margin-bottom:8px; }
-.plan-name  { font-size:13px; font-weight:800; margin-bottom:4px; }
-.plan-price { font-size:11px; opacity:0.6; }
-
-/* ── SCENE: FINALE ── */
-.finale-title {
-  font-size:36px; font-weight:900; text-align:center;
-  background:linear-gradient(135deg,#fff,var(--gold));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  opacity:0; transform:scale(0.8);
-  transition:all 0.8s cubic-bezier(0.34,1.56,0.64,1);
-  letter-spacing:-1px;
-}
-.finale-title.show { opacity:1; transform:scale(1); }
-
-.finale-url {
-  font-size:20px; font-weight:700; color:var(--gold); margin-top:16px;
-  opacity:0; transition:all 0.6s ease 0.5s;
-}
-.finale-url.show { opacity:1; }
-
-.finale-cta {
-  margin-top:28px; padding:16px 36px; border-radius:100px; border:none;
-  background:linear-gradient(135deg,var(--gold),#ff8c00);
-  font-size:17px; font-weight:800; color:#000; cursor:pointer;
-  opacity:0; transform:translateY(20px);
-  transition:all 0.5s ease 0.8s;
-}
-.finale-cta.show { opacity:1; transform:translateY(0); }
-.finale-cta:active { transform:scale(0.97); }
-
-/* ── PROGRESS BAR ── */
-#progress-bar {
-  position:fixed; bottom:0; left:0; height:3px;
-  background:linear-gradient(90deg,var(--gold),var(--fire));
-  z-index:100; transition:width 0.1s linear;
-  box-shadow:0 0 8px var(--gold);
-}
-
-/* ── SKIP BTN ── */
-#skip-btn {
-  position:fixed; top:20px; right:20px; z-index:200;
-  background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
-  border-radius:100px; padding:8px 16px; color:rgba(255,255,255,0.5);
-  font-size:12px; font-weight:600; cursor:pointer; backdrop-filter:blur(8px);
-}
-
-/* ── PARTICLES ── */
-.particle {
-  position:fixed; border-radius:50%; pointer-events:none; z-index:5;
-  animation:particleFloat linear forwards;
-}
-@keyframes particleFloat {
-  0%   { transform:translateY(100vh) scale(0); opacity:0.8; }
-  100% { transform:translateY(-20vh) scale(1); opacity:0; }
-}
-
-/* ── GLITCH ── */
-@keyframes glitch {
-  0%,100% { transform:translate(0); }
-  20%     { transform:translate(-2px,2px); }
-  40%     { transform:translate(2px,-2px); }
-  60%     { transform:translate(-1px,1px); }
-  80%     { transform:translate(1px,-1px); }
-}
-.glitch { animation:glitch 0.3s ease; }
-
-/* ── SCAN LINE ── */
-.scan-line {
-  position:fixed; left:0; right:0; height:2px;
-  background:linear-gradient(90deg,transparent,rgba(245,197,24,0.4),transparent);
-  z-index:15; pointer-events:none;
-  animation:scanLine 3s linear infinite;
-}
-@keyframes scanLine {
-  from { top:-2px; }
-  to   { top:100%; }
-}
+/* FINALE */
+.fin-t{font-family:'Orbitron',monospace;font-size:32px;font-weight:900;text-align:center;line-height:1.15;letter-spacing:-1px;opacity:0;transform:scale(.85);transition:all .8s cubic-bezier(.34,1.56,.64,1);}
+.fin-t.in{opacity:1;transform:scale(1);}
+.fin-t span{background:linear-gradient(135deg,#f5c518,#ff9f1c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.fin-u{font-size:17px;font-weight:700;color:#f5c518;margin-top:14px;opacity:0;transition:all .5s ease .5s;text-shadow:0 0 20px rgba(245,197,24,.4);}
+.fin-u.in{opacity:1;}
+.fin-btn{margin-top:26px;padding:17px 38px;border-radius:100px;border:none;background:linear-gradient(135deg,#f5c518,#ff9f1c);font-family:'Orbitron',monospace;font-size:14px;font-weight:900;color:#000;cursor:pointer;opacity:0;transform:translateY(18px);transition:all .5s ease .9s;box-shadow:0 8px 32px rgba(245,197,24,.28);}
+.fin-btn.in{opacity:1;transform:translateY(0);}
+.fin-btn:active{transform:scale(.96);}
 </style>
 </head>
 <body>
+<canvas id="bg"></canvas>
+<div class="scan"></div>
+<div id="prog" style="width:0%"></div>
+<button id="skip" onclick="goFin()">Skip →</button>
 
-<canvas id="bg-canvas"></canvas>
-<div class="scan-line"></div>
-<div id="progress-bar" style="width:0%"></div>
-<button id="skip-btn" onclick="goToFinale()">Skip →</button>
-
-<!-- SCENE 0: LOGO INTRO -->
-<div class="scene" id="s0">
-  <div class="intro-logo" id="intro-logo">MKEYZ<br>STUDIO</div>
-  <div class="intro-sub" id="intro-sub">Powered by Telegram</div>
-  <div class="intro-line" id="intro-line"></div>
+<!-- S0 INTRO -->
+<div class="sc on" id="s0">
+  <div class="logo" id="logo">MKEYZ<br>STUDIO</div>
+  <div class="sub" id="sub">La plataforma musical dentro de Telegram</div>
+  <div class="line" id="line"></div>
 </div>
 
-<!-- SCENE 1: TAGLINE -->
-<div class="scene" id="s1">
-  <div class="tagline">
-    <span class="line" id="tl1">El primer</span>
-    <span class="line" id="tl2"><span class="highlight">estudio musical</span></span>
-    <span class="line" id="tl3">dentro de Telegram</span>
+<!-- S1 TAGLINE -->
+<div class="sc" id="s1">
+  <div class="tl-wrap">
+    <span class="tl" id="tl0">Tu estudio.</span>
+    <span class="tl" id="tl1">Tus <span class="g">herramientas.</span></span>
+    <span class="tl" id="tl2">Tu <span class="p">plataforma.</span></span>
   </div>
 </div>
 
-<!-- SCENE 2: DAW with animated EQ -->
-<div class="scene" id="s2">
-  <div class="feat-title" id="ft2" style="font-size:22px;margin-bottom:16px">🎛️ Mini DAW</div>
-  <canvas id="daw-canvas" width="300" height="120" style="border-radius:12px;background:#050505;border:1px solid #1f1f1f;margin-bottom:14px;opacity:0;transition:opacity 0.5s 0.2s" id="daw-cnv"></canvas>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;opacity:0;transition:opacity 0.5s 0.5s" id="daw-btns">
-    <span style="padding:6px 14px;border-radius:100px;background:#1a1500;color:#f5c518;border:1px solid #f5c51844;font-size:12px;font-weight:700">🎵 Pitch Shift</span>
-    <span style="padding:6px 14px;border-radius:100px;background:#1a1500;color:#f5c518;border:1px solid #f5c51844;font-size:12px;font-weight:700">🌊 Reverb</span>
-    <span style="padding:6px 14px;border-radius:100px;background:#1a1500;color:#f5c518;border:1px solid #f5c51844;font-size:12px;font-weight:700">🎚️ EQ</span>
-    <span style="padding:6px 14px;border-radius:100px;background:#1a1500;color:#f5c518;border:1px solid #f5c51844;font-size:12px;font-weight:700">⏱️ Delay</span>
-  </div>
-  <div class="feat-desc" id="fd2" style="margin-top:12px">Procesa audio directamente en el chat</div>
-</div>
-
-<!-- SCENE 3: CHORD GENERATOR animated -->
-<div class="scene" id="s3">
-  <div class="feat-title" id="ft3" style="font-size:22px;margin-bottom:14px">🎹 Chord Generator</div>
-  <div id="chord-display" style="display:flex;gap:10px;margin-bottom:14px;opacity:0;transition:opacity 0.5s 0.2s">
-    <div class="chord-anim-card" id="cc1" style="min-width:64px;padding:14px 10px;border-radius:14px;text-align:center;background:#1a0040;border:1px solid #a78bfa44;transform:translateY(30px);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1)">
-      <div style="font-size:20px;font-weight:900;color:#a78bfa">Am</div>
-      <div style="font-size:10px;color:#555;margin-top:2px">I</div>
-    </div>
-    <div class="chord-anim-card" id="cc2" style="min-width:64px;padding:14px 10px;border-radius:14px;text-align:center;background:#1a0040;border:1px solid #a78bfa44;transform:translateY(30px);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.15s">
-      <div style="font-size:20px;font-weight:900;color:#a78bfa">F</div>
-      <div style="font-size:10px;color:#555;margin-top:2px">VI</div>
-    </div>
-    <div class="chord-anim-card" id="cc3" style="min-width:64px;padding:14px 10px;border-radius:14px;text-align:center;background:#1a0040;border:1px solid #a78bfa44;transform:translateY(30px);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.3s">
-      <div style="font-size:20px;font-weight:900;color:#a78bfa">C</div>
-      <div style="font-size:10px;color:#555;margin-top:2px">III</div>
-    </div>
-    <div class="chord-anim-card" id="cc4" style="min-width:64px;padding:14px 10px;border-radius:14px;text-align:center;background:#1a0040;border:1px solid #a78bfa44;transform:translateY(30px);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.45s">
-      <div style="font-size:20px;font-weight:900;color:#a78bfa">E</div>
-      <div style="font-size:10px;color:#555;margin-top:2px">V</div>
-    </div>
-  </div>
-  <canvas id="chord-wave" width="300" height="60" style="border-radius:10px;background:#050505;border:1px solid #1f1f1f;margin-bottom:12px;opacity:0;transition:opacity 0.5s 0.5s"></canvas>
-  <div style="display:flex;gap:8px;justify-content:center;opacity:0;transition:opacity 0.5s 0.7s" id="chord-tags">
-    <span style="padding:6px 14px;border-radius:100px;background:#1a0040;color:#a78bfa;border:1px solid #a78bfa44;font-size:12px;font-weight:700">A Menor</span>
-    <span style="padding:6px 14px;border-radius:100px;background:#1a0040;color:#a78bfa;border:1px solid #a78bfa44;font-size:12px;font-weight:700">Trap</span>
-    <span style="padding:6px 14px;border-radius:100px;background:#1a0040;color:#a78bfa;border:1px solid #a78bfa44;font-size:12px;font-weight:700">⬇️ .MIDI</span>
-  </div>
-</div>
-
-<!-- SCENE 4: VOICE STUDIO -->
-<div class="scene" id="s4">
-  <div class="feat-icon" id="fi4">🎤</div>
-  <div class="feat-title" id="ft4">Voice Studio</div>
-  <div class="feat-desc" id="fd4">Graba ideas al instante<br>Compressor · Reverb · Pitch en vivo</div>
-  <div class="feat-tags" id="ftags4">
-    <span class="feat-tag" style="background:#001a00;color:#00e676;border:1px solid #00e67644">Grabación</span>
-    <span class="feat-tag" style="background:#001a00;color:#00e676;border:1px solid #00e67644">Efectos</span>
-    <span class="feat-tag" style="background:#001a00;color:#00e676;border:1px solid #00e67644">Descarga</span>
-  </div>
-</div>
-
-<!-- SCENE 5: BEAT BATTLE animated -->
-<div class="scene" id="s5">
-  <div class="feat-title" id="ft5" style="font-size:22px;margin-bottom:16px">🎮 Beat Battle Arena</div>
-  <div style="background:#111;border:1px solid #1f1f1f;border-radius:16px;padding:16px;width:100%;max-width:300px;opacity:0;transition:opacity 0.5s 0.2s" id="battle-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="font-size:13px;font-weight:700">🎵 Jeff Mkeyz - Dark Trap</div>
-      <div style="font-size:10px;color:#f5c518;background:#1a1500;padding:3px 8px;border-radius:100px">⏱ 18h</div>
-    </div>
-    <div style="background:#1f1f1f;border-radius:100px;height:8px;margin-bottom:6px;overflow:hidden">
-      <div id="battle-bar" style="height:100%;border-radius:100px;background:linear-gradient(90deg,#ff4d4d,#ff8c00);width:0%;transition:width 1.5s cubic-bezier(0.34,1.56,0.64,1)"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:#555;margin-bottom:12px">
-      <span id="fire-count" style="color:#ff4d4d;font-weight:700">🔥 0 votos</span>
-      <span id="skip-count">💀 12</span>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div style="padding:12px;border-radius:12px;background:linear-gradient(135deg,#ff4d4d,#ff8c00);text-align:center;font-size:13px;font-weight:800;color:#fff">🔥 Fuego</div>
-      <div style="padding:12px;border-radius:12px;background:#1f1f1f;text-align:center;font-size:13px;font-weight:700;color:#555">💀 Skip</div>
+<!-- S2 TOOLS GRID -->
+<div class="sc" id="s2">
+  <div class="fw">
+    <div class="flabel" id="fl2">🎛️ Herramientas Pro</div>
+    <div class="ftitle" id="ft2" style="color:#f5c518">8 herramientas.<br>Un solo chat.</div>
+    <div class="fdesc" id="fd2">Procesa, crea y analiza sin salir de Telegram.</div>
+    <div class="tgrid" id="tg2">
+      <div class="tc" style="border-color:rgba(245,197,24,.18)"><div class="tc-e">🎛️</div><div><div class="tc-n">Mini DAW</div><div class="tc-d">Pitch · Reverb · EQ · Delay</div></div></div>
+      <div class="tc" style="border-color:rgba(176,106,252,.18)"><div class="tc-e">🎹</div><div><div class="tc-n">Chord Generator</div><div class="tc-d">MIDI Export para FL Studio</div></div></div>
+      <div class="tc" style="border-color:rgba(0,230,118,.18)"><div class="tc-e">🎤</div><div><div class="tc-n">Voice Studio</div><div class="tc-d">Graba · Efectos en vivo</div></div></div>
+      <div class="tc" style="border-color:rgba(79,195,247,.18)"><div class="tc-e">🎚️</div><div><div class="tc-n">Visualizador</div><div class="tc-d">Notas · Frecuencias</div></div></div>
     </div>
   </div>
 </div>
 
-<!-- SCENE 6: RETO SEMANAL -->
-<div class="scene" id="s6">
-  <div class="feat-icon" id="fi6">🏆</div>
-  <div class="feat-title" id="ft6">Reto Semanal</div>
-  <div class="feat-desc" id="fd6">Nuevo reto cada lunes<br>Sube tu audio · La comunidad vota al mejor</div>
-  <div class="feat-tags" id="ftags6">
-    <span class="feat-tag" style="background:#1a1500;color:#f5c518;border:1px solid #f5c51844">Beat 140 BPM</span>
-    <span class="feat-tag" style="background:#1a1500;color:#f5c518;border:1px solid #f5c51844">Freestyle</span>
-    <span class="feat-tag" style="background:#1a1500;color:#f5c518;border:1px solid #f5c51844">Sample Flip</span>
+<!-- S3 CHORD GEN -->
+<div class="sc" id="s3">
+  <div class="fw">
+    <div class="flabel" id="fl3">🎹 Chord Generator + MIDI</div>
+    <div class="ftitle" id="ft3" style="color:#b06afc">Acordes que<br>se quedan.</div>
+    <div class="chord-row" id="cr3">
+      <div class="chc" id="c0"><div class="ch-n">Am</div><div class="ch-r">i</div></div>
+      <div class="chc" id="c1"><div class="ch-n">F</div><div class="ch-r">VI</div></div>
+      <div class="chc" id="c2"><div class="ch-n">C</div><div class="ch-r">III</div></div>
+      <div class="chc" id="c3"><div class="ch-n">E</div><div class="ch-r">V</div></div>
+    </div>
+    <div class="fdesc" id="fd3">Trap · R&B · Lo-Fi · Pop Latino · Afrobeats · Dembow · y más géneros</div>
   </div>
 </div>
 
-<!-- SCENE 6b: STREAM SIMULATOR -->
-<div class="scene" id="s6b">
-  <div class="feat-title" id="ft6b" style="font-size:22px;margin-bottom:16px">📊 Stream Simulator</div>
-  <div style="background:#111;border:1px solid #1a1500;border-radius:16px;padding:16px;width:100%;max-width:300px;opacity:0;transition:opacity 0.5s 0.2s" id="sim-card">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px;text-align:center">
-      <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px">
-        <div style="font-size:9px;color:#555;margin-bottom:4px">CANCIONES</div>
-        <div style="font-size:18px;font-weight:900;color:#f5c518" id="sim-songs">9</div>
+<!-- S4 DAW EQ -->
+<div class="sc" id="s4">
+  <div class="fw">
+    <div class="flabel" id="fl4">🎛️ Mini DAW</div>
+    <div class="ftitle" id="ft4" style="color:#f5c518">Procesa audio<br>directo en el chat.</div>
+    <div class="eq-box" id="eq4"><canvas class="eq" id="eqc"></canvas></div>
+    <div class="tgrid" id="tg4" style="grid-template-columns:repeat(4,1fr)">
+      <div class="tc" style="flex-direction:column;text-align:center;padding:10px 4px;gap:4px"><div class="tc-e" style="font-size:18px">🎵</div><div class="tc-n" style="font-size:10px">Pitch</div></div>
+      <div class="tc" style="flex-direction:column;text-align:center;padding:10px 4px;gap:4px"><div class="tc-e" style="font-size:18px">🌊</div><div class="tc-n" style="font-size:10px">Reverb</div></div>
+      <div class="tc" style="flex-direction:column;text-align:center;padding:10px 4px;gap:4px"><div class="tc-e" style="font-size:18px">🎚️</div><div class="tc-n" style="font-size:10px">EQ</div></div>
+      <div class="tc" style="flex-direction:column;text-align:center;padding:10px 4px;gap:4px"><div class="tc-e" style="font-size:18px">⏱️</div><div class="tc-n" style="font-size:10px">Delay</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- S5 VIEWS TRACKER + PAGOS -->
+<div class="sc" id="s5">
+  <div class="fw">
+    <div class="flabel" id="fl5">📊 Studio — Análisis & Pagos</div>
+    <div class="ftitle" id="ft5" style="color:#00e676">Controla tus<br>números reales.</div>
+    <div class="vp" id="vp5">
+      <div class="vp-row">
+        <div class="vp-s"><div class="vp-n" id="vps" style="color:#00e676">0</div><div class="vp-l">Streams</div></div>
+        <div class="vp-s" style="text-align:center"><div class="vp-n" id="vpe" style="color:#f5c518">$0.00</div><div class="vp-l">Estimado/día</div></div>
+        <div class="vp-s" style="text-align:right"><div class="vp-n" id="vpg" style="color:#4fc3f7">+0%</div><div class="vp-l">Crecimiento</div></div>
       </div>
-      <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px">
-        <div style="font-size:9px;color:#555;margin-bottom:4px">OYENTES</div>
-        <div style="font-size:18px;font-weight:900;color:#00e676" id="sim-listeners">1K</div>
-      </div>
-      <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px">
-        <div style="font-size:9px;color:#555;margin-bottom:4px">REP×DÍA</div>
-        <div style="font-size:18px;font-weight:900;color:#4fc3f7" id="sim-reps">4×</div>
-      </div>
+      <canvas class="vc" id="vc5"></canvas>
     </div>
-    <div style="background:#1a1500;border:1px solid #f5c51844;border-radius:12px;padding:14px;text-align:center">
-      <div style="font-size:10px;color:#555;margin-bottom:4px">STREAMS/DÍA</div>
-      <div style="font-size:32px;font-weight:900;color:#f5c518;letter-spacing:-1px" id="sim-total">0</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
-        <div><div style="font-size:9px;color:#555">DIARIO</div><div style="font-size:13px;font-weight:800;color:#00e676" id="sim-day">$0</div></div>
-        <div><div style="font-size:9px;color:#555">MENSUAL</div><div style="font-size:13px;font-weight:800;color:#00e676" id="sim-month">$0</div></div>
-        <div><div style="font-size:9px;color:#555">ANUAL</div><div style="font-size:13px;font-weight:800;color:#00e676" id="sim-year">$0</div></div>
+    <div class="pago-panel" id="pp5">
+      <div class="pago-row">
+        <div class="pr-left"><span class="pr-plat">🎵</span><div><div class="pr-name">Spotify</div><div class="pr-date">Pago abril 2026</div></div></div>
+        <div style="display:flex;align-items:center"><span class="pr-earn" style="color:#00e676">$12.47</span><span class="pr-badge paid">✓ Pagado</span></div>
+      </div>
+      <div class="pago-row">
+        <div class="pr-left"><span class="pr-plat">📦</span><div><div class="pr-name">Amazon</div><div class="pr-date">Pago mayo 2026</div></div></div>
+        <div style="display:flex;align-items:center"><span class="pr-earn" style="color:#f5c518">$8.93</span><span class="pr-badge soon">Próximo</span></div>
+      </div>
+      <div class="pago-row">
+        <div class="pr-left"><span class="pr-plat">🍎</span><div><div class="pr-name">Apple Music</div><div class="pr-date">Pago junio 2026</div></div></div>
+        <div style="display:flex;align-items:center"><span class="pr-earn" style="color:#4fc3f7">~$5.20</span><span class="pr-badge soon" style="color:#4fc3f7;background:rgba(79,195,247,.12)">Estimado</span></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SCENE 7: PLANES -->
-<div class="scene" id="s7">
-  <div class="feat-title" id="ft7" style="margin-bottom:20px;font-size:24px">Elige tu plan</div>
-  <div class="plans-row">
-    <div class="plan-card" id="pc1" style="background:#111;border:1px solid #222;transition-delay:0s">
-      <div class="plan-emoji">🆓</div>
-      <div class="plan-name">Free</div>
-      <div class="plan-price">Gratis</div>
+<!-- S6 BEAT BATTLE -->
+<div class="sc" id="s6">
+  <div class="fw">
+    <div class="flabel" id="fl6">🎮 Comunidad</div>
+    <div class="ftitle" id="ft6" style="color:#ff4d4d">Beat Battle.<br>Que la gente vote.</div>
+    <div class="bc" id="bc6">
+      <div class="bc-t">🎵 Jeff Mkeyz — Dark Trap</div>
+      <div class="bc-bar-bg"><div class="bc-bar" id="bcb" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.35);margin-bottom:4px">
+        <span id="bcv" style="color:#ff4d4d;font-weight:700">🔥 0 votos</span>
+        <span>⏱ 18h restantes</span>
+      </div>
+      <div class="bc-btns"><div class="bcb f">🔥 Fuego</div><div class="bcb s">💀 Skip</div></div>
     </div>
-    <div class="plan-card" id="pc2" style="background:#1a1500;border:1px solid #f5c51844;transition-delay:0.15s">
-      <div class="plan-emoji">⭐</div>
-      <div class="plan-name" style="color:#f5c518">Pro</div>
-      <div class="plan-price">50 Stars</div>
-    </div>
-    <div class="plan-card" id="pc3" style="background:#1a0040;border:1px solid #a78bfa44;transition-delay:0.3s">
-      <div class="plan-emoji">🎛️</div>
-      <div class="plan-name" style="color:#a78bfa">Studio</div>
-      <div class="plan-price">150 Stars</div>
-    </div>
+    <div class="fdesc" id="fd6">Beat Battle · Reto Semanal · Playlist Generator · Zona Artistas</div>
   </div>
 </div>
 
-<!-- SCENE 8: FINALE -->
-<div class="scene" id="s8">
-  <div class="finale-title" id="finale-title">Tu estudio.<br>En tu bolsillo.</div>
-  <div class="finale-url" id="finale-url">t.me/MkeyzDAWbot</div>
-  <button class="finale-cta" id="finale-cta" onclick="openBot()">🚀 Entrar al Studio</button>
+<!-- S7 PLANS -->
+<div class="sc" id="s7">
+  <div class="ftitle" id="ft7" style="text-align:center;font-size:20px;margin-bottom:20px">Elige tu plan</div>
+  <div class="plans">
+    <div class="plan" id="p0" style="background:#111;border:1px solid #1e2030"><div class="plan-e">🆓</div><div class="plan-n">Free</div><div class="plan-p">Gratis</div></div>
+    <div class="plan" id="p1" style="background:linear-gradient(135deg,#1a1500,#0f1120);border:1px solid rgba(245,197,24,.28);box-shadow:0 0 20px rgba(245,197,24,.08)"><div class="plan-e">⭐</div><div class="plan-n" style="color:#f5c518">Pro</div><div class="plan-p">300 Stars/mes</div></div>
+    <div class="plan" id="p2" style="background:linear-gradient(135deg,#1a0040,#0f1120);border:1px solid rgba(176,106,252,.28);box-shadow:0 0 20px rgba(176,106,252,.08)"><div class="plan-e">🎛️</div><div class="plan-n" style="color:#b06afc">Studio</div><div class="plan-p">750 Stars/mes</div></div>
+  </div>
+</div>
+
+<!-- S8 FINALE -->
+<div class="sc" id="s8">
+  <div class="fin-t" id="ft8">Tu estudio.<br><span>En tu bolsillo.</span></div>
+  <div class="fin-u" id="fu">t.me/MkeyzDAWbot</div>
+  <button class="fin-btn" id="fb" onclick="openBot()">🚀 Entrar al Studio</button>
 </div>
 
 <script>
-const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#000000"); tg.setBackgroundColor("#000000"); }
+const tg=window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();tg.setHeaderColor("#060810");tg.setBackgroundColor("#060810");}
 
-// ── AUDIO ENGINE ──────────────────────────────────────────────
-let audioCtx;
-function getAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
+// BG
+const bg=document.getElementById("bg"),bgCtx=bg.getContext("2d");
+let bgPts=[],bgP=0;
+function rBg(){bg.width=innerWidth;bg.height=innerHeight;}
+rBg();window.addEventListener("resize",rBg);
+function dBg(){
+  requestAnimationFrame(dBg);
+  bgCtx.fillStyle="rgba(6,8,16,.18)";bgCtx.fillRect(0,0,bg.width,bg.height);
+  bgCtx.strokeStyle="rgba(245,197,24,.02)";bgCtx.lineWidth=1;
+  for(let x=0;x<bg.width;x+=46){bgCtx.beginPath();bgCtx.moveTo(x,0);bgCtx.lineTo(x,bg.height);bgCtx.stroke();}
+  for(let y=0;y<bg.height;y+=46){bgCtx.beginPath();bgCtx.moveTo(0,y);bgCtx.lineTo(bg.width,y);bgCtx.stroke();}
+  if(Math.random()<.04&&bgPts.length<22)
+    bgPts.push({x:Math.random()*bg.width,y:bg.height+4,r:Math.random()*2+.4,sp:Math.random()*.7+.3,h:35+Math.random()*50});
+  bgPts=bgPts.filter(p=>p.y>-8);
+  bgPts.forEach(p=>{p.y-=p.sp;p.x+=Math.sin(bgP+p.y*.02)*.4;bgCtx.beginPath();bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);bgCtx.fillStyle=`hsla(${p.h},100%,70%,.3)`;bgCtx.fill();});
+  bgP+=.01;
+}
+dBg();
+
+// AUDIO
+let ac;
+function A(){if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();return ac;}
+function tone(f,d,t="sine",v=.1){try{const c=A(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
+function kick(){tone(150,.2,"sine",.7);setTimeout(()=>tone(40,.1,"sine",.4),50);}
+function whoosh(){try{const c=A(),o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();o.connect(f);f.connect(g);g.connect(c.destination);f.type="bandpass";f.frequency.value=1200;o.type="sawtooth";o.frequency.setValueAtTime(800,c.currentTime);o.frequency.exponentialRampToValueAtTime(200,c.currentTime+.3);g.gain.setValueAtTime(.15,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.3);o.start();o.stop(c.currentTime+.3);}catch(e){}}
+function chime(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.5,"sine",.09),i*80));}
+function rise(){try{const c=A(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type="sine";o.frequency.setValueAtTime(200,c.currentTime);o.frequency.exponentialRampToValueAtTime(1000,c.currentTime+.9);g.gain.setValueAtTime(.07,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+1);o.start();o.stop(c.currentTime+1);}catch(e){}}
+
+// EQ
+let eqRaf,eqPh=0;
+function startEQ(){
+  const cv=document.getElementById("eqc");if(!cv)return;
+  const ctx=cv.getContext("2d"),dpr=devicePixelRatio||1;
+  cv.width=cv.offsetWidth*dpr;cv.height=cv.offsetHeight*dpr;
+  const W=cv.width,H=cv.height,N=30;
+  function draw(){eqRaf=requestAnimationFrame(draw);ctx.clearRect(0,0,W,H);
+    for(let i=0;i<N;i++){const v=.2+.8*Math.abs(Math.sin(eqPh+i*.45+Math.sin(i*.25)*2));const bh=v*(H-4),bw=W/N-2,x=i*(W/N);const hue=35+v*25;ctx.fillStyle=`hsla(${hue},100%,${50+v*20}%,${.45+v*.55})`;ctx.shadowColor=`hsla(${hue},100%,70%,.35)`;ctx.shadowBlur=6;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,H-bh,bw,bh,2);else ctx.rect(x,H-bh,bw,bh);ctx.fill();ctx.shadowBlur=0;}eqPh+=.09;}
+  draw();
 }
 
-function playKick() {
-  try {
-    const ctx  = getAudio();
-    const osc  = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.setValueAtTime(150, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.8, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.2);
-  } catch(e) {}
+// VIEWS CHART
+function drawVC(){
+  const cv=document.getElementById("vc5");if(!cv)return;
+  const ctx=cv.getContext("2d"),dpr=devicePixelRatio||1;
+  cv.width=cv.offsetWidth*dpr;cv.height=cv.offsetHeight*dpr;
+  const W=cv.width,H=cv.height;
+  const pts=[2,5,4,7,6,12,10,15,18,14,22,25,28,35,32,40,44,38,47,50,45,54,50,57];
+  const mx=Math.max(...pts)*1.2;
+  const tx=i=>i*(W/(pts.length-1)),ty=v=>H-(v/mx)*H*.92;
+  const gr=ctx.createLinearGradient(0,0,0,H);
+  gr.addColorStop(0,"rgba(0,230,118,.45)");gr.addColorStop(1,"rgba(0,230,118,.02)");
+  ctx.beginPath();ctx.moveTo(tx(0),H);
+  pts.forEach((_,i)=>ctx.lineTo(tx(i),ty(pts[i])));
+  ctx.lineTo(tx(pts.length-1),H);ctx.closePath();ctx.fillStyle=gr;ctx.fill();
+  ctx.beginPath();ctx.strokeStyle="#00e676";ctx.lineWidth=2*dpr;ctx.lineJoin="round";
+  ctx.shadowColor="#00e676";ctx.shadowBlur=8*dpr;
+  pts.forEach((_,i)=>i===0?ctx.moveTo(tx(i),ty(pts[i])):ctx.lineTo(tx(i),ty(pts[i])));
+  ctx.stroke();ctx.shadowBlur=0;
 }
 
-function playHihat() {
-  try {
-    const ctx    = getAudio();
-    const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
-    const data   = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-    const src    = ctx.createBufferSource();
-    const filter = ctx.createBiquadFilter();
-    const gain   = ctx.createGain();
-    filter.type = "highpass"; filter.frequency.value = 8000;
-    src.buffer = buffer;
-    src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    src.start(ctx.currentTime);
-  } catch(e) {}
-}
-
-function playWhoosh() {
-  try {
-    const ctx  = getAudio();
-    const osc  = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const filter = ctx.createBiquadFilter();
-    osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
-    filter.type = "bandpass"; filter.frequency.value = 1200;
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(800, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.3);
-    gain.gain.setValueAtTime(0.2, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
-  } catch(e) {}
-}
-
-function playRise() {
-  try {
-    const ctx  = getAudio();
-    const osc  = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(200, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.8);
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.5);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.9);
-  } catch(e) {}
-}
-
-function playChime() {
-  try {
-    const ctx   = getAudio();
-    const freqs = [523, 659, 784, 1047];
-    freqs.forEach((f, i) => {
-      const osc  = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine"; osc.frequency.value = f;
-      const t = ctx.currentTime + i * 0.08;
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.15, t + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
-      osc.start(t); osc.stop(t + 0.8);
-    });
-  } catch(e) {}
-}
-
-// Beat loop
-let beatLoop;
-function startBeat() {
-  let step = 0;
-  beatLoop = setInterval(() => {
-    if (step % 4 === 0) playKick();
-    if (step % 2 === 1) playHihat();
-    step++;
-  }, 150);
-}
-function stopBeat() { clearInterval(beatLoop); }
-
-// ── BACKGROUND CANVAS ─────────────────────────────────────────
-const bgCanvas = document.getElementById("bg-canvas");
-const bgCtx    = bgCanvas.getContext("2d");
-let particles  = [];
-let bgHue      = 280;
-
-function initBg() {
-  bgCanvas.width  = window.innerWidth;
-  bgCanvas.height = window.innerHeight;
-}
-
-function drawBg() {
-  requestAnimationFrame(drawBg);
-  bgCtx.fillStyle = `rgba(0,0,0,0.08)`;
-  bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
-
-  // Grid lines
-  bgCtx.strokeStyle = `rgba(245,197,24,0.03)`;
-  bgCtx.lineWidth = 1;
-  for (let x = 0; x < bgCanvas.width; x += 40) {
-    bgCtx.beginPath();
-    bgCtx.moveTo(x, 0); bgCtx.lineTo(x, bgCanvas.height);
-    bgCtx.stroke();
-  }
-  for (let y = 0; y < bgCanvas.height; y += 40) {
-    bgCtx.beginPath();
-    bgCtx.moveTo(0, y); bgCtx.lineTo(bgCanvas.width, y);
-    bgCtx.stroke();
-  }
-
-  // Floating orbs
-  if (Math.random() < 0.05) {
-    particles.push({
-      x: Math.random() * bgCanvas.width,
-      y: bgCanvas.height + 10,
-      r: Math.random() * 3 + 1,
-      speed: Math.random() * 1 + 0.5,
-      hue: Math.random() * 60 + 260,
-      opacity: Math.random() * 0.5 + 0.1,
-    });
-  }
-
-  particles = particles.filter(p => p.y > -20);
-  particles.forEach(p => {
-    p.y -= p.speed;
-    bgCtx.beginPath();
-    bgCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    bgCtx.fillStyle = `hsla(${p.hue},100%,70%,${p.opacity})`;
-    bgCtx.fill();
-  });
-}
-
-// ── SCENES ENGINE ─────────────────────────────────────────────
-const TOTAL_DURATION = 30000; // 30 seconds
-const SCENES = [
-  { id:"s0", duration:3000, enter: enterS0 },
-  { id:"s1", duration:3500, enter: enterS1 },
-  { id:"s2", duration:3000, enter: enterFeature.bind(null,2) },
-  { id:"s3", duration:3000, enter: enterFeature.bind(null,3) },
-  { id:"s4", duration:3000, enter: enterFeature.bind(null,4) },
-  { id:"s5", duration:3000, enter: enterFeature.bind(null,5) },
-  { id:"s6", duration:3000, enter: enterFeature.bind(null,6) },
-  { id:"s6b", duration:3500, enter: enterSimulator },
-  { id:"s7", duration:3500, enter: enterS7 },
-  { id:"s8", duration:5000, enter: enterFinale },
+// SCENES
+const SCENES=[
+  {id:"s0",dur:3000,fn:eS0},
+  {id:"s1",dur:3500,fn:eS1},
+  {id:"s2",dur:3500,fn:eS2},
+  {id:"s3",dur:3200,fn:eS3},
+  {id:"s4",dur:3000,fn:eS4},
+  {id:"s5",dur:3800,fn:eS5},
+  {id:"s6",dur:3200,fn:eS6},
+  {id:"s7",dur:3500,fn:eS7},
+  {id:"s8",dur:6000,fn:eS8},
 ];
+const TOTAL=SCENES.reduce((s,x)=>s+x.dur,0);
+let cur=0,nxt,pgI;
 
-let currentScene = -1;
-let totalElapsed = 0;
-let progressInterval;
-
-function showScene(idx) {
-  // Hide all
-  document.querySelectorAll(".scene").forEach(s => s.classList.remove("active"));
-  // Show current
-  const sceneEl = document.getElementById(SCENES[idx].id);
-  if (sceneEl) sceneEl.classList.add("active");
-  currentScene = idx;
-  SCENES[idx].enter();
+function show(i){
+  document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
+  document.getElementById(SCENES[i].id).classList.add("on");
+  cur=i;SCENES[i].fn();
 }
+function run(i){if(i>=SCENES.length)return;show(i);nxt=setTimeout(()=>run(i+1),SCENES[i].dur);}
+function goFin(){clearTimeout(nxt);clearInterval(pgI);show(SCENES.length-1);document.getElementById("prog").style.width="100%";document.getElementById("skip").style.display="none";}
+function openBot(){if(tg)tg.close();else window.open("https://t.me/MkeyzDAWbot","_blank");}
 
-function hideScene(idx) {
-  const sceneEl = document.getElementById(SCENES[idx]?.id);
-  if (sceneEl) sceneEl.classList.remove("active");
+function startProg(){let e=0;pgI=setInterval(()=>{e+=100;document.getElementById("prog").style.width=Math.min(100,e/TOTAL*100)+"%";if(e>=TOTAL)clearInterval(pgI);},100);}
+
+// SCENE ENTER FNS
+function show$(id){document.getElementById(id)?.classList.add("in");}
+function eS0(){rise();setTimeout(()=>show$("logo"),100);setTimeout(()=>{show$("sub");show$("line");},500);}
+function eS1(){whoosh();["tl0","tl1","tl2"].forEach((id,i)=>setTimeout(()=>{show$(id);kick();},100+i*400));}
+function eS2(){
+  whoosh();
+  setTimeout(()=>show$("fl2"),80);setTimeout(()=>show$("ft2"),180);setTimeout(()=>show$("fd2"),320);
+  const g=document.getElementById("tg2");g.classList.add("in");
+  g.querySelectorAll(".tc").forEach((c,i)=>setTimeout(()=>{c.classList.add("in");kick();},420+i*110));
 }
-
-function enterS0() {
-  playRise();
-  setTimeout(() => {
-    document.getElementById("intro-logo").classList.add("show");
-    setTimeout(() => {
-      document.getElementById("intro-sub").classList.add("show");
-      document.getElementById("intro-line").classList.add("show");
-    }, 400);
-  }, 100);
+function eS3(){
+  whoosh();
+  setTimeout(()=>show$("fl3"),80);setTimeout(()=>show$("ft3"),180);
+  document.getElementById("cr3").classList.add("in");
+  ["c0","c1","c2","c3"].forEach((id,i)=>setTimeout(()=>{show$(id);tone(280+i*90,.3,"triangle",.08);},350+i*160));
+  setTimeout(()=>show$("fd3"),900);
 }
-
-function enterS1() {
-  playWhoosh();
-  setTimeout(() => { document.getElementById("tl1").classList.add("show"); playKick(); }, 100);
-  setTimeout(() => { document.getElementById("tl2").classList.add("show"); playKick(); }, 500);
-  setTimeout(() => { document.getElementById("tl3").classList.add("show"); playKick(); }, 900);
+function eS4(){
+  whoosh();
+  setTimeout(()=>show$("fl4"),80);setTimeout(()=>show$("ft4"),180);
+  setTimeout(()=>{show$("eq4");startEQ();},300);
+  const g=document.getElementById("tg4");g.classList.add("in");
+  g.querySelectorAll(".tc").forEach((c,i)=>setTimeout(()=>{c.classList.add("in");kick();},400+i*100));
 }
-
-function enterFeature(n) {
-  playWhoosh();
-  if (n === 2) {
-    setTimeout(() => {
-      document.getElementById("ft2").classList.add("show");
-      document.getElementById("daw-canvas").style.opacity = "1";
-      document.getElementById("daw-btns").style.opacity = "1";
-      document.getElementById("fd2").classList.add("show");
-      startDawAnim();
-    }, 100);
-    return;
-  }
-  if (n === 3) {
-    setTimeout(() => {
-      document.getElementById("ft3").classList.add("show");
-      document.getElementById("chord-display").style.opacity = "1";
-      document.getElementById("chord-wave").style.opacity = "1";
-      document.getElementById("chord-tags").style.opacity = "1";
-      // Animate chords
-      ["cc1","cc2","cc3","cc4"].forEach((id,i) => {
-        setTimeout(() => {
-          document.getElementById(id).style.transform = "translateY(0)";
-          playHihat();
-        }, 300 + i * 150);
-      });
-      startChordAnim();
-    }, 100);
-    return;
-  }
-  if (n === 5) {
-    setTimeout(() => {
-      document.getElementById("ft5").classList.add("show");
-      animateBattle();
-    }, 100);
-    return;
-  }
-  setTimeout(() => { document.getElementById("fi"+n).classList.add("show"); playKick(); }, 100);
-  setTimeout(() => { document.getElementById("ft"+n).classList.add("show"); }, 300);
-  setTimeout(() => { document.getElementById("fd"+n).classList.add("show"); }, 500);
-  const tags = document.querySelectorAll("#ftags"+n+" .feat-tag");
-  tags.forEach((t, i) => {
-    setTimeout(() => {
-      t.classList.add("show");
-      playHihat();
-    }, 700 + i * 100);
-  });
+function eS5(){
+  whoosh();
+  setTimeout(()=>show$("fl5"),80);setTimeout(()=>show$("ft5"),180);
+  setTimeout(()=>{show$("vp5");drawVC();},300);
+  setTimeout(()=>show$("pp5"),500);
+  // count up streams
+  let f=0;const cu=setInterval(()=>{f++;const p=f/20;
+    document.getElementById("vps").textContent=Math.round(1333*p).toLocaleString();
+    document.getElementById("vpe").textContent="$"+(1333*p*.001106).toFixed(3);
+    document.getElementById("vpg").textContent="+"+(Math.round(p*47))+"%";
+    if(f>=20)clearInterval(cu);},80);
 }
-
-function enterS7() {
-  playChime();
-  setTimeout(() => document.getElementById("ft7").classList.add("show"), 100);
-  setTimeout(() => { document.getElementById("pc1").classList.add("show"); playHihat(); }, 300);
-  setTimeout(() => { document.getElementById("pc2").classList.add("show"); playHihat(); }, 500);
-  setTimeout(() => { document.getElementById("pc3").classList.add("show"); playHihat(); }, 700);
+function eS6(){
+  whoosh();
+  setTimeout(()=>show$("fl6"),80);setTimeout(()=>show$("ft6"),180);
+  setTimeout(()=>show$("bc6"),300);
+  setTimeout(()=>{document.getElementById("bcb").style.width="74%";},600);
+  let v=0;const cv=setInterval(()=>{v++;document.getElementById("bcv").textContent="🔥 "+v+" votos";kick();if(v>=47)clearInterval(cv);},45);
+  setTimeout(()=>show$("fd6"),700);
 }
-
-function enterFinale() {
-  stopBeat();
-  playRise();
-  setTimeout(() => playChime(), 600);
-  setTimeout(() => { document.getElementById("finale-title").classList.add("show"); }, 200);
-  setTimeout(() => { document.getElementById("finale-url").classList.add("show"); }, 800);
-  setTimeout(() => { document.getElementById("finale-cta").classList.add("show"); }, 1200);
-  if (tg) tg.HapticFeedback?.notificationOccurred("success");
+function eS7(){
+  if(eqRaf)cancelAnimationFrame(eqRaf);
+  chime();
+  setTimeout(()=>show$("ft7"),100);
+  ["p0","p1","p2"].forEach((id,i)=>setTimeout(()=>{show$(id);tone(280+i*110,.3,"sine",.09);},280+i*200));
 }
+function eS8(){rise();setTimeout(chime,600);setTimeout(()=>show$("ft8"),200);setTimeout(()=>show$("fu"),800);setTimeout(()=>{show$("fb");if(tg)tg.HapticFeedback?.notificationOccurred("success");},1200);}
 
-// ── DAW EQ ANIMATION ─────────────────────────────────────────
-let dawAnimId;
-function startDawAnim() {
-  const canvas = document.getElementById("daw-canvas");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  const W = canvas.width, H = canvas.height;
-  const bars = 32;
-  let phase = 0;
-
-  function draw() {
-    dawAnimId = requestAnimationFrame(draw);
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = "#050505";
-    ctx.fillRect(0, 0, W, H);
-    for (let i = 0; i < bars; i++) {
-      const val = 0.3 + 0.7 * Math.abs(Math.sin(phase + i * 0.4 + Math.sin(i * 0.2) * 2));
-      const bh  = val * (H - 8);
-      const x   = i * (W / bars);
-      const bw  = W / bars - 2;
-      const hue = 40 + val * 20;
-      ctx.fillStyle = `hsla(${hue},100%,${50+val*20}%,${0.5+val*0.5})`;
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x, H - bh, bw, bh, 2);
-      else ctx.rect(x, H - bh, bw, bh);
-      ctx.fill();
-    }
-    phase += 0.08;
-  }
-  draw();
-}
-
-// ── CHORD WAVE ANIMATION ──────────────────────────────────────
-let chordAnimId;
-function startChordAnim() {
-  const canvas = document.getElementById("chord-wave");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  const W = canvas.width, H = canvas.height;
-  let phase = 0;
-
-  function draw() {
-    chordAnimId = requestAnimationFrame(draw);
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = "#050505";
-    ctx.fillRect(0, 0, W, H);
-
-    // Draw 3 overlapping waves
-    [[240,0.8,"#a78bfa"],[200,0.5,"#7c3aed"],[180,0.3,"#4c1d95"]].forEach(([speed,amp,color]) => {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 6;
-      ctx.beginPath();
-      for (let x = 0; x < W; x++) {
-        const y = H/2 + Math.sin((x/W)*Math.PI*4 + phase*(speed/200)) * H * amp * 0.35;
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    });
-    phase += 0.05;
-  }
-  draw();
-}
-
-// ── SIMULATOR ANIMATION ───────────────────────────────────────
-function enterSimulator() {
-  playWhoosh();
-  setTimeout(() => {
-    document.getElementById("ft6b").classList.add("show");
-    document.getElementById("sim-card").style.opacity = "1";
-
-    // Animate numbers counting up
-    let songs = 0, listeners = 0, reps = 0;
-    const targetSongs = 9, targetListeners = 1000, targetReps = 4;
-    let frame = 0;
-    const countUp = setInterval(() => {
-      frame++;
-      songs     = Math.min(targetSongs,     Math.round(frame * targetSongs / 20));
-      listeners = Math.min(targetListeners, Math.round(frame * targetListeners / 20));
-      reps      = Math.min(targetReps,      Math.round(frame * targetReps / 20));
-
-      const total   = songs * listeners * reps;
-      const daily   = total * 0.001106;
-      const monthly = daily * 30;
-      const yearly  = daily * 365;
-
-      document.getElementById("sim-songs").textContent     = songs;
-      document.getElementById("sim-listeners").textContent = listeners >= 1000 ? (listeners/1000).toFixed(1)+"K" : listeners;
-      document.getElementById("sim-reps").textContent      = reps + "×";
-      document.getElementById("sim-total").textContent     = total.toLocaleString();
-      document.getElementById("sim-day").textContent       = "$" + daily.toFixed(3);
-      document.getElementById("sim-month").textContent     = "$" + monthly.toFixed(2);
-      document.getElementById("sim-year").textContent      = "$" + yearly.toFixed(0);
-
-      if (frame >= 20) clearInterval(countUp);
-    }, 80);
-  }, 100);
-}
-
-// ── BATTLE ANIMATION ──────────────────────────────────────────
-function animateBattle() {
-  setTimeout(() => {
-    document.getElementById("battle-card").style.opacity = "1";
-    setTimeout(() => {
-      document.getElementById("battle-bar").style.width = "72%";
-      let votes = 0;
-      const countVotes = setInterval(() => {
-        votes++;
-        document.getElementById("fire-count").textContent = "🔥 " + votes + " votos";
-        playHihat();
-        if (votes >= 47) clearInterval(countVotes);
-      }, 40);
-    }, 600);
-  }, 200);
-}
-
-function goToFinale() {
-  clearTimeout(nextSceneTimeout);
-  clearInterval(progressInterval);
-  showScene(SCENES.length - 1);
-  document.getElementById("progress-bar").style.width = "100%";
-  document.getElementById("skip-btn").style.display = "none";
-}
-
-let nextSceneTimeout;
-function runScene(idx) {
-  if (idx >= SCENES.length) return;
-  showScene(idx);
-
-  nextSceneTimeout = setTimeout(() => {
-    runScene(idx + 1);
-  }, SCENES[idx].duration);
-}
-
-function openBot() {
-  if (tg) {
-    tg.close();
-  } else {
-    window.open("https://t.me/MkeyzDAWbot", "_blank");
-  }
-}
-
-// Progress bar
-function startProgress() {
-  let elapsed = 0;
-  progressInterval = setInterval(() => {
-    elapsed += 100;
-    const pct = Math.min(100, (elapsed / TOTAL_DURATION) * 100);
-    document.getElementById("progress-bar").style.width = pct + "%";
-    if (elapsed >= TOTAL_DURATION) clearInterval(progressInterval);
-  }, 100);
-}
-
-// ── START ─────────────────────────────────────────────────────
-window.addEventListener("resize", initBg);
-initBg();
-drawBg();
-startBeat();
-startProgress();
-runScene(0);
+startProg();run(0);
 </script>
 </body>
 </html>
