@@ -280,6 +280,13 @@ canvas#chart {
 .toast.show { transform:translateX(-50%) translateY(0); }
 
 .empty-state { text-align:center; padding:36px 20px; color:var(--muted); font-size:13px; line-height:2; }
+.pay-import-card {
+  display:flex; align-items:center; gap:10px;
+  margin:0 16px 6px; padding:10px 12px; border-radius:12px;
+  background:var(--card); border:1px solid var(--border);
+  transition:border-color 0.2s;
+}
+.pay-import-card.loaded { border-color:rgba(0,230,118,0.3); }
 /* PAGOS */
 .pagos-header { padding:14px 16px 6px; }
 .pagos-total {
@@ -423,59 +430,34 @@ canvas#chart {
   <div class="btab" onclick="showBTab('pagos',this)">📅 Pagos</div>
 </div>
 
+<!-- TAB: DATOS — hidden import cards (keep inputs alive for file API) -->
+<div style="display:none" aria-hidden="true">
+  <input type="file" accept=".csv" id="spotify-csv"      onchange="importSpotifyCSV(this)">
+  <input type="file" accept=".csv" id="amazon-csv"       onchange="importAmazonCSV(this)">
+  <input type="file" accept=".csv" id="amazon-prime-csv" onchange="importAmazonPrimeCSV(this)">
+  <input type="file" accept=".csv" id="apple-csv"        onchange="importAppleCSV(this)">
+  <input type="file" accept=".csv" id="youtube-csv"      onchange="importYouTubeCSV(this)">
+  <input type="file" accept=".csv" id="pay-spotify-csv"      onchange="importPaymentCSV(this,'spotify')">
+  <input type="file" accept=".csv" id="pay-amazon-csv"       onchange="importPaymentCSV(this,'amazon')">
+  <input type="file" accept=".csv" id="pay-amazon_prime-csv" onchange="importPaymentCSV(this,'amazon_prime')">
+  <input type="file" accept=".csv" id="pay-apple-csv"        onchange="importPaymentCSV(this,'apple')">
+  <input type="file" accept=".csv" id="pay-youtube-csv"      onchange="importPaymentCSV(this,'youtube')">
+  <div id="spotify-status"></div>
+  <div id="amazon-status"></div>
+  <div id="amazon-prime-status"></div>
+  <div id="apple-status"></div>
+  <div id="youtube-status"></div>
+  <div id="pay-status-spotify"></div>
+  <div id="pay-status-amazon"></div>
+  <div id="pay-status-amazon_prime"></div>
+  <div id="pay-status-apple"></div>
+  <div id="pay-status-youtube"></div>
+</div>
+
 <!-- TAB: DATOS -->
 <div class="btab-content active" id="btab-import">
+  <div id="datos-panel"></div>
 
-  <!-- SPOTIFY IMPORT -->
-  <div class="import-card spotify">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <span style="font-size:22px">🎵</span>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:var(--blue)">Importar CSV Spotify</div>
-        <div style="font-size:10px;color:var(--muted)">audience-timeline.csv · Trendlines CSV</div>
-      </div>
-    </div>
-    <label class="import-label spotify">
-      📁 Seleccionar CSV de Spotify
-      <input type="file" accept=".csv" id="spotify-csv" style="display:none" onchange="importSpotifyCSV(this)">
-    </label>
-    <div class="import-status" id="spotify-status">Sube tu CSV de Spotify for Artists</div>
-    <button class="btn-clear" onclick="clearPlatform('spotify')">🗑️ Limpiar datos Spotify</button>
-  </div>
-
-  <!-- AMAZON IMPORT -->
-  <div class="import-card amazon">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <span style="font-size:22px">📦</span>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:#ff9900">Importar CSV Amazon Music</div>
-        <div style="font-size:10px;color:var(--muted)">Trendlines · Fecha, Reproducciones, Oyentes</div>
-      </div>
-    </div>
-    <label class="import-label amazon">
-      📁 Seleccionar CSV de Amazon
-      <input type="file" accept=".csv" id="amazon-csv" style="display:none" onchange="importAmazonCSV(this)">
-    </label>
-    <div class="import-status" id="amazon-status">Sube tu CSV de Amazon Music for Artists</div>
-    <button class="btn-clear" onclick="clearPlatform('amazon')">🗑️ Limpiar datos Amazon</button>
-  </div>
-
-  <!-- YOUTUBE IMPORT -->
-  <div class="import-card" style="background:linear-gradient(135deg,rgba(255,51,51,0.07),rgba(10,12,24,0.9));border:1px solid rgba(255,51,51,0.25);box-shadow:0 0 30px rgba(255,51,51,0.06);">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <span style="font-size:22px">▶️</span>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:#ff3333">Importar CSV YouTube</div>
-        <div style="font-size:10px;color:var(--muted)">Datos_del_gráfico.csv · YouTube Studio</div>
-      </div>
-    </div>
-    <label class="import-label" style="background:rgba(255,51,51,0.08);border:1px dashed rgba(255,51,51,0.4);color:#ff3333;">
-      📁 Seleccionar CSV de YouTube
-      <input type="file" accept=".csv" id="youtube-csv" style="display:none" onchange="importYouTubeCSV(this)">
-    </label>
-    <div class="import-status" id="youtube-status">Sube tu CSV de YouTube Studio</div>
-    <button class="btn-clear" onclick="clearPlatform('youtube')">🗑️ Limpiar datos YouTube</button>
-  </div>
 
   <!-- ADD MANUAL -->
   <div class="add-card">
@@ -533,8 +515,9 @@ const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#07080d"); tg.setBackgroundColor("#07080d"); }
 
 const USER_ID  = tg?.initDataUnsafe?.user?.id || "guest";
-const SAVE_KEY = `views_v4_${USER_ID}`;
+const SAVE_KEY = `views_v5_${USER_ID}`; // v5: platform-aware storage
 const SONGS_KEY= `songs_v2_${USER_ID}`;
+const PAY_KEY  = `payments_v1_${USER_ID}`;
 
 // ── BG CANVAS ────────────────────────────────────────────
 const bgC = document.getElementById("bg-canvas");
@@ -551,13 +534,13 @@ resizeBg(); window.addEventListener("resize", resizeBg);
 
 // ── PLATFORMS ─────────────────────────────────────────────
 const PLATFORMS = [
-  { id:"all",       label:"Todo",       emoji:"📊", color:"#f5c518", rate:0 },
-  { id:"spotify",   label:"Spotify",    emoji:"🎵", color:"#1db954", rate:0.001106 },
-  { id:"amazon",    label:"Amazon",     emoji:"📦", color:"#ff9900", rate:0.010574 },
-  { id:"youtube",   label:"YouTube",    emoji:"▶️",  color:"#ff0000", rate:0.003197 },
-  { id:"tiktok",    label:"TikTok",     emoji:"🎬", color:"#69C9D0", rate:0 },
-  { id:"instagram", label:"Instagram",  emoji:"📸", color:"#e91e63", rate:0 },
-  { id:"manual",    label:"Manual",     emoji:"✏️",  color:"#aaa",    rate:0 },
+  { id:"all",           label:"Todo",          emoji:"🌐", color:"#aaa",    rate:0 },
+  { id:"spotify",       label:"Spotify",       emoji:"🎵", color:"#1db954", rate:0.000666 },
+  { id:"amazon",        label:"Amazon Music",  emoji:"📦", color:"#ff9900", rate:0.010574 },
+  { id:"amazon_prime",  label:"Amazon Prime",  emoji:"🔵", color:"#00a8e0", rate:0.001343 },
+  { id:"apple",         label:"Apple Music",   emoji:"🍎", color:"#fc3c44", rate:0.005738 },
+  { id:"youtube",       label:"YouTube",       emoji:"▶️",  color:"#ff0000", rate:0.007440 },
+  { id:"manual",        label:"Manual",        emoji:"✏️",  color:"#aaa",    rate:0 },
 ];
 
 const METRICS = [
@@ -572,6 +555,7 @@ const METRICS = [
 
 let entries       = [];  // [{date, platform, streams, listeners, monthly, followers, saves, views}]
 let songs         = [];
+let payments      = [];  // [{reporting_date, sale_month, platform, streams, earnings}]
 let currentPeriod = 7;
 let currentMetric = "streams";
 let selPlatform   = "all";
@@ -582,7 +566,16 @@ function buildPills() {
   // Metric pills
   const mRow = document.getElementById("metric-row");
   mRow.innerHTML = "";
+  // Spotify-only metrics (not available for other platforms)
+  const spotifyOnly=["listeners","monthly","followers","saves","playlist_adds"];
+  const isSpotify=selPlatform==="spotify";
+
+  // If current metric is spotify-only but spotify not selected, reset to streams
+  if (!isSpotify && spotifyOnly.includes(currentMetric)) currentMetric="streams";
+
   METRICS.forEach(m => {
+    // Hide spotify-only metrics when not on spotify
+    if (spotifyOnly.includes(m.id) && !isSpotify) return;
     const pill = document.createElement("div");
     pill.className = "mpill" + (m.id===currentMetric?" active":"");
     pill.textContent = m.emoji+" "+m.label;
@@ -606,7 +599,8 @@ function buildPills() {
     pill.onclick = () => {
       document.querySelectorAll(".ppill").forEach(x=>{ x.classList.remove("active"); x.style.background=""; x.style.color=""; });
       pill.classList.add("active"); pill.style.background=p.color; pill.style.color="#000";
-      selPlatform=p.id; render();
+      selPlatform=p.id; buildPills(); render();
+      if(document.getElementById('btab-import')?.classList.contains('active')) renderDatosPanel();
       if (tg) tg.HapticFeedback?.impactOccurred("light");
     };
     pRow.appendChild(pill);
@@ -618,10 +612,23 @@ async function load() {
   try { const l=localStorage.getItem(SAVE_KEY); if (l) entries=JSON.parse(l); } catch(e) {}
   try { if (window.storage) { const r=await window.storage.get(SAVE_KEY); if (r?.value) entries=JSON.parse(r.value); } } catch(e) {}
   try { const l=localStorage.getItem(SONGS_KEY); if (l) songs=JSON.parse(l); } catch(e) {}
+  try { const l=localStorage.getItem(PAY_KEY);   if (l) payments=JSON.parse(l); } catch(e) {}
+  try { if (window.storage) { const r=await window.storage.get(PAY_KEY); if (r?.value) payments=JSON.parse(r.value); } } catch(e) {}
   try { if (window.storage) { const r=await window.storage.get(SONGS_KEY); if (r?.value) songs=JSON.parse(r.value); } } catch(e) {}
+  // Migrate entries missing platform field
+  const knownPlats=["spotify","amazon","amazon_prime","apple","youtube","manual"];
+  entries=entries.map(e=>{
+    if (!e.platform||!knownPlats.includes(e.platform)) {
+      // Guess from metrics present
+      if (e.listeners!==undefined||e.monthly!==undefined||e.followers!==undefined||e.playlist_adds!==undefined) return {...e,platform:"spotify"};
+      if (e.views!==undefined&&!e.streams) return {...e,platform:"youtube"};
+      return {...e,platform:"manual"};
+    }
+    return e;
+  });
   buildPills();
   document.getElementById("inp-date").value = new Date().toISOString().split("T")[0];
-  render(); renderHistory(); renderSongs();
+  render(); renderHistory(); renderSongs(); updatePayStatus(); renderDatosPanel();
 }
 
 async function save() {
@@ -633,6 +640,11 @@ async function saveSongs() {
   const d=JSON.stringify(songs);
   try { localStorage.setItem(SONGS_KEY,d); } catch(e) {}
   try { if (window.storage) await window.storage.set(SONGS_KEY,d); } catch(e) {}
+}
+async function savePayments() {
+  const d=JSON.stringify(payments);
+  try { localStorage.setItem(PAY_KEY,d); } catch(e) {}
+  try { if (window.storage) await window.storage.set(PAY_KEY,d); } catch(e) {}
 }
 
 // ── HELPERS ───────────────────────────────────────────────
@@ -656,7 +668,14 @@ function getVal(e) { const v=e[currentMetric]??e.streams??e.views??0; return typ
 function getFiltered() {
   const cut=cutoff();
   let f=entries.filter(e=>e.date>=cut);
-  if (selPlatform!=="all") f=f.filter(e=>e.platform===selPlatform);
+  if (selPlatform!=="all") {
+    f=f.filter(e=>e.platform===selPlatform);
+  } else {
+    // In Todo mode: exclude Amazon/Apple reporting-date entries (they aggregate
+    // months into single dates and create misleading spikes on the chart).
+    // YouTube daily data is fine to include.
+    f=f.filter(e=>!["amazon","amazon_prime","apple"].includes(e.platform));
+  }
   return f.sort((a,b)=>a.date.localeCompare(b.date));
 }
 
@@ -685,8 +704,20 @@ function render() {
   gEl.style.color=growth>=0?"var(--green)":"var(--fire)";
 
   // Earnings
-  const plat=PLATFORMS.find(p=>p.id===selPlatform);
-  const rate=currentMetric==="streams"&&plat?plat.rate:0;
+  let rate=0;
+  if (currentMetric==="streams") {
+    if (selPlatform!=="all") {
+      const plat=PLATFORMS.find(p=>p.id===selPlatform);
+      rate=plat?.rate||0;
+    } else {
+      // Weighted avg rate across loaded platforms
+      const totals={}; let grandTotal=0;
+      data.forEach(e=>{ totals[e.platform]=(totals[e.platform]||0)+getVal(e); grandTotal+=getVal(e); });
+      if (grandTotal>0) Object.entries(totals).forEach(([pid,cnt])=>{
+        const p=PLATFORMS.find(x=>x.id===pid); if(p) rate+=p.rate*(cnt/grandTotal);
+      });
+    }
+  }
   const dayEarn=avg*rate;
   const earnBox=document.getElementById("earn-box");
   if (rate>0&&total>0) {
@@ -717,7 +748,7 @@ function drawChart(data) {
 
   const vals=data.map(e=>getVal(e));
   const maxV=Math.max(...vals)*1.15||1;
-  const pad={t:14*dpr,b:24*dpr,l:8*dpr,r:8*dpr};
+  const pad={t:14*dpr,b:28*dpr,l:8*dpr,r:8*dpr};
   const cW=W-pad.l-pad.r; const cH=H-pad.t-pad.b;
   const toX=i=>pad.l+(i/Math.max(data.length-1,1))*cW;
   const toY=v=>pad.t+cH-(v/maxV)*cH;
@@ -756,15 +787,44 @@ function drawChart(data) {
     });
   }
 
-  // X labels
-  ctx.fillStyle="#4a4f6a"; ctx.font=`${8*dpr}px -apple-system`; ctx.textAlign="center";
-  const step=Math.max(1,Math.floor(data.length/5));
-  data.forEach((e,i) => {
-    if (i%step===0||i===data.length-1) {
+  // X labels — smart format based on period
+  const MONTHS=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  ctx.fillStyle="#7a8099"; ctx.textAlign="center";
+  const useMon=data.length>60; // month view for 3M+
+  const maxLabels=6;
+  const step=Math.max(1,Math.floor(data.length/maxLabels));
+
+  if (useMon) {
+    // Show month name — enforce min pixel gap to avoid overlap
+    const minGap=36*dpr;
+    let lastX=-9999; let lastMon=-1;
+    data.forEach((e,i) => {
       const dt=new Date(e.date+"T00:00:00");
-      ctx.fillText(`${dt.getDate()}/${dt.getMonth()+1}`, toX(i), H-pad.b+10*dpr);
-    }
-  });
+      const mon=dt.getMonth();
+      if (mon!==lastMon) {
+        lastMon=mon;
+        const x=toX(i);
+        if (x-lastX>=minGap) {
+          lastX=x;
+          ctx.font=`bold ${9*dpr}px -apple-system`;
+          ctx.fillStyle="#b0b8d0";
+          ctx.fillText(MONTHS[mon], x, H-pad.b+11*dpr);
+          ctx.strokeStyle="#3a3f5a"; ctx.lineWidth=dpr;
+          ctx.beginPath(); ctx.moveTo(x,H-pad.b+1); ctx.lineTo(x,H-pad.b+4*dpr); ctx.stroke();
+        }
+      }
+    });
+  } else {
+    // Show day/month for shorter periods
+    ctx.font=`${9*dpr}px -apple-system`;
+    ctx.fillStyle="#7a8099";
+    data.forEach((e,i) => {
+      if (i%step===0||i===data.length-1) {
+        const dt=new Date(e.date+"T00:00:00");
+        ctx.fillText(`${dt.getDate()} ${MONTHS[dt.getMonth()]}`, toX(i), H-pad.b+11*dpr);
+      }
+    });
+  }
 
   // Store point positions in CSS pixels for the dot indicator
   canvas._pts=data.map((_,i)=>({
@@ -1040,6 +1100,7 @@ function importAmazonCSV(input) {
       save(); render(); renderHistory();
       document.getElementById("amazon-status").textContent=`✅ ${added} días · ${hasStreams?"Streams":""}${hasStreams&&hasListeners?" + ":""}${hasListeners?"Oyentes":""}`;
       showToast(`✅ ${added} días importados de Amazon`);
+      if(document.getElementById('btab-import')?.classList.contains('active')) renderDatosPanel();
       if (tg) tg.HapticFeedback?.notificationOccurred("success");
     } catch(err) { showToast("❌ Error: "+err.message); console.error(err); }
   };
@@ -1057,51 +1118,64 @@ function renderPagos() {
   const byPlatMonth = {};
   entries.forEach(e => {
     if (!e.streams && !e.views) return;
-    const month = e.date.slice(0,7); // YYYY-MM
+    const month = e.date.slice(0,7);
     const key = e.platform + "|" + month;
     if (!byPlatMonth[key]) byPlatMonth[key] = { platform:e.platform, month, streams:0 };
     byPlatMonth[key].streams += (e.streams || e.views || 0);
   });
 
-  const items = Object.values(byPlatMonth);
+  // Skip non-monetizable platforms
+  const MONETIZABLE = ["spotify","amazon","amazon_prime","apple","youtube"];
+  const items = Object.values(byPlatMonth).filter(i=>MONETIZABLE.includes(i.platform));
+
+  // Also include months from real payments not covered by entries
+  payments.forEach(p => {
+    const key = p.platform + "|" + p.saleMonth;
+    if (!byPlatMonth[key] && MONETIZABLE.includes(p.platform))
+      items.push({ platform:p.platform, month:p.saleMonth, streams:p.streams });
+  });
+
+  if (!items.length && !payments.length) {
+    box.innerHTML = '<div class="empty-state">Carga datos de Spotify, Amazon, Apple o YouTube<br>para ver la proyección de pagos 📅</div>';
+    return;
+  }
   if (!items.length) {
-    box.innerHTML = '<div class="empty-state">Carga datos de Spotify o Amazon<br>para ver la proyección de pagos 📅</div>';
+    box.innerHTML = '<div class="empty-state">Sin datos de plataformas monetizables cargados.<br>Carga audience-timeline.csv de Spotify o similar.</div>';
     return;
   }
 
-  // Payment lag per platform (months after sale month)
-  const LAG = { spotify:2, amazon:3, youtube:2, tiktok:3, manual:2 };
-
+  const LAG = { spotify:2, amazon:2, amazon_prime:2, apple:3, youtube:2, manual:2 };
   const today = new Date();
   const todayStr = today.toISOString().slice(0,7);
 
-  // Calculate projected payments
   const pagos = items.map(item => {
-    const plat = PLATFORMS.find(p=>p.id===item.platform) || PLATFORMS[0];
-    const rate = plat.rate || 0;
-    const estimatedUSD = item.streams * rate;
+    const plat = PLATFORMS.find(p=>p.id===item.platform&&p.id!=='all'&&p.id!=='manual') || null;
+    if (!plat||!plat.rate) return null; // skip unknown/manual/all
     const lag = LAG[item.platform] || 2;
-
-    // Payment month = sale month + lag
     const [y,m] = item.month.split("-").map(Number);
     const payDate = new Date(y, m-1+lag, 1);
     const payMonth = payDate.toISOString().slice(0,7);
 
-    // Status
+    // Use real earnings if available, else estimate
+    const realPay = payments.find(p=>p.platform===item.platform && p.saleMonth===item.month);
+    const isReal = !!realPay;
+    const estimatedUSD = realPay ? realPay.earnings : (item.streams * (plat.rate||0));
+
     let status;
     if (payMonth < todayStr) status = "pagado";
     else if (payMonth <= new Date(today.getFullYear(), today.getMonth()+1, 1).toISOString().slice(0,7)) status = "proximo";
     else status = "pendiente";
 
-    return { ...item, plat, rate, estimatedUSD, payMonth, status };
+    return { ...item, plat, estimatedUSD, payMonth, status, isReal };
   });
 
-  // Sort by payment month desc
-  pagos.sort((a,b) => b.payMonth.localeCompare(a.payMonth));
+  // Filter out nulls, sort by payment month desc
+  const pagosFiltered = pagos.filter(Boolean);
+  pagosFiltered.sort((a,b) => b.payMonth.localeCompare(a.payMonth));
 
   // Totals
-  const totalPendiente = pagos.filter(p=>p.status!=="pagado").reduce((s,p)=>s+p.estimatedUSD,0);
-  const totalPagado    = pagos.filter(p=>p.status==="pagado").reduce((s,p)=>s+p.estimatedUSD,0);
+  const totalPendiente = pagosFiltered.filter(p=>p.status!=="pagado").reduce((s,p)=>s+p.estimatedUSD,0);
+  const totalPagado    = pagosFiltered.filter(p=>p.status==="pagado").reduce((s,p)=>s+p.estimatedUSD,0);
 
   const fmtMonth = ym => {
     const [y,m] = ym.split("-");
@@ -1122,14 +1196,16 @@ function renderPagos() {
     <div style="padding:0 16px 6px;font-size:9px;color:var(--muted);letter-spacing:0.5px">
       ⚠️ Estimación · Lag de ${Object.values(LAG)[0]}-${Math.max(...Object.values(LAG))} meses · Varía por país y plataforma
     </div>
-    ${pagos.map(p => `
+    ${pagosFiltered.map(p => `
     <div class="pago-item ${p.status}">
       <div class="pago-row1">
         <div class="pago-mes"><span class="pago-plat">${p.plat.emoji}</span>${fmtMonth(p.month)} → pago ${fmtMonth(p.payMonth)}</div>
         <div class="pago-amt">${fmtMoney(p.estimatedUSD)}</div>
       </div>
       <div class="pago-row2">
-        <div class="pago-info">${Math.round(p.streams).toLocaleString()} streams · $${p.rate.toFixed(6)}/stream</div>
+        <div class="pago-info">${Math.round(p.streams).toLocaleString()} streams${p.isReal
+          ?" · <span style='color:var(--green);font-weight:700'>✓ pago real</span>"
+          :p.plat.rate>0?" · ~$"+(p.plat.rate).toFixed(6)+"/stream":""}</div>
         <div class="pago-badge ${p.status}">${statusLabel[p.status]}</div>
       </div>
     </div>`).join("")}
@@ -1202,10 +1278,323 @@ function importYouTubeCSV(input) {
       const total=Object.values(byDate).reduce((a,b)=>a+b,0);
       document.getElementById("youtube-status").textContent=`✅ ${added} días · ${total.toLocaleString()} views`;
       showToast(`✅ ${added} días importados de YouTube`);
+      if(document.getElementById('btab-import')?.classList.contains('active')) renderDatosPanel();
       if (tg) tg.HapticFeedback?.notificationOccurred("success");
     } catch(err) { showToast("❌ Error: "+err.message); console.error(err); }
   };
   reader.readAsText(file,"UTF-8");
+}
+
+
+
+// ── IMPORT CSV: AMAZON PRIME ─────────────────────────────
+function importAmazonPrimeCSV(input) {
+  importDistroKidFormat(input, "amazon_prime",
+    "amazon-prime-status", "✅ Amazon Prime importado");
+}
+
+// ── IMPORT CSV: APPLE MUSIC ───────────────────────────────
+function importAppleCSV(input) {
+  importDistroKidFormat(input, "apple",
+    "apple-status", "✅ Apple Music importado");
+}
+
+// ── SHARED DISTROKID FORMAT IMPORTER ─────────────────────
+function importDistroKidFormat(input, platId, statusId, successMsg) {
+  const file=input.files[0]; if (!file) return;
+  const reader=new FileReader();
+  reader.onload=e => {
+    try {
+      const text=e.target.result;
+      const lines=text.trim().split("\n").filter(l=>l.trim());
+      if (lines.length<2) { showToast("❌ CSV vacío"); return; }
+
+      const parseRow=line=>{
+        const c=[]; let cur="",inQ=false;
+        for(const ch of line+","){
+          if(ch==='"'){inQ=!inQ;}
+          else if(ch===","&&!inQ){c.push(cur.trim());cur="";}
+          else{cur+=ch;}
+        }
+        return c;
+      };
+
+      const header=parseRow(lines[0].replace(/^\uFEFF/,""));
+      const idx=h=>header.findIndex(x=>x.replace(/^"|"$/g,"")=== h);
+      const iDate=idx("Reporting Date");
+      const iQty =idx("Quantity");
+      const iEarn=idx("Earnings (USD)");
+      const iTeam=idx("Team Percentage");
+
+      if (iDate===-1||iQty===-1) { showToast("❌ Formato no reconocido"); return; }
+
+      const byDate={};
+      lines.slice(1).forEach(line=>{
+        const c=parseRow(line);
+        const date=(c[iDate]||"").trim();
+        if (!date||!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+        const qty =parseInt(c[iQty])||0;
+        const earn=parseFloat(c[iEarn])||0;
+        const team=parseInt(c[iTeam])||100;
+        if (!byDate[date]) byDate[date]={streams:0,earnings:0};
+        byDate[date].streams +=Math.round(qty*(team/100));
+        byDate[date].earnings+=earn;
+      });
+
+      entries=entries.filter(ex=>ex.platform!==platId);
+      let added=0;
+      Object.entries(byDate).forEach(([date,v])=>{
+        entries.push({date,platform:platId,streams:v.streams,earnings:v.earnings});
+        added++;
+      });
+
+      if (!added) { showToast("❌ No se pudieron leer filas"); return; }
+      entries.sort((a,b)=>a.date.localeCompare(b.date));
+
+      selPlatform=platId; currentMetric="streams";
+      buildPills();
+      const pMap={7:0,28:1,90:2,180:3,365:4,730:5};
+      const period=added>365?730:added>180?365:added>90?180:added>28?90:28;
+      currentPeriod=period;
+      document.querySelectorAll(".ptab").forEach(t=>t.classList.remove("active"));
+      const tabs=document.querySelectorAll(".ptab");
+      if(tabs[pMap[period]??4]) tabs[pMap[period]??4].classList.add("active");
+
+      save(); render(); renderHistory();
+      const totalEarn=Object.values(byDate).reduce((s,v)=>s+v.earnings,0);
+      const totalStreams=Object.values(byDate).reduce((s,v)=>s+v.streams,0);
+      document.getElementById(statusId).textContent=`✅ ${added} fechas · ${totalStreams.toLocaleString()} streams · $${totalEarn.toFixed(2)}`;
+      showToast(successMsg);
+      if(document.getElementById('btab-import')?.classList.contains('active')) renderDatosPanel();
+      if (tg) tg.HapticFeedback?.notificationOccurred("success");
+    } catch(err) { showToast("❌ Error: "+err.message); console.error(err); }
+  };
+  reader.readAsText(file,"UTF-8");
+}
+
+
+// ── IMPORT PAGOS REALES (DISTROKID FORMAT) ────────────────
+function importPaymentCSV(input, platId) {
+  const file=input.files[0]; if (!file) return;
+  const reader=new FileReader();
+  reader.onload=async e => {
+    try {
+      const text=e.target.result;
+      const lines=text.trim().split("\n").filter(l=>l.trim());
+      if (lines.length<2) { showToast("❌ CSV vacío"); return; }
+
+      const parseRow=line=>{
+        const c=[]; let cur="",inQ=false;
+        for(const ch of line+","){
+          if(ch==='"'){inQ=!inQ;}
+          else if(ch===","&&!inQ){c.push(cur.trim());cur="";}
+          else{cur+=ch;}
+        }
+        return c;
+      };
+
+      const header=parseRow(lines[0].replace(/^\uFEFF/,""));
+      const idx=h=>header.findIndex(x=>x.replace(/^"|"$/g,"")===h);
+      const iRep  =idx("Reporting Date");
+      const iSale =idx("Sale Month");
+      const iQty  =idx("Quantity");
+      const iEarn =idx("Earnings (USD)");
+      const iTeam =idx("Team Percentage");
+
+      if (iRep===-1||iEarn===-1) { showToast("❌ Formato DistroKid no reconocido"); return; }
+
+      // Group by sale_month → sum real earnings + streams
+      const bySaleMonth={};
+      lines.slice(1).forEach(line=>{
+        const c=parseRow(line);
+        const saleM=(c[iSale]||"").trim();
+        const repD =(c[iRep ]||"").trim();
+        if (!saleM||!/^\d{4}-\d{2}$/.test(saleM)) return;
+        const earn =parseFloat(c[iEarn])||0;
+        const qty  =parseInt(c[iQty])||0;
+        const team =parseInt(c[iTeam])||100;
+        if (!bySaleMonth[saleM]) bySaleMonth[saleM]={saleMonth:saleM,reportingDate:repD,platform:platId,streams:0,earnings:0};
+        bySaleMonth[saleM].streams +=Math.round(qty*(team/100));
+        bySaleMonth[saleM].earnings+=earn;
+        // Use latest reporting date for this sale month
+        if (repD>bySaleMonth[saleM].reportingDate) bySaleMonth[saleM].reportingDate=repD;
+      });
+
+      // Remove old payments for this platform and add new
+      payments=payments.filter(p=>p.platform!==platId);
+      Object.values(bySaleMonth).forEach(p=>payments.push(p));
+
+      await savePayments();
+      try { updatePayStatus(); } catch(e) {}
+      if(document.getElementById("btab-pagos")?.classList.contains("active")) renderPagos();
+
+      const total=Object.values(bySaleMonth).reduce((s,v)=>s+v.earnings,0);
+      const months=Object.keys(bySaleMonth).length;
+      showToast(`✅ ${months} meses · $${total.toFixed(2)} reales`);
+      if(document.getElementById('btab-import')?.classList.contains('active')) renderDatosPanel();
+      if (tg) tg.HapticFeedback?.notificationOccurred("success");
+    } catch(err) { showToast("❌ Error: "+err.message); console.error(err); }
+  };
+  reader.readAsText(file,"UTF-8");
+}
+
+function updatePayStatus() {
+  const plats=["spotify","amazon","amazon_prime","apple","youtube"];
+  plats.forEach(platId=>{
+    const el=document.getElementById("pay-status-"+platId);
+    const card=el?.closest(".pay-import-card");
+    const platPays=payments.filter(p=>p.platform===platId);
+    if (!el) return;
+    if (!platPays.length) {
+      el.textContent="Sin pagos cargados";
+      card?.classList.remove("loaded");
+    } else {
+      const total=platPays.reduce((s,p)=>s+p.earnings,0);
+      const months=platPays.length;
+      el.textContent=`✅ ${months} meses · $${total.toFixed(2)}`;
+      card?.classList.add("loaded");
+    }
+  });
+}
+
+function clearAllPayments() {
+  if (!payments.length) { showToast("Sin pagos que limpiar"); return; }
+  payments=[];
+  savePayments().then(()=>{ try{updatePayStatus();}catch(e){} });
+  if(document.getElementById("btab-pagos")?.classList.contains("active")) renderPagos();
+  showToast("🗑️ Pagos reales eliminados");
+}
+
+
+// ── DATOS PANEL — context-aware per platform ─────────────
+function renderDatosPanel() {
+  const box = document.getElementById("datos-panel");
+  if (!box) return;
+
+  const CARDS = {
+    spotify: {
+      color:"#1db954", bg:"rgba(29,185,84,0.07)", border:"rgba(29,185,84,0.25)",
+      emoji:"🎵", title:"Importar CSV Spotify",
+      sub:"audience-timeline.csv · Spotify for Artists",
+      csvId:"spotify-csv", statusId:"spotify-status",
+      payId:"pay-spotify-csv", payStatusId:"pay-status-spotify",
+      clear:"clearPlatform('spotify')", platLabel:"Spotify"
+    },
+    amazon: {
+      color:"#ff9900", bg:"rgba(255,153,0,0.07)", border:"rgba(255,153,0,0.25)",
+      emoji:"📦", title:"Importar CSV Amazon Music",
+      sub:"Trendlines · Fecha, Reproducciones, Oyentes",
+      csvId:"amazon-csv", statusId:"amazon-status",
+      payId:"pay-amazon-csv", payStatusId:"pay-status-amazon",
+      clear:"clearPlatform('amazon')", platLabel:"Amazon Music"
+    },
+    amazon_prime: {
+      color:"#00a8e0", bg:"rgba(0,168,224,0.07)", border:"rgba(0,168,224,0.25)",
+      emoji:"🔵", title:"Importar CSV Amazon Prime",
+      sub:"results.csv · Amazon Prime Music",
+      csvId:"amazon-prime-csv", statusId:"amazon-prime-status",
+      payId:"pay-amazon_prime-csv", payStatusId:"pay-status-amazon_prime",
+      clear:"clearPlatform('amazon_prime')", platLabel:"Amazon Prime"
+    },
+    apple: {
+      color:"#fc3c44", bg:"rgba(252,60,68,0.07)", border:"rgba(252,60,68,0.25)",
+      emoji:"🍎", title:"Importar CSV Apple Music",
+      sub:"results.csv · Apple Music / iTunes",
+      csvId:"apple-csv", statusId:"apple-status",
+      payId:"pay-apple-csv", payStatusId:"pay-status-apple",
+      clear:"clearPlatform('apple')", platLabel:"Apple Music"
+    },
+    youtube: {
+      color:"#ff3333", bg:"rgba(255,51,51,0.07)", border:"rgba(255,51,51,0.25)",
+      emoji:"▶️", title:"Importar CSV YouTube",
+      sub:"Datos_del_gráfico.csv · YouTube Studio",
+      csvId:"youtube-csv", statusId:"youtube-status",
+      payId:"pay-youtube-csv", payStatusId:"pay-status-youtube",
+      clear:"clearPlatform('youtube')", platLabel:"YouTube"
+    },
+  };
+
+  const platList = ["spotify","amazon","amazon_prime","apple","youtube"];
+
+  if (selPlatform === "all" || selPlatform === "manual") {
+    // Overview: show status of all platforms
+    const rows = platList.map(pid => {
+      const c = CARDS[pid];
+      const hasData = entries.some(e=>e.platform===pid);
+      const hasPay  = payments.some(p=>p.platform===pid);
+      const dataCount = entries.filter(e=>e.platform===pid).length;
+      const payTotal = payments.filter(p=>p.platform===pid).reduce((s,p)=>s+p.earnings,0);
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border)">
+        <span style="font-size:18px">${c.emoji}</span>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:${c.color}">${c.platLabel}</div>
+          <div style="font-size:10px;color:var(--muted)">
+            ${hasData?`✅ ${dataCount} días cargados`:`<span style="opacity:0.5">Sin datos</span>`}
+            ${hasPay?` · 💰 $${payTotal.toFixed(2)} en pagos`:""}
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);text-align:right">
+          ${hasData?`<span style="cursor:pointer;color:#e55" onclick="${c.clear}">🗑️</span>`:""}
+        </div>
+      </div>`;
+    }).join("");
+
+    box.innerHTML = `
+      <div style="padding:12px 16px 8px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">
+        Estado de plataformas
+      </div>
+      <div style="margin:0 16px 12px;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:var(--card)">
+        ${rows}
+      </div>
+      <div style="padding:0 16px 8px;font-size:10px;color:var(--muted)">
+        👆 Selecciona una plataforma arriba para importar datos
+      </div>`;
+    return;
+  }
+
+  const c = CARDS[selPlatform];
+  if (!c) { box.innerHTML=""; return; }
+
+  const hasData = entries.some(e=>e.platform===selPlatform);
+  const hasPay  = payments.some(p=>p.platform===selPlatform);
+  const statusTxt = document.getElementById(c.statusId)?.textContent || "";
+  const payStatusTxt = document.getElementById(c.payStatusId)?.textContent || "";
+
+  box.innerHTML = `
+    <div style="animation:fadeSlideIn 0.25s ease">
+
+      <!-- Stream data card -->
+      <div class="import-card" style="background:linear-gradient(135deg,${c.bg},rgba(10,12,24,0.9));border:1px solid ${c.border};box-shadow:0 0 30px ${c.bg};">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:22px">${c.emoji}</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:${c.color}">${c.title}</div>
+            <div style="font-size:10px;color:var(--muted)">${c.sub}</div>
+          </div>
+        </div>
+        <label class="import-label" style="background:${c.bg};border:1px dashed ${c.border};color:${c.color};cursor:pointer;display:block;text-align:center;padding:12px;border-radius:12px;margin-bottom:8px" onclick="document.getElementById('${c.csvId}').click()">
+          📁 Seleccionar CSV de ${c.platLabel}
+        </label>
+        <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:8px">${statusTxt||"Sube tu archivo CSV"}</div>
+        ${hasData?`<button class="btn-clear" onclick="${c.clear}">🗑️ Limpiar datos ${c.platLabel}</button>`:""}
+      </div>
+
+      <!-- Pagos reales card -->
+      <div style="margin:0 16px 8px;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">
+          💸 Pagos reales (DistroKid)
+        </div>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;border-radius:10px;border:1px dashed var(--border);background:rgba(0,230,118,0.04)" onclick="document.getElementById('${c.payId}').click()">
+          <span style="font-size:18px">${c.emoji}</span>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:700;color:${hasPay?"var(--green)":"var(--muted)"}">${hasPay?"✅ "+payStatusTxt:"Sin pagos cargados"}</div>
+            <div style="font-size:9px;color:var(--muted)">results_${selPlatform}.csv de DistroKid</div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);padding:4px 8px;border:1px solid var(--border);border-radius:8px;white-space:nowrap">📁 CSV</div>
+        </label>
+      </div>
+
+    </div>`;
 }
 
 // ── HISTORY ───────────────────────────────────────────────
@@ -1352,7 +1741,9 @@ function clearPlatform(platId) {
   const statusMap={
     spotify:  {el:"spotify-status",  txt:"Sube tu CSV de Spotify for Artists",     inp:"spotify-csv"},
     amazon:   {el:"amazon-status",   txt:"Sube tu CSV de Amazon Music for Artists", inp:"amazon-csv"},
-    youtube:  {el:"youtube-status",  txt:"Sube tu CSV de YouTube Studio",           inp:"youtube-csv"},
+    youtube:      {el:"youtube-status",      txt:"Sube tu CSV de YouTube Studio",           inp:"youtube-csv"},
+    apple:        {el:"apple-status",        txt:"Sube tu CSV de Apple Music",               inp:"apple-csv"},
+    amazon_prime: {el:"amazon-prime-status", txt:"Sube tu CSV de Amazon Prime",              inp:"amazon-prime-csv"},
   };
   const m=statusMap[platId];
   if (m) {
@@ -1379,6 +1770,7 @@ function showBTab(name, btn) {
   document.querySelectorAll(".btab").forEach(t=>t.classList.remove("active")); btn.classList.add("active");
   document.querySelectorAll(".btab-content").forEach(c=>c.classList.remove("active"));
   document.getElementById("btab-"+name).classList.add("active");
+  if (name==="import")   renderDatosPanel();
   if (name==="history")  renderHistory();
   if (name==="songs")    renderSongs();
   if (name==="pagos")   renderPagos();
