@@ -1649,7 +1649,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         game_url = (GAME_URL.rstrip("/") + "/game2") if GAME_URL else None
         if game_url:
             await edit(q,
-                "🏗️ *Mkeyz Studio — The Game* \[BETA\]\n\n"
+                "🏗️ *Mkeyz Studio — The Game* \\[BETA\\]\n\n"
                 "Construye tu estudio desde cero y genera MKEYZ coins:\n\n"
                 "🎚️ Compra equipos — cada uno genera coins/hora\n"
                 "⬆️ Sube de nivel hasta 100\n"
