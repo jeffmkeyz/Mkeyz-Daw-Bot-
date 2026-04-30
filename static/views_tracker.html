@@ -910,32 +910,38 @@ function drawChart(data) {
       return slice.reduce((a, b) => a + b, 0) / period;
     });
   }
-  function drawSMA(sma, color, dash=[]) {
-    ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1.5*dpr;
-    ctx.setLineDash(dash); ctx.lineJoin="round";
-    ctx.shadowColor=color; ctx.shadowBlur=6*dpr;
-    let started=false;
+  function drawSMA(sma, color, dashed) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2*dpr;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.globalAlpha = 0.9;
+    if (dashed) { try { ctx.setLineDash([5*dpr,4*dpr]); } catch(e){} }
+    let started = false;
     sma.forEach((v,i) => {
-      if (v===null) return;
-      if (!started) { ctx.moveTo(toX(i),toY(v)); started=true; }
-      else ctx.lineTo(toX(i),toY(v));
+      if (v === null) return;
+      const x = toX(i), y = toY(v);
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
     });
-    ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur=0;
+    ctx.stroke();
+    try { ctx.setLineDash([]); } catch(e){}
+    ctx.globalAlpha = 1;
+    ctx.restore();
   }
 
   // SMA7 — solo si hay suficientes puntos
   if (vals.length>=7) {
-    drawSMA(calcSMA(vals,7), "rgba(79,195,247,0.85)");
+    drawSMA(calcSMA(vals,7), "#4fc3f7");
   } else if (vals.length>=3) {
-    // Fallback: SMA3 para períodos cortos
-    drawSMA(calcSMA(vals,3), "rgba(79,195,247,0.85)");
+    drawSMA(calcSMA(vals,3), "#4fc3f7");
   }
-  // SMA28 — solo si hay suficientes puntos
   if (vals.length>=28) {
-    drawSMA(calcSMA(vals,28), "rgba(255,167,38,0.75)", [4*dpr,3*dpr]);
+    drawSMA(calcSMA(vals,28), "#ffa726", true);
   } else if (vals.length>=7) {
-    // Fallback: SMA7 lenta para períodos medios
-    drawSMA(calcSMA(vals,7), "rgba(255,167,38,0.75)", [4*dpr,3*dpr]);
+    drawSMA(calcSMA(vals,7), "#ffa726", true);
   }
 
   // Leyenda SMA en esquina superior izquierda
