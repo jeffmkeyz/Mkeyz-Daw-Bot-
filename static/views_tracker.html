@@ -902,6 +902,60 @@ function drawChart(data) {
     });
   }
 
+  // ── TREND LINES (SMA) ─────────────────────────────────────
+  function calcSMA(v, period) {
+    return v.map((_, i) => {
+      if (i < period - 1) return null;
+      const slice = v.slice(i - period + 1, i + 1);
+      return slice.reduce((a, b) => a + b, 0) / period;
+    });
+  }
+  function drawSMA(sma, color, dash=[]) {
+    ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1.5*dpr;
+    ctx.setLineDash(dash); ctx.lineJoin="round";
+    ctx.shadowColor=color; ctx.shadowBlur=6*dpr;
+    let started=false;
+    sma.forEach((v,i) => {
+      if (v===null) return;
+      if (!started) { ctx.moveTo(toX(i),toY(v)); started=true; }
+      else ctx.lineTo(toX(i),toY(v));
+    });
+    ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur=0;
+  }
+
+  // SMA7 — solo si hay suficientes puntos
+  if (vals.length>=7) {
+    drawSMA(calcSMA(vals,7), "rgba(79,195,247,0.85)");
+  } else if (vals.length>=3) {
+    // Fallback: SMA3 para períodos cortos
+    drawSMA(calcSMA(vals,3), "rgba(79,195,247,0.85)");
+  }
+  // SMA28 — solo si hay suficientes puntos
+  if (vals.length>=28) {
+    drawSMA(calcSMA(vals,28), "rgba(255,167,38,0.75)", [4*dpr,3*dpr]);
+  } else if (vals.length>=7) {
+    // Fallback: SMA7 lenta para períodos medios
+    drawSMA(calcSMA(vals,7), "rgba(255,167,38,0.75)", [4*dpr,3*dpr]);
+  }
+
+  // Leyenda SMA en esquina superior izquierda
+  if (vals.length>=3) {
+    const smaFastLabel = vals.length>=7 ? "SMA7" : "SMA3";
+    const smaSlowLabel = vals.length>=28 ? "SMA28" : vals.length>=7 ? "SMA7" : null;
+    ctx.font=`bold ${8*dpr}px -apple-system`; ctx.textAlign="left";
+    let lx=pad.l+6*dpr; const ly=pad.t+10*dpr;
+    ctx.fillStyle="rgba(79,195,247,0.9)";
+    ctx.fillRect(lx, ly-5*dpr, 12*dpr, 2*dpr);
+    ctx.fillText(smaFastLabel, lx+15*dpr, ly);
+    if (smaSlowLabel) {
+      lx += smaFastLabel.length*5*dpr+20*dpr;
+      ctx.fillStyle="rgba(255,167,38,0.85)";
+      ctx.fillRect(lx, ly-5*dpr, 8*dpr, 2*dpr);
+      ctx.fillRect(lx+10*dpr, ly-5*dpr, 4*dpr, 2*dpr);
+      ctx.fillText(smaSlowLabel, lx+17*dpr, ly);
+    }
+  }
+
   // X labels — smart format based on period
   const MONTHS=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
   ctx.fillStyle="#7a8099"; ctx.textAlign="center";
