@@ -607,8 +607,6 @@ function buildPills() {
   const tRow = document.getElementById("toggle-row");
 
   // Platforms that have data loaded
-  const chartPlats = ["spotify","youtube"]; // daily data, can be charted
-  const loadedAll  = PLATFORMS.filter(p=>p.id!=="all"&&entries.some(e=>e.platform===p.id));
 
   PLATFORMS.forEach(p => {
     if (p.id==="manual") return; // Manual: in Datos tab, not a pill
@@ -627,27 +625,28 @@ function buildPills() {
     pRow.appendChild(pill);
   });
 
-  // Toggle row — shown in Todo mode, one toggle per chart-compatible loaded platform
-  const toggleable = PLATFORMS.filter(p=>chartPlats.includes(p.id)&&entries.some(e=>e.platform===p.id));
+  // Toggle row — mostrar TODAS las plataformas con datos cargados
+  const toggleable = PLATFORMS.filter(p=>p.id!=="all"&&p.id!=="manual"&&entries.some(e=>e.platform===p.id));
   if (selPlatform==="all" && toggleable.length>=1) {
-    if (!activePlats.size) toggleable.forEach(p=>activePlats.add(p.id));
-    tRow.innerHTML = '<span style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;align-self:center;padding-right:4px">Ocultar:</span>';
+    // Init: activar solo plataformas diarias (no-noSpike) por defecto
+    if (!activePlats.size) {
+      const defaults = toggleable.filter(p=>!NOSPIKE_PLATS.includes(p.id));
+      (defaults.length ? defaults : toggleable).forEach(p=>activePlats.add(p.id));
+    }
+    tRow.innerHTML = '<span style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;align-self:center;padding-right:4px">Mostrar:</span>';
     toggleable.forEach(p => {
       const on = activePlats.has(p.id);
       const t = document.createElement("div");
       t.className = "tpill "+(on?"on":"off");
+      t.dataset.platId = p.id;
       t.style.borderColor = p.color;
       t.style.background  = on ? p.color : "transparent";
       t.style.color       = on ? "#000" : p.color;
       t.textContent = p.emoji+" "+p.label;
       t.onclick = () => {
-        if (activePlats.has(p.id)) {
-          if (activePlats.size===1) return; // keep at least one
-          activePlats.delete(p.id);
-        } else {
-          activePlats.add(p.id);
-        }
-        buildPills(); render();
+        if (activePlats.has(p.id)) { activePlats.delete(p.id); }
+        else { activePlats.add(p.id); }
+        rebuildToggleRow(); render();
         if (tg) tg.HapticFeedback?.impactOccurred("light");
       };
       tRow.appendChild(t);
@@ -659,7 +658,20 @@ function buildPills() {
   }
 }
 
-// ── STORAGE ───────────────────────────────────────────────
+// Actualiza solo el estado visual de los toggles sin reconstruir el DOM
+function rebuildToggleRow() {
+  const tRow = document.getElementById("toggle-row");
+  tRow.querySelectorAll(".tpill").forEach(t => {
+    const pid = t.dataset.platId;
+    if (!pid) return;
+    const on = activePlats.has(pid);
+    const plat = PLATFORMS.find(p=>p.id===pid);
+    if (!plat) return;
+    t.className = "tpill "+(on?"on":"off");
+    t.style.background = on ? plat.color : "transparent";
+    t.style.color      = on ? "#000" : plat.color;
+  });
+}
 function cloudGet(key) {
   return new Promise(resolve => {
     try {
@@ -728,39 +740,76 @@ function cutoff() {
   return d.toISOString().split("T")[0];
 }
 function getVal(e) { const v=e[currentMetric]??e.streams??e.views??0; return typeof v==="number"?v:parseFloat(v)||0; }
+const NOSPIKE_PLATS=["amazon","amazon_prime","apple"];
+
 function getFiltered() {
   const cut=cutoff();
   let f=entries.filter(e=>e.date>=cut);
   if (selPlatform!=="all") {
     f=f.filter(e=>e.platform===selPlatform);
+    // Plataformas con fechas de reporte periódico: si no hay datos en el período
+    // seleccionado, mostrar todos sus datos disponibles (fallback)
+    if (NOSPIKE_PLATS.includes(selPlatform) && f.length===0) {
+      f=entries.filter(e=>e.platform===selPlatform);
+    }
   } else {
-    // Exclude reporting-date spike platforms; respect activePlats toggles
-    const noSpike=["amazon","amazon_prime","apple"];
-    f=f.filter(e=>{
-      if (noSpike.includes(e.platform)) return false;
-      if (activePlats.size>0 && !activePlats.has(e.platform)) return false;
-      return true;
-    });
+    // Modo Todo: respetar activePlats (noSpike off por defecto, activables por el usuario)
+    if (activePlats.size>0) {
+      f=f.filter(e=>activePlats.has(e.platform));
+    }
   }
   return f.sort((a,b)=>a.date.localeCompare(b.date));
 }
 
+// Datos para STATS (total, avg, max): incluye TODAS las plataformas en el período
+function getStatsData() {
+  const cut=cutoff();
+  let f=entries.filter(e=>e.date>=cut);
+  if (selPlatform!=="all") {
+    f=f.filter(e=>e.platform===selPlatform);
+    // Mismo fallback para plataformas periódicas
+    if (NOSPIKE_PLATS.includes(selPlatform) && f.length===0) {
+      f=entries.filter(e=>e.platform===selPlatform);
+    }
+  }
+  // En modo "all": respetar activePlats para que el total refleje lo que está activo
+  if (selPlatform==="all" && activePlats.size>0) {
+    f=f.filter(e=>activePlats.has(e.platform));
+  }
+  return f;
+}
+
 // ── RENDER ────────────────────────────────────────────────
 function render() {
-  const data=getFiltered();
-  const vals=data.map(e=>getVal(e));
+  const data=getFiltered();         // Para el gráfico (excluye noSpike en modo all)
+  const statsData=getStatsData();   // Para stats: TODAS las plataformas en el período
+
+  const vals=statsData.map(e=>getVal(e));
   const total=vals.reduce((a,b)=>a+b,0);
   const avg  =vals.length?Math.round(total/vals.length):0;
   const max  =vals.length?Math.max(...vals):0;
 
-  // Growth
+  // Crecimiento basado en statsData (todas las plataformas)
   let growth=0;
-  if (data.length>=2) {
-    const h=Math.floor(data.length/2);
-    const a1=data.slice(0,h).reduce((s,e)=>s+getVal(e),0)/h;
-    const a2=data.slice(h).reduce((s,e)=>s+getVal(e),0)/(data.length-h);
+  if (statsData.length>=2) {
+    const h=Math.floor(statsData.length/2);
+    const a1=statsData.slice(0,h).reduce((s,e)=>s+getVal(e),0)/h;
+    const a2=statsData.slice(h).reduce((s,e)=>s+getVal(e),0)/(statsData.length-h);
     growth=a1>0?Math.round(((a2-a1)/a1)*100):0;
   }
+
+  // Label dinámico del total
+  const cut=cutoff();
+  const noSpikeWithFallback=NOSPIKE_PLATS.includes(selPlatform)&&
+    entries.filter(e=>e.platform===selPlatform&&e.date>=cut).length===0&&
+    entries.some(e=>e.platform===selPlatform);
+  const lbl=document.getElementById("total-lbl");
+  const activePlatsArr=[...activePlats];
+  const activePlatLabel=selPlatform==="all"&&activePlatsArr.length>0&&activePlatsArr.length<5
+    ? activePlatsArr.map(id=>PLATFORMS.find(p=>p.id===id)?.emoji||"").join("")+" total"
+    : noSpikeWithFallback?"total disponible":"total · período";
+  lbl.textContent=activePlatLabel;
+  lbl.style.color=noSpikeWithFallback?"rgba(255,153,0,0.8)":"";
 
   document.getElementById("total-views").textContent=fmtNum(total);
   document.getElementById("st-avg").textContent=fmtNum(avg);
@@ -776,9 +825,9 @@ function render() {
       const plat=PLATFORMS.find(p=>p.id===selPlatform);
       rate=plat?.rate||0;
     } else {
-      // Weighted avg rate across loaded platforms
+      // Weighted avg rate usando statsData (todas las plataformas)
       const totals={}; let grandTotal=0;
-      data.forEach(e=>{ totals[e.platform]=(totals[e.platform]||0)+getVal(e); grandTotal+=getVal(e); });
+      statsData.forEach(e=>{ totals[e.platform]=(totals[e.platform]||0)+getVal(e); grandTotal+=getVal(e); });
       if (grandTotal>0) Object.entries(totals).forEach(([pid,cnt])=>{
         const p=PLATFORMS.find(x=>x.id===pid); if(p) rate+=p.rate*(cnt/grandTotal);
       });
