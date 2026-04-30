@@ -548,9 +548,6 @@ const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#07080d"); tg.setBackgroundColor("#07080d"); }
 
 const USER_ID  = tg?.initDataUnsafe?.user?.id || "guest";
-const SAVE_KEY = `views_v5_${USER_ID}`; // v5: platform-aware storage
-const SONGS_KEY= `songs_v2_${USER_ID}`;
-const PAY_KEY  = `payments_v1_${USER_ID}`;
 
 // ── BG CANVAS ────────────────────────────────────────────
 const bgC = document.getElementById("bg-canvas");
@@ -695,29 +692,33 @@ function rebuildToggleRow() {
     t.style.color      = on ? "#000" : plat.color;
   });
 }
-function cloudGet(key) {
-  return new Promise(resolve => {
-    try {
-      if (window.Telegram?.WebApp?.CloudStorage?.getItem) {
-        window.Telegram.WebApp.CloudStorage.getItem(key, (err, val) => resolve(val || null));
-      } else { resolve(sessionStorage.getItem(key)); }
-    } catch(e) { resolve(sessionStorage.getItem(key)); }
-  });
-}
-function cloudSet(key, val) {
-  try { sessionStorage.setItem(key, val); } catch(e) {}
-  try { if (window.Telegram?.WebApp?.CloudStorage?.setItem) window.Telegram.WebApp.CloudStorage.setItem(key, val); } catch(e) {}
-}
+// ── PERSISTENCIA VÍA API ─────────────────────────────────
+const API_BASE = "";  // mismo dominio
+let _saveTimer = null;
 
 async function load() {
-  try { const l=sessionStorage.getItem(SAVE_KEY); if (l) entries=JSON.parse(l); } catch(e) {}
-  try { const l=sessionStorage.getItem(SONGS_KEY); if (l) songs=JSON.parse(l); } catch(e) {}
-  try { const l=sessionStorage.getItem(PAY_KEY);   if (l) payments=JSON.parse(l); } catch(e) {}
-  // Migrate entries missing platform field
+  if (USER_ID === "guest") {
+    // Sin Telegram: intentar sessionStorage como fallback
+    try { const l=sessionStorage.getItem("views_entries"); if(l) entries=JSON.parse(l); } catch(e){}
+    try { const l=sessionStorage.getItem("views_songs");   if(l) songs=JSON.parse(l);   } catch(e){}
+    try { const l=sessionStorage.getItem("views_payments");if(l) payments=JSON.parse(l);} catch(e){}
+  } else {
+    try {
+      const r = await fetch(`${API_BASE}/api/views/load?tg_id=${USER_ID}`);
+      if (r.ok) {
+        const data = await r.json();
+        if (data.ok) {
+          try { entries  = JSON.parse(data.entries);  } catch(e){ entries=[]; }
+          try { songs    = JSON.parse(data.songs);    } catch(e){ songs=[]; }
+          try { payments = JSON.parse(data.payments); } catch(e){ payments=[]; }
+        }
+      }
+    } catch(e) { console.warn("API load failed:", e); }
+  }
+  // Migrar entries sin platform
   const knownPlats=["spotify","amazon","amazon_prime","apple","youtube","manual"];
   entries=entries.map(e=>{
     if (!e.platform||!knownPlats.includes(e.platform)) {
-      // Guess from metrics present
       if (e.listeners!==undefined||e.monthly!==undefined||e.followers!==undefined||e.playlist_adds!==undefined) return {...e,platform:"spotify"};
       if (e.views!==undefined&&!e.streams) return {...e,platform:"youtube"};
       return {...e,platform:"manual"};
@@ -729,21 +730,37 @@ async function load() {
   render(); renderHistory(); renderSongs(); updatePayStatus(); renderDatosPanel();
 }
 
-async function save() {
-  const d=JSON.stringify(entries);
-  try { sessionStorage.setItem(SAVE_KEY,d); } catch(e) {}
-  
+function _pushSave() {
+  // Debounce: espera 1.5s sin cambios antes de guardar
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(_doSave, 1500);
 }
-async function saveSongs() {
-  const d=JSON.stringify(songs);
-  try { sessionStorage.setItem(SONGS_KEY,d); } catch(e) {}
-  
+
+async function _doSave() {
+  const body = {
+    tg_id:    USER_ID,
+    entries:  JSON.stringify(entries),
+    songs:    JSON.stringify(songs),
+    payments: JSON.stringify(payments),
+  };
+  if (USER_ID === "guest") {
+    try { sessionStorage.setItem("views_entries",  body.entries);  } catch(e){}
+    try { sessionStorage.setItem("views_songs",    body.songs);    } catch(e){}
+    try { sessionStorage.setItem("views_payments", body.payments); } catch(e){}
+    return;
+  }
+  try {
+    await fetch(`${API_BASE}/api/views/save`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(body)
+    });
+  } catch(e) { console.warn("API save failed:", e); }
 }
-async function savePayments() {
-  const d=JSON.stringify(payments);
-  try { sessionStorage.setItem(PAY_KEY,d); } catch(e) {}
-  
-}
+
+function save()         { _pushSave(); }
+function saveSongs()    { _pushSave(); }
+function savePayments() { _pushSave(); }
 
 // ── HELPERS ───────────────────────────────────────────────
 function fmtNum(n) {
@@ -1982,8 +1999,7 @@ function updatePayStatus() {
 
 function clearAllPayments() {
   payments=[];
-  try { sessionStorage.removeItem(PAY_KEY); } catch(e) {}
-  try { cloudSet(PAY_KEY, '[]'); } catch(e) {}
+  savePayments();
   try { updatePayStatus(); } catch(e) {}
   if(document.getElementById("btab-pagos")?.classList.contains("active")) renderPagos();
   if(document.getElementById("btab-import")?.classList.contains("active")) renderDatosPanel();
