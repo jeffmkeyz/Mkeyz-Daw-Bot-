@@ -1888,7 +1888,7 @@ function clearPlatform(platId) {
     selPlatform="all"; buildPills();
   }
 
-  save(); render(); renderHistory();
+  save(); render(); renderHistory(); buildPills(); renderDatosPanel();
   showToast("🗑️ Datos de "+platId+" eliminados");
 }
 
