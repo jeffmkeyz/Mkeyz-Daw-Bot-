@@ -23,27 +23,29 @@ body { background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans
 
 /* HEADER */
 .hdr {
-  padding:14px 16px 12px;
+  padding:16px 16px 12px;
   border-bottom:1px solid rgba(245,197,24,0.12);
   background:rgba(6,8,16,0.92);
   position:sticky; top:0; z-index:50;
   backdrop-filter:blur(16px);
   box-shadow:0 1px 0 rgba(245,197,24,0.08), 0 4px 24px rgba(0,0,0,0.4);
+  text-align:center;
 }
-.hdr-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
 .hdr-title {
-  font-family:'Orbitron',monospace; font-size:13px; font-weight:900;
-  background:linear-gradient(135deg,var(--gold),#ff9f1c);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  letter-spacing:2px;
+  font-family:'Orbitron',monospace; font-size:11px; font-weight:700;
+  color:var(--muted); letter-spacing:3px; text-transform:uppercase;
+  margin-bottom:6px;
 }
+.hdr-hero { margin-bottom:14px; }
 .total-box { text-align:right; }
 .total-num {
-  font-family:'Orbitron',monospace; font-size:20px; font-weight:900;
-  color:var(--gold); line-height:1;
-  text-shadow:0 0 20px rgba(245,197,24,0.4);
+  font-family:'Orbitron',monospace; font-size:36px; font-weight:900;
+  background:linear-gradient(135deg,var(--gold),#ff9f1c);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  line-height:1; letter-spacing:1px;
+  filter:drop-shadow(0 0 16px rgba(245,197,24,0.35));
 }
-.total-lbl { font-size:9px; color:var(--muted); margin-top:3px; letter-spacing:1px; text-transform:uppercase; }
+.total-lbl { font-size:9px; color:var(--muted); margin-top:4px; letter-spacing:1.5px; text-transform:uppercase; }
 .period-tabs { display:flex; gap:4px; }
 .ptab {
   flex:1; padding:8px 2px; border-radius:10px;
@@ -401,12 +403,10 @@ canvas#chart {
 <canvas id="bg-canvas"></canvas>
 
 <div class="hdr">
-  <div class="hdr-top">
-    <div class="hdr-title">📊 VIEWS TRACKER</div>
-    <div class="total-box">
-      <div class="total-num" id="total-views">—</div>
-      <div class="total-lbl" id="total-lbl">total período</div>
-    </div>
+  <div class="hdr-title">📊 VIEWS TRACKER</div>
+  <div class="hdr-hero">
+    <div class="total-num" id="total-views">—</div>
+    <div class="total-lbl" id="total-lbl">total período</div>
   </div>
   <div class="period-tabs">
     <div class="ptab active" onclick="setPeriod(7,this)">7D</div>
@@ -1247,7 +1247,7 @@ function setupTooltip() {
   let pinchDist0   = null; // initial pinch distance
   let zoomStart0   = 0;    // zoom at pinch start
   let zoomEnd0     = 0;
-  let panLast      = null; // last X for swipe pan
+  let panAcc = 0; // acumulador fraccional para pan suave en zoom máximo
   let lastTap      = 0;    // for double-tap detection
   let isDragging   = false;
 
@@ -1321,6 +1321,7 @@ function setupTooltip() {
     } else if (ids.length===1) {
       pinchDist0 = null;
       panLast    = touches[ids[0]].x;
+      panAcc     = 0;
       isDragging = false;
       // Double-tap detection
       const now=Date.now();
@@ -1358,22 +1359,24 @@ function setupTooltip() {
       if (Math.abs(dx)>4) isDragging=true;
 
       if (isDragging) {
-        // Pan siempre disponible — desplaza la ventana de zoom
+        // Pan con acumulador fraccional — funciona incluso en zoom máximo
         const rect=canvas.getBoundingClientRect();
         const full=getFiltered().length-1;
         const curEnd=zoomEnd===Infinity?full:zoomEnd;
-        const span=curEnd-zoomStart;
-        const pxPerPt=rect.width/Math.max(1,span);
-        const shift=Math.round(-dx/pxPerPt);
+        const span=Math.max(1, curEnd-zoomStart);
+        const pxPerPt=rect.width/span;
+        panAcc += -dx/pxPerPt;           // acumular fracción
+        const shift=Math.trunc(panAcc);  // solo la parte entera
+        panAcc -= shift;                 // guardar el resto
         if (shift!==0) {
           let ns=zoomStart+shift, ne=curEnd+shift;
           if (ns<0){ne-=ns;ns=0;}
           if (ne>full){ns-=(ne-full);ne=full;}
-          zoomStart=Math.max(0,Math.round(ns));
-          zoomEnd  =Math.min(full,Math.round(ne));
+          zoomStart=Math.max(0,ns);
+          zoomEnd  =Math.min(full,ne);
           render();
-          panLast=curX;
         }
+        panLast=curX;
       } else {
         showTooltip(curX);
       }
@@ -1386,7 +1389,7 @@ function setupTooltip() {
     Array.from(e.changedTouches).forEach(t=>{ delete touches[t.identifier]; });
     if (!isDragging) hideTooltip();
     if (Object.keys(touches).length<2) pinchDist0=null;
-    isDragging=false;
+    isDragging=false; panAcc=0;
     e.preventDefault();
   },{passive:false});
 
