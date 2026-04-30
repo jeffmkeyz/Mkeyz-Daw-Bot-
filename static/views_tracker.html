@@ -96,6 +96,16 @@ body { background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans
 
 /* CHART */
 .chart-section { padding:8px 16px 6px; position:relative; z-index:1; }
+.chart-scrollbar { padding:2px 16px 6px; }
+.chart-scroll-track {
+  height:6px; background:#1c1f30; border-radius:3px; position:relative; cursor:pointer;
+}
+.chart-scroll-thumb {
+  position:absolute; top:0; height:100%; background:#ffd700;
+  border-radius:3px; cursor:grab; min-width:24px; opacity:0.7;
+  transition:opacity 0.2s;
+}
+.chart-scroll-thumb:active { cursor:grabbing; opacity:1; }
 canvas#chart {
   width:100%; border-radius:18px; display:block;
   background:var(--panel); border:1px solid var(--border);
@@ -423,6 +433,13 @@ canvas#chart {
   </div>
 </div>
 
+<!-- Scrollbar de navegación del gráfico -->
+<div class="chart-scrollbar" id="chart-scrollbar" style="display:none">
+  <div class="chart-scroll-track" id="scroll-track">
+    <div class="chart-scroll-thumb" id="scroll-thumb"></div>
+  </div>
+</div>
+
 <div class="earn-box" id="earn-box" style="display:none">
   <div class="earn-item"><div class="earn-n" id="e-day">$0</div><div class="earn-l">☀️ Diario</div></div>
   <div class="earn-item"><div class="earn-n" id="e-month">$0</div><div class="earn-l">📅 Mensual</div></div>
@@ -572,6 +589,9 @@ let currentPeriod = 7;
 let currentMetric = "streams";
 let selPlatform   = "all";
 let activePlats   = new Set(); // which platforms are visible in Todo mode
+let zoomStart=0, zoomEnd=Infinity;
+function zoomReset(){ zoomStart=0; zoomEnd=Infinity; updateScrollbar?.(); }
+function getZoomed(data){ const e=zoomEnd===Infinity?data.length-1:Math.min(zoomEnd,data.length-1); return data.slice(zoomStart,e+1); }
 let songsSortBy   = "streams";
 
 // ── BUILD PILLS ───────────────────────────────────────────
@@ -618,7 +638,7 @@ function buildPills() {
     pill.onclick = () => {
       document.querySelectorAll(".ppill").forEach(x=>{ x.classList.remove("active"); x.style.background=""; x.style.color=""; });
       pill.classList.add("active"); pill.style.background=p.color; pill.style.color="#000";
-      selPlatform=p.id; activePlats.clear(); buildPills(); render();
+      selPlatform=p.id; activePlats.clear(); zoomReset(); buildPills(); render();
       if(document.getElementById("btab-import")?.classList.contains("active")) renderDatosPanel();
       if (tg) tg.HapticFeedback?.impactOccurred("light");
     };
@@ -844,7 +864,8 @@ function render() {
     earnBox.style.display="none";
   }
 
-  drawChart(data);
+  drawChart(getZoomed(data));
+  updateScrollbar();
 }
 
 function drawChart(data) {
@@ -1097,71 +1118,296 @@ function drawChart(data) {
   canvas._data=data; canvas._vals=vals; canvas._m=m;
 }
 
-// ── TOOLTIP ───────────────────────────────────────────────
-function setupTooltip() {
-  const canvas=document.getElementById("chart");
-  const tooltip=document.getElementById("tooltip");
-  const crosshair=document.getElementById("crosshair");
+// ── SCROLLBAR ─────────────────────────────────────────────
+function updateScrollbar() {
+  const bar   = document.getElementById("chart-scrollbar");
+  const track = document.getElementById("scroll-track");
+  const thumb = document.getElementById("scroll-thumb");
+  const full  = getFiltered().length;
+  if (!bar||!track||!thumb) return;
 
-  function onMove(e) {
+  const curEnd = zoomEnd===Infinity ? full-1 : zoomEnd;
+  const span   = curEnd - zoomStart + 1;
+
+  // Ocultar si no hay zoom útil (span = full)
+  if (span >= full || full < 2) { bar.style.display="none"; return; }
+  bar.style.display="block";
+
+  const thumbPct  = span / full;               // ancho relativo
+  const offsetPct = zoomStart / full;           // posición relativa
+
+  thumb.style.left  = (offsetPct  * 100) + "%";
+  thumb.style.width = (thumbPct   * 100) + "%";
+}
+
+function setupScrollbar() {
+  const track = document.getElementById("scroll-track");
+  const thumb = document.getElementById("scroll-thumb");
+  if (!track||!thumb) return;
+
+  let dragging=false, startX=0, startLeft=0;
+
+  function applyThumbPos(clientX) {
+    const rect  = track.getBoundingClientRect();
+    const full  = getFiltered().length;
+    if (!full) return;
+    const curEnd = zoomEnd===Infinity ? full-1 : zoomEnd;
+    const span   = curEnd - zoomStart + 1;
+    const thumbW = span / full;                      // fracción del ancho
+    const maxLeft = 1 - thumbW;
+    const rawLeft = (clientX - rect.left - startLeft) / rect.width;
+    const newLeft = Math.max(0, Math.min(maxLeft, rawLeft));
+    const ns = Math.round(newLeft * full);
+    const ne = Math.min(full-1, ns + span - 1);
+    zoomStart = ns; zoomEnd = ne;
+    render(); updateScrollbar();
+  }
+
+  // Click en el track (fuera del thumb) → saltar
+  track.addEventListener("mousedown", e => {
+    if (e.target===thumb) return;
+    const rect  = track.getBoundingClientRect();
+    const full  = getFiltered().length;
+    if (!full) return;
+    const curEnd = zoomEnd===Infinity ? full-1 : zoomEnd;
+    const span   = curEnd - zoomStart + 1;
+    const clickPct = (e.clientX - rect.left) / rect.width;
+    const ns = Math.max(0, Math.min(full-1-span+1, Math.round(clickPct*full - span/2)));
+    zoomStart = ns; zoomEnd = Math.min(full-1, ns+span-1);
+    render(); updateScrollbar();
+  });
+
+  // Drag del thumb — mouse
+  thumb.addEventListener("mousedown", e => {
+    dragging=true;
+    startX=e.clientX;
+    startLeft=thumb.offsetLeft;
+    e.preventDefault();
+  });
+  window.addEventListener("mousemove", e => {
+    if (!dragging) return;
+    applyThumbPos(e.clientX);
+  });
+  window.addEventListener("mouseup", () => { dragging=false; });
+
+  // Drag del thumb — touch
+  thumb.addEventListener("touchstart", e => {
+    dragging=true;
+    startX=e.touches[0].clientX;
+    startLeft=thumb.offsetLeft;
+    e.preventDefault();
+  },{passive:false});
+  thumb.addEventListener("touchmove", e => {
+    if (!dragging) return;
+    applyThumbPos(e.touches[0].clientX);
+    e.preventDefault();
+  },{passive:false});
+  thumb.addEventListener("touchend", () => { dragging=false; });
+
+  // Click en track — touch
+  track.addEventListener("touchstart", e => {
+    if (e.target===thumb) return;
+    const rect  = track.getBoundingClientRect();
+    const full  = getFiltered().length;
+    if (!full) return;
+    const curEnd = zoomEnd===Infinity ? full-1 : zoomEnd;
+    const span   = curEnd - zoomStart + 1;
+    const clickPct = (e.touches[0].clientX - rect.left) / rect.width;
+    const ns = Math.max(0, Math.min(full-1-span+1, Math.round(clickPct*full - span/2)));
+    zoomStart = ns; zoomEnd = Math.min(full-1, ns+span-1);
+    render(); updateScrollbar();
+    e.preventDefault();
+  },{passive:false});
+}
+
+// ── TOOLTIP + ZOOM ────────────────────────────────────────
+function setupTooltip() {
+  const canvas   = document.getElementById("chart");
+  const tooltip  = document.getElementById("tooltip");
+  const crosshair= document.getElementById("crosshair");
+  const dot      = document.getElementById("chart-dot");
+
+  // ── Zoom helpers ──
+  function currentData(){ return canvas._data||[]; }
+  const MIN_POINTS = 3;
+
+  // Convert canvas-relative X (CSS px) → data index
+  function xToIdx(xPx) {
+    const d=currentData(); if (!d.length) return 0;
+    const rect=canvas.getBoundingClientRect();
+    const pct=Math.max(0,Math.min(1,(xPx-rect.left)/rect.width));
+    return Math.round(pct*(d.length-1));
+  }
+
+  // ── Touch state ──
+  let touches      = {};   // id → {x,y}
+  let pinchDist0   = null; // initial pinch distance
+  let zoomStart0   = 0;    // zoom at pinch start
+  let zoomEnd0     = 0;
+  let panLast      = null; // last X for swipe pan
+  let lastTap      = 0;    // for double-tap detection
+  let isDragging   = false;
+
+  function dist(a,b){ return Math.hypot(b.x-a.x, b.y-a.y); }
+  function midpoint(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
+
+  function applyZoom(newStart, newEnd) {
+    const full = getFiltered().length - 1;
+    newStart = Math.max(0, Math.round(newStart));
+    newEnd   = Math.min(full, Math.round(newEnd));
+    if (newEnd - newStart < MIN_POINTS - 1) return; // no encoger más
+    zoomStart = newStart;
+    zoomEnd   = newEnd;
+    render();
+  }
+
+  // ── Tooltip show ──
+  function showTooltip(clientX) {
     const d=canvas._data; const v=canvas._vals;
     if (!d?.length) return;
-    e.preventDefault();
     const rect=canvas.getBoundingClientRect();
     const section=canvas.parentElement;
     const secRect=section.getBoundingClientRect();
-    const cx=e.touches?.[0]?.clientX??e.clientX;
-
-    // pct relative to canvas (where data is drawn)
-    const pct=Math.max(0,Math.min(1,(cx-rect.left)/rect.width));
+    const pct=Math.max(0,Math.min(1,(clientX-rect.left)/rect.width));
     const idx=Math.round(pct*(d.length-1));
     const entry=d[idx]; const val=v[idx];
     const m=canvas._m||METRICS[0];
     const plat=PLATFORMS.find(p=>p.id===selPlatform);
     const rate=currentMetric==="streams"&&plat?plat.rate:0;
-
     const dt=new Date(entry.date+"T00:00:00");
     document.getElementById("tt-date").textContent=dt.toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short",year:"2-digit"});
     document.getElementById("tt-val").textContent=fmtNum(val)+" "+m.emoji;
     document.getElementById("tt-val").style.color=m.color;
     document.getElementById("tt-earn").textContent=rate>0?`💰 ${fmtMoney(val*rate)}`:"";
-
-    // Position crosshair and tooltip relative to section (their offsetParent)
-    const xInSection=cx-secRect.left;
+    const xInSection=clientX-secRect.left;
     crosshair.style.left=xInSection+"px"; crosshair.style.display="block";
-
-    // Dot on the exact data point
-    const dot=document.getElementById("chart-dot");
     const pts=canvas._pts;
     if (dot&&pts&&pts[idx]) {
       const canvasOffX=rect.left-secRect.left;
       const canvasOffY=rect.top-secRect.top;
       dot.style.left=(canvasOffX+pts[idx].x)+"px";
       dot.style.top =(canvasOffY+pts[idx].y)+"px";
-      dot.style.color=m.color;
-      dot.style.background=m.color;
+      dot.style.color=m.color; dot.style.background=m.color;
       dot.style.display="block";
     }
-
     const ttW=140;
     let ttL=xInSection-ttW/2;
     ttL=Math.max(0,Math.min(secRect.width-ttW,ttL));
     tooltip.style.left=ttL+"px";
-    // Position tooltip just above the dot
     const pts2=canvas._pts;
     const dotY=pts2&&pts2[idx]?(rect.top-secRect.top+pts2[idx].y):30;
-    const ttTop=Math.max(4, dotY-38);
-    tooltip.style.top=ttTop+"px";
+    tooltip.style.top=Math.max(4,dotY-38)+"px";
     tooltip.style.display="flex";
     if (tg) tg.HapticFeedback?.selectionChanged();
   }
-  function onEnd() { setTimeout(()=>{ tooltip.style.display="none"; crosshair.style.display="none"; document.getElementById("chart-dot").style.display="none"; },1800); }
+  function hideTooltip(){ setTimeout(()=>{ tooltip.style.display="none"; crosshair.style.display="none"; if(dot) dot.style.display="none"; },1800); }
 
-  canvas.addEventListener("touchstart",onMove,{passive:false});
-  canvas.addEventListener("touchmove", onMove,{passive:false});
-  canvas.addEventListener("touchend",  onEnd);
-  canvas.addEventListener("mousemove", onMove);
-  canvas.addEventListener("mouseleave",onEnd);
+  // ── Touch start ──
+  canvas.addEventListener("touchstart", e=>{
+    Array.from(e.changedTouches).forEach(t=>{ touches[t.identifier]={x:t.clientX,y:t.clientY}; });
+    const ids=Object.keys(touches);
+
+    if (ids.length===2) {
+      // Pinch start
+      const [a,b]=[touches[ids[0]],touches[ids[1]]];
+      pinchDist0 = dist(a,b);
+      zoomStart0 = zoomStart;
+      zoomEnd0   = zoomEnd===Infinity ? getFiltered().length-1 : zoomEnd;
+      isDragging = false;
+      tooltip.style.display="none";
+    } else if (ids.length===1) {
+      pinchDist0 = null;
+      panLast    = touches[ids[0]].x;
+      isDragging = false;
+      // Double-tap detection
+      const now=Date.now();
+      if (now-lastTap<300) { zoomReset(); render(); lastTap=0; }
+      else { lastTap=now; }
+    }
+    e.preventDefault();
+  },{passive:false});
+
+  // ── Touch move ──
+  canvas.addEventListener("touchmove", e=>{
+    Array.from(e.changedTouches).forEach(t=>{ touches[t.identifier]={x:t.clientX,y:t.clientY}; });
+    const ids=Object.keys(touches);
+
+    if (ids.length===2 && pinchDist0!==null) {
+      // Pinch zoom
+      isDragging=true;
+      const [a,b]=[touches[ids[0]],touches[ids[1]]];
+      const newDist=dist(a,b);
+      const scale=pinchDist0/newDist; // >1 = zoom in (fewer points), <1 = zoom out
+      const span0=zoomEnd0-zoomStart0;
+      const mid=midpoint(a,b);
+      const midPct=Math.max(0,Math.min(1,(mid.x-canvas.getBoundingClientRect().left)/canvas.offsetWidth));
+      const newSpan=Math.max(MIN_POINTS-1, Math.round(span0*scale));
+      const anchor=Math.round(zoomStart0+midPct*span0);
+      let ns=Math.round(anchor-midPct*newSpan);
+      let ne=ns+newSpan;
+      const full=getFiltered().length-1;
+      if (ns<0){ne-=ns;ns=0;}
+      if (ne>full){ns-=(ne-full);ne=full;}
+      applyZoom(ns,ne);
+    } else if (ids.length===1 && pinchDist0===null) {
+      const curX=touches[ids[0]].x;
+      const dx=curX-panLast;
+      if (Math.abs(dx)>4) isDragging=true;
+
+      if (isDragging) {
+        // Pan siempre disponible — desplaza la ventana de zoom
+        const rect=canvas.getBoundingClientRect();
+        const full=getFiltered().length-1;
+        const curEnd=zoomEnd===Infinity?full:zoomEnd;
+        const span=curEnd-zoomStart;
+        const pxPerPt=rect.width/Math.max(1,span);
+        const shift=Math.round(-dx/pxPerPt);
+        if (shift!==0) {
+          let ns=zoomStart+shift, ne=curEnd+shift;
+          if (ns<0){ne-=ns;ns=0;}
+          if (ne>full){ns-=(ne-full);ne=full;}
+          zoomStart=Math.max(0,Math.round(ns));
+          zoomEnd  =Math.min(full,Math.round(ne));
+          render();
+          panLast=curX;
+        }
+      } else {
+        showTooltip(curX);
+      }
+    }
+    e.preventDefault();
+  },{passive:false});
+
+  // ── Touch end ──
+  canvas.addEventListener("touchend", e=>{
+    Array.from(e.changedTouches).forEach(t=>{ delete touches[t.identifier]; });
+    if (!isDragging) hideTooltip();
+    if (Object.keys(touches).length<2) pinchDist0=null;
+    isDragging=false;
+    e.preventDefault();
+  },{passive:false});
+
+  // ── Mouse (desktop) ──
+  canvas.addEventListener("mousemove", e=>{ showTooltip(e.clientX); });
+  canvas.addEventListener("mouseleave", hideTooltip);
+
+  // Scroll wheel zoom (desktop)
+  canvas.addEventListener("wheel", e=>{
+    e.preventDefault();
+    const full=getFiltered().length-1;
+    const curEnd=zoomEnd===Infinity?full:zoomEnd;
+    const span=curEnd-zoomStart;
+    const factor=e.deltaY>0?1.15:0.87; // wheel down = zoom out, up = zoom in
+    const rect=canvas.getBoundingClientRect();
+    const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+    const anchor=Math.round(zoomStart+pct*span);
+    const newSpan=Math.max(MIN_POINTS-1,Math.round(span*factor));
+    let ns=Math.round(anchor-pct*newSpan);
+    let ne=ns+newSpan;
+    if (ns<0){ne-=ns;ns=0;}
+    if (ne>full){ns-=(ne-full);ne=full;}
+    applyZoom(ns,ne);
+  },{passive:false});
 }
 
 // ── ADD ENTRY ─────────────────────────────────────────────
@@ -2041,7 +2287,7 @@ function clearPlatform(platId) {
 }
 
 function setPeriod(days, btn) {
-  currentPeriod=days;
+  currentPeriod=days; zoomReset();
   document.querySelectorAll(".ptab").forEach(t=>t.classList.remove("active")); btn.classList.add("active");
   render(); renderHistory();
 }
@@ -2064,6 +2310,7 @@ function showToast(msg) {
 
 window.addEventListener("resize",()=>{ const d=getFiltered(); drawChart(d); });
 setupTooltip();
+setupScrollbar();
 load();
 </script>
 </body>
