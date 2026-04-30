@@ -224,6 +224,60 @@ def serve_about():
 def serve_views():
     return send_from_directory("static", "views_tracker.html")
 
+# ── Views Tracker — persistencia por usuario ───────────────
+
+def _ensure_views_table(cur):
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS views_tracker (
+            tg_id      INTEGER PRIMARY KEY,
+            entries    TEXT    DEFAULT '[]',
+            songs      TEXT    DEFAULT '[]',
+            payments   TEXT    DEFAULT '[]',
+            updated_at INTEGER DEFAULT 0
+        )
+    """)
+
+@app.route("/api/views/load")
+def views_load():
+    tg_id = request.args.get("tg_id")
+    if not tg_id:
+        return jsonify({"ok": False, "error": "no tg_id"}), 400
+    con = get_db()
+    cur = con.cursor()
+    _ensure_views_table(cur)
+    con.commit()
+    cur.execute("SELECT entries, songs, payments FROM views_tracker WHERE tg_id=?", (int(tg_id),))
+    row = cur.fetchone()
+    con.close()
+    if row:
+        return jsonify({"ok": True, "entries": row["entries"], "songs": row["songs"], "payments": row["payments"]})
+    return jsonify({"ok": True, "entries": "[]", "songs": "[]", "payments": "[]"})
+
+@app.route("/api/views/save", methods=["POST"])
+def views_save():
+    data  = request.json or {}
+    tg_id = data.get("tg_id")
+    if not tg_id:
+        return jsonify({"ok": False, "error": "no tg_id"}), 400
+    entries  = data.get("entries",  "[]")
+    songs    = data.get("songs",    "[]")
+    payments = data.get("payments", "[]")
+    con = get_db()
+    cur = con.cursor()
+    _ensure_views_table(cur)
+    cur.execute("""
+        INSERT INTO views_tracker (tg_id, entries, songs, payments, updated_at)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(tg_id) DO UPDATE SET
+            entries    = excluded.entries,
+            songs      = excluded.songs,
+            payments   = excluded.payments,
+            updated_at = excluded.updated_at
+    """, (int(tg_id), entries, songs, payments, int(time.time())))
+    con.commit()
+    con.close()
+    return jsonify({"ok": True})
+
 # ── MKEYZ Token Economy ────────────────────────────────────────
 TOTAL_SUPPLY = 21_000_000  # Like Bitcoin — fixed supply
 
@@ -363,4 +417,3 @@ def api_artist_profile():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
-    
