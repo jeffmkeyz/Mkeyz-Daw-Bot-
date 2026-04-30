@@ -1143,7 +1143,7 @@ function updateScrollbar() {
   const bar   = document.getElementById("chart-scrollbar");
   const thumb = document.getElementById("scroll-thumb");
   const full  = getFiltered().length;
-  if (!bar||!thumb||full<2) { if(bar) bar.style.display="none"; return; }
+  if (!bar || !thumb || full < 2) { if (bar) bar.style.display="none"; return; }
   const curEnd = zoomEnd===Infinity ? full-1 : zoomEnd;
   const span   = curEnd - zoomStart + 1;
   if (span >= full) { bar.style.display="none"; return; }
@@ -1155,270 +1155,235 @@ function updateScrollbar() {
 function setupScrollbar() {
   const track = document.getElementById("scroll-track");
   const thumb = document.getElementById("scroll-thumb");
-  if (!track||!thumb) return;
+  if (!track || !thumb) return;
 
-  let dragging = false;
-  let dragStartX = 0;       // clientX donde empezó el drag
-  let dragStartOffset = 0;  // zoomStart al inicio del drag (en índices)
+  let dragging       = false;
+  let dragStartX     = 0;
+  let dragStartIndex = 0;
 
-  function getSpan() {
-    const full = getFiltered().length;
+  function getState() {
+    const full   = getFiltered().length;
     const curEnd = zoomEnd===Infinity ? full-1 : zoomEnd;
     return { full, span: curEnd - zoomStart + 1 };
   }
 
-  function jumpToClick(clientX) {
+  function moveTo(clientX) {
     const rect = track.getBoundingClientRect();
-    const { full, span } = getSpan();
+    const { full, span } = getState();
+    const dx  = clientX - dragStartX;
+    const idx = Math.round(dragStartIndex + dx / rect.width * full);
+    zoomStart = Math.max(0, Math.min(full - span, idx));
+    zoomEnd   = zoomStart + span - 1;
+    render();
+  }
+
+  function jumpTo(clientX) {
+    const rect = track.getBoundingClientRect();
+    const { full, span } = getState();
     const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    let ns = Math.round(pct * full - span / 2);
-    ns = Math.max(0, Math.min(full - span, ns));
-    zoomStart = ns;
-    zoomEnd   = ns + span - 1;
+    zoomStart = Math.max(0, Math.min(full - span, Math.round(pct * full - span / 2)));
+    zoomEnd   = zoomStart + span - 1;
     render();
   }
 
-  function onDragMove(clientX) {
-    const rect = track.getBoundingClientRect();
-    const { full, span } = getSpan();
-    const dx = clientX - dragStartX;
-    const shift = dx / rect.width * full;
-    let ns = Math.round(dragStartOffset + shift);
-    ns = Math.max(0, Math.min(full - span, ns));
-    zoomStart = ns;
-    zoomEnd   = ns + span - 1;
-    render();
-  }
-
-  // ── Mouse ──
   thumb.addEventListener("mousedown", e => {
-    dragging = true;
-    dragStartX      = e.clientX;
-    dragStartOffset = zoomStart;
-    e.preventDefault();
-    e.stopPropagation();
+    dragging = true; dragStartX = e.clientX; dragStartIndex = zoomStart;
+    e.preventDefault(); e.stopPropagation();
   });
-  track.addEventListener("mousedown", e => {
-    if (e.target === thumb) return;
-    jumpToClick(e.clientX);
-  });
-  window.addEventListener("mousemove", e => { if (dragging) onDragMove(e.clientX); });
+  window.addEventListener("mousemove", e => { if (dragging) moveTo(e.clientX); });
   window.addEventListener("mouseup",   ()  => { dragging = false; });
+  track.addEventListener("mousedown",  e  => { if (e.target !== thumb) jumpTo(e.clientX); });
 
-  // ── Touch ──
   thumb.addEventListener("touchstart", e => {
-    dragging = true;
-    dragStartX      = e.touches[0].clientX;
-    dragStartOffset = zoomStart;
-    e.preventDefault();
-    e.stopPropagation();
+    dragging = true; dragStartX = e.touches[0].clientX; dragStartIndex = zoomStart;
+    e.preventDefault(); e.stopPropagation();
   },{passive:false});
   thumb.addEventListener("touchmove", e => {
-    if (!dragging) return;
-    onDragMove(e.touches[0].clientX);
-    e.preventDefault();
+    if (dragging) { moveTo(e.touches[0].clientX); e.preventDefault(); }
   },{passive:false});
   thumb.addEventListener("touchend", () => { dragging = false; });
-
   track.addEventListener("touchstart", e => {
-    if (e.target === thumb) return;
-    jumpToClick(e.touches[0].clientX);
-    e.preventDefault();
+    if (e.target !== thumb) { jumpTo(e.touches[0].clientX); e.preventDefault(); }
   },{passive:false});
 }
 
 // ── TOOLTIP + ZOOM ────────────────────────────────────────
 function setupTooltip() {
-  const canvas   = document.getElementById("chart");
-  const tooltip  = document.getElementById("tooltip");
-  const crosshair= document.getElementById("crosshair");
-  const dot      = document.getElementById("chart-dot");
+  const canvas    = document.getElementById("chart");
+  const tooltip   = document.getElementById("tooltip");
+  const crosshair = document.getElementById("crosshair");
+  const dot       = document.getElementById("chart-dot");
+  const MIN_PTS   = 3;
 
-  // ── Zoom helpers ──
-  function currentData(){ return canvas._data||[]; }
-  const MIN_POINTS = 3;
+  // ── Helpers ──
+  function ptDist(a, b) { return Math.hypot(b.x - a.x, b.y - a.y); }
+  function ptMid(a, b)  { return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
 
-  // Convert canvas-relative X (CSS px) → data index
-  function xToIdx(xPx) {
-    const d=currentData(); if (!d.length) return 0;
-    const rect=canvas.getBoundingClientRect();
-    const pct=Math.max(0,Math.min(1,(xPx-rect.left)/rect.width));
-    return Math.round(pct*(d.length-1));
-  }
-
-  // ── Touch state ──
-  let touches      = {};
-  let pinchDist0   = null;
-  let zoomStart0   = 0;
-  let zoomEnd0     = 0;
-  let panLast      = 0;
-  let panAcc       = 0;
-  let lastTap      = 0;
-  let isDragging   = false;
-
-  function midpoint(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
-
-  function applyZoom(newStart, newEnd) {
+  function clampZoom(ns, ne) {
     const full = getFiltered().length - 1;
-    newStart = Math.max(0, Math.round(newStart));
-    newEnd   = Math.min(full, Math.round(newEnd));
-    if (newEnd - newStart < MIN_POINTS - 1) return; // no encoger más
-    zoomStart = newStart;
-    zoomEnd   = newEnd;
+    if (ne - ns < MIN_PTS - 1) return;
+    if (ns < 0)    { ne -= ns; ns = 0; }
+    if (ne > full) { ns -= ne - full; ne = full; }
+    zoomStart = Math.max(0, ns);
+    zoomEnd   = Math.min(full, ne);
     render();
   }
 
-  // ── Tooltip show ──
+  // ── Tooltip ──
   function showTooltip(clientX) {
-    const d=canvas._data; const v=canvas._vals;
+    const d = canvas._data; const v = canvas._vals;
     if (!d?.length) return;
-    const rect=canvas.getBoundingClientRect();
-    const section=canvas.parentElement;
-    const secRect=section.getBoundingClientRect();
-    const pct=Math.max(0,Math.min(1,(clientX-rect.left)/rect.width));
-    const idx=Math.round(pct*(d.length-1));
-    const entry=d[idx]; const val=v[idx];
-    const m=canvas._m||METRICS[0];
-    const plat=PLATFORMS.find(p=>p.id===selPlatform);
-    const rate=currentMetric==="streams"&&plat?plat.rate:0;
-    const dt=new Date(entry.date+"T00:00:00");
-    document.getElementById("tt-date").textContent=dt.toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short",year:"2-digit"});
-    document.getElementById("tt-val").textContent=fmtNum(val)+" "+m.emoji;
-    document.getElementById("tt-val").style.color=m.color;
-    document.getElementById("tt-earn").textContent=rate>0?`💰 ${fmtMoney(val*rate)}`:"";
-    const xInSection=clientX-secRect.left;
-    crosshair.style.left=xInSection+"px"; crosshair.style.display="block";
-    const pts=canvas._pts;
-    if (dot&&pts&&pts[idx]) {
-      const canvasOffX=rect.left-secRect.left;
-      const canvasOffY=rect.top-secRect.top;
-      dot.style.left=(canvasOffX+pts[idx].x)+"px";
-      dot.style.top =(canvasOffY+pts[idx].y)+"px";
-      dot.style.color=m.color; dot.style.background=m.color;
-      dot.style.display="block";
+    const rect    = canvas.getBoundingClientRect();
+    const section = canvas.parentElement;
+    const secRect = section.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const idx = Math.round(pct * (d.length - 1));
+    const entry = d[idx]; const val = v[idx];
+    const m    = canvas._m || METRICS[0];
+    const plat = PLATFORMS.find(p => p.id===selPlatform);
+    const rate = currentMetric==="streams" && plat ? plat.rate : 0;
+    const dt   = new Date(entry.date + "T00:00:00");
+    document.getElementById("tt-date").textContent = dt.toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short",year:"2-digit"});
+    document.getElementById("tt-val").textContent  = fmtNum(val) + " " + m.emoji;
+    document.getElementById("tt-val").style.color  = m.color;
+    document.getElementById("tt-earn").textContent = rate > 0 ? `💰 ${fmtMoney(val*rate)}` : "";
+    const xSec = clientX - secRect.left;
+    crosshair.style.left = xSec + "px"; crosshair.style.display = "block";
+    const pts = canvas._pts;
+    if (dot && pts && pts[idx]) {
+      dot.style.left       = (rect.left - secRect.left + pts[idx].x) + "px";
+      dot.style.top        = (rect.top  - secRect.top  + pts[idx].y) + "px";
+      dot.style.color      = m.color;
+      dot.style.background = m.color;
+      dot.style.display    = "block";
     }
-    const ttW=140;
-    let ttL=xInSection-ttW/2;
-    ttL=Math.max(0,Math.min(secRect.width-ttW,ttL));
-    tooltip.style.left=ttL+"px";
-    const pts2=canvas._pts;
-    const dotY=pts2&&pts2[idx]?(rect.top-secRect.top+pts2[idx].y):30;
-    tooltip.style.top=Math.max(4,dotY-38)+"px";
-    tooltip.style.display="flex";
+    const ttW = 140;
+    const dotY = pts && pts[idx] ? (rect.top - secRect.top + pts[idx].y) : 30;
+    tooltip.style.left    = Math.max(0, Math.min(secRect.width - ttW, xSec - ttW/2)) + "px";
+    tooltip.style.top     = Math.max(4, dotY - 38) + "px";
+    tooltip.style.display = "flex";
     if (tg) tg.HapticFeedback?.selectionChanged();
   }
-  function hideTooltip(){ setTimeout(()=>{ tooltip.style.display="none"; crosshair.style.display="none"; if(dot) dot.style.display="none"; },1800); }
+  function hideTooltip() {
+    setTimeout(() => {
+      tooltip.style.display = "none";
+      crosshair.style.display = "none";
+      if (dot) dot.style.display = "none";
+    }, 1800);
+  }
 
-  // ── Touch start ──
-  canvas.addEventListener("touchstart", e=>{
-    Array.from(e.changedTouches).forEach(t=>{ touches[t.identifier]={x:t.clientX,y:t.clientY}; });
-    const ids=Object.keys(touches);
+  // ── Touch state ──
+  let t1 = null, t2 = null;   // touch points {id, x, y}
+  let pinch0 = null;           // {dist, zs, ze} at pinch start
+  let panLast = 0, panAcc = 0;
+  let lastTap = 0;
+  let gesture = "none";        // "none" | "pan" | "pinch" | "tap"
 
-    if (ids.length===2) {
-      // Pinch start
-      const [a,b]=[touches[ids[0]],touches[ids[1]]];
-      pinchDist0 = dist(a,b);
-      zoomStart0 = zoomStart;
-      zoomEnd0   = zoomEnd===Infinity ? getFiltered().length-1 : zoomEnd;
-      isDragging = false;
-      tooltip.style.display="none";
-    } else if (ids.length===1) {
-      pinchDist0 = null;
-      panLast    = touches[ids[0]].x;
-      panAcc     = 0;
-      isDragging = false;
-      // Double-tap detection
-      const now=Date.now();
-      if (now-lastTap<300) { zoomReset(); render(); lastTap=0; }
-      else { lastTap=now; }
-    }
+  canvas.addEventListener("touchstart", e => {
     e.preventDefault();
-  },{passive:false});
+    Array.from(e.changedTouches).forEach(t => {
+      if (!t1)      t1 = {id:t.identifier, x:t.clientX, y:t.clientY};
+      else if (!t2) t2 = {id:t.identifier, x:t.clientX, y:t.clientY};
+    });
 
-  // ── Touch move ──
-  canvas.addEventListener("touchmove", e=>{
-    Array.from(e.changedTouches).forEach(t=>{ touches[t.identifier]={x:t.clientX,y:t.clientY}; });
-    const ids=Object.keys(touches);
+    if (t1 && t2) {
+      // Two fingers → pinch
+      gesture = "pinch";
+      const full = getFiltered().length - 1;
+      pinch0 = {
+        dist: ptDist(t1, t2),
+        zs:   zoomStart,
+        ze:   zoomEnd===Infinity ? full : zoomEnd,
+      };
+      tooltip.style.display = "none";
+    } else if (t1) {
+      // One finger
+      gesture  = "none";
+      panLast  = t1.x;
+      panAcc   = 0;
+      pinch0   = null;
+      const now = Date.now();
+      if (now - lastTap < 300) { zoomReset(); render(); lastTap = 0; }
+      else lastTap = now;
+    }
+  }, {passive:false});
 
-    if (ids.length===2 && pinchDist0!==null) {
-      // Pinch zoom
-      isDragging=true;
-      const [a,b]=[touches[ids[0]],touches[ids[1]]];
-      const newDist=dist(a,b);
-      const scale=pinchDist0/newDist; // >1 = zoom in (fewer points), <1 = zoom out
-      const span0=zoomEnd0-zoomStart0;
-      const mid=midpoint(a,b);
-      const midPct=Math.max(0,Math.min(1,(mid.x-canvas.getBoundingClientRect().left)/canvas.offsetWidth));
-      const newSpan=Math.max(MIN_POINTS-1, Math.round(span0*scale));
-      const anchor=Math.round(zoomStart0+midPct*span0);
-      let ns=Math.round(anchor-midPct*newSpan);
-      let ne=ns+newSpan;
-      const full=getFiltered().length-1;
-      if (ns<0){ne-=ns;ns=0;}
-      if (ne>full){ns-=(ne-full);ne=full;}
-      applyZoom(ns,ne);
-    } else if (ids.length===1 && pinchDist0===null) {
-      const curX=touches[ids[0]].x;
-      const dx=curX-panLast;
-      if (Math.abs(dx)>4) isDragging=true;
+  canvas.addEventListener("touchmove", e => {
+    e.preventDefault();
+    // Update positions
+    Array.from(e.changedTouches).forEach(t => {
+      if (t1 && t.identifier===t1.id) t1 = {id:t1.id, x:t.clientX, y:t.clientY};
+      if (t2 && t.identifier===t2.id) t2 = {id:t2.id, x:t.clientX, y:t.clientY};
+    });
 
-      if (isDragging) {
-        const rect=canvas.getBoundingClientRect();
-        const full=getFiltered().length-1;
-        const curEnd=zoomEnd===Infinity?full:zoomEnd;
-        const span=Math.max(1, curEnd-zoomStart);
-        const pxPerPt=rect.width/span;
-        panAcc += -dx/pxPerPt;
-        const shift=Math.trunc(panAcc);
+    if (gesture==="pinch" && t1 && t2 && pinch0) {
+      const newDist = ptDist(t1, t2);
+      const scale   = pinch0.dist / newDist;
+      const span0   = pinch0.ze - pinch0.zs;
+      const mid     = ptMid(t1, t2);
+      const rect    = canvas.getBoundingClientRect();
+      const midPct  = Math.max(0, Math.min(1, (mid.x - rect.left) / rect.width));
+      const newSpan = Math.max(MIN_PTS - 1, Math.round(span0 * scale));
+      const anchor  = pinch0.zs + midPct * span0;
+      clampZoom(Math.round(anchor - midPct * newSpan), Math.round(anchor - midPct * newSpan) + newSpan);
+
+    } else if (gesture!=="pinch" && t1 && !t2) {
+      const dx = t1.x - panLast;
+      if (Math.abs(dx) > 3) gesture = "pan";
+
+      if (gesture === "pan") {
+        const rect   = canvas.getBoundingClientRect();
+        const full   = getFiltered().length - 1;
+        const curEnd = zoomEnd===Infinity ? full : zoomEnd;
+        const span   = Math.max(1, curEnd - zoomStart);
+        panAcc += -dx / (rect.width / span);
+        const shift = Math.trunc(panAcc);
         panAcc -= shift;
-        if (shift!==0) {
-          let ns=zoomStart+shift, ne=curEnd+shift;
-          const hitLeft  = ns < 0;
-          const hitRight = ne > full;
-          if (hitLeft)  { ne -= ns; ns = 0; }
-          if (hitRight) { ns -= (ne-full); ne = full; }
-          zoomStart=Math.max(0,ns);
-          zoomEnd  =Math.min(full,ne);
+        if (shift !== 0) {
+          let ns = zoomStart + shift, ne = curEnd + shift;
+          if (ns < 0)    { ne -= ns; ns = 0; }
+          if (ne > full) { ns -= ne - full; ne = full; }
+          zoomStart = Math.max(0, ns);
+          zoomEnd   = Math.min(full, ne);
           render();
         }
-        panLast=curX;
+        panLast = t1.x;
       } else {
-        showTooltip(curX);
+        showTooltip(t1.x);
       }
     }
-    e.preventDefault();
-  },{passive:false});
+  }, {passive:false});
 
-  // ── Touch end ──
-  canvas.addEventListener("touchend", e=>{
-    Array.from(e.changedTouches).forEach(t=>{ delete touches[t.identifier]; });
-    if (!isDragging) hideTooltip();
-    if (Object.keys(touches).length<2) pinchDist0=null;
-    isDragging=false; panAcc=0;
+  canvas.addEventListener("touchend", e => {
     e.preventDefault();
-  },{passive:false});
+    Array.from(e.changedTouches).forEach(t => {
+      if (t1 && t.identifier===t1.id) { t1 = t2; t2 = null; }
+      else if (t2 && t.identifier===t2.id) { t2 = null; }
+    });
+    if (!t1 && !t2) {
+      if (gesture === "none") hideTooltip();
+      gesture = "none"; panAcc = 0; pinch0 = null;
+    } else if (t1 && !t2) {
+      // Went from pinch to single finger — reset pan
+      gesture = "none"; panLast = t1.x; panAcc = 0; pinch0 = null;
+    }
+  }, {passive:false});
 
-  // ── Mouse (desktop) ──
-  canvas.addEventListener("mousemove", e=>{ showTooltip(e.clientX); });
+  // ── Mouse ──
+  canvas.addEventListener("mousemove",  e => showTooltip(e.clientX));
   canvas.addEventListener("mouseleave", hideTooltip);
-
-  // Scroll wheel zoom (desktop)
-  canvas.addEventListener("wheel", e=>{
+  canvas.addEventListener("wheel", e => {
     e.preventDefault();
-    const full=getFiltered().length-1;
-    const curEnd=zoomEnd===Infinity?full:zoomEnd;
-    const span=curEnd-zoomStart;
-    const factor=e.deltaY>0?1.15:0.87; // wheel down = zoom out, up = zoom in
-    const rect=canvas.getBoundingClientRect();
-    const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-    const anchor=Math.round(zoomStart+pct*span);
-    const newSpan=Math.max(MIN_POINTS-1,Math.round(span*factor));
-    let ns=Math.round(anchor-pct*newSpan);
-    let ne=ns+newSpan;
-    if (ns<0){ne-=ns;ns=0;}
-    if (ne>full){ns-=(ne-full);ne=full;}
-    applyZoom(ns,ne);
-  },{passive:false});
+    const full   = getFiltered().length - 1;
+    const curEnd = zoomEnd===Infinity ? full : zoomEnd;
+    const span   = curEnd - zoomStart;
+    const factor = e.deltaY > 0 ? 1.15 : 0.87;
+    const rect   = canvas.getBoundingClientRect();
+    const pct    = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const anchor = zoomStart + pct * span;
+    const newSpan = Math.max(MIN_PTS - 1, Math.round(span * factor));
+    clampZoom(Math.round(anchor - pct * newSpan), Math.round(anchor - pct * newSpan) + newSpan);
+  }, {passive:false});
 }
 
 // ── ADD ENTRY ─────────────────────────────────────────────
