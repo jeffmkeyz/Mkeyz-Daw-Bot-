@@ -98,8 +98,6 @@ body { background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans
 
 /* CHART */
 .chart-section { padding:8px 16px 6px; position:relative; z-index:1; }
-.chart-section.rubber { transition: transform 0.0s; }
-.chart-section.snap   { transition: transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94); }
 .chart-scrollbar { padding:2px 16px 6px; }
 .chart-scroll-track {
   height:6px; background:#1c1f30; border-radius:3px; position:relative; cursor:pointer;
@@ -1258,22 +1256,6 @@ function setupTooltip() {
   let lastTap      = 0;
   let isDragging   = false;
 
-  const chartSection = document.querySelector(".chart-section");
-  let rubberOffset = 0; // px de desplazamiento visual actual
-
-  function setRubber(px) {
-    rubberOffset = px;
-    chartSection.classList.remove("snap");
-    chartSection.classList.add("rubber");
-    chartSection.style.transform = px ? `translateX(${px}px)` : "";
-  }
-  function snapBack() {
-    chartSection.classList.remove("rubber");
-    chartSection.classList.add("snap");
-    chartSection.style.transform = "";
-    rubberOffset = 0;
-    setTimeout(()=>chartSection.classList.remove("snap"), 400);
-  }
   function midpoint(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
 
   function applyZoom(newStart, newEnd) {
@@ -1398,14 +1380,6 @@ function setupTooltip() {
           zoomStart=Math.max(0,ns);
           zoomEnd  =Math.min(full,ne);
           render();
-          // Rubber-band visual: resistencia proporcional al exceso
-          if (hitLeft || hitRight) {
-            const excess = hitLeft ? (zoomStart===0 ? -dx*0.25 : 0)
-                                   : (zoomEnd===full ?  -dx*0.25 : 0);
-            setRubber(Math.max(-40, Math.min(40, (rubberOffset||0) + excess)));
-          } else {
-            if (rubberOffset) snapBack();
-          }
         }
         panLast=curX;
       } else {
@@ -1420,7 +1394,6 @@ function setupTooltip() {
     Array.from(e.changedTouches).forEach(t=>{ delete touches[t.identifier]; });
     if (!isDragging) hideTooltip();
     if (Object.keys(touches).length<2) pinchDist0=null;
-    if (rubberOffset) snapBack();
     isDragging=false; panAcc=0;
     e.preventDefault();
   },{passive:false});
