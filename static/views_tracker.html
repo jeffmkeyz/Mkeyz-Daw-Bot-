@@ -880,86 +880,174 @@ function drawChart(data) {
     }
   });
 
-  // Gradient fill
+  // ── SMA CALC ──────────────────────────────────────────────
+  function calcSMA(v, period) {
+    return v.map((_,i) => {
+      if (i<period-1) return null;
+      return v.slice(i-period+1,i+1).reduce((a,b)=>a+b,0)/period;
+    });
+  }
+  const fastPeriod = vals.length>=7?7:vals.length>=3?3:null;
+  const slowPeriod = vals.length>=28?28:vals.length>=7?7:null;
+  const smaFast = fastPeriod ? calcSMA(vals,fastPeriod) : null;
+  const smaSlow = slowPeriod && slowPeriod!==fastPeriod ? calcSMA(vals,slowPeriod) : null;
+
+  // Helper: find crossing point between price and SMA between index i and i+1
+  function crossPoint(i, sma) {
+    const d = (vals[i+1]-vals[i]) - (sma[i+1]-sma[i]);
+    const t = d!==0 ? (sma[i]-vals[i])/d : 0.5;
+    const tc = Math.max(0,Math.min(1,t));
+    return {
+      x: toX(i)+tc*(toX(i+1)-toX(i)),
+      y: toY(vals[i]+tc*(vals[i+1]-vals[i]))
+    };
+  }
+
+  // ── BASE GRADIENT FILL (más sutil, deja ver el color de cruce) ──
   const grad=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
-  grad.addColorStop(0,m.color+"77"); grad.addColorStop(1,m.color+"04");
+  grad.addColorStop(0,m.color+"33"); grad.addColorStop(1,m.color+"03");
   ctx.beginPath(); ctx.moveTo(toX(0),H-pad.b);
   data.forEach((_,i)=>ctx.lineTo(toX(i),toY(vals[i])));
-  ctx.lineTo(toX(data.length-1),H-pad.b); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+  ctx.lineTo(toX(data.length-1),H-pad.b); ctx.closePath();
+  ctx.fillStyle=grad; ctx.fill();
 
-  // Line with glow
-  ctx.beginPath(); ctx.strokeStyle=m.color; ctx.lineWidth=2.5*dpr; ctx.lineJoin="round";
-  ctx.shadowColor=m.color; ctx.shadowBlur=10*dpr;
-  data.forEach((_,i)=>i===0?ctx.moveTo(toX(i),toY(vals[i])):ctx.lineTo(toX(i),toY(vals[i])));
-  ctx.stroke(); ctx.shadowBlur=0;
+  // ── CROSSOVER FILL Y LÍNEA DE PRECIO ─────────────────────
+  if (smaFast) {
+    const COL_UP="#00e676"; const COL_DN="#ff4d4d";
+    const validStart=smaFast.findIndex(v=>v!==null);
 
-  // Dots on data points (if few enough)
-  if (data.length<=20) {
-    data.forEach((_,i) => {
-      ctx.beginPath(); ctx.arc(toX(i),toY(vals[i]),3*dpr,0,Math.PI*2);
-      ctx.fillStyle=m.color; ctx.shadowColor=m.color; ctx.shadowBlur=6*dpr; ctx.fill();
-      ctx.shadowBlur=0;
-    });
-  }
+    // Relleno entre precio y SMA (verde/rojo)
+    ctx.save(); ctx.globalAlpha=0.18;
+    for (let i=validStart; i<vals.length-1; i++) {
+      if (smaFast[i]===null||smaFast[i+1]===null) continue;
+      const ab0=vals[i]>=smaFast[i], ab1=vals[i+1]>=smaFast[i+1];
+      const x0=toX(i),x1=toX(i+1),py0=toY(vals[i]),py1=toY(vals[i+1]);
+      const sy0=toY(smaFast[i]),sy1=toY(smaFast[i+1]);
+      if (ab0===ab1) {
+        ctx.beginPath(); ctx.moveTo(x0,py0); ctx.lineTo(x1,py1);
+        ctx.lineTo(x1,sy1); ctx.lineTo(x0,sy0); ctx.closePath();
+        ctx.fillStyle=ab0?COL_UP:COL_DN; ctx.fill();
+      } else {
+        const cp=crossPoint(i,smaFast);
+        // Primer tramo
+        ctx.beginPath(); ctx.moveTo(x0,py0); ctx.lineTo(cp.x,cp.y);
+        ctx.lineTo(cp.x,cp.y); ctx.lineTo(x0,sy0); ctx.closePath();
+        ctx.fillStyle=ab0?COL_UP:COL_DN; ctx.fill();
+        // Segundo tramo
+        ctx.beginPath(); ctx.moveTo(cp.x,cp.y); ctx.lineTo(x1,py1);
+        ctx.lineTo(x1,sy1); ctx.lineTo(cp.x,cp.y); ctx.closePath();
+        ctx.fillStyle=ab1?COL_UP:COL_DN; ctx.fill();
+      }
+    }
+    ctx.restore();
 
-  // ── TREND LINES (SMA) ─────────────────────────────────────
-  function calcSMA(v, period) {
-    return v.map((_, i) => {
-      if (i < period - 1) return null;
-      const slice = v.slice(i - period + 1, i + 1);
-      return slice.reduce((a, b) => a + b, 0) / period;
-    });
-  }
-  function drawSMA(sma, color, dashed) {
+    // Línea de precio coloreada (verde/rojo por segmentos)
+    ctx.save(); ctx.lineWidth=2.5*dpr; ctx.lineJoin="round"; ctx.lineCap="round";
+    // Segmento inicial pre-SMA en color neutro
+    if (validStart>0) {
+      ctx.beginPath(); ctx.strokeStyle=m.color; ctx.globalAlpha=0.5;
+      for(let i=0;i<=validStart;i++) i===0?ctx.moveTo(toX(i),toY(vals[i])):ctx.lineTo(toX(i),toY(vals[i]));
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+    // Segmentos coloreados
+    for (let i=validStart; i<vals.length-1; i++) {
+      if (smaFast[i]===null||smaFast[i+1]===null) continue;
+      const ab0=vals[i]>=smaFast[i], ab1=vals[i+1]>=smaFast[i+1];
+      const x0=toX(i),x1=toX(i+1),py0=toY(vals[i]),py1=toY(vals[i+1]);
+      if (ab0===ab1) {
+        ctx.beginPath(); ctx.strokeStyle=ab0?COL_UP:COL_DN;
+        ctx.moveTo(x0,py0); ctx.lineTo(x1,py1); ctx.stroke();
+      } else {
+        const cp=crossPoint(i,smaFast);
+        ctx.beginPath(); ctx.strokeStyle=ab0?COL_UP:COL_DN;
+        ctx.moveTo(x0,py0); ctx.lineTo(cp.x,cp.y); ctx.stroke();
+        ctx.beginPath(); ctx.strokeStyle=ab1?COL_UP:COL_DN;
+        ctx.moveTo(cp.x,cp.y); ctx.lineTo(x1,py1); ctx.stroke();
+      }
+    }
+    // Punto final
+    if (vals.length>validStart) {
+      const lastI=vals.length-1;
+      const lastAbove=vals[lastI]>=smaFast[lastI];
+      ctx.beginPath(); ctx.arc(toX(lastI),toY(vals[lastI]),4*dpr,0,Math.PI*2);
+      ctx.fillStyle=lastAbove?COL_UP:COL_DN; ctx.fill();
+    }
+    ctx.restore();
+
+    // Marcadores de cruce (círculos en el punto exacto)
     ctx.save();
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2*dpr;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.globalAlpha = 0.9;
-    if (dashed) { try { ctx.setLineDash([5*dpr,4*dpr]); } catch(e){} }
-    let started = false;
-    sma.forEach((v,i) => {
-      if (v === null) return;
-      const x = toX(i), y = toY(v);
-      if (!started) { ctx.moveTo(x, y); started = true; }
-      else ctx.lineTo(x, y);
-    });
+    for (let i=validStart; i<vals.length-1; i++) {
+      if (smaFast[i]===null||smaFast[i+1]===null) continue;
+      if ((vals[i]>=smaFast[i])===(vals[i+1]>=smaFast[i+1])) continue;
+      const cp=crossPoint(i,smaFast);
+      const goingUp=vals[i+1]>=smaFast[i+1];
+      ctx.beginPath(); ctx.arc(cp.x,cp.y,3.5*dpr,0,Math.PI*2);
+      ctx.fillStyle=goingUp?COL_UP:COL_DN;
+      ctx.strokeStyle="#0d0f1a"; ctx.lineWidth=1.5*dpr;
+      ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+
+  } else {
+    // Sin SMA: línea normal en color de la métrica
+    ctx.beginPath(); ctx.strokeStyle=m.color; ctx.lineWidth=2.5*dpr; ctx.lineJoin="round";
+    data.forEach((_,i)=>i===0?ctx.moveTo(toX(i),toY(vals[i])):ctx.lineTo(toX(i),toY(vals[i])));
     ctx.stroke();
-    try { ctx.setLineDash([]); } catch(e){}
-    ctx.globalAlpha = 1;
+    // Dots
+    if (data.length<=20) {
+      data.forEach((_,i)=>{
+        ctx.beginPath(); ctx.arc(toX(i),toY(vals[i]),3*dpr,0,Math.PI*2);
+        ctx.fillStyle=m.color; ctx.fill();
+      });
+    }
+  }
+
+  // ── LÍNEAS SMA ────────────────────────────────────────────
+  function drawSMA(sma, color, dashed) {
+    ctx.save(); ctx.beginPath(); ctx.strokeStyle=color;
+    ctx.lineWidth=1.8*dpr; ctx.lineJoin="round"; ctx.lineCap="round";
+    if (dashed) { try{ctx.setLineDash([5*dpr,4*dpr]);}catch(e){} }
+    let started=false;
+    sma.forEach((v,i)=>{
+      if (v===null) return;
+      if (!started){ctx.moveTo(toX(i),toY(v));started=true;}
+      else ctx.lineTo(toX(i),toY(v));
+    });
+    ctx.stroke(); try{ctx.setLineDash([]);}catch(e){} ctx.restore();
+  }
+  if (smaFast) drawSMA(smaFast,"#4fc3f7");
+  if (smaSlow) drawSMA(smaSlow,"#ffa726",true);
+
+  // ── LEYENDA ───────────────────────────────────────────────
+  if (smaFast) {
+    ctx.save(); ctx.font=`bold ${8*dpr}px -apple-system`; ctx.textAlign="left";
+    const ly=pad.t+10*dpr; let lx=pad.l+6*dpr;
+    const smaFastLabel=fastPeriod===3?"SMA3":"SMA7";
+    ctx.fillStyle="#4fc3f7";
+    ctx.fillRect(lx,ly-5*dpr,12*dpr,2*dpr);
+    ctx.fillText(smaFastLabel,lx+15*dpr,ly); lx+=45*dpr;
+    if (smaSlow) {
+      const smaSlowLabel=slowPeriod===28?"SMA28":"SMA7";
+      ctx.fillStyle="#ffa726";
+      ctx.fillRect(lx,ly-5*dpr,8*dpr,2*dpr);
+      ctx.fillRect(lx+10*dpr,ly-5*dpr,4*dpr,2*dpr);
+      ctx.fillText(smaSlowLabel,lx+17*dpr,ly); lx+=52*dpr;
+    }
+    // Leyenda cruce
+    ctx.fillStyle="#00e676"; ctx.fillRect(lx,ly-5*dpr,6*dpr,6*dpr);
+    ctx.fillText("↑",lx+8*dpr,ly);
+    ctx.fillStyle="#ff4d4d"; ctx.fillRect(lx+16*dpr,ly-5*dpr,6*dpr,6*dpr);
+    ctx.fillText("↓",lx+24*dpr,ly);
     ctx.restore();
   }
 
-  // SMA7 — solo si hay suficientes puntos
-  if (vals.length>=7) {
-    drawSMA(calcSMA(vals,7), "#4fc3f7");
-  } else if (vals.length>=3) {
-    drawSMA(calcSMA(vals,3), "#4fc3f7");
-  }
-  if (vals.length>=28) {
-    drawSMA(calcSMA(vals,28), "#ffa726", true);
-  } else if (vals.length>=7) {
-    drawSMA(calcSMA(vals,7), "#ffa726", true);
-  }
-
-  // Leyenda SMA en esquina superior izquierda
-  if (vals.length>=3) {
-    const smaFastLabel = vals.length>=7 ? "SMA7" : "SMA3";
-    const smaSlowLabel = vals.length>=28 ? "SMA28" : vals.length>=7 ? "SMA7" : null;
-    ctx.font=`bold ${8*dpr}px -apple-system`; ctx.textAlign="left";
-    let lx=pad.l+6*dpr; const ly=pad.t+10*dpr;
-    ctx.fillStyle="rgba(79,195,247,0.9)";
-    ctx.fillRect(lx, ly-5*dpr, 12*dpr, 2*dpr);
-    ctx.fillText(smaFastLabel, lx+15*dpr, ly);
-    if (smaSlowLabel) {
-      lx += smaFastLabel.length*5*dpr+20*dpr;
-      ctx.fillStyle="rgba(255,167,38,0.85)";
-      ctx.fillRect(lx, ly-5*dpr, 8*dpr, 2*dpr);
-      ctx.fillRect(lx+10*dpr, ly-5*dpr, 4*dpr, 2*dpr);
-      ctx.fillText(smaSlowLabel, lx+17*dpr, ly);
-    }
+  // Dots normales si pocos datos y sin SMA
+  if (data.length<=20 && !smaFast) {
+    data.forEach((_,i)=>{
+      ctx.beginPath(); ctx.arc(toX(i),toY(vals[i]),3*dpr,0,Math.PI*2);
+      ctx.fillStyle=m.color; ctx.fill();
+    });
   }
 
   // X labels — smart format based on period
