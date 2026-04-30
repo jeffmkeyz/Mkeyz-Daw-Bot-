@@ -677,19 +677,19 @@ function cloudGet(key) {
     try {
       if (window.Telegram?.WebApp?.CloudStorage?.getItem) {
         window.Telegram.WebApp.CloudStorage.getItem(key, (err, val) => resolve(val || null));
-      } else { resolve(localStorage.getItem(key)); }
-    } catch(e) { resolve(localStorage.getItem(key)); }
+      } else { resolve(sessionStorage.getItem(key)); }
+    } catch(e) { resolve(sessionStorage.getItem(key)); }
   });
 }
 function cloudSet(key, val) {
-  try { localStorage.setItem(key, val); } catch(e) {}
+  try { sessionStorage.setItem(key, val); } catch(e) {}
   try { if (window.Telegram?.WebApp?.CloudStorage?.setItem) window.Telegram.WebApp.CloudStorage.setItem(key, val); } catch(e) {}
 }
 
 async function load() {
-  try { const l=localStorage.getItem(SAVE_KEY); if (l) entries=JSON.parse(l); } catch(e) {}
-  try { const l=localStorage.getItem(SONGS_KEY); if (l) songs=JSON.parse(l); } catch(e) {}
-  try { const l=localStorage.getItem(PAY_KEY);   if (l) payments=JSON.parse(l); } catch(e) {}
+  try { const l=sessionStorage.getItem(SAVE_KEY); if (l) entries=JSON.parse(l); } catch(e) {}
+  try { const l=sessionStorage.getItem(SONGS_KEY); if (l) songs=JSON.parse(l); } catch(e) {}
+  try { const l=sessionStorage.getItem(PAY_KEY);   if (l) payments=JSON.parse(l); } catch(e) {}
   // Migrate entries missing platform field
   const knownPlats=["spotify","amazon","amazon_prime","apple","youtube","manual"];
   entries=entries.map(e=>{
@@ -708,17 +708,17 @@ async function load() {
 
 async function save() {
   const d=JSON.stringify(entries);
-  try { localStorage.setItem(SAVE_KEY,d); } catch(e) {}
+  try { sessionStorage.setItem(SAVE_KEY,d); } catch(e) {}
   
 }
 async function saveSongs() {
   const d=JSON.stringify(songs);
-  try { localStorage.setItem(SONGS_KEY,d); } catch(e) {}
+  try { sessionStorage.setItem(SONGS_KEY,d); } catch(e) {}
   
 }
 async function savePayments() {
   const d=JSON.stringify(payments);
-  try { localStorage.setItem(PAY_KEY,d); } catch(e) {}
+  try { sessionStorage.setItem(PAY_KEY,d); } catch(e) {}
   
 }
 
@@ -1574,7 +1574,7 @@ function updatePayStatus() {
 
 function clearAllPayments() {
   payments=[];
-  try { localStorage.removeItem(PAY_KEY); } catch(e) {}
+  try { sessionStorage.removeItem(PAY_KEY); } catch(e) {}
   try { cloudSet(PAY_KEY, '[]'); } catch(e) {}
   try { updatePayStatus(); } catch(e) {}
   if(document.getElementById("btab-pagos")?.classList.contains("active")) renderPagos();
