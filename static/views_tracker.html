@@ -1141,23 +1141,15 @@ function drawChart(data) {
 // ── SCROLLBAR ─────────────────────────────────────────────
 function updateScrollbar() {
   const bar   = document.getElementById("chart-scrollbar");
-  const track = document.getElementById("scroll-track");
   const thumb = document.getElementById("scroll-thumb");
   const full  = getFiltered().length;
-  if (!bar||!track||!thumb) return;
-
+  if (!bar||!thumb||full<2) { if(bar) bar.style.display="none"; return; }
   const curEnd = zoomEnd===Infinity ? full-1 : zoomEnd;
   const span   = curEnd - zoomStart + 1;
-
-  // Ocultar si no hay zoom útil (span = full)
-  if (span >= full || full < 2) { bar.style.display="none"; return; }
-  bar.style.display="block";
-
-  const thumbPct  = span / full;               // ancho relativo
-  const offsetPct = zoomStart / full;           // posición relativa
-
-  thumb.style.left  = (offsetPct  * 100) + "%";
-  thumb.style.width = (thumbPct   * 100) + "%";
+  if (span >= full) { bar.style.display="none"; return; }
+  bar.style.display = "block";
+  thumb.style.left  = (zoomStart / full * 100).toFixed(2) + "%";
+  thumb.style.width = (span      / full * 100).toFixed(2) + "%";
 }
 
 function setupScrollbar() {
@@ -1165,77 +1157,72 @@ function setupScrollbar() {
   const thumb = document.getElementById("scroll-thumb");
   if (!track||!thumb) return;
 
-  let dragging=false, startX=0, startLeft=0;
+  let dragging = false;
+  let dragStartX = 0;       // clientX donde empezó el drag
+  let dragStartOffset = 0;  // zoomStart al inicio del drag (en índices)
 
-  function applyThumbPos(clientX) {
-    const rect  = track.getBoundingClientRect();
-    const full  = getFiltered().length;
-    if (!full) return;
+  function getSpan() {
+    const full = getFiltered().length;
     const curEnd = zoomEnd===Infinity ? full-1 : zoomEnd;
-    const span   = curEnd - zoomStart + 1;
-    const thumbW = span / full;                      // fracción del ancho
-    const maxLeft = 1 - thumbW;
-    const rawLeft = (clientX - rect.left - startLeft) / rect.width;
-    const newLeft = Math.max(0, Math.min(maxLeft, rawLeft));
-    const ns = Math.round(newLeft * full);
-    const ne = Math.min(full-1, ns + span - 1);
-    zoomStart = ns; zoomEnd = ne;
-    render(); updateScrollbar();
+    return { full, span: curEnd - zoomStart + 1 };
   }
 
-  // Click en el track (fuera del thumb) → saltar
-  track.addEventListener("mousedown", e => {
-    if (e.target===thumb) return;
-    const rect  = track.getBoundingClientRect();
-    const full  = getFiltered().length;
-    if (!full) return;
-    const curEnd = zoomEnd===Infinity ? full-1 : zoomEnd;
-    const span   = curEnd - zoomStart + 1;
-    const clickPct = (e.clientX - rect.left) / rect.width;
-    const ns = Math.max(0, Math.min(full-1-span+1, Math.round(clickPct*full - span/2)));
-    zoomStart = ns; zoomEnd = Math.min(full-1, ns+span-1);
-    render(); updateScrollbar();
-  });
+  function jumpToClick(clientX) {
+    const rect = track.getBoundingClientRect();
+    const { full, span } = getSpan();
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    let ns = Math.round(pct * full - span / 2);
+    ns = Math.max(0, Math.min(full - span, ns));
+    zoomStart = ns;
+    zoomEnd   = ns + span - 1;
+    render();
+  }
 
-  // Drag del thumb — mouse
+  function onDragMove(clientX) {
+    const rect = track.getBoundingClientRect();
+    const { full, span } = getSpan();
+    const dx = clientX - dragStartX;
+    const shift = dx / rect.width * full;
+    let ns = Math.round(dragStartOffset + shift);
+    ns = Math.max(0, Math.min(full - span, ns));
+    zoomStart = ns;
+    zoomEnd   = ns + span - 1;
+    render();
+  }
+
+  // ── Mouse ──
   thumb.addEventListener("mousedown", e => {
-    dragging=true;
-    startX=e.clientX;
-    startLeft=thumb.offsetLeft;
+    dragging = true;
+    dragStartX      = e.clientX;
+    dragStartOffset = zoomStart;
     e.preventDefault();
+    e.stopPropagation();
   });
-  window.addEventListener("mousemove", e => {
-    if (!dragging) return;
-    applyThumbPos(e.clientX);
+  track.addEventListener("mousedown", e => {
+    if (e.target === thumb) return;
+    jumpToClick(e.clientX);
   });
-  window.addEventListener("mouseup", () => { dragging=false; });
+  window.addEventListener("mousemove", e => { if (dragging) onDragMove(e.clientX); });
+  window.addEventListener("mouseup",   ()  => { dragging = false; });
 
-  // Drag del thumb — touch
+  // ── Touch ──
   thumb.addEventListener("touchstart", e => {
-    dragging=true;
-    startX=e.touches[0].clientX;
-    startLeft=thumb.offsetLeft;
+    dragging = true;
+    dragStartX      = e.touches[0].clientX;
+    dragStartOffset = zoomStart;
     e.preventDefault();
+    e.stopPropagation();
   },{passive:false});
   thumb.addEventListener("touchmove", e => {
     if (!dragging) return;
-    applyThumbPos(e.touches[0].clientX);
+    onDragMove(e.touches[0].clientX);
     e.preventDefault();
   },{passive:false});
-  thumb.addEventListener("touchend", () => { dragging=false; });
+  thumb.addEventListener("touchend", () => { dragging = false; });
 
-  // Click en track — touch
   track.addEventListener("touchstart", e => {
-    if (e.target===thumb) return;
-    const rect  = track.getBoundingClientRect();
-    const full  = getFiltered().length;
-    if (!full) return;
-    const curEnd = zoomEnd===Infinity ? full-1 : zoomEnd;
-    const span   = curEnd - zoomStart + 1;
-    const clickPct = (e.touches[0].clientX - rect.left) / rect.width;
-    const ns = Math.max(0, Math.min(full-1-span+1, Math.round(clickPct*full - span/2)));
-    zoomStart = ns; zoomEnd = Math.min(full-1, ns+span-1);
-    render(); updateScrollbar();
+    if (e.target === thumb) return;
+    jumpToClick(e.touches[0].clientX);
     e.preventDefault();
   },{passive:false});
 }
@@ -1260,12 +1247,13 @@ function setupTooltip() {
   }
 
   // ── Touch state ──
-  let touches      = {};   // id → {x,y}
-  let pinchDist0   = null; // initial pinch distance
-  let zoomStart0   = 0;    // zoom at pinch start
+  let touches      = {};
+  let pinchDist0   = null;
+  let zoomStart0   = 0;
   let zoomEnd0     = 0;
-  let panAcc = 0; // acumulador fraccional para pan suave en zoom máximo
-  let lastTap      = 0;    // for double-tap detection
+  let panLast      = 0;
+  let panAcc       = 0;
+  let lastTap      = 0;
   let isDragging   = false;
 
   function dist(a,b){ return Math.hypot(b.x-a.x, b.y-a.y); }
