@@ -19,9 +19,9 @@
 }
 html,body { height:100%; background:var(--bg); color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
 body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px); pointer-events:none; z-index:1000; }
-#app { min-height:100vh; padding:0 0 calc(80px + var(--safe-bottom)); display:flex; flex-direction:column; }
-.header { position:sticky; top:0; z-index:100; background:rgba(8,11,15,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:14px 16px 12px; display:flex; align-items:center; justify-content:space-between; }
-.header-left { display:flex; flex-direction:column; gap:2px; }
+#app { min-height:100vh; padding:0 0 32px; display:flex; flex-direction:column; }
+.header { position:sticky; top:0; z-index:100; background:rgba(8,11,15,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:14px 16px 12px; display:flex; align-items:center; justify-content:center; }
+.header-left { display:flex; flex-direction:column; gap:2px; align-items:center; text-align:center; }
 .vps-name { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:#fff; letter-spacing:2px; text-transform:uppercase; }
 .vps-meta { color:var(--text-dim); font-size:10px; letter-spacing:0.5px; }
 .status-pill { display:flex; align-items:center; gap:6px; background:var(--green-dim); border:1px solid rgba(0,232,122,0.25); border-radius:20px; padding:4px 10px; font-size:10px; color:var(--green); letter-spacing:0.5px; }
@@ -85,7 +85,7 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
 .profile-fp { font-size:8px; color:var(--text-dim); margin-top:1px; }
 .profiles-empty { padding:30px 16px; text-align:center; color:var(--text-dim); font-size:11px; line-height:1.8; }
 .profiles-empty .big-icon { font-size:36px; display:block; margin-bottom:10px; opacity:0.4; }
-.bottom-bar { position:fixed; bottom:0; left:0; right:0; padding:10px 16px calc(10px + var(--safe-bottom)); background:rgba(8,11,15,0.95); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; gap:8px; z-index:200; }
+.bottom-bar { display:flex; gap:8px; padding:0 16px 16px; margin-top:4px; }
 .btn-primary { flex:1; padding:13px; background:var(--green); border:none; border-radius:var(--radius); font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#000; cursor:pointer; letter-spacing:0.3px; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
 .btn-primary:active { transform:scale(0.97); opacity:0.85; }
 .btn-secondary { padding:13px 18px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim); cursor:pointer; letter-spacing:0.3px; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
@@ -517,9 +517,9 @@ function render() {
     <div class="header">
       <div class="header-left">
         <div class="vps-name">VPS <span style="color:var(--green)">SIMULATOR</span></div>
-        <div class="vps-meta">EU-WEST (Madrid) · Ubuntu 22.04 · <span style="color:var(--green);opacity:0.7">v1.2.0</span></div>
+        <div class="vps-meta">EU-WEST (Madrid) · Ubuntu 22.04 · <span style="color:var(--green);opacity:0.7">v2.0.0</span></div>
+        <div class="status-pill" style="margin-top:6px"><div class="pulse"></div>ONLINE</div>
       </div>
-      <div class="status-pill"><div class="pulse"></div>ONLINE</div>
     </div>
     <div class="section-title">// RECURSOS DEL SERVIDOR</div>
     <div class="resources-grid">
@@ -562,6 +562,14 @@ function render() {
         <div class="cap-limit-row">Disco → <span>${capacity.limits.byStorage}</span></div>
       </div>
     </div>
+    <div class="bottom-bar">
+      <button class="btn-primary" onclick="openQuick()">⚡ ¿CUÁNTOS PERFILES?</button>
+      <button class="btn-secondary" onclick="openHealth()" style="padding:13px 14px;color:#ff6b9d;border-color:rgba(255,107,157,0.2)">🩺</button>
+      <button class="btn-secondary" onclick="openNewProfile()" style="padding:13px 14px;color:var(--green);border-color:var(--green-dim)">➕</button>
+      <button class="btn-secondary" onclick="openExport()" style="padding:13px 14px;color:#4fc3f7;border-color:rgba(79,195,247,0.2)">📤</button>
+      <button class="btn-secondary" onclick="openCalc()" style="padding:13px 14px;color:var(--amber);border-color:var(--amber-dim)">💰</button>
+      <button class="btn-secondary" onclick="resetVPS()" style="padding:13px 10px">↺</button>
+    </div>
     <div class="section-title">// AGREGAR POTENCIA</div>
     <div class="upgrade-grid">
       <div class="upg-btn" onclick="openModal('cpu')"><span class="upg-icon">⚡</span><div class="upg-text"><span class="upg-name">+ CPU</span><span class="upg-detail">Más procesos</span></div><span class="upg-arrow">›</span></div>
@@ -574,14 +582,6 @@ function render() {
       <div class="profile-count-badge">${profiles.length}/${capacity.maxProfiles}</div>
     </div>
     <div class="profiles-list">${profilesHTML}</div>
-    <div class="bottom-bar">
-      <button class="btn-primary" onclick="openQuick()">⚡ ¿CUÁNTOS PERFILES?</button>
-      <button class="btn-secondary" onclick="openHealth()" style="padding:13px 14px;color:#ff6b9d;border-color:rgba(255,107,157,0.2)">🩺</button>
-      <button class="btn-secondary" onclick="openNewProfile()" style="padding:13px 14px;color:var(--green);border-color:var(--green-dim)">➕</button>
-      <button class="btn-secondary" onclick="openExport()" style="padding:13px 14px;color:#4fc3f7;border-color:rgba(79,195,247,0.2)">📤</button>
-      <button class="btn-secondary" onclick="openCalc()" style="padding:13px 14px;color:var(--amber);border-color:var(--amber-dim)">💰</button>
-      <button class="btn-secondary" onclick="resetVPS()" style="padding:13px 10px">↺</button>
-    </div>
   `;
   document.getElementById('loading').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
