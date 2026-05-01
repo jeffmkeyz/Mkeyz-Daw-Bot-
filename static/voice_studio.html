@@ -106,18 +106,20 @@
     .vu-bar-inner { height: 100%; border-radius: 4px; transition: width 0.05s linear; background: linear-gradient(90deg, var(--green), var(--gold), var(--fire)); }
 
     .section-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin: 14px 0 8px; font-weight: 700; }
+    
     .track {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 10px 12px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto;
-      gap: 8px; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      padding: 10px 12px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
     }
     .track.armed { border-color: var(--fire); box-shadow: 0 0 16px rgba(255,59,59,0.2); }
     .track.soloed { border-color: var(--gold); }
     .track.muted { opacity: 0.5; }
-    .track-left { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .track-main-row { display: flex; gap: 8px; align-items: center; }
+    .track-left { flex: 1; min-width: 0; }
     .track-name { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px; }
     .track-color { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-    .track-waveform { width: 100%; height: 40px; background: #030308; border-radius: 6px; overflow: hidden; }
+    .track-waveform { width: 100%; height: 40px; background: #030308; border-radius: 6px; overflow: hidden; margin-top: 4px; }
     .track-waveform canvas { width: 100%; height: 100%; }
     .track-right { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
     .track-btns { display: flex; gap: 4px; }
@@ -130,15 +132,22 @@
     .track-btn.mute.active { background: var(--fire); color: #fff; border-color: var(--fire); }
     .track-btn.solo.active { background: var(--gold); color: #000; border-color: var(--gold); }
     .track-btn.rec.active { background: var(--fire); color: #fff; border-color: var(--fire); }
-    .track-fader { display: flex; align-items: center; gap: 4px; }
-    .track-fader input[type=range] { width: 60px; -webkit-appearance: none; height: 4px; background: var(--border); border-radius: 2px; outline: none; }
-    .track-fader input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--text); cursor: pointer; border: 2px solid #000; }
+    .track-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+    .track-fader, .track-panner { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted); }
+    .track-fader input[type=range], .track-panner input[type=range] { width: 60px; -webkit-appearance: none; height: 4px; background: var(--border); border-radius: 2px; outline: none; }
+    .track-fader input[type=range]::-webkit-slider-thumb, .track-panner input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--text); cursor: pointer; border: 2px solid #000; }
+    .track-panner input[type=range] { background: linear-gradient(to right, var(--blue), var(--border), var(--fire)); }
 
-    /* Plugins */
+    .add-track-btn {
+      width: 100%; padding: 10px; border-radius: var(--radius); border: 1px dashed var(--border);
+      background: transparent; color: var(--muted); font-weight: 600; cursor: pointer;
+      transition: all 0.2s; margin-bottom: 8px;
+    }
+    .add-track-btn:hover { border-color: var(--gold); color: var(--gold); }
+
     .plugin-panel {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
       margin: 10px 0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-      transition: all 0.3s;
     }
     .plugin-panel:hover { border-color: #2a2a45; }
     .plugin-header {
@@ -209,6 +218,13 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.6); pointer-events: none;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .delete-track-btn {
+      background: transparent; border: 1px solid var(--fire); color: var(--fire);
+      padding: 2px 6px; border-radius: 4px; font-size: 10px; cursor: pointer;
+      margin-left: 6px;
+    }
+    .delete-track-btn:active { background: var(--fire); color: #fff; }
   </style>
 </head>
 <body>
@@ -238,6 +254,7 @@
 
   <div class="section-label">🎧 Pistas</div>
   <div id="tracks-container"></div>
+  <button class="add-track-btn" onclick="addTrack()">+ Añadir pista personalizada</button>
 
   <div class="section-label">🎛️ Presets de Mezcla</div>
   <div class="preset-row" id="master-preset-row">
@@ -342,12 +359,12 @@
   let bpm = 120, metronomeInterval = null, metronomeActive = false, loopActive = false;
   let timerInterval = null, elapsed = 0, recordings = [], recCount = 1, activeSources = [];
 
-  const TRACK_COLORS = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#a37cff'];
+  const TRACK_COLORS = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#a37cff', '#ff9f43', '#54a0ff', '#5f27cd'];
   let tracks = [
-    { id: 1, name: 'Voz Principal', color: TRACK_COLORS[0], audioBuffer: null, isArmed: true, isMuted: false, isSolo: false, volume: 0.8 },
-    { id: 2, name: 'Armonía', color: TRACK_COLORS[1], audioBuffer: null, isArmed: false, isMuted: false, isSolo: false, volume: 0.7 },
-    { id: 3, name: 'Adorno', color: TRACK_COLORS[2], audioBuffer: null, isArmed: false, isMuted: false, isSolo: false, volume: 0.6 },
-    { id: 4, name: 'Ambiente', color: TRACK_COLORS[3], audioBuffer: null, isArmed: false, isMuted: false, isSolo: false, volume: 0.5 },
+    { id: 1, name: 'Voz Principal', color: TRACK_COLORS[0], audioBuffer: null, isArmed: true, isMuted: false, isSolo: false, volume: 0.8, pan: 0 },
+    { id: 2, name: 'Armonía', color: TRACK_COLORS[1], audioBuffer: null, isArmed: false, isMuted: false, isSolo: false, volume: 0.7, pan: -0.5 },
+    { id: 3, name: 'Adorno', color: TRACK_COLORS[2], audioBuffer: null, isArmed: false, isMuted: false, isSolo: false, volume: 0.6, pan: 0.5 },
+    { id: 4, name: 'Ambiente', color: TRACK_COLORS[3], audioBuffer: null, isArmed: false, isMuted: false, isSolo: false, volume: 0.5, pan: 0 },
   ];
 
   const MASTER_PRESETS = {
@@ -358,6 +375,8 @@
     radioVintage: { reverb:{active:true,decay:0.8,predelay:0,wet:20,size:0.5}, delay:{active:false,time:0.2,feedback:20,wet:10,filter:6000}, comp:{active:true,threshold:-15,ratio:5,attack:0.5,release:30}, eq:{active:true,low:-6,mid:4,midfreq:2500,high:-6}, chorus:{active:false,depth:10,rate:0.5,wet:10} },
     clubMaster: { reverb:{active:true,decay:3,predelay:15,wet:40,size:2}, delay:{active:true,time:0.3,feedback:45,wet:30,filter:10000}, comp:{active:true,threshold:-22,ratio:4,attack:3,release:120}, eq:{active:true,low:4,mid:0,midfreq:1500,high:6}, chorus:{active:false,depth:30,rate:1.2,wet:20} }
   };
+
+  let nextTrackId = 5;
 
   async function initAudio() {
     if (audioCtx) return;
@@ -404,7 +423,7 @@
 
     buildTracksUI();
     startVUMeter();
-    applyMasterPreset('default'); // Sincronizar UI y audio con preset inicial
+    applyMasterPreset('default');
   }
 
   function createReverbImpulse(duration, decay) {
@@ -513,12 +532,10 @@
     const preset = MASTER_PRESETS[presetName];
     if (!preset) return;
 
-    // Actualizar chips visuales
     document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
     const chip = document.querySelector(`.preset-chip[data-preset="${presetName}"]`);
     if (chip) chip.classList.add('active');
 
-    // Reverb
     masterFxState.reverb = preset.reverb.active;
     const revToggle = document.getElementById('rev-toggle');
     if (revToggle) revToggle.classList.toggle('on', masterFxState.reverb);
@@ -528,7 +545,6 @@
     setSliderValue('rev-size', preset.reverb.size);
     updateReverbParams();
 
-    // Delay
     masterFxState.delay = preset.delay.active;
     const delayToggle = document.getElementById('delay-toggle');
     if (delayToggle) delayToggle.classList.toggle('on', masterFxState.delay);
@@ -538,7 +554,6 @@
     setSliderValue('dly-filter', preset.delay.filter);
     updateDelayParams();
 
-    // Comp
     masterFxState.comp = preset.comp.active;
     const compToggle = document.getElementById('comp-toggle');
     if (compToggle) compToggle.classList.toggle('on', masterFxState.comp);
@@ -548,7 +563,6 @@
     setSliderValue('comp-release', preset.comp.release);
     updateCompParams();
 
-    // EQ
     masterFxState.eq = preset.eq.active;
     const eqToggle = document.getElementById('eq-toggle');
     if (eqToggle) eqToggle.classList.toggle('on', masterFxState.eq);
@@ -558,7 +572,6 @@
     setSliderValue('eq-high', preset.eq.high);
     updateEQParams();
 
-    // Chorus
     masterFxState.chorus = preset.chorus.active;
     const chorusToggle = document.getElementById('chorus-toggle');
     if (chorusToggle) chorusToggle.classList.toggle('on', masterFxState.chorus);
@@ -567,7 +580,6 @@
     setSliderValue('chor-wet', preset.chorus.wet);
     updateChorusParams();
 
-    // Sincronizar nodos de audio
     if (masterFxNodes.reverb) {
       masterFxNodes.reverb.active = masterFxState.reverb;
       masterFxNodes.reverb.gain.gain.value = masterFxState.reverb ? (preset.reverb.wet / 100 * 0.7) : 0;
@@ -590,12 +602,10 @@
     const slider = document.getElementById(id);
     if (slider) {
       slider.value = value;
-      // Disparar evento input para actualizar la UI
       slider.dispatchEvent(new Event('input', { bubbles: true }));
     }
   }
 
-  // ── BPM EDITABLE ──────────────────────────────
   function activateBPMEdit() {
     const display = document.getElementById('bpm-display');
     display.classList.add('editing');
@@ -629,7 +639,6 @@
     }
   }
 
-  // ── METRÓNOMO ────────────────────────────────
   function toggleMetronome() {
     metronomeActive = !metronomeActive;
     document.getElementById('btn-metro').classList.toggle('active', metronomeActive);
@@ -658,7 +667,6 @@
 
   function toggleLoop() { loopActive = !loopActive; document.getElementById('btn-loop').classList.toggle('active', loopActive); }
 
-  // ── STOP ──────────────────────────────────────
   function stopAll() {
     activeSources.forEach(src => { try { src.stop(); } catch(e) {} });
     activeSources = [];
@@ -675,7 +683,6 @@
     if(tg) tg.HapticFeedback?.impactOccurred('medium');
   }
 
-  // ── PLAY ──────────────────────────────────────
   function playAll() {
     if (!audioCtx) { initAudio().then(() => playAll()); return; }
     stopAll();
@@ -686,8 +693,11 @@
         source.buffer = t.audioBuffer;
         const gainNode = audioCtx.createGain();
         gainNode.gain.value = t.volume;
+        const panner = audioCtx.createStereoPanner();
+        panner.pan.value = t.pan || 0;
         source.connect(gainNode);
-        gainNode.connect(masterGain);
+        gainNode.connect(panner);
+        panner.connect(masterGain);
         source.start(0);
         activeSources.push(source);
         source.onended = () => { activeSources = activeSources.filter(s => s !== source); };
@@ -697,7 +707,6 @@
     showToast('▶ Reproduciendo mezcla');
   }
 
-  // ── VU METER ──────────────────────────────────
   function startVUMeter() {
     const vuBar = document.getElementById('vu-bar');
     const vuPeak = document.getElementById('vu-peak-val');
@@ -715,28 +724,74 @@
     update();
   }
 
-  // ── PISTAS ────────────────────────────────────
+  function addTrack() {
+    const name = prompt('Nombre de la nueva pista:', `Pista ${nextTrackId}`);
+    if (!name) return;
+    const color = TRACK_COLORS[(nextTrackId - 1) % TRACK_COLORS.length];
+    tracks.push({
+      id: nextTrackId,
+      name: name,
+      color: color,
+      audioBuffer: null,
+      isArmed: false,
+      isMuted: false,
+      isSolo: false,
+      volume: 0.7,
+      pan: 0
+    });
+    nextTrackId++;
+    buildTracksUI();
+    showToast(`Pista "${name}" añadida`);
+  }
+
+  function deleteTrack(id) {
+    if (tracks.length <= 1) {
+      showToast('Debe haber al menos una pista');
+      return;
+    }
+    tracks = tracks.filter(t => t.id !== id);
+    // Si la pista eliminada estaba armada, armar la primera
+    if (!tracks.some(t => t.isArmed) && tracks.length > 0) {
+      tracks[0].isArmed = true;
+    }
+    buildTracksUI();
+    showToast('Pista eliminada');
+  }
+
   function buildTracksUI() {
     const container = document.getElementById('tracks-container');
     container.innerHTML = tracks.map(t => `
-      <div class="track ${t.isArmed ? 'armed' : ''} ${t.isSolo ? 'soloed' : ''} ${t.isMuted ? 'muted' : ''}">
-        <div class="track-left">
-          <div class="track-name"><span class="track-color" style="background:${t.color}"></span>${t.name}</div>
-          <div class="track-waveform" id="waveform-${t.id}"><canvas id="canvas-${t.id}"></canvas></div>
-        </div>
-        <div class="track-right">
-          <div class="track-btns">
-            <button class="track-btn mute ${t.isMuted ? 'active' : ''}" onclick="toggleTrackMute(${t.id})">M</button>
-            <button class="track-btn solo ${t.isSolo ? 'active' : ''}" onclick="toggleTrackSolo(${t.id})">S</button>
-            <button class="track-btn rec ${t.isArmed ? 'active' : ''}" onclick="armTrack(${t.id})">R</button>
+      <div class="track ${t.isArmed ? 'armed' : ''} ${t.isSolo ? 'soloed' : ''} ${t.isMuted ? 'muted' : ''}" id="track-${t.id}">
+        <div class="track-main-row">
+          <div class="track-left">
+            <div class="track-name">
+              <span class="track-color" style="background:${t.color}"></span>${t.name}
+              <button class="delete-track-btn" onclick="deleteTrack(${t.id})">✕</button>
+            </div>
           </div>
+          <div class="track-right">
+            <div class="track-btns">
+              <button class="track-btn mute ${t.isMuted ? 'active' : ''}" onclick="toggleTrackMute(${t.id})">M</button>
+              <button class="track-btn solo ${t.isSolo ? 'active' : ''}" onclick="toggleTrackSolo(${t.id})">S</button>
+              <button class="track-btn rec ${t.isArmed ? 'active' : ''}" onclick="armTrack(${t.id})">R</button>
+            </div>
+          </div>
+        </div>
+        <div class="track-waveform" id="waveform-${t.id}"><canvas id="canvas-${t.id}"></canvas></div>
+        <div class="track-controls">
           <div class="track-fader">
-            <span style="font-size:10px;color:var(--muted)">Vol</span>
+            <span>Vol</span>
             <input type="range" min="0" max="100" value="${Math.round(t.volume * 100)}" oninput="setTrackVolume(${t.id}, this.value)">
             <span class="track-vol-val">${Math.round(t.volume * 100)}%</span>
           </div>
+          <div class="track-panner">
+            <span>Pan</span>
+            <input type="range" min="-100" max="100" value="${Math.round(t.pan * 100)}" oninput="setTrackPan(${t.id}, this.value)">
+            <span class="track-pan-val">${t.pan === 0 ? 'C' : (t.pan < 0 ? 'L' + Math.abs(Math.round(t.pan * 100)) : 'R' + Math.round(t.pan * 100))}</span>
+          </div>
         </div>
-      </div>`).join('');
+      </div>
+    `).join('');
     tracks.forEach(t => { if (t.audioBuffer) drawWaveform(t.id, t.audioBuffer); });
   }
 
@@ -775,8 +830,18 @@
   function toggleTrackSolo(id) { const t = tracks.find(tr => tr.id === id); if (t) { t.isSolo = !t.isSolo; buildTracksUI(); } }
   function armTrack(id) { tracks.forEach(tr => { tr.isArmed = (tr.id === id); }); buildTracksUI(); showToast(`🎤 Pista "${tracks.find(t => t.id === id)?.name}" armada`); }
   function setTrackVolume(id, val) { const t = tracks.find(tr => tr.id === id); if (t) { t.volume = parseInt(val) / 100; const volEl = document.querySelector(`#track-${id} .track-vol-val`); if (volEl) volEl.textContent = val + '%'; } }
+  function setTrackPan(id, val) {
+    const t = tracks.find(tr => tr.id === id);
+    if (t) {
+      t.pan = parseInt(val) / 100;
+      const panEl = document.querySelector(`#track-${id} .track-pan-val`);
+      if (panEl) {
+        const panVal = t.pan;
+        panEl.textContent = panVal === 0 ? 'C' : (panVal < 0 ? 'L' + Math.abs(Math.round(panVal * 100)) : 'R' + Math.round(panVal * 100));
+      }
+    }
+  }
 
-  // ── GRABACIÓN ────────────────────────────────
   async function toggleMasterRec() { if (!isMasterRecording) await startMasterRecording(); else stopMasterRecording(); }
 
   async function startMasterRecording() {
@@ -845,7 +910,7 @@
   async function exportMix() {
     if (!audioCtx) { showToast('Graba algo primero'); return; }
     const offlineCtx = new OfflineAudioContext(2, audioCtx.sampleRate * (elapsed || 10), audioCtx.sampleRate);
-    tracks.forEach(t => { if (t.audioBuffer && !t.isMuted) { const source = offlineCtx.createBufferSource(); source.buffer = t.audioBuffer; const gain = offlineCtx.createGain(); gain.gain.value = t.volume; source.connect(gain); gain.connect(offlineCtx.destination); source.start(0); } });
+    tracks.forEach(t => { if (t.audioBuffer && !t.isMuted) { const source = offlineCtx.createBufferSource(); source.buffer = t.audioBuffer; const gain = offlineCtx.createGain(); gain.gain.value = t.volume; const panner = offlineCtx.createStereoPanner(); panner.pan.value = t.pan || 0; source.connect(gain); gain.connect(panner); panner.connect(offlineCtx.destination); source.start(0); } });
     const renderedBuffer = await offlineCtx.startRendering();
     const wavBlob = bufferToWav(renderedBuffer);
     const url = URL.createObjectURL(wavBlob);
@@ -870,17 +935,13 @@
     if(tg) tg.HapticFeedback?.impactOccurred('light');
   }
 
-  // Evento de presets
   document.getElementById('master-preset-row').addEventListener('click', (e) => {
     const chip = e.target.closest('.preset-chip');
     if (!chip) return;
     applyMasterPreset(chip.dataset.preset);
   });
 
-  // Inicialización
   buildTracksUI();
-  // El audio se inicializa bajo demanda, pero los sliders deben verse con valores por defecto
-  // Llamamos a applyMasterPreset('default') para que los sliders se actualicen visualmente
   applyMasterPreset('default');
 </script>
 </body>
