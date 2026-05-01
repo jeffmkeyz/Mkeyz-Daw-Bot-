@@ -1,667 +1,1604 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Adivina el BPM — Mkeyz Studio</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Adivina el BPM — Mkeyz Studio v2</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #050510;
+            --card: #0d0d1a;
+            --border: #1a1a2e;
+            --gold: #f0b90b;
+            --gold2: #ffd700;
+            --fire: #ff3b3b;
+            --green: #00e676;
+            --cyan: #00e5ff;
+            --purple: #b388ff;
+            --text: #ffffff;
+            --muted: #6a6a7a;
+            --radius: 20px;
+            --shadow-gold: 0 0 40px rgba(240, 185, 11, 0.3);
+        }
 
-:root {
-  --bg:     #0a0a0a;
-  --card:   #111;
-  --border: #1f1f1f;
-  --gold:   #f5c518;
-  --fire:   #ff4d4d;
-  --green:  #00e676;
-  --text:   #fff;
-  --muted:  #555;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  min-height: 100vh;
-  overflow: hidden;
-  user-select: none;
-}
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+            position: relative;
+        }
 
-/* ── SCREENS ── */
-.screen { display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:24px; }
-.screen.active { display:flex; }
+        /* Fondo animado de ondas */
+        .bg-waves {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.04;
+            background: radial-gradient(ellipse at 30% 50%, #f0b90b 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 20%, #ff3b3b 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, #00e5ff 0%, transparent 50%);
+            animation: bgShift 15s ease-in-out infinite alternate;
+        }
 
-/* ── INTRO ── */
-.logo-big { font-size:72px; margin-bottom:16px; animation: pulse 2s ease-in-out infinite; }
-@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        @keyframes bgShift {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+            100% {
+                transform: scale(1.3) rotate(5deg);
+            }
+        }
 
-.title-big {
-  font-size:28px; font-weight:900; letter-spacing:-1px;
-  background: linear-gradient(135deg, #fff 0%, var(--gold) 100%);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  text-align:center; margin-bottom:8px;
-}
-.subtitle { font-size:14px; color:var(--muted); text-align:center; margin-bottom:40px; line-height:1.5; }
+        .app-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+        }
 
-.btn-start {
-  background: linear-gradient(135deg, var(--fire), #ff8c00);
-  border:none; border-radius:20px; padding:18px 48px;
-  font-size:18px; font-weight:800; color:#fff; cursor:pointer;
-  box-shadow: 0 8px 32px rgba(255,77,77,0.4);
-  transition: transform 0.1s, box-shadow 0.1s;
-  letter-spacing:0.5px;
-}
-.btn-start:active { transform:scale(0.96); box-shadow:0 4px 16px rgba(255,77,77,0.3); }
+        /* ── SCREENS ── */
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px 20px 40px;
+            animation: fadeSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .screen.active {
+            display: flex;
+        }
 
-.highscore-display {
-  margin-top:24px; font-size:13px; color:var(--muted);
-}
-.highscore-display span { color:var(--gold); font-weight:700; }
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-/* ── GAME ── */
-#game-screen {
-  justify-content: space-between;
-  padding: 20px 20px 32px;
-}
+        /* ── INTRO ── */
+        .logo-big {
+            font-size: 80px;
+            margin-bottom: 12px;
+            animation: logoFloat 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(240, 185, 11, 0.5));
+        }
+        @keyframes logoFloat {
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+            25% {
+                transform: translateY(-8px) scale(1.05);
+            }
+            50% {
+                transform: translateY(0) scale(1);
+            }
+            75% {
+                transform: translateY(4px) scale(0.96);
+            }
+        }
 
-.game-header {
-  width:100%; display:flex; justify-content:space-between; align-items:center;
-  padding-bottom:16px;
-}
-.score-box { text-align:center; }
-.score-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
-.score-val { font-size:24px; font-weight:900; color:var(--gold); }
+        .title-big {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0b90b 40%, #ffd700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 8px;
+            line-height: 1.1;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            text-align: center;
+            margin-bottom: 32px;
+            line-height: 1.6;
+            max-width: 280px;
+        }
 
-.round-indicator { display:flex; gap:6px; }
-.round-dot {
-  width:8px; height:8px; border-radius:50%;
-  background:var(--border); transition:background 0.3s;
-}
-.round-dot.done { background:var(--green); }
-.round-dot.current { background:var(--gold); }
+        .btn-start {
+            background: linear-gradient(135deg, #ff3b3b, #ff6d00);
+            border: none;
+            border-radius: 18px;
+            padding: 20px 56px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(255, 59, 59, 0.5);
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-start::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.15) 50%, transparent 60%);
+            animation: btnShine 2.5s ease-in-out infinite;
+        }
+        @keyframes btnShine {
+            0% {
+                transform: translateX(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) rotate(45deg);
+            }
+        }
+        .btn-start:active {
+            transform: scale(0.94);
+            box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3);
+        }
 
-/* Beat visualizer */
-.beat-visual {
-  display:flex; align-items:flex-end; justify-content:center;
-  gap:4px; height:80px; width:100%;
-}
-.bar {
-  width:6px; background:var(--border); border-radius:3px;
-  transition:height 0.1s ease;
-}
-.bar.active { background:linear-gradient(180deg, var(--gold), var(--fire)); }
+        .highscore-display {
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--muted);
+            text-align: center;
+        }
+        .highscore-display span {
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 16px;
+        }
 
-/* BPM Display */
-.bpm-display {
-  text-align:center; width:100%;
-}
-.bpm-question { font-size:13px; color:var(--muted); margin-bottom:8px; letter-spacing:1px; }
-.bpm-target-hint {
-  font-size:48px; font-weight:900; letter-spacing:-2px;
-  color:var(--text); line-height:1;
-  transition:all 0.2s;
-}
-.bpm-range { font-size:12px; color:var(--muted); margin-top:4px; }
+        .mode-toggle {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            background: var(--card);
+            border-radius: 30px;
+            padding: 4px;
+            border: 1px solid var(--border);
+        }
+        .mode-btn {
+            padding: 10px 18px;
+            border-radius: 26px;
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: transparent;
+            color: var(--muted);
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+        }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #f0b90b, #ff8c00);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(240, 185, 11, 0.3);
+        }
+        .mode-btn.locked {
+            opacity: 0.4;
+            pointer-events: none;
+            position: relative;
+        }
+        .mode-btn.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: -6px;
+            right: -2px;
+            font-size: 10px;
+        }
 
-/* Timer bar */
-.timer-wrap {
-  width:100%; background:var(--border); border-radius:100px; height:6px; overflow:hidden;
-}
-.timer-bar {
-  height:100%; border-radius:100px;
-  background:linear-gradient(90deg, var(--green), var(--gold), var(--fire));
-  transition:width 0.1s linear;
-}
+        /* ── GAME SCREEN ── */
+        #game-screen {
+            justify-content: space-between;
+            gap: 10px;
+        }
 
-/* BPM Slider */
-.slider-section { width:100%; }
-.slider-label {
-  display:flex; justify-content:space-between;
-  font-size:12px; color:var(--muted); margin-bottom:10px;
-}
-.bpm-slider {
-  width:100%; -webkit-appearance:none; appearance:none;
-  height:6px; border-radius:100px; background:var(--border); outline:none;
-  cursor:pointer;
-}
-.bpm-slider::-webkit-slider-thumb {
-  -webkit-appearance:none; appearance:none;
-  width:28px; height:28px; border-radius:50%;
-  background:linear-gradient(135deg, var(--gold), var(--fire));
-  cursor:pointer; box-shadow:0 4px 12px rgba(245,197,24,0.5);
-}
-.bpm-current {
-  text-align:center; font-size:42px; font-weight:900;
-  color:var(--gold); margin:12px 0; letter-spacing:-2px;
-}
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 8px;
+        }
+        .score-box {
+            text-align: center;
+        }
+        .score-label {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .score-val {
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--gold);
+        }
+        .combo-badge {
+            background: linear-gradient(135deg, #ff3b3b, #ff6d00);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #fff;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .combo-badge.active {
+            opacity: 1;
+            transform: scale(1);
+            animation: comboPulse 0.6s ease-in-out infinite;
+        }
+        @keyframes comboPulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+        }
 
-/* Tap button */
-.btn-tap {
-  width:100%; padding:20px; background:linear-gradient(135deg, #1a1a1a, #222);
-  border:2px solid var(--border); border-radius:20px;
-  font-size:16px; font-weight:700; color:var(--text);
-  cursor:pointer; transition:all 0.08s;
-  display:flex; align-items:center; justify-content:center; gap:10px;
-}
-.btn-tap:active {
-  transform:scale(0.97);
-  border-color:var(--gold);
-  background:linear-gradient(135deg, #1f1a00, #2a2200);
-}
-.tap-count { font-size:12px; color:var(--muted); }
+        .round-indicator {
+            display: flex;
+            gap: 8px;
+        }
+        .round-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+            box-shadow: 0 0 0px transparent;
+        }
+        .round-dot.done {
+            background: var(--green);
+            box-shadow: 0 0 8px rgba(0, 230, 118, 0.4);
+        }
+        .round-dot.current {
+            background: var(--gold);
+            box-shadow: 0 0 14px rgba(240, 185, 11, 0.7);
+            animation: dotPulse 0.8s ease-in-out infinite;
+        }
+        @keyframes dotPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 8px rgba(240, 185, 11, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(240, 185, 11, 0.9);
+            }
+        }
 
-/* Submit button */
-.btn-submit {
-  width:100%; padding:18px; border:none; border-radius:20px;
-  background:linear-gradient(135deg, var(--fire), #ff8c00);
-  font-size:18px; font-weight:800; color:#fff; cursor:pointer;
-  box-shadow:0 8px 24px rgba(255,77,77,0.3);
-  transition:transform 0.1s;
-}
-.btn-submit:active { transform:scale(0.97); }
+        /* Beat visualizer circular */
+        .visualizer-circle {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+        .circle-outer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--border);
+            transition: all 0.15s;
+        }
+        .circle-inner {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: calc(100% - 40px);
+            height: calc(100% - 40px);
+            border-radius: 50%;
+            background: var(--card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--gold);
+            transition: all 0.1s;
+        }
+        .circle-outer.beat-active {
+            border-color: var(--gold2);
+            box-shadow: 0 0 30px rgba(240, 185, 11, 0.6);
+            transform: scale(1.08);
+            border-width: 4px;
+        }
+        .circle-inner.beat-active {
+            background: #1a1400;
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(240, 185, 11, 0.3);
+        }
 
-/* ── RESULT ── */
-.result-icon { font-size:64px; margin-bottom:16px; animation:bounceIn 0.5s ease; }
-@keyframes bounceIn {
-  0% { transform:scale(0); opacity:0; }
-  60% { transform:scale(1.2); }
-  100% { transform:scale(1); opacity:1; }
-}
-.result-title { font-size:24px; font-weight:900; margin-bottom:8px; }
-.result-detail {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:16px; padding:20px; width:100%; margin:16px 0;
-}
-.result-row { display:flex; justify-content:space-between; padding:8px 0;
-  border-bottom:1px solid var(--border); font-size:14px; }
-.result-row:last-child { border-bottom:none; }
-.result-row .label { color:var(--muted); }
-.result-row .val { font-weight:700; }
-.result-row .val.correct { color:var(--green); }
-.result-row .val.close { color:var(--gold); }
-.result-row .val.wrong { color:var(--fire); }
+        /* Ondas expansivas del tap */
+        .tap-ripple-container {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .tap-ripple {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: transparent;
+            border: 2px solid var(--gold);
+            transform: translate(-50%, -50%) scale(0);
+            animation: rippleOut 0.7s ease-out forwards;
+            opacity: 0;
+        }
+        @keyframes rippleOut {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(4);
+                opacity: 0;
+            }
+        }
 
-.points-gained {
-  font-size:48px; font-weight:900; color:var(--gold);
-  text-align:center; margin:16px 0;
-}
-.points-label { font-size:13px; color:var(--muted); }
+        .bpm-display {
+            text-align: center;
+            width: 100%;
+        }
+        .bpm-question {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        .bpm-range {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+            padding: 4px 14px;
+            background: var(--card);
+            border-radius: 20px;
+            display: inline-block;
+            border: 1px solid var(--border);
+        }
+        .timer-wrap {
+            width: 100%;
+            background: var(--border);
+            border-radius: 100px;
+            height: 5px;
+            overflow: hidden;
+        }
+        .timer-bar {
+            height: 100%;
+            border-radius: 100px;
+            background: linear-gradient(90deg, var(--green), var(--gold), var(--fire));
+            transition: width 0.1s linear;
+            box-shadow: 0 0 12px rgba(240, 185, 11, 0.3);
+        }
 
-.btn-next {
-  width:100%; padding:18px; border:none; border-radius:20px;
-  background:linear-gradient(135deg, var(--green), #00bcd4);
-  font-size:18px; font-weight:800; color:#000; cursor:pointer;
-  transition:transform 0.1s;
-}
-.btn-next:active { transform:scale(0.97); }
+        /* Slider mejorado */
+        .slider-section {
+            width: 100%;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .bpm-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 100px;
+            background: linear-gradient(90deg, #1a1a2e, #2a2a40);
+            outline: none;
+            cursor: pointer;
+        }
+        .bpm-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f0b90b, #ff6d00);
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(240, 185, 11, 0.6);
+            border: 3px solid #000;
+            transition: all 0.15s;
+        }
+        .bpm-slider::-webkit-slider-thumb:active {
+            transform: scale(1.2);
+            box-shadow: 0 6px 28px rgba(240, 185, 11, 0.9);
+        }
+        .bpm-current {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--gold);
+            margin: 8px 0;
+            letter-spacing: -2px;
+            text-shadow: 0 0 30px rgba(240, 185, 11, 0.4);
+            transition: all 0.1s;
+        }
 
-/* ── FINAL ── */
-.final-score {
-  font-size:80px; font-weight:900; color:var(--gold);
-  line-height:1; margin:16px 0;
-}
-.final-label { font-size:14px; color:var(--muted); }
-.final-grade { font-size:32px; font-weight:700; margin:16px 0; }
-.stars { font-size:36px; margin:8px 0; letter-spacing:4px; }
+        .btn-tap {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #1a1a2e, #222240);
+            border: 2px solid var(--border);
+            border-radius: 18px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+        }
+        .btn-tap:active {
+            transform: scale(0.96);
+            border-color: var(--gold);
+            background: linear-gradient(135deg, #2a2000, #3a2a00);
+            box-shadow: 0 0 25px rgba(240, 185, 11, 0.3);
+        }
+        .tap-icon {
+            font-size: 24px;
+            animation: tapBounce 0.2s ease;
+        }
+        @keyframes tapBounce {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.4);
+            }
+        }
+        .tap-count {
+            font-size: 11px;
+            color: var(--muted);
+        }
+        #tap-bpm {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--gold);
+            min-width: 50px;
+            text-align: right;
+        }
 
-.leaderboard-preview {
-  width:100%; background:var(--card); border:1px solid var(--border);
-  border-radius:16px; padding:16px; margin:16px 0;
-}
-.lb-title { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
-.lb-row {
-  display:flex; align-items:center; gap:12px; padding:8px 0;
-  border-bottom:1px solid var(--border); font-size:14px;
-}
-.lb-row:last-child { border-bottom:none; }
-.lb-pos { font-size:16px; min-width:28px; }
-.lb-name { flex:1; font-weight:600; }
-.lb-pts { color:var(--gold); font-weight:800; }
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #ff3b3b, #ff6d00);
+            font-size: 18px;
+            font-weight: 800;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 59, 59, 0.4);
+            transition: all 0.15s;
+            letter-spacing: 1px;
+        }
+        .btn-submit:active {
+            transform: scale(0.96);
+            box-shadow: 0 4px 15px rgba(255, 59, 59, 0.2);
+        }
 
-.btn-play-again {
-  width:100%; padding:18px; border:none; border-radius:20px;
-  background:linear-gradient(135deg, var(--fire), #ff8c00);
-  font-size:18px; font-weight:800; color:#fff; cursor:pointer;
-  box-shadow:0 8px 24px rgba(255,77,77,0.3);
-  margin-bottom:12px;
-}
-.btn-play-again:active { transform:scale(0.97); }
+        /* ── RESULT SCREEN ── */
+        .result-icon {
+            font-size: 72px;
+            margin-bottom: 8px;
+            animation: bounceInResult 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes bounceInResult {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.25);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .result-title {
+            font-size: 26px;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+        .points-gained {
+            font-size: 56px;
+            font-weight: 900;
+            color: var(--gold);
+            text-align: center;
+            margin: 8px 0;
+            text-shadow: 0 0 40px rgba(240, 185, 11, 0.5);
+        }
+        .points-label {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
 
-/* ── FEEDBACK FLASH ── */
-.feedback-flash {
-  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
-  font-size:48px; z-index:999; pointer-events:none;
-  animation:none;
-}
-.feedback-flash.show {
-  animation:flashAnim 0.6s ease forwards;
-}
-@keyframes flashAnim {
-  0%  { transform:translate(-50%,-50%) scale(0); opacity:1; }
-  50% { transform:translate(-50%,-60%) scale(1.3); opacity:1; }
-  100%{ transform:translate(-50%,-80%) scale(1); opacity:0; }
-}
-</style>
+        .result-detail {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px;
+            width: 100%;
+            margin: 8px 0;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            align-items: center;
+        }
+        .result-row:last-child {
+            border-bottom: none;
+        }
+        .result-row .label {
+            color: var(--muted);
+        }
+        .result-row .val {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .val.correct {
+            color: var(--green);
+        }
+        .val.close {
+            color: var(--gold);
+        }
+        .val.wrong {
+            color: var(--fire);
+        }
+
+        /* Barra de precisión */
+        .precision-bar-wrap {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 10px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .precision-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            background: linear-gradient(90deg, var(--green), var(--gold), var(--fire));
+        }
+
+        .btn-next {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #00e676, #00bcd4);
+            font-size: 18px;
+            font-weight: 800;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-top: 8px;
+            box-shadow: 0 8px 25px rgba(0, 230, 118, 0.3);
+        }
+        .btn-next:active {
+            transform: scale(0.96);
+        }
+
+        /* ── FINAL SCREEN ── */
+        .final-score {
+            font-size: 90px;
+            font-weight: 900;
+            color: var(--gold);
+            line-height: 1;
+            margin: 8px 0;
+            text-shadow: 0 0 50px rgba(240, 185, 11, 0.6);
+        }
+        .final-label {
+            font-size: 14px;
+            color: var(--muted);
+        }
+        .final-grade {
+            font-size: 34px;
+            font-weight: 700;
+            margin: 8px 0;
+        }
+        .stars {
+            font-size: 40px;
+            margin: 4px 0 8px;
+            letter-spacing: 6px;
+        }
+
+        .leaderboard-preview {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .lb-title {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .lb-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+        .lb-row:last-child {
+            border-bottom: none;
+        }
+        .lb-pos {
+            font-size: 18px;
+            min-width: 30px;
+            text-align: center;
+        }
+        .lb-name {
+            flex: 1;
+            font-weight: 600;
+        }
+        .lb-pts {
+            color: var(--gold);
+            font-weight: 800;
+        }
+
+        .btn-play-again {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #ff3b3b, #ff6d00);
+            font-size: 18px;
+            font-weight: 800;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 59, 59, 0.4);
+            margin-bottom: 8px;
+            transition: all 0.15s;
+        }
+        .btn-play-again:active {
+            transform: scale(0.96);
+        }
+        .btn-share {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 18px;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-share:active {
+            background: var(--card);
+            border-color: var(--gold);
+        }
+
+        /* Logros */
+        .achievements-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 4px 0;
+        }
+        .achievement {
+            font-size: 28px;
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+        .achievement.unlocked {
+            opacity: 1;
+            animation: achievePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes achievePop {
+            0% {
+                transform: scale(0);
+            }
+            70% {
+                transform: scale(1.4);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Feedback flash */
+        .feedback-flash {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 60px;
+            z-index: 999;
+            pointer-events: none;
+            animation: none;
+            text-shadow: 0 0 40px currentColor;
+        }
+        .feedback-flash.show {
+            animation: flashAnim 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes flashAnim {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            40% {
+                transform: translate(-50%, -55%) scale(1.4);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -90%) scale(0.9);
+                opacity: 0;
+            }
+        }
+
+        /* Partículas de celebración */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 998;
+            font-size: 24px;
+            animation: particleFly 0.8s ease-out forwards;
+        }
+        @keyframes particleFly {
+            0% {
+                transform: translate(0, 0) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--dx), var(--dy)) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* Toast de logro */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: linear-gradient(135deg, #1a1a2e, #2a2a40);
+            border: 2px solid var(--gold);
+            border-radius: 20px;
+            padding: 14px 22px;
+            z-index: 1000;
+            pointer-events: none;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--gold);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            white-space: nowrap;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
 </head>
 <body>
+    <div class="bg-waves"></div>
+    <div class="app-container">
+        <!-- INTRO -->
+        <div class="screen active" id="intro-screen">
+            <div class="logo-big">🥁</div>
+            <div class="title-big">Adivina el BPM</div>
+            <div class="subtitle">Siente el ritmo, toca al compás<br>y demuestra tu oído musical.<br>¡Pon a prueba tu precisión!</div>
+            <button class="btn-start" onclick="startGame()">🎵 JUGAR</button>
+            <div class="highscore-display" id="intro-hs"></div>
+            <div class="mode-toggle" id="mode-toggle">
+                <button class="mode-btn active" data-mode="normal">Normal</button>
+                <button class="mode-btn locked" data-mode="expert" id="mode-expert-btn">Experto 🔒</button>
+            </div>
+            <div class="achievements-row" id="intro-achievements"></div>
+        </div>
 
-<!-- INTRO -->
-<div class="screen active" id="intro-screen">
-  <div class="logo-big">🥁</div>
-  <div class="title-big">Adivina el BPM</div>
-  <div class="subtitle">Escucha el ritmo, toca al compás<br>y adivina los BPM exactos.<br>5 rondas · ¡A por la puntuación máxima!</div>
-  <button class="btn-start" onclick="startGame()">¡JUGAR!</button>
-  <div class="highscore-display" id="intro-hs"></div>
-</div>
+        <!-- GAME -->
+        <div class="screen" id="game-screen">
+            <div class="game-header">
+                <div class="score-box">
+                    <div class="score-label">Puntos</div>
+                    <div class="score-val" id="score-display">0</div>
+                </div>
+                <div class="combo-badge" id="combo-badge">🔥 x1</div>
+                <div class="round-indicator" id="round-dots"></div>
+                <div class="score-box">
+                    <div class="score-label">Ronda</div>
+                    <div class="score-val" id="round-display">1/5</div>
+                </div>
+            </div>
 
-<!-- GAME -->
-<div class="screen" id="game-screen">
-  <div class="game-header">
-    <div class="score-box">
-      <div class="score-label">Puntos</div>
-      <div class="score-val" id="score-display">0</div>
+            <div class="visualizer-circle">
+                <div class="circle-outer" id="circle-outer"></div>
+                <div class="circle-inner" id="circle-inner">🎵</div>
+            </div>
+
+            <div class="bpm-display">
+                <div class="bpm-question">¿CUÁNTOS BPM?</div>
+                <div class="bpm-range" id="bpm-range-hint">Estilo: ---</div>
+            </div>
+
+            <div class="timer-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+
+            <div class="slider-section">
+                <div class="slider-label">
+                    <span>60 BPM</span>
+                    <span>200 BPM</span>
+                </div>
+                <input type="range" class="bpm-slider" id="bpm-slider" min="60" max="200" value="130" oninput="updateSlider(this.value)">
+                <div class="bpm-current" id="bpm-current-val">130</div>
+            </div>
+
+            <div class="tap-ripple-container" id="tap-ripple-container"></div>
+
+            <button class="btn-tap" id="tap-btn" onclick="tapTempo()">
+                <span class="tap-icon" id="tap-icon">👆</span>
+                <div>
+                    <div>TAP AL RITMO</div>
+                    <div class="tap-count" id="tap-info">Toca para detectar BPM</div>
+                </div>
+                <span id="tap-bpm"></span>
+            </button>
+
+            <button class="btn-submit" onclick="submitAnswer()">✅ CONFIRMAR</button>
+        </div>
+
+        <!-- RESULT -->
+        <div class="screen" id="result-screen">
+            <div class="result-icon" id="result-icon">🎯</div>
+            <div class="result-title" id="result-title"></div>
+            <div class="points-gained" id="points-gained"></div>
+            <div class="points-label">puntos</div>
+            <div class="result-detail">
+                <div class="result-row">
+                    <span class="label">BPM real</span>
+                    <span class="val correct" id="real-bpm-val"></span>
+                </div>
+                <div class="result-row">
+                    <span class="label">Tu respuesta</span>
+                    <span class="val" id="user-bpm-val"></span>
+                </div>
+                <div class="result-row">
+                    <span class="label">Diferencia</span>
+                    <span class="val" id="diff-val"></span>
+                </div>
+                <div class="precision-bar-wrap">
+                    <div class="precision-bar-fill" id="precision-bar" style="width:0%"></div>
+                </div>
+            </div>
+            <button class="btn-next" onclick="nextRound()">SIGUIENTE →</button>
+        </div>
+
+        <!-- FINAL -->
+        <div class="screen" id="final-screen">
+            <div class="logo-big" id="final-emoji">🏆</div>
+            <div class="final-grade" id="final-grade"></div>
+            <div class="final-score" id="final-score-val"></div>
+            <div class="final-label">puntos totales</div>
+            <div class="stars" id="final-stars"></div>
+            <div class="achievements-row" id="final-achievements"></div>
+            <div class="leaderboard-preview" id="lb-preview">
+                <div class="lb-title">🏆 Mejores puntuaciones</div>
+                <div id="lb-rows">Cargando...</div>
+            </div>
+            <button class="btn-play-again" onclick="startGame()">🔄 JUGAR DE NUEVO</button>
+            <button class="btn-share" onclick="shareResult()">📤 Compartir en Telegram</button>
+        </div>
     </div>
-    <div class="round-indicator" id="round-dots"></div>
-    <div class="score-box">
-      <div class="score-label">Ronda</div>
-      <div class="score-val" id="round-display">1/5</div>
-    </div>
-  </div>
 
-  <div class="beat-visual" id="beat-visual"></div>
+    <div class="feedback-flash" id="feedback-flash"></div>
+    <div class="toast" id="toast"></div>
 
-  <div class="bpm-display">
-    <div class="bpm-question">¿CUÁNTOS BPM TIENE ESTE BEAT?</div>
-    <div class="bpm-range" id="bpm-range-hint"></div>
-  </div>
+    <script>
+        const tg = window.Telegram?.WebApp;
+        const userId = tg?.initDataUnsafe?.user?.id || Math.random().toString(36).slice(2);
+        const userName = tg?.initDataUnsafe?.user?.first_name || "Jugador";
 
-  <div class="timer-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            tg.setHeaderColor("#050510");
+            tg.setBackgroundColor("#050510");
+            tg.disableVerticalSwipes?.();
+        }
 
-  <div class="slider-section">
-    <div class="slider-label">
-      <span>60 BPM</span>
-      <span>200 BPM</span>
-    </div>
-    <input type="range" class="bpm-slider" id="bpm-slider" min="60" max="200" value="130"
-           oninput="updateSlider(this.value)">
-    <div class="bpm-current" id="bpm-current-val">130</div>
-  </div>
+        // ── GAME STATE ──────────────────────────────────────────────
+        const NORMAL_ROUNDS = 5;
+        const EXPERT_ROUNDS = 8;
+        const NORMAL_TIME = 15;
+        const EXPERT_TIME = 10;
+        const BPM_LIST = [65, 70, 75, 80, 85, 88, 90, 92, 95, 98, 100, 102, 105, 108, 110, 112, 115, 118, 120, 123, 125,
+            128, 130, 132, 135, 138, 140, 142, 145, 148, 150, 153, 155, 158, 160, 163, 165, 168, 170, 175, 180, 185, 190,
+            195, 200
+        ];
+        const GAME_GENRES = ["Trap", "Reggaeton", "Pop Latino", "Afrobeats", "Lo-Fi", "Hip-Hop", "House", "Drum & Bass",
+            "Techno", "Salsa", "Cumbia", "Disco", "Funk", "Rock", "Jazz"
+        ];
 
-  <button class="btn-tap" id="tap-btn" onclick="tapTempo()">
-    <span>👆</span>
-    <div>
-      <div>TAP AL RITMO</div>
-      <div class="tap-count" id="tap-info">Toca para detectar el BPM</div>
-    </div>
-    <span id="tap-bpm" style="font-size:20px;font-weight:900;color:var(--gold)"></span>
-  </button>
+        let state = {
+            mode: 'normal',
+            round: 0,
+            totalRounds: NORMAL_ROUNDS,
+            score: 0,
+            targetBPM: 0,
+            userBPM: 130,
+            timerInterval: null,
+            beatInterval: null,
+            timeLeft: NORMAL_TIME,
+            maxTime: NORMAL_TIME,
+            tapTimes: [],
+            roundBPMs: [],
+            combo: 0,
+            maxCombo: 0,
+        };
 
-  <button class="btn-submit" onclick="submitAnswer()">CONFIRMAR BPM</button>
-</div>
+        let highScoreNormal = parseInt(localStorage.getItem("bpm_hs_normal") || "0");
+        let highScoreExpert = parseInt(localStorage.getItem("bpm_hs_expert") || "0");
+        let gamesPlayed = parseInt(localStorage.getItem("bpm_games_played") || "0");
+        let expertUnlocked = localStorage.getItem("bpm_expert_unlocked") === "true";
+        let achievements = JSON.parse(localStorage.getItem("bpm_achievements") || '{}');
 
-<!-- RESULT -->
-<div class="screen" id="result-screen">
-  <div class="result-icon" id="result-icon">🎯</div>
-  <div class="result-title" id="result-title"></div>
-  <div class="points-gained" id="points-gained"></div>
-  <div class="points-label">puntos</div>
-  <div class="result-detail">
-    <div class="result-row">
-      <span class="label">BPM real</span>
-      <span class="val" id="real-bpm-val"></span>
-    </div>
-    <div class="result-row">
-      <span class="label">Tu respuesta</span>
-      <span class="val" id="user-bpm-val"></span>
-    </div>
-    <div class="result-row">
-      <span class="label">Diferencia</span>
-      <span class="val" id="diff-val"></span>
-    </div>
-  </div>
-  <button class="btn-next" onclick="nextRound()">SIGUIENTE →</button>
-</div>
+        // ── AUDIO CONTEXT ──────────────────────────────────────────
+        let audioCtx = null;
 
-<!-- FINAL -->
-<div class="screen" id="final-screen">
-  <div class="logo-big" id="final-emoji">🏆</div>
-  <div class="title-big" id="final-grade"></div>
-  <div class="final-score" id="final-score-val"></div>
-  <div class="final-label">puntos totales</div>
-  <div class="stars" id="final-stars"></div>
-  <div class="leaderboard-preview" id="lb-preview">
-    <div class="lb-title">🏆 Mejores puntuaciones</div>
-    <div id="lb-rows">Cargando...</div>
-  </div>
-  <button class="btn-play-again" onclick="startGame()">🔄 JUGAR DE NUEVO</button>
-</div>
+        function getAudioCtx() {
+            if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
 
-<div class="feedback-flash" id="feedback-flash"></div>
+        // Sonidos de batería sintetizados (kick, snare, hi-hat)
+        function playKick() {
+            try {
+                const ctx = getAudioCtx();
+                const t = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.setValueAtTime(150, t);
+                osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
+                osc.type = "sine";
+                gain.gain.setValueAtTime(0.8, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+                osc.start(t);
+                osc.stop(t + 0.25);
+            } catch (e) {}
+        }
 
-<script>
-const tg     = window.Telegram?.WebApp;
-const userId = tg?.initDataUnsafe?.user?.id || Math.random().toString(36).slice(2);
-const userName = tg?.initDataUnsafe?.user?.first_name || "Jugador";
+        function playSnare() {
+            try {
+                const ctx = getAudioCtx();
+                const t = ctx.currentTime;
+                const bufferSize = ctx.sampleRate * 0.15;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.03));
+                }
+                const noise = ctx.createBufferSource();
+                noise.buffer = buffer;
+                const gain = ctx.createGain();
+                const filter = ctx.createBiquadFilter();
+                filter.type = "highpass";
+                filter.frequency.value = 1500;
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(ctx.destination);
+                gain.gain.setValueAtTime(0.5, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                noise.start(t);
+                noise.stop(t + 0.15);
 
-if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
+                const osc = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc.frequency.value = 180;
+                osc.type = "triangle";
+                gain2.gain.setValueAtTime(0.4, t);
+                gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+                osc.start(t);
+                osc.stop(t + 0.08);
+            } catch (e) {}
+        }
 
-// ── GAME STATE ──────────────────────────────────────────────
-const ROUNDS     = 5;
-const BPM_LIST   = [70,80,85,90,95,100,105,110,115,120,125,128,130,135,140,145,150,155,160,170,180];
-const GAME_GENRES= ["Trap","Reggaeton","Pop Latino","Afrobeats","Lo-Fi","Hip-Hop","House","Drum & Bass"];
+        function playHihat() {
+            try {
+                const ctx = getAudioCtx();
+                const t = ctx.currentTime;
+                const bufferSize = ctx.sampleRate * 0.05;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.008));
+                }
+                const noise = ctx.createBufferSource();
+                noise.buffer = buffer;
+                const gain = ctx.createGain();
+                const filter = ctx.createBiquadFilter();
+                filter.type = "highpass";
+                filter.frequency.value = 6000;
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(ctx.destination);
+                gain.gain.setValueAtTime(0.2, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+                noise.start(t);
+                noise.stop(t + 0.05);
+            } catch (e) {}
+        }
 
-let state = {
-  round: 0, score: 0, targetBPM: 0, userBPM: 130,
-  timerInterval: null, beatInterval: null, visualInterval: null,
-  timeLeft: 15, tapTimes: [], roundBPMs: []
-};
+        function playBeat(bpm) {
+            clearInterval(state.beatInterval);
+            let beat = 0;
+            const interval = (60 / bpm) * 1000;
+            const subDiv = interval / 4; // semicorcheas para hi-hat
 
-let highScore = parseInt(localStorage.getItem("bpm_hs") || "0");
+            state.beatInterval = setInterval(() => {
+                const beatInBar = beat % 16;
+                if (beatInBar === 0) playKick();
+                else if (beatInBar === 8) playKick();
+                else if (beatInBar === 4 || beatInBar === 12) playSnare();
+                else playHihat();
 
-// ── AUDIO CONTEXT ──────────────────────────────────────────
-let audioCtx = null;
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
+                animateCircleVisual(beatInBar === 0 || beatInBar === 8);
+                beat++;
+            }, subDiv);
+        }
 
-function playClick(isAccent = false) {
-  try {
-    const ctx  = getAudioCtx();
-    const osc  = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = isAccent ? 1200 : 800;
-    osc.type = "square";
-    gain.gain.setValueAtTime(isAccent ? 0.3 : 0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.05);
-  } catch(e) {}
-}
+        // ── VISUALIZADOR CIRCULAR ──────────────────────────────────
+        function animateCircleVisual(isAccent) {
+            const outer = document.getElementById('circle-outer');
+            const inner = document.getElementById('circle-inner');
+            outer.classList.add('beat-active');
+            inner.classList.add('beat-active');
+            if (isAccent) {
+                inner.textContent = '💥';
+                setTimeout(() => { inner.textContent = '🎵'; }, 120);
+            }
+            setTimeout(() => {
+                outer.classList.remove('beat-active');
+                inner.classList.remove('beat-active');
+            }, 150);
+        }
 
-function playBeat(bpm) {
-  clearInterval(state.beatInterval);
-  let beat = 0;
-  const interval = (60 / bpm) * 1000;
-  state.beatInterval = setInterval(() => {
-    playClick(beat % 4 === 0);
-    animateBars(beat % 4 === 0);
-    beat++;
-  }, interval);
-}
+        // ── TAP RIPPLE ────────────────────────────────────────────
+        function spawnRipple() {
+            const container = document.getElementById('tap-ripple-container');
+            const ripple = document.createElement('div');
+            ripple.className = 'tap-ripple';
+            container.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 700);
+        }
 
-// ── VISUALIZER ────────────────────────────────────────────
-function buildVisualizer() {
-  const el = document.getElementById("beat-visual");
-  el.innerHTML = "";
-  for (let i = 0; i < 24; i++) {
-    const bar = document.createElement("div");
-    bar.className = "bar";
-    bar.style.height = "20%";
-    el.appendChild(bar);
-  }
-}
+        // ── PARTICLES ─────────────────────────────────────────────
+        function spawnParticles(x, y, count = 8) {
+            const emojis = ['✨', '🌟', '💫', '🔥', '🎵', '💛'];
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 60 + Math.random() * 100;
+                p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+                p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 800);
+            }
+        }
 
-function animateBars(isAccent) {
-  const bars = document.querySelectorAll(".bar");
-  bars.forEach((bar, i) => {
-    bar.classList.remove("active");
-    const h = isAccent
-      ? 30 + Math.random() * 70
-      : 10 + Math.random() * 40;
-    bar.style.height = h + "%";
-    if (Math.random() > 0.5) bar.classList.add("active");
-  });
-  setTimeout(() => bars.forEach(b => {
-    b.classList.remove("active");
-    b.style.height = "15%";
-  }), 80);
-}
+        // ── TOAST ─────────────────────────────────────────────────
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
 
-// ── ROUND DOTS ────────────────────────────────────────────
-function buildDots() {
-  const el = document.getElementById("round-dots");
-  el.innerHTML = "";
-  for (let i = 0; i < ROUNDS; i++) {
-    const d = document.createElement("div");
-    d.className = "round-dot" + (i < state.round ? " done" : i === state.round ? " current" : "");
-    el.appendChild(d);
-  }
-}
+        // ── ACHIEVEMENTS ──────────────────────────────────────────
+        const ACHIEVEMENT_DEFS = {
+            first_game: { emoji: '🎮', name: 'Primer juego', cond: () => gamesPlayed >= 1 },
+            perfect_round: { emoji: '🎯', name: 'Ronda perfecta', cond: () => achievements.perfect_round },
+            combo3: { emoji: '🔥', name: 'Combo x3', cond: () => state.maxCombo >= 3 },
+            combo5: { emoji: '💥', name: 'Combo x5', cond: () => state.maxCombo >= 5 },
+            score1000: { emoji: '🏅', name: '1000 pts', cond: () => state.score >= 1000 },
+            score2000: { emoji: '👑', name: '2000 pts', cond: () => state.score >= 2000 },
+            expert_unlock: { emoji: '🔓', name: 'Modo Experto', cond: () => expertUnlocked },
+            all_genres: { emoji: '🌍', name: 'Coleccionista', cond: () => achievements.all_genres },
+        };
 
-// ── START GAME ────────────────────────────────────────────
-function startGame() {
-  state = { round:0, score:0, targetBPM:0, userBPM:130,
-            timerInterval:null, beatInterval:null, visualInterval:null,
-            timeLeft:15, tapTimes:[], roundBPMs:[] };
-  if (highScore > 0) {
-    document.getElementById("intro-hs").innerHTML =
-      `Tu récord: <span>${highScore} pts</span>`;
-  }
-  showScreen("game-screen");
-  buildVisualizer();
-  startRound();
-}
+        function checkAchievements() {
+            let newAchievements = false;
+            for (const [key, def] of Object.entries(ACHIEVEMENT_DEFS)) {
+                if (!achievements[key] && def.cond()) {
+                    achievements[key] = true;
+                    newAchievements = true;
+                    showToast(`${def.emoji} Logro: ${def.name}`);
+                }
+            }
+            if (newAchievements) {
+                localStorage.setItem("bpm_achievements", JSON.stringify(achievements));
+            }
+            updateAchievementsDisplay();
+        }
 
-// ── START ROUND ───────────────────────────────────────────
-function startRound() {
-  // Pick random BPM not used yet
-  let available = BPM_LIST.filter(b => !state.roundBPMs.includes(b));
-  state.targetBPM = available[Math.floor(Math.random() * available.length)];
-  state.roundBPMs.push(state.targetBPM);
-  state.userBPM   = 130;
-  state.tapTimes  = [];
-  state.timeLeft  = 15;
+        function updateAchievementsDisplay() {
+            const container = document.getElementById('intro-achievements');
+            if (!container) return;
+            container.innerHTML = Object.entries(ACHIEVEMENT_DEFS)
+                .map(([key, def]) =>
+                    `<span class="achievement ${achievements[key] ? 'unlocked' : ''}" title="${def.name}">${def.emoji}</span>`
+                ).join('');
+        }
 
-  // Genre hint
-  const genre = GAME_GENRES[Math.floor(Math.random() * GAME_GENRES.length)];
-  document.getElementById("bpm-range-hint").textContent =
-    "Estilo: " + genre;
+        // ── EXPERT UNLOCK ────────────────────────────────────────
+        function checkExpertUnlock() {
+            if (!expertUnlocked && (gamesPlayed >= 3 || highScoreNormal >= 1500)) {
+                expertUnlocked = true;
+                localStorage.setItem("bpm_expert_unlocked", "true");
+                showToast('🔓 ¡Modo EXPERTO desbloqueado!');
+                updateModeButtons();
+            }
+        }
 
-  // UI
-  document.getElementById("round-display").textContent = (state.round+1) + "/" + ROUNDS;
-  document.getElementById("score-display").textContent = state.score;
-  document.getElementById("bpm-slider").value = 130;
-  document.getElementById("bpm-current-val").textContent = 130;
-  document.getElementById("tap-info").textContent = "Toca para detectar el BPM";
-  document.getElementById("tap-bpm").textContent = "";
-  buildDots();
+        function updateModeButtons() {
+            const expertBtn = document.getElementById('mode-expert-btn');
+            if (expertUnlocked) {
+                expertBtn.classList.remove('locked');
+                expertBtn.textContent = 'Experto';
+            }
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === state.mode);
+            });
+        }
 
-  // Start beat
-  playBeat(state.targetBPM);
+        // ── ROUND DOTS ────────────────────────────────────────────
+        function buildDots() {
+            const el = document.getElementById("round-dots");
+            el.innerHTML = "";
+            for (let i = 0; i < state.totalRounds; i++) {
+                const d = document.createElement("div");
+                d.className = "round-dot" + (i < state.round ? " done" : i === state.round ? " current" : "");
+                el.appendChild(d);
+            }
+        }
 
-  // Timer
-  clearInterval(state.timerInterval);
-  document.getElementById("timer-bar").style.width = "100%";
-  state.timerInterval = setInterval(() => {
-    state.timeLeft -= 0.1;
-    const pct = (state.timeLeft / 15) * 100;
-    document.getElementById("timer-bar").style.width = Math.max(0,pct) + "%";
-    if (state.timeLeft <= 0) {
-      clearInterval(state.timerInterval);
-      submitAnswer();
-    }
-  }, 100);
-}
+        // ── START GAME ────────────────────────────────────────────
+        function startGame() {
+            state.round = 0;
+            state.score = 0;
+            state.targetBPM = 0;
+            state.userBPM = 130;
+            state.tapTimes = [];
+            state.roundBPMs = [];
+            state.combo = 0;
+            state.maxCombo = 0;
+            state.totalRounds = state.mode === 'expert' ? EXPERT_ROUNDS : NORMAL_ROUNDS;
+            state.maxTime = state.mode === 'expert' ? EXPERT_TIME : NORMAL_TIME;
+            state.timeLeft = state.maxTime;
+            clearInterval(state.beatInterval);
+            clearInterval(state.timerInterval);
 
-// ── SLIDER ────────────────────────────────────────────────
-function updateSlider(val) {
-  state.userBPM = parseInt(val);
-  document.getElementById("bpm-current-val").textContent = val;
-}
+            const hs = state.mode === 'expert' ? highScoreExpert : highScoreNormal;
+            if (hs > 0) {
+                document.getElementById("intro-hs").innerHTML = `Tu récord: <span>${hs} pts</span>`;
+            } else {
+                document.getElementById("intro-hs").innerHTML = '';
+            }
 
-// ── TAP TEMPO ─────────────────────────────────────────────
-function tapTempo() {
-  const now = Date.now();
-  state.tapTimes.push(now);
-  if (state.tapTimes.length > 8) state.tapTimes.shift();
+            showScreen("game-screen");
+            updateComboDisplay();
+            buildDots();
+            startRound();
+        }
 
-  if (tg) tg.HapticFeedback?.impactOccurred("light");
+        // ── START ROUND ───────────────────────────────────────────
+        function startRound() {
+            let available = BPM_LIST.filter(b => !state.roundBPMs.includes(b));
+            state.targetBPM = available[Math.floor(Math.random() * available.length)];
+            state.roundBPMs.push(state.targetBPM);
+            state.userBPM = Math.floor((60 + 200) / 2);
+            state.tapTimes = [];
+            state.timeLeft = state.maxTime;
 
-  if (state.tapTimes.length >= 2) {
-    const intervals = [];
-    for (let i = 1; i < state.tapTimes.length; i++) {
-      intervals.push(state.tapTimes[i] - state.tapTimes[i-1]);
-    }
-    const avgInterval = intervals.reduce((a,b)=>a+b,0) / intervals.length;
-    const detectedBPM = Math.round(60000 / avgInterval);
-    const clampedBPM  = Math.min(200, Math.max(60, detectedBPM));
+            const genre = GAME_GENRES[Math.floor(Math.random() * GAME_GENRES.length)];
+            document.getElementById("bpm-range-hint").textContent = "Estilo: " + genre;
+            document.getElementById("round-display").textContent = (state.round + 1) + "/" + state.totalRounds;
+            document.getElementById("score-display").textContent = state.score;
+            document.getElementById("bpm-slider").value = state.userBPM;
+            document.getElementById("bpm-current-val").textContent = state.userBPM;
+            document.getElementById("tap-info").textContent = "Toca para detectar BPM";
+            document.getElementById("tap-bpm").textContent = "";
+            document.getElementById("circle-inner").textContent = "🎵";
+            buildDots();
 
-    state.userBPM = clampedBPM;
-    document.getElementById("bpm-slider").value = clampedBPM;
-    document.getElementById("bpm-current-val").textContent = clampedBPM;
-    document.getElementById("tap-bpm").textContent = clampedBPM;
-    document.getElementById("tap-info").textContent =
-      state.tapTimes.length >= 4 ? "BPM detectado ✓" : "Sigue tocando...";
-  }
-}
+            playBeat(state.targetBPM);
+            clearInterval(state.timerInterval);
+            document.getElementById("timer-bar").style.width = "100%";
+            state.timerInterval = setInterval(() => {
+                state.timeLeft -= 0.1;
+                const pct = (state.timeLeft / state.maxTime) * 100;
+                document.getElementById("timer-bar").style.width = Math.max(0, pct) + "%";
+                if (state.timeLeft <= 0) {
+                    clearInterval(state.timerInterval);
+                    submitAnswer();
+                }
+            }, 100);
+        }
 
-// ── SUBMIT ────────────────────────────────────────────────
-function submitAnswer() {
-  clearInterval(state.timerInterval);
-  clearInterval(state.beatInterval);
+        // ── SLIDER ────────────────────────────────────────────────
+        function updateSlider(val) {
+            state.userBPM = parseInt(val);
+            document.getElementById("bpm-current-val").textContent = val;
+        }
 
-  const diff   = Math.abs(state.userBPM - state.targetBPM);
-  let pts      = 0;
-  let icon     = "💀";
-  let title    = "¡Muy lejos!";
-  let valClass = "wrong";
+        // ── TAP TEMPO ─────────────────────────────────────────────
+        function tapTempo() {
+            const now = Date.now();
+            state.tapTimes.push(now);
+            if (state.tapTimes.length > 10) state.tapTimes.shift();
 
-  if (diff === 0)       { pts=500; icon="🎯"; title="¡PERFECTO!"; valClass="correct"; }
-  else if (diff <= 2)   { pts=400; icon="🔥"; title="¡Increíble!"; valClass="correct"; }
-  else if (diff <= 5)   { pts=300; icon="⭐"; title="¡Muy bien!"; valClass="correct"; }
-  else if (diff <= 10)  { pts=200; icon="👍"; title="¡Bien!"; valClass="close"; }
-  else if (diff <= 20)  { pts=100; icon="😅"; title="Cerca..."; valClass="close"; }
-  else if (diff <= 35)  { pts=50;  icon="😬"; title="Lejos..."; valClass="wrong"; }
-  else                  { pts=0;   icon="💀"; title="¡Muy lejos!"; valClass="wrong"; }
+            spawnRipple();
+            if (tg) tg.HapticFeedback?.impactOccurred("light");
 
-  // Time bonus
-  const timeBonus = Math.round((state.timeLeft / 15) * 50);
-  if (pts > 0) pts += timeBonus;
+            const tapIcon = document.getElementById('tap-icon');
+            tapIcon.classList.remove('tapBounce');
+            void tapIcon.offsetWidth;
+            tapIcon.style.animation = 'tapBounce 0.2s ease';
+            setTimeout(() => tapIcon.style.animation = '', 200);
 
-  state.score += pts;
-  showFeedback(icon);
+            if (state.tapTimes.length >= 2) {
+                const intervals = [];
+                for (let i = 1; i < state.tapTimes.length; i++) {
+                    intervals.push(state.tapTimes[i] - state.tapTimes[i - 1]);
+                }
+                const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+                const detectedBPM = Math.round(60000 / avgInterval);
+                const clampedBPM = Math.min(200, Math.max(60, detectedBPM));
+                state.userBPM = clampedBPM;
+                document.getElementById("bpm-slider").value = clampedBPM;
+                document.getElementById("bpm-current-val").textContent = clampedBPM;
+                document.getElementById("tap-bpm").textContent = clampedBPM;
+                document.getElementById("tap-info").textContent =
+                    state.tapTimes.length >= 5 ? "✓ BPM detectado" : "Sigue tocando...";
+            } else {
+                document.getElementById("tap-info").textContent = "Sigue tocando...";
+            }
+        }
 
-  // Show result
-  document.getElementById("result-icon").textContent = icon;
-  document.getElementById("result-title").textContent = title;
-  document.getElementById("points-gained").textContent = "+" + pts;
-  document.getElementById("real-bpm-val").innerHTML =
-    `<span class="correct">${state.targetBPM} BPM</span>`;
-  document.getElementById("user-bpm-val").innerHTML =
-    `<span class="${valClass}">${state.userBPM} BPM</span>`;
-  document.getElementById("diff-val").innerHTML =
-    `<span class="${valClass}">${diff === 0 ? "¡Exacto!" : "±" + diff + " BPM"}</span>`;
+        // ── SUBMIT ANSWER ────────────────────────────────────────
+        function submitAnswer() {
+            clearInterval(state.timerInterval);
+            clearInterval(state.beatInterval);
 
-  if (tg) {
-    if (pts >= 400) tg.HapticFeedback?.notificationOccurred("success");
-    else if (pts >= 100) tg.HapticFeedback?.notificationOccurred("warning");
-    else tg.HapticFeedback?.notificationOccurred("error");
-  }
+            const diff = Math.abs(state.userBPM - state.targetBPM);
+            let basePts = 0;
+            let icon = "💀";
+            let title = "¡Muy lejos!";
+            let valClass = "wrong";
 
-  showScreen("result-screen");
-}
+            if (diff === 0) { basePts = 500;
+                icon = "🎯";
+                title = "¡PERFECTO!";
+                valClass = "correct"; } else if (diff <= 2) { basePts = 420;
+                icon = "🔥";
+                title = "¡Increíble!";
+                valClass = "correct"; } else if (diff <= 5) { basePts = 320;
+                icon = "⭐";
+                title = "¡Muy bien!";
+                valClass = "correct"; } else if (diff <= 10) { basePts = 220;
+                icon = "👍";
+                title = "¡Bien!";
+                valClass = "close"; } else if (diff <= 20) { basePts = 120;
+                icon = "😅";
+                title = "Cerca...";
+                valClass = "close"; } else if (diff <= 35) { basePts = 60;
+                icon = "😬";
+                title = "Lejos...";
+                valClass = "wrong"; } else { basePts = 0;
+                icon = "💀";
+                title = "¡Muy lejos!";
+                valClass = "wrong"; }
 
-// ── FEEDBACK FLASH ────────────────────────────────────────
-function showFeedback(icon) {
-  const el = document.getElementById("feedback-flash");
-  el.textContent = icon;
-  el.classList.remove("show");
-  void el.offsetWidth;
-  el.classList.add("show");
-}
+            // Combo system
+            if (basePts >= 300) {
+                state.combo++;
+                state.maxCombo = Math.max(state.maxCombo, state.combo);
+            } else {
+                state.combo = 0;
+            }
+            const comboMultiplier = 1 + Math.min(state.combo, 5) * 0.15;
+            const timeBonus = Math.round((state.timeLeft / state.maxTime) * 60);
+            const totalPts = Math.round((basePts + (basePts > 0 ? timeBonus : 0)) * comboMultiplier);
 
-// ── NEXT ROUND ────────────────────────────────────────────
-function nextRound() {
-  state.round++;
-  if (state.round >= ROUNDS) {
-    endGame();
-  } else {
-    showScreen("game-screen");
-    startRound();
-  }
-}
+            state.score += totalPts;
+            updateComboDisplay();
 
-// ── END GAME ──────────────────────────────────────────────
-function endGame() {
-  clearInterval(state.beatInterval);
+            // Efectos visuales
+            showFeedback(icon);
+            if (basePts >= 400) {
+                const rect = document.getElementById('circle-inner').getBoundingClientRect();
+                spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 14);
+            }
 
-  const maxScore = ROUNDS * 550;
-  const pct      = state.score / maxScore;
-  let grade, emoji, stars;
+            if (tg) {
+                if (basePts >= 400) tg.HapticFeedback?.notificationOccurred("success");
+                else if (basePts >= 100) tg.HapticFeedback?.notificationOccurred("warning");
+                else tg.HapticFeedback?.notificationOccurred("error");
+            }
 
-  if (pct >= 0.95)      { grade="LEGENDARIO 🏆"; emoji="👑"; stars="⭐⭐⭐⭐⭐"; }
-  else if (pct >= 0.80) { grade="MAESTRO 🎛️";   emoji="🏆"; stars="⭐⭐⭐⭐"; }
-  else if (pct >= 0.60) { grade="PRO 🎵";        emoji="🎯"; stars="⭐⭐⭐"; }
-  else if (pct >= 0.40) { grade="APRENDIZ 🎤";   emoji="🎵"; stars="⭐⭐"; }
-  else                  { grade="NOVATO 🥁";     emoji="💀"; stars="⭐"; }
+            // Precision bar
+            const maxDiff = 40;
+            const precisionPct = Math.max(0, Math.min(100, ((maxDiff - Math.min(diff, maxDiff)) / maxDiff) * 100));
 
-  // Save highscore
-  if (state.score > highScore) {
-    highScore = state.score;
-    localStorage.setItem("bpm_hs", highScore);
-    saveScore();
-  }
+            document.getElementById("result-icon").textContent = icon;
+            document.getElementById("result-title").textContent = title;
+            document.getElementById("points-gained").textContent = "+" + totalPts;
+            document.getElementById("real-bpm-val").innerHTML =
+                `<span class="correct">${state.targetBPM} BPM</span>`;
+            document.getElementById("user-bpm-val").innerHTML =
+                `<span class="${valClass}">${state.userBPM} BPM</span>`;
+            document.getElementById("diff-val").innerHTML =
+                `<span class="${valClass}">${diff === 0 ? "¡Exacto!" : "±" + diff + " BPM"}</span>`;
+            document.getElementById("precision-bar").style.width = precisionPct + "%";
 
-  document.getElementById("final-emoji").textContent = emoji;
-  document.getElementById("final-grade").textContent = grade;
-  document.getElementById("final-score-val").textContent = state.score;
-  document.getElementById("final-stars").textContent = stars;
+            showScreen("result-screen");
+        }
 
-  if (tg && pct >= 0.8) tg.HapticFeedback?.notificationOccurred("success");
+        function updateComboDisplay() {
+            const badge = document.getElementById('combo-badge');
+            if (state.combo >= 2) {
+                badge.classList.add('active');
+                badge.textContent = '🔥 x' + state.combo;
+            } else {
+                badge.classList.remove('active');
+                badge.textContent = '';
+            }
+        }
 
-  loadLeaderboard();
-  showScreen("final-screen");
-}
+        // ── FEEDBACK FLASH ────────────────────────────────────────
+        function showFeedback(icon) {
+            const el = document.getElementById("feedback-flash");
+            el.textContent = icon;
+            el.classList.remove("show");
+            void el.offsetWidth;
+            el.classList.add("show");
+        }
 
-// ── SAVE / LOAD SCORES ────────────────────────────────────
-async function saveScore() {
-  try {
-    await fetch("/api/bpm/score", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({user_id: userId, name: userName, score: state.score})
-    });
-  } catch(e) {}
-}
+        // ── NEXT ROUND ────────────────────────────────────────────
+        function nextRound() {
+            state.round++;
+            if (state.round >= state.totalRounds) {
+                endGame();
+            } else {
+                showScreen("game-screen");
+                startRound();
+            }
+        }
 
-async function loadLeaderboard() {
-  try {
-    const res  = await fetch("/api/bpm/leaderboard");
-    const data = await res.json();
-    const medals = ["🥇","🥈","🥉"];
-    document.getElementById("lb-rows").innerHTML = data.slice(0,5).map((r,i) =>
-      `<div class="lb-row">
-        <span class="lb-pos">${medals[i]||"·"}</span>
-        <span class="lb-name">${escHtml(r.name)}</span>
-        <span class="lb-pts">${r.score} pts</span>
-      </div>`
-    ).join("") || "<div style='color:var(--muted);font-size:13px'>Sé el primero 🏆</div>";
-  } catch(e) {
-    document.getElementById("lb-rows").innerHTML =
-      "<div style='color:var(--muted);font-size:13px'>Sin datos aún</div>";
-  }
-}
+        // ── END GAME ──────────────────────────────────────────────
+        function endGame() {
+            clearInterval(state.beatInterval);
+            clearInterval(state.timerInterval);
 
-// ── UTILS ─────────────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
+            gamesPlayed++;
+            localStorage.setItem("bpm_games_played", gamesPlayed);
 
-function escHtml(str) {
-  return String(str||"").replace(/[&<>"']/g, m =>
-    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-}
+            const maxScore = state.totalRounds * 560;
+            const pct = state.score / maxScore;
+            let grade, emoji, stars;
 
-// Init
-if (highScore > 0) {
-  document.getElementById("intro-hs").innerHTML =
-    `Tu récord: <span style="color:var(--gold);font-weight:700">${highScore} pts</span>`;
-}
-</script>
+            if (pct >= 0.95) { grade = "LEYENDA 👑";
+                emoji = "👑";
+                stars = "⭐⭐⭐⭐⭐"; } else if (pct >= 0.80) { grade = "MAESTRO 🎛️";
+                emoji = "🏆";
+                stars = "⭐⭐⭐⭐"; } else if (pct >= 0.60) { grade = "PRO 🎵";
+                emoji = "🎯";
+                stars = "⭐⭐⭐"; } else if (pct >= 0.40) { grade = "APRENDIZ 🎤";
+                emoji = "🎵";
+                stars = "⭐⭐"; } else { grade = "NOVATO 🥁";
+                emoji = "💀";
+                stars = "⭐"; }
+
+            const currentHighScore = state.mode === 'expert' ? highScoreExpert : highScoreNormal;
+            if (state.score > currentHighScore) {
+                if (state.mode === 'expert') {
+                    highScoreExpert = state.score;
+                    localStorage.setItem("bpm_hs_expert", highScoreExpert);
+                } else {
+                    highScoreNormal = state.score;
+                    localStorage.setItem("bpm_hs_normal", highScoreNormal);
+                }
+                saveScore();
+            }
+
+            checkExpertUnlock();
+            checkAchievements();
+
+            document.getElementById("final-emoji").textContent = emoji;
+            document.getElementById("final-grade").textContent = grade;
+            document.getElementById("final-score-val").textContent = state.score;
+            document.getElementById("final-stars").textContent = stars;
+            document.getElementById("final-achievements").innerHTML =
+                Object.entries(ACHIEVEMENT_DEFS)
+                .map(([key, def]) =>
+                    `<span class="achievement ${achievements[key] ? 'unlocked' : ''}" title="${def.name}">${def.emoji}</span>`
+                ).join('');
+
+            if (tg && pct >= 0.8) tg.HapticFeedback?.notificationOccurred("success");
+
+            loadLeaderboard();
+            showScreen("final-screen");
+        }
+
+        // ── SHARE ──────────────────────────────────────────────────
+        function shareResult() {
+            const modeText = state.mode === 'expert' ? 'Experto' : 'Normal';
+            const text =
+                `🥁 ¡${state.score} puntos en Adivina el BPM (${modeText})!\n${document.getElementById('final-stars').textContent}\n${document.getElementById('final-grade').textContent}\n\n¿Puedes superarme? Juega en @MkeyzStudioBot`;
+            if (tg && tg.openTelegramLink) {
+                tg.openTelegramLink(`https://t.me/share/url?url=&text=${encodeURIComponent(text)}`);
+            } else if (tg && tg.shareToStory) {
+                tg.shareToStory(text);
+            } else {
+                navigator.clipboard?.writeText(text).then(() => showToast('📋 Copiado al portapapeles'));
+            }
+        }
+
+        // ── SAVE / LOAD SCORES ────────────────────────────────────
+        async function saveScore() {
+            try {
+                await fetch("/api/bpm/score", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        name: userName,
+                        score: state.score,
+                        mode: state.mode
+                    })
+                });
+            } catch (e) {}
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const res = await fetch("/api/bpm/leaderboard?mode=" + state.mode);
+                const data = await res.json();
+                const medals = ["🥇", "🥈", "🥉"];
+                document.getElementById("lb-rows").innerHTML = data.slice(0, 5).map((r, i) =>
+                    `<div class="lb-row">
+                        <span class="lb-pos">${medals[i]||"·"}</span>
+                        <span class="lb-name">${escHtml(r.name)}</span>
+                        <span class="lb-pts">${r.score} pts</span>
+                    </div>`
+                ).join("") || "<div style='color:var(--muted);font-size:13px'>Sé el primero 🏆</div>";
+            } catch (e) {
+                document.getElementById("lb-rows").innerHTML =
+                    "<div style='color:var(--muted);font-size:13px'>Sin datos aún</div>";
+            }
+        }
+
+        // ── UTILS ─────────────────────────────────────────────────
+        function showScreen(id) {
+            document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+            const screen = document.getElementById(id);
+            screen.classList.add("active");
+            screen.style.animation = 'none';
+            void screen.offsetWidth;
+            screen.style.animation = 'fadeSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+        }
+
+        function escHtml(str) {
+            return String(str || "").replace(/[&<>"']/g, m =>
+                ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" } [m]));
+        }
+
+        // ── MODE SWITCHING ────────────────────────────────────────
+        document.getElementById('mode-toggle').addEventListener('click', (e) => {
+            const btn = e.target.closest('.mode-btn');
+            if (!btn || btn.classList.contains('locked')) return;
+            state.mode = btn.dataset.mode;
+            updateModeButtons();
+            const hs = state.mode === 'expert' ? highScoreExpert : highScoreNormal;
+            document.getElementById("intro-hs").innerHTML = hs > 0 ? `Tu récord: <span>${hs} pts</span>` : '';
+        });
+
+        // ── INIT ──────────────────────────────────────────────────
+        function init() {
+            updateModeButtons();
+            updateAchievementsDisplay();
+            const hs = state.mode === 'expert' ? highScoreExpert : highScoreNormal;
+            if (hs > 0) {
+                document.getElementById("intro-hs").innerHTML = `Tu récord: <span>${hs} pts</span>`;
+            }
+            if (expertUnlocked) {
+                document.getElementById('mode-expert-btn').classList.remove('locked');
+                document.getElementById('mode-expert-btn').textContent = 'Experto';
+            }
+        }
+        init();
+    </script>
 </body>
 </html>
