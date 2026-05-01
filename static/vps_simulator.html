@@ -108,6 +108,37 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
 #loading { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; height:100vh; color:var(--text-dim); font-size:11px; }
 .spinner { width:28px; height:28px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg);} }
+/* ── Health Monitor ── */
+.health-panel { position:fixed; inset:0; z-index:950; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.2,0.64,1); overflow-y:auto; }
+.health-panel.open { transform:translateY(0); }
+.health-body { padding:16px; flex:1; display:flex; flex-direction:column; gap:10px; }
+.health-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:4px; }
+.health-stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px; text-align:center; }
+.health-stat-num { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; line-height:1; }
+.health-stat-label { font-size:9px; color:var(--text-dim); margin-top:3px; letter-spacing:0.5px; }
+.health-safe .health-stat-num { color:var(--green); }
+.health-warn .health-stat-num { color:var(--amber); }
+.health-danger .health-stat-num { color:var(--red); }
+.health-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; display:flex; align-items:center; gap:10px; }
+.health-card.risk-low    { border-left:3px solid var(--green); }
+.health-card.risk-medium { border-left:3px solid var(--amber); }
+.health-card.risk-high   { border-left:3px solid var(--red); }
+.health-indicator { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.risk-low    .health-indicator { background:var(--green-dim); }
+.risk-medium .health-indicator { background:var(--amber-dim); }
+.risk-high   .health-indicator { background:var(--red-dim); }
+.health-info { flex:1; min-width:0; }
+.health-name { font-size:12px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.health-issues { font-size:9px; color:var(--text-dim); margin-top:3px; line-height:1.5; }
+.health-score-wrap { text-align:right; flex-shrink:0; }
+.health-score { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+.risk-low    .health-score { color:var(--green); }
+.risk-medium .health-score { color:var(--amber); }
+.risk-high   .health-score { color:var(--red); }
+.health-score-label { font-size:8px; color:var(--text-dim); }
+.health-legend { display:flex; gap:12px; padding:10px 0 4px; }
+.legend-item { display:flex; align-items:center; gap:5px; font-size:9px; color:var(--text-dim); }
+.legend-dot { width:8px; height:8px; border-radius:50%; }
 /* ── Quick Calc Panel ── */
 .quick-panel { position:fixed; inset:0; z-index:900; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.2,0.64,1); overflow-y:auto; }
 .quick-panel.open { transform:translateY(0); }
@@ -256,6 +287,15 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- Health Monitor Panel -->
+<div class="health-panel" id="healthPanel">
+  <div class="export-header">
+    <button class="calc-back" onclick="closeHealth()">← Volver</button>
+    <div class="calc-title">🩺 Salud de Perfiles</div>
+  </div>
+  <div class="health-body" id="healthBody"></div>
+</div>
 
 <!-- Quick Calc Panel -->
 <div class="quick-panel" id="quickPanel">
@@ -495,6 +535,7 @@ function render() {
     <div class="profiles-list">${profilesHTML}</div>
     <div class="bottom-bar">
       <button class="btn-primary" onclick="openQuick()">⚡ ¿CUÁNTOS PERFILES?</button>
+      <button class="btn-secondary" onclick="openHealth()" style="padding:13px 14px;color:#ff6b9d;border-color:rgba(255,107,157,0.2)">🩺</button>
       <button class="btn-secondary" onclick="openNewProfile()" style="padding:13px 14px;color:var(--green);border-color:var(--green-dim)">➕</button>
       <button class="btn-secondary" onclick="openExport()" style="padding:13px 14px;color:#4fc3f7;border-color:rgba(79,195,247,0.2)">📤</button>
       <button class="btn-secondary" onclick="openCalc()" style="padding:13px 14px;color:var(--amber);border-color:var(--amber-dim)">💰</button>
@@ -1335,6 +1376,152 @@ async function applyQuickConfig(n) {
   render();
   showToast(`✓ VPS configurado para ${n} perfiles`);
   tg?.HapticFeedback?.notificationOccurred('success');
+}
+
+// ── Health Monitor ────────────────────────────────────────
+
+// Platform-specific risk rules
+const HEALTH_RULES = {
+  youtube:     { maxActiveHours: 4,  proxyRequired: 'res', maxSessions: 1, dailyLimit: 8 },
+  spotify:     { maxActiveHours: 8,  proxyRequired: 'dc',  maxSessions: 1, dailyLimit: 16 },
+  apple_music: { maxActiveHours: 8,  proxyRequired: 'dc',  maxSessions: 1, dailyLimit: 16 },
+  tidal:       { maxActiveHours: 6,  proxyRequired: 'res', maxSessions: 1, dailyLimit: 12 },
+  pandora:     { maxActiveHours: 6,  proxyRequired: 'mob', maxSessions: 1, dailyLimit: 10 },
+  general:     { maxActiveHours: 12, proxyRequired: 'dc',  maxSessions: 2, dailyLimit: 20 }
+};
+
+function analyzeProfileHealth(profile) {
+  const platform = profile.platform || 'general';
+  const rules    = HEALTH_RULES[platform] || HEALTH_RULES.general;
+  const plat     = (vpsState?.platforms || {})[platform] || { name: platform, icon: '🖥️' };
+  const now      = Date.now() / 1000;
+  const activeHours = (now - (profile.last_activity || now)) / 3600;
+
+  let score  = 100;
+  const issues = [];
+
+  // 1. Time active check
+  if (profile.status === 'active') {
+    if (activeHours > rules.maxActiveHours * 2) {
+      score -= 40;
+      issues.push(`⏱ Activo ${Math.round(activeHours)}h — límite ${rules.maxActiveHours}h`);
+    } else if (activeHours > rules.maxActiveHours) {
+      score -= 20;
+      issues.push(`⏱ Sesión larga (${Math.round(activeHours)}h)`);
+    }
+  }
+
+  // 2. Proxy type check
+  const proxyIP = profile.proxy || '';
+  const isPrivate = /^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(proxyIP);
+  if (rules.proxyRequired === 'res' && !isPrivate) {
+    score -= 25;
+    issues.push(`🌐 ${plat.name} requiere proxy residencial`);
+  }
+  if (platform === 'pandora') {
+    score -= 15;
+    issues.push('🇺🇸 Pandora requiere IP de EE.UU.');
+  }
+
+  // 3. Fingerprint entropy
+  const fp = profile.fingerprint || '';
+  const uniqueChars = new Set(fp).size;
+  if (uniqueChars < 6) {
+    score -= 20;
+    issues.push('🔑 Fingerprint con baja entropía');
+  }
+
+  // 4. Idle too long (stale session)
+  if (profile.status === 'idle' && activeHours > 48) {
+    score -= 15;
+    issues.push(`😴 Sin actividad hace ${Math.round(activeHours/24)}d — sesión puede expirar`);
+  }
+
+  // 5. Browser/OS mismatch for platform
+  if (platform === 'apple_music' && !profile.os?.includes('macOS') && !profile.browser?.includes('Safari')) {
+    score -= 10;
+    issues.push('🍎 Apple Music rinde mejor con macOS + Safari');
+  }
+
+  score = Math.max(0, score);
+  const risk = score >= 75 ? 'low' : score >= 45 ? 'medium' : 'high';
+  const emoji = risk === 'low' ? '✅' : risk === 'medium' ? '⚠️' : '🚨';
+
+  return { score, risk, issues, emoji, platform, plat };
+}
+
+function openHealth() {
+  if (!vpsState || vpsState.profiles.length === 0) {
+    showToast('Sin perfiles para analizar');
+    return;
+  }
+  renderHealth();
+  document.getElementById('healthPanel').classList.add('open');
+  tg?.HapticFeedback?.impactOccurred('medium');
+}
+
+function closeHealth() {
+  document.getElementById('healthPanel').classList.remove('open');
+}
+
+function renderHealth() {
+  const profiles = vpsState.profiles;
+  const analyses = profiles.map(p => ({ ...analyzeProfileHealth(p), profile: p }))
+    .sort((a, b) => a.score - b.score); // worst first
+
+  const safe   = analyses.filter(a => a.risk === 'low').length;
+  const warn   = analyses.filter(a => a.risk === 'medium').length;
+  const danger = analyses.filter(a => a.risk === 'high').length;
+  const avgScore = Math.round(analyses.reduce((s, a) => s + a.score, 0) / analyses.length);
+
+  const cards = analyses.map(a => `
+    <div class="health-card risk-${a.risk}">
+      <div class="health-indicator">${a.emoji}</div>
+      <div class="health-info">
+        <div class="health-name">${a.plat.icon} ${a.profile.name}</div>
+        <div class="health-issues">${a.issues.length > 0 ? a.issues.join('<br>') : '✓ Sin problemas detectados'}</div>
+      </div>
+      <div class="health-score-wrap">
+        <div class="health-score">${a.score}</div>
+        <div class="health-score-label">/ 100</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('healthBody').innerHTML = `
+    <div class="health-summary">
+      <div class="health-stat health-safe">
+        <div class="health-stat-num">${safe}</div>
+        <div class="health-stat-label">SEGUROS</div>
+      </div>
+      <div class="health-stat health-warn">
+        <div class="health-stat-num">${warn}</div>
+        <div class="health-stat-label">ATENCIÓN</div>
+      </div>
+      <div class="health-stat health-danger">
+        <div class="health-stat-num">${danger}</div>
+        <div class="health-stat-label">EN RIESGO</div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">Salud global</div>
+        <div style="font-size:11px;color:var(--text-mid);margin-top:2px">${profiles.length} perfiles analizados</div>
+      </div>
+      <div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:${avgScore>=75?'var(--green)':avgScore>=45?'var(--amber)':'var(--red)'}">
+        ${avgScore}<span style="font-size:14px;color:var(--text-dim)">/100</span>
+      </div>
+    </div>
+
+    <div class="health-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Seguro (75-100)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Atención (45-74)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Riesgo (0-44)</div>
+    </div>
+
+    <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">// Perfiles — peor primero</div>
+    ${cards}
+  `;
 }
 
 loadVPS();
