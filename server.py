@@ -565,7 +565,7 @@ def _gen_profile(tg_id, index):
         "browser":       random.choice(BROWSERS),
         "os":            random.choice(OS_LIST),
         "proxy":         f"{random.randint(10,200)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(0,255)}",
-        "status":        random.choice(STATUSES),
+        "status":        "idle",  # Always start idle
         "fingerprint":   _uuid.uuid4().hex[:16].upper(),
         "last_activity": now - random.randint(0, 86400),
         "created_at":    now
