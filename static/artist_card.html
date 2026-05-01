@@ -43,10 +43,13 @@
     .header p { font-size: 13px; color: var(--muted); letter-spacing: 0.3px; }
 
     .section-title {
-      font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 2.5px;
+      font-size: 11px; color: var(--muted); text-text-transform: uppercase; letter-spacing: 2.5px;
       margin: 18px 0 10px; font-weight: 700; display: flex; align-items: center; gap: 8px;
     }
     .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); opacity: 0.4; }
+
+    /* Carrusel, formatos, vista previa, tarjeta... (todo igual que antes) */
+    /* ... todo el CSS existente se mantiene intacto ... */
 
     .template-carousel { position: relative; overflow: hidden; margin-bottom: 8px; }
     .template-track { display: flex; gap: 12px; transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); padding: 4px 2px 8px; will-change: transform; }
@@ -144,6 +147,7 @@
       animation: flashBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
+    /* Ajustes por formato (se mantienen igual) */
     #artist-card.fmt-stories .card-top { padding: 12px 14px; gap: 8px; }
     #artist-card.fmt-stories .card-avatar { width: 42px; height: 42px; }
     #artist-card.fmt-stories .card-name { font-size: 16px; }
@@ -200,6 +204,7 @@
     #artist-card.fmt-facebook .wave { gap: 1px !important; }
     #artist-card.fmt-facebook .wave-bar { width: 1px !important; }
 
+    /* Layouts (se mantienen) */
     .card-layout-classic .card-top { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
     .card-layout-classic .card-avatar { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
     .card-layout-centered .card-top { flex-direction: column; align-items: center; text-align: center; padding: 18px 16px 10px; }
@@ -266,6 +271,25 @@
     .overlay.active { opacity: 1; pointer-events: auto; }
     .spinner { width: 44px; height: 44px; border: 3px solid #333; border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* Aviso de descarga */
+    .download-notice {
+      background: rgba(240,185,11,0.08);
+      border: 1px solid rgba(240,185,11,0.25);
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin: 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--gold);
+      text-align: left;
+      backdrop-filter: blur(8px);
+    }
+    .download-notice .icon { font-size: 20px; flex-shrink: 0; }
+    .download-notice .text { flex: 1; line-height: 1.4; }
+    .download-notice .text strong { color: #fff; }
   </style>
 </head>
 <body>
@@ -274,6 +298,10 @@
     <h1>Tarjeta de Artista Pro</h1>
     <p>Diseña tu identidad musical · Exporta en máxima calidad</p>
   </div>
+
+  <!-- Plantillas, formato, vista previa, formularios... (igual que antes) -->
+  <!-- ... -->
+  <!-- (Todo el HTML interno se mantiene idéntico a la última versión funcional) -->
 
   <div class="section-title">🎨 Plantilla</div>
   <div class="template-carousel" id="templateCarousel">
@@ -394,12 +422,23 @@
     <button class="btn" onclick="removeBgImage()" style="margin-left:8px">🗑️ Quitar fondo</button>
   </div>
 
+  <!-- BOTONES DE ACCIÓN -->
   <div style="display:flex; gap:10px; margin-top:14px">
     <button class="btn primary" style="flex:1" onclick="exportHQ()">📸 Exportar HQ</button>
     <button class="btn" style="flex:1" onclick="shareCard()">📤 Compartir</button>
   </div>
+  <button class="btn" style="width:100%; margin-top:8px" onclick="openImageInNewTab()">🖼️ Ver imagen (guardar manualmente)</button>
   <button class="btn" style="width:100%; margin-top:8px" onclick="saveDesign()">💾 Guardar diseño</button>
   <button class="btn" style="width:100%; margin-top:4px" onclick="loadDesign()">📂 Cargar diseño</button>
+
+  <!-- AVISO DE DESCARGA -->
+  <div class="download-notice">
+    <span class="icon">💻</span>
+    <div class="text">
+      <strong>¿Problemas para descargar?</strong><br>
+      Si la descarga no se inicia, usa la <strong>aplicación de escritorio</strong> (Windows, Mac o Linux) o el botón "Ver imagen" para guardar manualmente.
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -683,12 +722,40 @@
     updateFullscreenClone();
   }
 
+  // Función para abrir la imagen en una pestaña nueva (alternativa a la descarga)
+  async function openImageInNewTab() {
+    const overlay = document.getElementById('overlay');
+    overlay.classList.add('active');
+    try {
+      const card = document.getElementById('artist-card');
+      const canvas = await html2canvas(card, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        imageTimeout: 15000,
+        onclone: (clonedDoc) => {
+          clonedDoc.querySelectorAll('.wave-bar').forEach(el => {
+            el.style.animation = 'none';
+            el.style.transform = 'scaleY(0.7)';
+          });
+        }
+      });
+      const url = canvas.toDataURL('image/png');
+      overlay.classList.remove('active');
+      window.open(url, '_blank');
+      showToast('🖼️ Imagen abierta en nueva pestaña');
+    } catch(e) {
+      overlay.classList.remove('active');
+      showToast('❌ Error: ' + e.message);
+    }
+  }
+
   async function exportHQ() {
     const overlay = document.getElementById('overlay');
     overlay.classList.add('active');
     try {
       const card = document.getElementById('artist-card');
-      // Asegurar que el elemento esté visible y con dimensiones
       const canvas = await html2canvas(card, {
         backgroundColor: null,
         scale: 3,
@@ -697,7 +764,6 @@
         logging: false,
         imageTimeout: 15000,
         onclone: (clonedDoc) => {
-          // Pausar animaciones para la captura
           clonedDoc.querySelectorAll('.wave-bar').forEach(el => {
             el.style.animation = 'none';
             el.style.transform = 'scaleY(0.7)';
@@ -705,7 +771,6 @@
         }
       });
       
-      // Convertir a blob y descargar
       canvas.toBlob((blob) => {
         overlay.classList.remove('active');
         if (!blob) {
@@ -764,7 +829,6 @@
             await navigator.share({ title: 'Tarjeta de Artista', text, files: [file] });
           } catch(e) {
             if (e.name !== 'AbortError') {
-              // Si falla, abrir en pestaña nueva
               const url = URL.createObjectURL(blob);
               window.open(url, '_blank');
               showToast('Mantén presionada para guardar');
