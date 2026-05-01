@@ -439,7 +439,7 @@ def _ensure_vps_tables(cur):
             ram        INTEGER DEFAULT 1024,
             storage    INTEGER DEFAULT 20,
             bandwidth  INTEGER DEFAULT 1,
-            vps_name   TEXT    DEFAULT 'VPS-MKEYZ-01',
+            vps_name   TEXT    DEFAULT 'VPS-SIM-01',
             updated_at INTEGER DEFAULT 0
         )""")
     cur.execute("""
