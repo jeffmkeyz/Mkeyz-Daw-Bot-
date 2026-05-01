@@ -108,6 +108,21 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
 #loading { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; height:100vh; color:var(--text-dim); font-size:11px; }
 .spinner { width:28px; height:28px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg);} }
+/* ── Platform Selector ── */
+.platform-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+.plat-btn { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius); padding:10px 6px; cursor:pointer; text-align:center; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
+.plat-btn.selected { border-color:var(--green); background:var(--green-dim); }
+.plat-btn:active { border-color:var(--green); }
+.plat-icon { font-size:20px; display:block; margin-bottom:4px; }
+.plat-name { font-size:9px; font-weight:600; color:var(--text-mid); letter-spacing:0.3px; }
+.plat-btn.selected .plat-name { color:var(--green); }
+.plat-info-card { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; display:flex; flex-direction:column; gap:6px; margin-bottom:4px; }
+.plat-info-row { display:flex; justify-content:space-between; align-items:center; }
+.plat-info-label { font-size:10px; color:var(--text-dim); }
+.plat-info-value { font-size:10px; font-weight:600; color:var(--text); }
+.plat-geo-badge { font-size:8px; padding:2px 7px; border-radius:4px; }
+.geo-global { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,232,122,0.2); }
+.geo-us { background:var(--amber-dim); color:var(--amber); border:1px solid rgba(255,184,0,0.2); }
 /* ── New Profile Panel ── */
 .newp-panel { position:fixed; inset:0; z-index:800; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.2,0.64,1); overflow-y:auto; }
 .newp-panel.open { transform:translateY(0); }
@@ -364,18 +379,20 @@ function render() {
 
   const profilesHTML = profiles.length === 0
     ? `<div class="profiles-empty"><span class="big-icon">🖥️</span>Sin perfiles activos.<br/>Agrega recursos para crear perfiles.</div>`
-    : profiles.map((p,i) => `
+    : profiles.map((p,i) => {
+        const plat = vpsState.platforms?.[p.platform] || vpsState.platforms?.general || {};
+        return `
       <div class="profile-card status-${p.status}" onclick="toggleProfileStatus('${p.id}','${p.status}')" style="animation-delay:${i*0.04}s">
         <div class="profile-status-dot"></div>
         <div class="profile-info">
-          <div class="profile-name">${p.name}</div>
+          <div class="profile-name">${plat.icon||'🖥️'} ${p.name}</div>
           <div class="profile-meta">${p.browser} · ${p.os} · ${timeAgo(p.last_activity)}</div>
         </div>
         <div class="profile-right">
           <div class="profile-status-label">${p.status.toUpperCase()}</div>
           <div class="profile-fp">${p.fingerprint.substring(0,8)}</div>
         </div>
-      </div>`).join('');
+      </div>`}).join('');
 
   document.getElementById('app').innerHTML = `
     <div class="header">
@@ -408,8 +425,8 @@ function render() {
       <div class="res-card bw" onclick="openModal('bandwidth')">
         <div class="res-icon">🌐</div><div class="res-label">BANDWIDTH</div>
         <div class="res-value">${resources.bandwidth}TB/mes</div>
-        <div class="res-sub">Sin límite de velocidad</div>
-        <div class="bar-track"><div class="bar-fill" style="width:20%"></div></div>
+        <div class="res-sub">Uso est: ${usage.bandwidth_gb||0}GB/mes</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,Math.round((usage.bandwidth_gb||0)/(resources.bandwidth*1024)*100))}%"></div></div>
       </div>
     </div>
     <div class="section-title">// CAPACIDAD DE PERFILES</div>
@@ -468,9 +485,9 @@ const VPS_PLANS = [
 ];
 
 const PROXY_OPTIONS = [
-  { id:'dc',    type:'Datacenter',   detail:'IPRoyal · Proxy-Cheap',      pricePerProfile:1.5,  note:'Rápido, detectable' },
-  { id:'res',   type:'Residencial',  detail:'IPRoyal · Smartproxy',       pricePerProfile:8,    note:'~2GB/perfil/mes' },
-  { id:'mob',   type:'Móvil 4G',     detail:'Proxidize · Soax',           pricePerProfile:25,   note:'Máxima confianza' },
+  { id:'dc',    type:'Datacenter',   detail:'IPRoyal · Proxy-Cheap',      pricePerProfile:1.5,  note:'Spotify, Apple Music, Pandora' },
+  { id:'res',   type:'Residencial',  detail:'IPRoyal · Smartproxy',       pricePerProfile:8,    note:'YouTube, Tidal, ~2GB/perfil' },
+  { id:'mob',   type:'Móvil 4G',     detail:'Proxidize · Soax',           pricePerProfile:25,   note:'Pandora US, máxima confianza' },
   { id:'none',  type:'Sin proxy',    detail:'IP directa del VPS',         pricePerProfile:0,    note:'Solo para pruebas' },
 ];
 
@@ -570,9 +587,16 @@ function renderCalc() {
         <div style="text-align:right;font-size:10px;color:var(--text-dim)">
           <div>CPU: ${vpsState.resources.cpu} vCPU</div>
           <div>RAM: ${formatRAM(vpsState.resources.ram)}</div>
-          <div>Disco: ${formatDisk(vpsState.resources.storage)}</div>
+          <div>BW est: ${vpsState.usage?.bandwidth_gb||0}GB/mes</div>
         </div>
       </div>
+      ${Object.keys(vpsState.platforms||{}).filter(k=>k!=='general').length > 0 ? `
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px">
+        ${Object.entries(vpsState.platforms||{}).filter(([k])=>k!=='general').map(([k,p])=>{
+          const count = vpsState.profiles.filter(pr=>pr.platform===k).length;
+          return count > 0 ? `<span style="font-size:9px;padding:2px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--border);color:var(--text-dim)">${p.icon} ${p.name} ×${count}</span>` : '';
+        }).join('')}
+      </div>` : ''}
     </div>
 
     <div class="calc-section">
@@ -835,24 +859,36 @@ function downloadExport() {
 
 // ── New Profile ───────────────────────────────────────────
 let newpSuggestion = null;
+let newpPlatform   = 'general';
 
 async function openNewProfile() {
   if (!vpsState) return;
-  const cap = vpsState.capacity;
-  if (vpsState.profiles.length >= cap.maxProfiles) {
+  if (vpsState.profiles.length >= vpsState.capacity.maxProfiles) {
     showToast('Sin capacidad — agrega más recursos');
     tg?.HapticFeedback?.notificationOccurred('warning');
     return;
   }
+  newpPlatform = 'general';
   document.getElementById('newpBody').innerHTML = `<div style="text-align:center;padding:40px 0"><div class="spinner"></div></div>`;
   document.getElementById('newpPanel').classList.add('open');
   tg?.HapticFeedback?.impactOccurred('light');
+  await fetchSuggestion();
+}
+
+async function fetchSuggestion() {
   try {
-    newpSuggestion = await apiFetch(`/api/vps/profile/suggest?tg_id=${TG_ID}`);
+    newpSuggestion = await apiFetch(`/api/vps/profile/suggest?tg_id=${TG_ID}&platform=${newpPlatform}`);
     renderNewProfile();
   } catch(e) {
     document.getElementById('newpBody').innerHTML = `<div style="color:var(--red);text-align:center;padding:20px">Error cargando sugerencia</div>`;
   }
+}
+
+async function selectPlatform(key) {
+  newpPlatform = key;
+  document.getElementById('newpBody').innerHTML = `<div style="text-align:center;padding:40px 0"><div class="spinner"></div></div>`;
+  await fetchSuggestion();
+  tg?.HapticFeedback?.selectionChanged?.();
 }
 
 function closeNewProfile() {
@@ -868,39 +904,57 @@ function regenFingerprint() {
 
 function renderNewProfile() {
   if (!newpSuggestion) return;
-  const s = newpSuggestion;
+  const s     = newpSuggestion;
   const slots = vpsState.capacity.maxProfiles - vpsState.profiles.length;
+  const plats = vpsState.platforms || {};
+
+  const platformGrid = Object.entries(plats).map(([key, p]) => `
+    <div class="plat-btn ${newpPlatform===key?'selected':''}" onclick="selectPlatform('${key}')">
+      <span class="plat-icon">${p.icon}</span>
+      <span class="plat-name">${p.name}</span>
+    </div>`).join('');
+
+  const riskColor = s.risk_level==='bajo' ? 'badge-low' : s.risk_level==='medio' ? 'badge-med' : 'style="background:var(--red-dim);color:var(--red);border:1px solid rgba(255,71,87,0.2)"';
 
   document.getElementById('newpBody').innerHTML = `
-    <div class="newp-suggest-card">
-      <div class="newp-suggest-title">// Configuración sugerida</div>
-      <div class="newp-row">
-        <span class="newp-row-label">Uso sugerido</span>
-        <span class="newp-row-value">${s.suggested_use}</span>
+    <div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px">// Plataforma</div>
+      <div class="platform-grid">${platformGrid}</div>
+    </div>
+
+    <div class="plat-info-card">
+      <div class="plat-info-row">
+        <span class="plat-info-label">CPU por perfil</span>
+        <span class="plat-info-value">${s.cpu_cost} vCPU</span>
       </div>
-      <div class="newp-row">
-        <span class="newp-row-label">Proxy recomendado</span>
-        <span class="newp-row-value">${s.recommended_proxy}</span>
+      <div class="plat-info-row">
+        <span class="plat-info-label">RAM por perfil</span>
+        <span class="plat-info-value">${s.ram_cost}MB</span>
       </div>
-      <div class="newp-row">
-        <span class="newp-row-label">Riesgo de detección</span>
-        <span class="newp-badge ${s.risk_level === 'bajo' ? 'badge-low' : 'badge-med'}">${s.risk_level.toUpperCase()}</span>
+      <div class="plat-info-row">
+        <span class="plat-info-label">Banda estimada</span>
+        <span class="plat-info-value">${s.bandwidth_gb}GB/mes</span>
       </div>
-      <div class="newp-row" style="margin-bottom:0">
-        <span class="newp-row-label">Slots disponibles</span>
-        <span style="font-size:11px;color:var(--green);font-weight:700">${slots} restantes</span>
+      <div class="plat-info-row">
+        <span class="plat-info-label">Proxy recomendado</span>
+        <span class="plat-info-value" style="font-size:9px">${s.recommended_proxy}</span>
       </div>
+      <div class="plat-info-row">
+        <span class="plat-info-label">Geo</span>
+        <span class="plat-geo-badge ${s.suggested_use?.includes('US')?'geo-us':'geo-global'}">${plats[newpPlatform]?.geo||'Global'}</span>
+      </div>
+      <div style="font-size:9px;color:var(--text-dim);margin-top:4px;font-style:italic">${s.suggested_use}</div>
     </div>
 
     <div class="newp-field">
       <label class="newp-label">Nombre del perfil</label>
-      <input class="newp-input" id="newpName" type="text" value="${s.name}" maxlength="40" placeholder="Ej: TikTok ES #1"/>
+      <input class="newp-input" id="newpName" type="text" value="${s.name}" maxlength="40" placeholder="Ej: Spotify ES #1"/>
     </div>
 
     <div class="newp-field">
       <label class="newp-label">Navegador</label>
       <select class="newp-select" id="newpBrowser">
-        ${['Chrome 120','Chrome 119','Firefox 121','Edge 120'].map(b =>
+        ${['Chrome 120','Chrome 119','Firefox 121','Edge 120','Safari 17'].map(b =>
           `<option value="${b}" ${s.browser===b?'selected':''}>${b}</option>`
         ).join('')}
       </select>
@@ -928,8 +982,12 @@ function renderNewProfile() {
       </div>
     </div>
 
+    <div style="padding-bottom:4px;font-size:9px;color:var(--text-dim)">
+      ${slots} slot${slots!==1?'s':''} disponible${slots!==1?'s':''}
+    </div>
+
     <div class="export-actions">
-      <button class="export-dl-btn" onclick="saveNewProfile()">✓ Crear Perfil</button>
+      <button class="export-dl-btn" onclick="saveNewProfile()">✓ Crear Perfil ${s.platform_icon}</button>
     </div>
   `;
 }
@@ -943,22 +1001,19 @@ async function saveNewProfile() {
     browser:     document.getElementById('newpBrowser').value,
     os:          document.getElementById('newpOS').value,
     proxy:       document.getElementById('newpProxy').value.trim() || newpSuggestion.proxy,
-    fingerprint: newpSuggestion.fingerprint
+    fingerprint: newpSuggestion.fingerprint,
+    platform:    newpPlatform
   };
   try {
     const res = await apiFetch('/api/vps/profile/add', { method:'POST', body: JSON.stringify(payload) });
-    if (res.error === 'no_capacity') {
-      showToast('Sin capacidad — escala el servidor');
-      return;
-    }
+    if (res.error === 'no_capacity') { showToast('Sin capacidad — escala el servidor'); return; }
     vpsState = res.vps;
     closeNewProfile();
     render();
-    showToast(`✓ ${payload.name} creado`);
+    const icon = vpsState.platforms?.[newpPlatform]?.icon || '🖥️';
+    showToast(`✓ ${payload.name} ${icon} creado`);
     tg?.HapticFeedback?.notificationOccurred('success');
-  } catch(e) {
-    showToast('Error al crear perfil');
-  }
+  } catch(e) { showToast('Error al crear perfil'); }
 }
 
 loadVPS();
