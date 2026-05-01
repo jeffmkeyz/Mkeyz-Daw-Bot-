@@ -866,6 +866,11 @@ function renderExport() {
     </div>
     <div class="export-actions">
       <button class="export-dl-btn" onclick="downloadExport()">⬇ Descargar ${fmt.name} (.${fmt.ext})</button>
+    </div>
+    <div style="margin-top:8px">
+      <button onclick="shareText()" style="width:100%;padding:13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-mid);cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        📋 Copiar resumen para compartir
+      </button>
     </div>` : `<div style="text-align:center;color:var(--text-dim);font-size:11px;padding:20px">Sin perfiles en este filtro</div>`}
   `;
 
@@ -880,6 +885,79 @@ function copyExport() {
   navigator.clipboard?.writeText(window._exportContent)
     .then(() => showToast('Copiado al portapapeles ✓'))
     .catch(() => showToast('Selecciona el texto manualmente'));
+}
+
+function downloadExport() {
+  const blob = new Blob([window._exportContent], { type: window._exportMime });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `vps-profiles-${window._exportName}-${Date.now()}.${window._exportExt}`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Descargando ${window._exportName}.${window._exportExt} ✓`);
+  tg?.HapticFeedback?.notificationOccurred('success');
+}
+
+function shareText() {
+  if (!vpsState) return;
+  const profiles = exportState.scope === 'active'
+    ? vpsState.profiles.filter(p => p.status === 'active')
+    : vpsState.profiles;
+  const plats = vpsState.platforms || {};
+
+  // Group by platform
+  const byPlat = {};
+  profiles.forEach(p => {
+    const key = p.platform || 'general';
+    if (!byPlat[key]) byPlat[key] = [];
+    byPlat[key].push(p);
+  });
+
+  const platLines = Object.entries(byPlat).map(([key, ps]) => {
+    const plat = plats[key] || { icon: '🖥️', name: key };
+    return `  ${plat.icon} ${plat.name}: ${ps.length} perfil${ps.length !== 1 ? 'es' : ''}`;
+  }).join('\n');
+
+  const res = vpsState.resources;
+  const cap = vpsState.capacity;
+  const usage = vpsState.usage;
+
+  const text =
+`🖥️ VPS SIMULATOR — Config
+━━━━━━━━━━━━━━━━━━
+⚡ CPU: ${res.cpu} vCPU (uso ${usage.cpu}%)
+💾 RAM: ${formatRAM(res.ram)} (uso ${usage.ram}%)
+💿 Disco: ${formatDisk(res.storage)} (uso ${usage.storage}%)
+🌐 BW est: ${usage.bandwidth_gb || 0}GB/mes
+
+📊 Perfiles: ${profiles.length}/${cap.maxProfiles}
+${platLines}
+
+🔧 Navegadores:
+${[...new Set(profiles.map(p => p.browser))].map(b => `  · ${b}`).join('\n')}
+
+🖥️ Sistemas:
+${[...new Set(profiles.map(p => p.os))].map(o => `  · ${o}`).join('\n')}
+━━━━━━━━━━━━━━━━━━
+Generado con VPS Simulator`;
+
+  navigator.clipboard?.writeText(text)
+    .then(() => {
+      showToast('✓ Resumen copiado — pégalo donde quieras');
+      tg?.HapticFeedback?.notificationOccurred('success');
+    })
+    .catch(() => {
+      // Fallback for Telegram WebApp
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showToast('✓ Resumen copiado');
+      tg?.HapticFeedback?.notificationOccurred('success');
+    });
 }
 
 function downloadExport() {
