@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Mkeyz Studio — Élite Final</title>
+<title>Mkeyz Studio — Remastered</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
+/* ===== RESET Y TIPOGRAFÍA ===== */
 * {
   margin: 0;
   padding: 0;
@@ -16,12 +17,12 @@
 body {
   background: radial-gradient(circle at 20% 30%, #0a0e1a, #020408);
   color: #f0f3ff;
-  font-family: 'Inter', 'Orbitron', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   min-height: 100vh;
   padding-bottom: 80px;
   overflow-x: hidden;
 }
-/* Header y stats */
+/* Header */
 .hdr {
   background: rgba(5, 7, 15, 0.85);
   backdrop-filter: blur(20px);
@@ -100,13 +101,15 @@ body {
   border-radius: 20px;
   transition: width 0.4s cubic-bezier(0.2, 1.3, 0.4, 1);
   box-shadow: 0 0 8px #ffd966;
+  animation: xpPulse 1.5s infinite alternate;
 }
+@keyframes xpPulse { 0% { filter: brightness(1); } 100% { filter: brightness(1.3); } }
 .xp-text {
   font-family: 'Orbitron', monospace;
   font-size: 0.65rem;
   color: #b9c3e0;
 }
-/* Producción y módulos slider */
+/* Sección producción */
 .main-section {
   margin: 16px 16px 8px;
 }
@@ -117,59 +120,67 @@ body {
   text-align: center;
   margin-bottom: 16px;
   border: 1px solid #ffd966;
+  box-shadow: 0 0 25px rgba(255,217,102,0.4);
   position: relative;
   overflow: hidden;
 }
-.rate-big::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,217,102,0.2) 0%, transparent 70%);
-  animation: rotateGlow 8s linear infinite;
-  pointer-events: none;
-}
-@keyframes rotateGlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .rate-big .value {
   font-family: 'Orbitron', monospace;
-  font-size: 2.2rem;
+  font-size: 2.4rem;
   font-weight: 800;
-  color: #ffd966;
-  text-shadow: 0 0 12px rgba(255,217,102,0.6);
+  display: inline-block;
+  animation: bounceNumber 1s infinite alternate;
+  transform-origin: center;
 }
+@keyframes bounceNumber {
+  0% { transform: scale(1); text-shadow: 0 0 4px #ffd966; }
+  100% { transform: scale(1.08); text-shadow: 0 0 16px #ffd966; color: #ffd966; }
+}
+/* Slider de módulos */
 .modules-slider {
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   display: flex;
-  gap: 12px;
-  padding: 4px 0 16px;
+  gap: 15px;
+  padding: 8px 4px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #ffd966 #1e2338;
+  -webkit-overflow-scrolling: touch;
 }
 .module-card {
   flex: 0 0 150px;
+  scroll-snap-align: start;
   background: rgba(15, 20, 35, 0.85);
   backdrop-filter: blur(8px);
   border-radius: 28px;
   padding: 14px 8px;
   text-align: center;
   border: 1px solid rgba(255,255,255,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 .module-card.owned {
   border-left: 4px solid #ffd966;
   background: linear-gradient(145deg, rgba(30,35,55,0.9), rgba(15,18,30,0.95));
+  box-shadow: 0 0 15px rgba(255,217,102,0.2);
 }
-.module-name { font-family: 'Orbitron', monospace; font-size: 0.7rem; color: #ffd966; }
+.module-card:active { transform: scale(0.97); }
+.module-emoji { font-size: 2rem; margin-bottom: 6px; }
+.module-name { font-family: 'Orbitron', monospace; font-size: 0.7rem; color: #ffd966; font-weight: bold; }
+.module-rate { font-size: 0.65rem; color: #4ade80; font-family: monospace; }
+.module-level { font-size: 0.55rem; color: #96a0c0; margin: 4px 0; }
 .module-buy {
   background: #2a2f4a;
   border: none;
   padding: 5px 10px;
   border-radius: 40px;
   cursor: pointer;
+  font-weight: bold;
+  font-size: 0.7rem;
 }
 .module-buy.can-buy { background: #ffd966; color: #000; }
+.module-buy.maxed { background: #4a4f70; color: #ccc; cursor: default; }
 /* Cofres */
-.chest-area { margin: 16px; }
+.chest-area, .roulette-area { margin: 16px; }
 .chest-card {
   background: linear-gradient(145deg, #1e2a2e, #0f1722);
   border-radius: 40px;
@@ -182,46 +193,35 @@ body {
 }
 .chest-emoji { font-size: 3rem; animation: chestFloat 2s infinite alternate; }
 @keyframes chestFloat { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+.chest-info { flex: 1; }
+.chest-name { font-family: 'Orbitron', monospace; font-weight: bold; color: #ffd966; }
+.chest-timer { font-size: 0.7rem; background: #00000066; display: inline-block; padding: 2px 8px; border-radius: 40px; }
 .chest-btn {
   background: #ffd966;
   border: none;
   padding: 8px 24px;
   border-radius: 60px;
   font-weight: bold;
+  cursor: pointer;
 }
+.chest-btn.disabled { background: #2a2f4a; color: #aaa; cursor: default; }
 /* Ruleta */
 .roulette-area {
-  margin: 16px;
-  background: radial-gradient(circle, rgba(30,35,60,0.9), rgba(10,12,25,0.95));
-  border-radius: 60px;
-  padding: 16px;
-  text-align: center;
   position: relative;
-}
-.roulette-container {
-  position: relative;
-  width: 220px;
-  height: 220px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .roulette-wheel {
-  width: 100%;
-  height: 100%;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
-  background: conic-gradient(
-    #ff4d4d 0deg 30deg, #ffd966 30deg 60deg, #4ade80 60deg 90deg,
-    #4fc3f7 90deg 120deg, #c084fc 120deg 150deg, #f97316 150deg 180deg,
-    #ff4d4d 180deg 210deg, #ffd966 210deg 240deg, #4ade80 240deg 270deg,
-    #4fc3f7 270deg 300deg, #c084fc 300deg 330deg, #f97316 330deg 360deg
-  );
+  background: conic-gradient(#ff4d4d 0deg 30deg, #ffd966 30deg 60deg, #4ade80 60deg 90deg, #4fc3f7 90deg 120deg, #c084fc 120deg 150deg, #f97316 150deg 180deg, #ff4d4d 180deg 210deg, #ffd966 210deg 240deg, #4ade80 240deg 270deg, #4fc3f7 270deg 300deg, #c084fc 300deg 330deg, #f97316 330deg 360deg);
   box-shadow: 0 0 30px rgba(255,217,102,0.8);
   transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
 .roulette-wheel.spinning { animation: spinWheel 1.5s ease-out forwards; }
-@keyframes spinWheel {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(1440deg); }
-}
+@keyframes spinWheel { 0% { transform: rotate(0deg); } 100% { transform: rotate(1440deg); } }
 .roulette-pointer {
   position: absolute;
   top: -15px;
@@ -235,16 +235,32 @@ body {
   filter: drop-shadow(0 0 6px gold);
   z-index: 10;
 }
+.roulette-slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+.roulette-slot {
+  background: #1e2338;
+  border-radius: 40px;
+  padding: 4px 12px;
+  font-size: 0.7rem;
+}
 .roulette-btn {
   background: #ffd966;
   border: none;
   padding: 10px 24px;
   border-radius: 60px;
+  margin-top: 12px;
+  cursor: pointer;
   font-weight: bold;
-  margin-top: 16px;
 }
 .roulette-btn.disabled { background: #2a2f4a; color: #aaa; cursor: default; }
 /* Botón recoger */
+.collect-area { margin: 8px 16px; }
+.pending-info { text-align:center; margin-bottom:6px; font-size:0.7rem; color:#ffd966; }
 .collect-btn {
   width: 100%;
   background: linear-gradient(105deg, #ffd966, #ff9f1c);
@@ -253,7 +269,59 @@ body {
   padding: 14px;
   font-weight: 800;
   font-family: 'Orbitron', monospace;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: 0.05s linear;
+  box-shadow: 0 4px 0 #b57100;
+  transform: translateY(-2px);
+}
+.collect-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #b57100; }
+/* Racha */
+.streak-card {
+  background: rgba(0,0,0,0.6);
   margin: 8px 16px;
+  padding: 12px 20px;
+  border-radius: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 5px solid #ffd966;
+}
+.streak-left { display: flex; gap: 12px; align-items: center; }
+.streak-fire { font-size: 2rem; animation: fireAnimation 0.6s infinite alternate; }
+@keyframes fireAnimation {
+  0% { text-shadow: 0 0 2px orange; transform: scale(1); }
+  100% { text-shadow: 0 0 15px #ff6600; transform: scale(1.1); }
+}
+.streak-btn {
+  background: #ffd966;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 40px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.rewards-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 8px 16px;
+}
+.reward-chip {
+  background: #0f1322;
+  border-radius: 40px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  border: 1px solid #2a2f4a;
+  white-space: nowrap;
+}
+.reward-chip.available {
+  border-color: #4ade80;
+  background: #1a2a1a;
+  cursor: pointer;
 }
 /* Inversiones */
 .investment-area { margin: 8px 16px; }
@@ -273,44 +341,8 @@ body {
   border: none;
   padding: 6px 16px;
   border-radius: 40px;
+  cursor: pointer;
 }
-/* Racha */
-.streak-card {
-  background: rgba(0,0,0,0.6);
-  margin: 8px 16px;
-  padding: 12px 20px;
-  border-radius: 60px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-left: 5px solid #ffd966;
-}
-.streak-fire {
-  font-size: 2rem;
-  animation: fireAnimation 0.6s infinite alternate;
-}
-@keyframes fireAnimation {
-  0% { text-shadow: 0 0 2px orange; transform: scale(1); }
-  100% { text-shadow: 0 0 15px #ff6600; transform: scale(1.1); }
-}
-.rewards-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  margin: 8px 16px;
-}
-.reward-chip {
-  background: #0f1322;
-  border-radius: 40px;
-  padding: 6px 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.7rem;
-  border: 1px solid #2a2f4a;
-  white-space: nowrap;
-}
-.reward-chip.available { border-color: #4ade80; background: #1a2a1a; cursor: pointer; }
 /* Pestañas */
 .tabs {
   display: flex;
@@ -318,6 +350,7 @@ body {
   padding: 10px 16px;
   background: rgba(0,0,0,0.5);
   margin: 16px 0 12px;
+  overflow-x: auto;
   justify-content: center;
 }
 .tab {
@@ -329,6 +362,7 @@ body {
   font-weight: 700;
   font-family: 'Orbitron', monospace;
   cursor: pointer;
+  transition: 0.2s;
 }
 .tab.active {
   background: #ffd966;
@@ -344,6 +378,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border: 1px solid #2a2f4a;
 }
 .shop-buy {
   background: #2a2f4a;
@@ -351,6 +386,7 @@ body {
   padding: 6px 14px;
   border-radius: 40px;
   cursor: pointer;
+  font-weight: bold;
 }
 .shop-buy.can-buy { background: #ffd966; color: #000; }
 .stats-grid {
@@ -390,21 +426,50 @@ body {
 /* Minijuegos */
 .piano-keys {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
-  margin: 16px 0;
+  margin: 20px 0;
 }
 .piano-key {
   background: #1e2338;
-  border: 1px solid #ffd966;
-  border-radius: 12px;
-  padding: 8px 12px;
+  border: 2px solid #ffd966;
+  border-radius: 16px;
+  padding: 12px 10px;
+  text-align: center;
   cursor: pointer;
-  transition: 0.05s;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ffd966;
+  transition: 0.05s linear;
+  min-width: 60px;
 }
 .piano-key:active { transform: scale(0.95); background: #ffd966; color: #000; }
-/* Popup y toast */
+/* Onda de audio (canvas) */
+.wave-canvas {
+  background: #0a0e1a;
+  border-radius: 24px;
+  width: 100%;
+  height: 120px;
+  display: block;
+  margin: 10px 0;
+}
+.wave-container { position: relative; }
+.wave-percent {
+  text-align: center;
+  font-family: monospace;
+  font-size: 1rem;
+  margin-top: 8px;
+}
+.wave-btn {
+  background: #ffd966;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 40px;
+  margin: 10px 5px;
+  cursor: pointer;
+}
+/* Popups */
 .popup-overlay {
   position: fixed;
   inset: 0;
@@ -421,6 +486,12 @@ body {
   padding: 32px 28px;
   text-align: center;
   border: 2px solid #ffd966;
+  animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popIn {
+  0% { transform: scale(0.2) rotate(-5deg); opacity: 0; }
+  80% { transform: scale(1.05) rotate(1deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
 }
 .toast {
   position: fixed;
@@ -433,8 +504,19 @@ body {
   border-radius: 60px;
   font-size: 0.7rem;
   transition: 0.2s;
+  z-index: 999;
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
+.floating-emoji {
+  position: fixed;
+  pointer-events: none;
+  z-index: 999;
+  animation: floatUp 0.8s forwards;
+}
+@keyframes floatUp {
+  0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(-80px) rotate(360deg); }
+}
 </style>
 </head>
 <body>
@@ -466,7 +548,7 @@ body {
 <div class="roulette-area" id="rouletteArea"></div>
 
 <div class="collect-area">
-  <div style="text-align:center; margin:0 16px 6px;">⚡ LISTO PARA RECOGER: <span id="pendingDisplay">0</span> 🪙</div>
+  <div class="pending-info">⚡ LISTO PARA RECOGER: <span id="pendingDisplay">0</span> 🪙</div>
   <button class="collect-btn" id="collectBtn">✨ RECOGER ✨</button>
 </div>
 
@@ -482,11 +564,11 @@ body {
 </div>
 
 <div class="streak-card">
-  <div style="display:flex; gap:12px;">
+  <div class="streak-left">
     <div class="streak-fire" id="streakIcon">🔥</div>
-    <div><div id="streakTitle" style="font-weight:bold;">Racha diaria</div><div id="streakSub"></div></div>
+    <div><div id="streakTitle" style="font-weight:bold;">Racha diaria</div><div id="streakSub" style="font-size:0.7rem;"></div></div>
   </div>
-  <button class="streak-btn" id="streakBtn" style="background:#ffd966; border:none; padding:8px 20px; border-radius:40px;">RECLAMAR</button>
+  <button class="streak-btn" id="streakBtn">RECLAMAR</button>
 </div>
 <div class="rewards-row" id="rewardsGrid"></div>
 
@@ -504,7 +586,14 @@ body {
 <div id="tab-invite" style="display:none"><div id="inviteContainer"></div></div>
 <div id="tab-stats" style="display:none"><div class="stats-grid" id="statsGrid"></div></div>
 
-<div class="popup-overlay" id="popup"><div class="popup-box"><div id="popEmoji">🎉</div><div id="popTitle"></div><div id="popDesc"></div><button onclick="closePopup()" style="background:#ffd966; border:none; padding:8px 24px; border-radius:40px;">OK</button></div></div>
+<div class="popup-overlay" id="popup">
+  <div class="popup-box">
+    <div id="popEmoji" style="font-size:3rem;">🎉</div>
+    <div id="popTitle" style="font-size:1.3rem; font-weight:bold;"></div>
+    <div id="popDesc" style="margin:12px 0;"></div>
+    <button onclick="closePopup()" style="background:#ffd966; border:none; padding:8px 24px; border-radius:40px;">OK</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -513,7 +602,7 @@ const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#05070c"); tg.setBackgroundColor("#05070c"); }
 let USER_ID = tg?.initDataUnsafe?.user?.id || localStorage.getItem("mkeyz_uid") || "g_" + Math.random().toString(36).slice(2, 8);
 if (!tg?.initDataUnsafe?.user?.id) localStorage.setItem("mkeyz_uid", USER_ID);
-const SAVE_KEY = "mkeyz_final_pro_"+USER_ID;
+const SAVE_KEY = "mkeyz_remastered_"+USER_ID;
 
 // ---------- MÓDULOS (16) ----------
 const MODULES = [
@@ -546,7 +635,8 @@ const EXTERNAL_ACHIEVEMENTS = [
   { id:"tg1", name:"Telegram", desc:"Únete", icon:"📱", url:"https://t.me/MkeyzStudioBot", rewardCoins:300, rewardGems:8, rewardXP:80 },
   { id:"tw1", name:"Twitter", desc:"Síguenos", icon:"🐦", url:"https://twitter.com/JeffMkeyzx", rewardCoins:250, rewardGems:5, rewardXP:60 },
   { id:"spotify", name:"Spotify", desc:"Escúchanos", icon:"🎵", url:"https://open.spotify.com/artist/1PTk2yExL9jgOUPYEjWF1E", rewardCoins:400, rewardGems:12, rewardXP:120 },
-  { id:"tiktok", name:"TikTok", desc:"Síguenos", icon:"📱", url:"https://www.tiktok.com/@JeffMkeyz", rewardCoins:350, rewardGems:9, rewardXP:90 }
+  { id:"tiktok", name:"TikTok", desc:"Síguenos", icon:"📱", url:"https://www.tiktok.com/@JeffMkeyz", rewardCoins:350, rewardGems:9, rewardXP:90 },
+  { id:"instagram", name:"Instagram", desc:"Síguenos", icon:"📸", url:"https://www.instagram.com/jeffmkeyz", rewardCoins:280, rewardGems:7, rewardXP:70 }
 ];
 
 const MISSIONS_LIST = [
@@ -563,12 +653,12 @@ const CHEST_TYPES = [
 ];
 
 const ROULETTE_SLOTS = [
-  { name:"100🪙", coins:100, gems:0 },
-  { name:"20💎", coins:0, gems:20 },
-  { name:"250🪙", coins:250, gems:0 },
-  { name:"50💎", coins:0, gems:50 },
-  { name:"10💎", coins:0, gems:10 },
-  { name:"500🪙", coins:500, gems:0 }
+  { name:"100🪙", coins:100, gems:0, prob:25 },
+  { name:"20💎", coins:0, gems:20, prob:20 },
+  { name:"250🪙", coins:250, gems:0, prob:20 },
+  { name:"50💎", coins:0, gems:50, prob:15 },
+  { name:"10💎", coins:0, gems:10, prob:15 },
+  { name:"500🪙", coins:500, gems:0, prob:10 }
 ];
 
 // ---------- ESTADO ----------
@@ -600,14 +690,17 @@ function load() {
     }
   } catch(e) {}
   if (!S.referralCode) S.referralCode = (tg?.initDataUnsafe?.user?.id || USER_ID).toString().slice(-6).toUpperCase();
+  if (!S.externalAchievements) S.externalAchievements = {};
+  if (S.gameTokens === undefined) S.gameTokens = 3;
+  if (!S.lastTokenRegen) S.lastTokenRegen = Date.now();
   if (!S.currentChest) { S.currentChest = CHEST_TYPES[0]; S.chestOpenTime = Date.now(); }
   if (S.boostLevel === undefined) S.boostLevel = 0;
   if (S.boostLastUpgrade === undefined) S.boostLastUpgrade = 0;
   if (S.tokenPurchasesCount === undefined) S.tokenPurchasesCount = 0;
   const now = Date.now();
   const elapsed = now - S.lastTokenRegen;
-  if (elapsed > 20*60*1000 && S.gameTokens < 9) {
-    S.gameTokens = Math.min(9, S.gameTokens + Math.floor(elapsed/(20*60*1000)));
+  if (elapsed > 20*60*1000 && S.gameTokens < 6) {
+    S.gameTokens = Math.min(6, S.gameTokens + Math.floor(elapsed/(20*60*1000)));
     S.lastTokenRegen = now;
   }
   const urlParams = new URLSearchParams(location.search);
@@ -637,7 +730,6 @@ function load() {
   startChestTick();
 }
 
-// Boost
 function getBoostMultiplier() {
   if (S.boostLevel === 1) return 1.5;
   if (S.boostLevel === 2) return 2.0;
@@ -667,11 +759,11 @@ function addXP(amount) {
 function addGems(amount) { if (amount>0) { S.gems += amount; save(); renderStats(); } }
 function formatNum(n) { n = Math.floor(n); if (n>=1e6) return (n/1e6).toFixed(1)+"M"; if (n>=1e3) return (n/1e3).toFixed(1)+"K"; return n.toString(); }
 
+const BOOST_COSTS = [0, 500, 1500, 4000];
 function buyBoostUpgrade() {
-  if (S.boostLevel >= 3) { showToast("Nivel máximo de mejora alcanzado"); return; }
-  const costs = [0, 500, 1500, 4000];
+  if (S.boostLevel >= 3) { showToast("Nivel máximo"); return; }
   const nextLevel = S.boostLevel + 1;
-  const cost = costs[nextLevel];
+  const cost = BOOST_COSTS[nextLevel];
   if (S.coins < cost) { showToast(`🪙 Necesitas ${cost} monedas`); return; }
   const now = Date.now();
   if (S.boostLastUpgrade && (now - S.boostLastUpgrade) < 12*60*60*1000) {
@@ -686,13 +778,13 @@ function buyBoostUpgrade() {
   showToast(`✅ Mejora nivel ${nextLevel} (${nextLevel===1?"+50%":nextLevel===2?"+100%":"+200%"})`);
 }
 function getTokenCost() {
-  let c = S.tokenPurchasesCount;
-  return 15 + (c * (c + 1) / 2) * 5;
+  let count = S.tokenPurchasesCount;
+  return 15 + (count * (count + 1) / 2) * 5;
 }
 function buyTokensIncremental() {
   let cost = getTokenCost();
   if (S.gems < cost) { showToast(`💎 Necesitas ${cost} gemas`); return; }
-  if (S.gameTokens >= 9) { showToast("Máximo de tokens (9)"); return; }
+  if (S.gameTokens >= 9) { showToast("Máximo 9 tokens"); return; }
   S.gems -= cost;
   S.tokenPurchasesCount++;
   S.gameTokens = Math.min(9, S.gameTokens + 2);
@@ -701,13 +793,15 @@ function buyTokensIncremental() {
   renderAll();
   showToast(`🎮 +2 tokens (costo: ${cost}💎)`);
 }
+
 function collect() {
   let pending = pendingCoins();
   if (pending <= 0) { showToast("🎧 Aún sin producción"); return; }
   S.coins += pending; S.totalEarned += pending; S.lastCollect = Date.now();
   addXP(Math.floor(pending/10));
   if (!S.missions.claimed.collect) { S.missions.progress.collect++; if (S.missions.progress.collect >= 3) showToast("✨ Misión Recolector completada!"); save(); renderMissions(); }
-  save(); renderAll(); showToast(`✨ +${formatNum(pending)} MKEYZ`); if (tg) tg.HapticFeedback?.notificationOccurred("success");
+  save(); renderAll(); showToast(`✨ +${formatNum(pending)} MKEYZ`);
+  if (tg) tg.HapticFeedback?.notificationOccurred("success");
 }
 function upgradeModule(id) {
   let mod = MODULES.find(m=>m.id===id);
@@ -721,6 +815,7 @@ function upgradeModule(id) {
   if (!S.missions.claimed.upgrade) { S.missions.progress.upgrade++; if (S.missions.progress.upgrade >= 1) showToast("✨ Misión Mejorador completada!"); save(); renderMissions(); }
   save(); renderAll();
   if (lvl===0) showPopup(mod.emoji, "¡"+mod.name+"!", "+"+mod.baseRate+" 🪙/h");
+  if (tg) tg.HapticFeedback?.impactOccurred("medium");
 }
 function claimMission(id) {
   if (S.missions.claimed[id]) return;
@@ -729,7 +824,7 @@ function claimMission(id) {
     S.coins += m.rewardCoins; S.totalEarned += m.rewardCoins; addXP(m.rewardXP); addGems(m.rewardGems);
     S.missions.claimed[id] = true;
     save(); renderAll(); showToast(`✅ +${m.rewardCoins}🪙 +${m.rewardGems}💎`);
-  }
+  } else showToast(`Completa la misión (${S.missions.progress[id]}/${m.target})`);
 }
 function claimStreak() {
   if (S.streakClaimed) { showToast("Ya reclamaste"); return; }
@@ -742,7 +837,7 @@ function claimDaily(r, card) {
   let today = new Date().toDateString();
   if (S.daily[r.id] === today) return;
   S.daily[r.id] = today; S.coins += r.coins; S.totalEarned += r.coins; addXP(r.xp); addGems(r.gems);
-  card.innerHTML = `<div>${r.emoji}</div><div>${r.label}</div><div>✅</div>`;
+  card.innerHTML = `<span>${r.emoji}</span><span>${r.label}</span><span>✅</span>`;
   save(); renderAll(); showToast(`+${r.coins}🪙 +${r.gems}💎`);
 }
 function claimExternalAchievement(id, url) {
@@ -760,7 +855,7 @@ function useToken() { if (S.gameTokens <= 0) { showToast("🎮 Sin tokens"); ret
 function updateTokenDisplay() { document.getElementById("tokensDisplay").innerText = S.gameTokens; }
 function startTokenRegenTick() { setInterval(() => { const now = Date.now(); if (now - S.lastTokenRegen >= 20*60*1000 && S.gameTokens < 9) { S.gameTokens = Math.min(9, S.gameTokens + 1); S.lastTokenRegen = now; save(); updateTokenDisplay(); showToast("🎮 +1 token"); renderGamesList(); } }, 60000); }
 
-// Cofres
+// COFRES Y RULETA
 function startChestTick() { setInterval(() => { renderChest(); }, 1000); }
 function openChest() {
   if (!S.currentChest) return;
@@ -769,11 +864,15 @@ function openChest() {
   const chest = S.currentChest;
   const coinsGain = Math.floor(Math.random() * (chest.maxCoins - chest.minCoins + 1) + chest.minCoins);
   const gemsGain = Math.floor(Math.random() * (chest.maxGems - chest.minGems + 1) + chest.minGems);
-  S.coins += coinsGain; S.totalEarned += coinsGain; S.gems += gemsGain; addXP(chest.xp);
+  S.coins += coinsGain; S.totalEarned += coinsGain;
+  S.gems += gemsGain;
+  addXP(chest.xp);
   showPopup("🎁", "¡Cofre abierto!", `+${formatNum(coinsGain)}🪙 +${gemsGain}💎 +${chest.xp} XP`);
   S.currentChest = CHEST_TYPES[Math.floor(Math.random() * CHEST_TYPES.length)];
   S.chestOpenTime = Date.now();
-  save(); renderChest(); renderAll();
+  save();
+  renderChest();
+  renderAll();
 }
 function renderChest() {
   const container = document.getElementById("chestArea");
@@ -781,10 +880,10 @@ function renderChest() {
   const remaining = (S.chestOpenTime + S.currentChest.waitMinutes*60*1000) - Date.now();
   const ready = remaining <= 0;
   const minutes = Math.max(0, Math.floor(remaining / 60000));
-  const secs = Math.max(0, Math.floor((remaining % 60000)/1000));
-  container.innerHTML = `<div class="chest-card"><div class="chest-emoji">${S.currentChest.emoji}</div><div><div class="chest-name">${S.currentChest.name}</div><div class="chest-timer">${ready ? "¡LISTO!" : `${minutes}m ${secs}s`}</div></div><button class="chest-btn ${ready ? '' : 'disabled'}" onclick="openChest()">${ready ? 'ABRIR' : 'ESPERANDO'}</button></div>`;
+  const seconds = Math.max(0, Math.floor((remaining % 60000)/1000));
+  const timerText = ready ? "¡LISTO!" : `${minutes}m ${seconds}s`;
+  container.innerHTML = `<div class="chest-card"><div class="chest-emoji">${S.currentChest.emoji}</div><div class="chest-info"><div class="chest-name">${S.currentChest.name}</div><div class="chest-timer">${timerText}</div></div><button class="chest-btn ${ready ? '' : 'disabled'}" onclick="openChest()">${ready ? 'ABRIR' : 'ESPERANDO'}</button></div>`;
 }
-// Ruleta con giro real
 function renderRoulette() {
   const container = document.getElementById("rouletteArea");
   const lastSpin = S.lastRouletteSpin || 0;
@@ -792,7 +891,8 @@ function renderRoulette() {
   const remaining = Math.max(0, 8*60*60*1000 - (Date.now() - lastSpin));
   const hours = Math.floor(remaining / 3600000);
   const minutes = Math.floor((remaining % 3600000) / 60000);
-  container.innerHTML = `<div class="roulette-container"><div class="roulette-wheel" id="rouletteWheel"></div><div class="roulette-pointer"></div></div><button class="roulette-btn ${canSpin ? '' : 'disabled'}" onclick="spinRoulette()">🎡 GIRAR RULETA 🎡<br><span style="font-size:0.6rem;">${canSpin ? "¡GIRA AHORA!" : `${hours}h ${minutes}m`}</span></button>`;
+  const timerText = canSpin ? "¡GIRA AHORA!" : `${hours}h ${minutes}m`;
+  container.innerHTML = `<div style="position:relative; width:220px; margin:0 auto;"><div class="roulette-wheel" id="rouletteWheel"></div><div class="roulette-pointer"></div></div><div class="roulette-slots">${ROULETTE_SLOTS.map(slot => `<div class="roulette-slot">${slot.name}</div>`).join('')}</div><button class="roulette-btn ${canSpin ? '' : 'disabled'}" onclick="spinRoulette()">🎡 GIRAR RULETA 🎡<br><span style="font-size:0.6rem;">${timerText}</span></button>`;
 }
 function spinRoulette() {
   const lastSpin = S.lastRouletteSpin || 0;
@@ -804,36 +904,40 @@ function spinRoulette() {
     const prize = ROULETTE_SLOTS[Math.floor(Math.random() * ROULETTE_SLOTS.length)];
     S.coins += prize.coins; S.totalEarned += prize.coins; S.gems += prize.gems;
     S.lastRouletteSpin = Date.now();
-    save(); renderAll();
+    save();
+    renderAll();
     showPopup("🎰", "¡Ruleta!", `+${prize.coins}🪙 +${prize.gems}💎`);
     wheel.classList.remove("spinning");
     renderRoulette();
   }, 1500);
 }
 
-// Minijuegos
+// ========== MINIJUEGOS AVANZADOS ==========
+// 1. Secuencia de acordes (piano)
 const NOTES = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
 const NOTE_EMOJI = {Do:"🎵", Re:"🎶", Mi:"🎹", Fa:"🎵", Sol:"🎶", La:"🎹", Si:"🎵"};
-let chordSequence = [], chordPlayer = [], chordActive = false;
+let currentSequence = [], playerSequence = [], gameActive = false;
 function startChordGame() {
   if (!useToken()) return;
-  chordSequence = []; chordPlayer = []; chordActive = true;
+  currentSequence = []; playerSequence = [];
+  gameActive = true;
   nextChordRound();
 }
 function nextChordRound() {
-  chordSequence.push(NOTES[Math.floor(Math.random() * NOTES.length)]);
-  chordPlayer = [];
+  const newNote = NOTES[Math.floor(Math.random() * NOTES.length)];
+  currentSequence.push(newNote);
+  playerSequence = [];
   playChordSequence();
 }
 function playChordSequence() {
-  chordActive = false;
+  gameActive = false;
   let i = 0;
   function showNext() {
-    if (i >= chordSequence.length) { chordActive = true; return; }
-    const note = chordSequence[i];
+    if (i >= currentSequence.length) { gameActive = true; return; }
+    const note = currentSequence[i];
     const div = document.createElement("div");
     div.textContent = `${NOTE_EMOJI[note]} ${note}`;
-    div.style.cssText = `position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);background:#1e2338;padding:15px 25px;border-radius:60px;font-size:1.5rem;z-index:1000;border:2px solid #ffd966;animation:fadeOut 0.8s forwards;`;
+    div.style.cssText = `position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);background:#1a1e30;padding:15px 25px;border-radius:60px;font-size:1.8rem;font-weight:bold;z-index:1000;border:3px solid #ffd966;box-shadow:0 0 20px gold;animation:fadeOut 0.8s forwards;`;
     document.body.appendChild(div);
     setTimeout(() => div.remove(), 800);
     i++;
@@ -842,79 +946,131 @@ function playChordSequence() {
   showNext();
 }
 function chordClick(note) {
-  if (!chordActive) return;
-  chordPlayer.push(note);
-  const idx = chordPlayer.length-1;
-  if (chordPlayer[idx] !== chordSequence[idx]) {
+  if (!gameActive) return;
+  playerSequence.push(note);
+  const flash = document.createElement("div");
+  flash.textContent = `${NOTE_EMOJI[note]} ${note}`;
+  flash.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#ffd966;color:#000;padding:8px 20px;border-radius:40px;z-index:1001;font-weight:bold;animation:fadeOut 0.3s forwards;`;
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 300);
+  const idx = playerSequence.length - 1;
+  if (playerSequence[idx] !== currentSequence[idx]) {
     showToast("❌ Fallaste");
-    chordActive = false;
+    gameActive = false;
     setTimeout(() => startChordGame(), 1500);
     return;
   }
-  if (chordPlayer.length === chordSequence.length) {
-    const reward = 50 + chordSequence.length * 8;
-    const gems = 3 + Math.floor(chordSequence.length / 3);
+  if (playerSequence.length === currentSequence.length) {
+    const reward = 50 + currentSequence.length * 8;
+    const gems = 3 + Math.floor(currentSequence.length / 3);
     S.coins += reward; S.totalEarned += reward; addGems(gems);
     if (!S.missions.claimed.minigame) { S.missions.progress.minigame++; if (S.missions.progress.minigame >= 1) showToast("✨ Misión Jugón completada!"); save(); renderMissions(); }
     save(); renderAll();
     showPopup("🎹", "¡Secuencia correcta!", `+${reward}🪙 +${gems}💎`);
-    chordActive = false;
+    gameActive = false;
     setTimeout(() => nextChordRound(), 1500);
   }
 }
-let waveInterval = null, waveActive = false, waveVal = 0, waveDir = 1;
+// 2. Mezcla de pistas (onda de audio con canvas)
+let waveAnimationId = null;
+let wavePhase = 0;
+let waveActiveGame = false;
+let waveHitScore = 0;
+let waveTargetFrequency = 0.05;
 function startWaveGame() {
   if (!useToken()) return;
-  if (waveInterval) clearInterval(waveInterval);
-  waveActive = true;
-  waveVal = 0;
-  waveDir = 1;
+  if (waveAnimationId) cancelAnimationFrame(waveAnimationId);
+  waveActiveGame = true;
+  wavePhase = 0;
   const gameDiv = document.createElement("div");
-  gameDiv.id = "waveGame";
-  gameDiv.style.cssText = `position:fixed;bottom:30%;left:10%;width:80%;background:#1e2338;border-radius:40px;padding:20px;text-align:center;z-index:1000;border:2px solid #ffd966;`;
-  gameDiv.innerHTML = `<div style="font-family:'Orbitron';">🎛️ MEZCLA DE PISTAS 🎛️</div><div style="height:60px; width:100%; margin:15px 0; position:relative; background:#0a0e1a; border-radius:20px; overflow:hidden;"><div id="waveBar" style="position:absolute; bottom:0; left:0; width:10%; height:20px; background:linear-gradient(90deg,#ffd966,#ffaa33); border-radius:20px; transition:width 0.05s linear;"></div></div><div>🎯 ZONA DORADA (85-95%)</div><button id="waveHitBtn" style="margin:12px; background:#ffd966; border:none; padding:8px 30px; border-radius:40px;">🔊 APRETAR</button><button onclick="document.getElementById('waveGame').remove(); waveActive=false; clearInterval(waveInterval);" style="background:#2a2f4a; border:none; padding:5px 20px; border-radius:40px;">Cerrar</button>`;
+  gameDiv.id = "waveGameContainer";
+  gameDiv.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:350px;background:#1e2338;border-radius:40px;padding:20px;z-index:1000;border:2px solid #ffd966;box-shadow:0 0 30px black;`;
+  gameDiv.innerHTML = `<div style="text-align:center; font-family:'Orbitron'; margin-bottom:12px;">🔊 MEZCLA DE PISTAS (Onda de Audio)</div>
+                       <canvas id="waveCanvas" width="300" height="120" style="width:100%; height:auto; background:#0a0e1a; border-radius:20px;"></canvas>
+                       <div style="text-align:center; margin:12px 0;">🎯 Toca cuando la onda esté en su punto más alto (pico)</div>
+                       <div style="display:flex; justify-content:center; gap:12px;">
+                         <button id="waveHitBtn" style="background:#ffd966; border:none; padding:8px 20px; border-radius:40px;">🔊 APRETAR</button>
+                         <button id="waveCloseBtn" style="background:#2a2f4a; border:none; padding:8px 20px; border-radius:40px;">Cerrar</button>
+                       </div>`;
   document.body.appendChild(gameDiv);
-  const waveBar = document.getElementById("waveBar");
-  waveInterval = setInterval(() => {
-    if (!waveActive) return;
-    waveVal += waveDir * 3.2;
-    if (waveVal >= 100) { waveVal = 100; waveDir = -1; }
-    if (waveVal <= 0) { waveVal = 0; waveDir = 1; }
-    waveBar.style.width = waveVal + "%";
-  }, 40);
+  const canvas = document.getElementById("waveCanvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = 300; canvas.height = 120;
+  let time = 0;
+  function drawWave() {
+    if (!waveActiveGame) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    for (let x = 0; x <= canvas.width; x++) {
+      let y = canvas.height/2 + Math.sin(x * 0.05 + time) * 30 + Math.sin(x * 0.12 + time*1.5) * 10;
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = "#ffd966";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    // Dibujar zona dorada (picos)
+    ctx.beginPath();
+    for (let x = 0; x <= canvas.width; x++) {
+      let y = canvas.height/2 + Math.sin(x * 0.05 + time) * 30 + Math.sin(x * 0.12 + time*1.5) * 10;
+      if (Math.abs(y - canvas.height/2) > 28) {
+        ctx.fillStyle = "rgba(255,217,102,0.3)";
+        ctx.fillRect(x-2, y-5, 4, 10);
+      }
+    }
+    time += 0.1;
+    waveAnimationId = requestAnimationFrame(drawWave);
+  }
+  drawWave();
   document.getElementById("waveHitBtn").onclick = () => {
-    if (!waveActive) return;
-    let diff = Math.abs(waveVal - 90);
+    if (!waveActiveGame) return;
+    let currentAmp = Math.sin(Date.now() * 0.01) * 30 + Math.sin(Date.now() * 0.025) * 10;
+    let absAmp = Math.abs(currentAmp);
     let reward = 0, gems = 0;
-    if (diff <= 5) { reward = 100; gems = 5; showToast("✨ ¡PERFECTO! +100🪙 +5💎"); }
-    else if (diff <= 12) { reward = 60; gems = 3; showToast("👍 Muy bien +60🪙 +3💎"); }
-    else if (diff <= 25) { reward = 30; gems = 1; showToast("✔️ Bien +30🪙 +1💎"); }
-    else { showToast("❌ Fallaste"); cleanupWave(); return; }
+    if (absAmp > 28) { reward = 100; gems = 5; showToast("✨ ¡PICO PERFECTO! +100🪙 +5💎"); }
+    else if (absAmp > 22) { reward = 60; gems = 3; showToast("👍 Muy cerca +60🪙 +3💎"); }
+    else if (absAmp > 15) { reward = 30; gems = 1; showToast("✔️ Aceptable +30🪙 +1💎"); }
+    else { showToast("❌ Fallaste, prueba en el pico de la onda"); return; }
     S.coins += reward; S.totalEarned += reward; addGems(gems);
     if (!S.missions.claimed.minigame) { S.missions.progress.minigame++; if (S.missions.progress.minigame >= 1) showToast("✨ Misión Jugón completada!"); save(); renderMissions(); }
     save(); renderAll();
-    cleanupWave();
+    cleanupWaveGame();
   };
+  document.getElementById("waveCloseBtn").onclick = () => cleanupWaveGame();
 }
-function cleanupWave() {
-  waveActive = false;
-  if (waveInterval) clearInterval(waveInterval);
-  const wd = document.getElementById("waveGame");
-  if (wd) wd.remove();
+function cleanupWaveGame() {
+  waveActiveGame = false;
+  if (waveAnimationId) cancelAnimationFrame(waveAnimationId);
+  const div = document.getElementById("waveGameContainer");
+  if (div) div.remove();
 }
 function renderGamesList() {
-  const container = document.getElementById("gamesContainer");
-  container.innerHTML = `<div style="background:#0f1322; margin:8px 16px; padding:16px; border-radius:32px;"><div style="font-family:'Orbitron'; text-align:center;">🎹 SECUENCIA DE ACORDES 🎹</div><div class="piano-keys" id="pianoKeys"></div><button class="collect-btn" style="margin-top:12px;" onclick="startChordGame()">🎵 JUGAR SECUENCIA</button></div><div style="background:#0f1322; margin:8px 16px; padding:16px; border-radius:32px;"><div style="font-family:'Orbitron'; text-align:center;">🔊 MEZCLA DE PISTAS 🔊</div><div style="text-align:center; margin:12px;">Toca en la zona dorada (85-95%)</div><button class="collect-btn" onclick="startWaveGame()">🎚️ COMENZAR MEZCLA</button></div>`;
+  let container = document.getElementById("gamesContainer");
+  container.innerHTML = `
+    <div style="background:#0f1322; margin:8px 16px; padding:12px; border-radius:40px;">
+      <div style="font-family:'Orbitron'; text-align:center; margin-bottom:12px;">🎹 SECUENCIA DE ACORDES 🎹</div>
+      <div class="piano-keys" id="pianoKeys"></div>
+      <button class="collect-btn" style="margin-top:12px;" onclick="startChordGame()">🎵 JUGAR SECUENCIA</button>
+    </div>
+    <div style="background:#0f1322; margin:8px 16px; padding:12px; border-radius:40px;">
+      <div style="font-family:'Orbitron'; text-align:center; margin-bottom:12px;">🔊 MEZCLA DE PISTAS (Onda de Audio)</div>
+      <div style="text-align:center;">Toca cuando la onda alcance su punto más alto (pico)</div>
+      <button class="collect-btn" style="margin-top:12px;" onclick="startWaveGame()">🎚️ COMENZAR MEZCLA</button>
+    </div>
+  `;
   const pianoDiv = document.getElementById("pianoKeys");
-  NOTES.forEach(n => {
-    const b = document.createElement("button");
-    b.textContent = `${NOTE_EMOJI[n]} ${n}`;
-    b.className = "piano-key";
-    b.onclick = () => chordClick(n);
-    pianoDiv.appendChild(b);
-  });
+  if (pianoDiv) {
+    NOTES.forEach(note => {
+      const btn = document.createElement("button");
+      btn.textContent = `${NOTE_EMOJI[note]} ${note}`;
+      btn.className = "piano-key";
+      btn.onclick = () => chordClick(note);
+      pianoDiv.appendChild(btn);
+    });
+  }
 }
-// Render principal
+
+// ========== RENDER GENERAL ==========
 function renderAll() {
   document.getElementById("coinsDisplay").innerText = formatNum(S.coins);
   document.getElementById("gemsDisplay").innerText = formatNum(S.gems);
@@ -925,13 +1081,22 @@ function renderAll() {
   document.getElementById("bigRateDisplay").innerHTML = formatNum(calcRate());
   document.getElementById("pendingDisplay").innerHTML = formatNum(pendingCoins());
   updateTokenDisplay();
-  renderModulesSlider(); renderMissions(); renderRewards(); renderStreak(); renderStats(); renderAchievements(); renderInvite(); renderGamesList();
-  renderChest(); renderRoulette();
+  renderModulesSlider();
+  renderMissions();
+  renderRewards();
+  renderStreak();
+  renderStats();
+  renderAchievements();
+  renderInvite();
+  renderGamesList();
+  renderChest();
+  renderRoulette();
   document.getElementById("boostLevelText").innerHTML = `Nivel ${S.boostLevel} (${S.boostLevel===0?"+0%":S.boostLevel===1?"+50%":S.boostLevel===2?"+100%":"+200%"})`;
-  const nextCost = [0,500,1500,4000][S.boostLevel+1]||0;
-  document.getElementById("boostBtn").innerHTML = S.boostLevel>=3 ? "MAX" : `Mejorar (${nextCost}🪙)`;
-  const rem = S.boostLastUpgrade ? (12*60*60*1000 - (Date.now()-S.boostLastUpgrade)) : 0;
-  document.getElementById("boostCooldown").innerHTML = (rem>0 && S.boostLevel<3) ? `⏳ ${Math.ceil(rem/3600000)}h` : "";
+  document.getElementById("boostBtn").innerHTML = S.boostLevel >= 3 ? "MAX" : `Mejorar (${BOOST_COSTS[S.boostLevel+1]}🪙)`;
+  document.getElementById("boostBtn").onclick = buyBoostUpgrade;
+  document.getElementById("tokenBtn").onclick = buyTokensIncremental;
+  const remaining = S.boostLastUpgrade ? (12*60*60*1000 - (Date.now() - S.boostLastUpgrade)) : 0;
+  document.getElementById("boostCooldown").innerHTML = (remaining > 0 && S.boostLevel < 3) ? `⏳ ${Math.ceil(remaining/3600000)}h` : "";
   document.getElementById("tokenCostText").innerHTML = `Costo: ${getTokenCost()} 💎`;
 }
 function renderModulesSlider() {
@@ -975,29 +1140,35 @@ function renderStreak() {
 function renderStats() { let grid = document.getElementById("statsGrid"); grid.innerHTML = `<div class="stat-card"><div>🪙 TOTAL</div><div class="stat-number">${formatNum(S.totalEarned)}</div></div><div class="stat-card"><div>💎 GEMAS</div><div class="stat-number">${formatNum(S.gems)}</div></div><div class="stat-card"><div>⚡ PRODUCCIÓN</div><div class="stat-number">${formatNum(calcRate())}/h</div></div><div class="stat-card"><div>🔥 RACHA</div><div class="stat-number">${S.streak} días</div></div><div class="stat-card"><div>🏆 MEJOR RACHA</div><div class="stat-number">${S.bestStreak} días</div></div><div class="stat-card"><div>🎚️ MEJORAS</div><div class="stat-number">${S.totalPurchases}</div></div><div class="stat-card"><div>📅 DÍAS</div><div class="stat-number">${S.daysPlayed}</div></div><div class="stat-card"><div>👤 CÓDIGO</div><div class="stat-number">${S.referralCode}</div></div>`; }
 function renderAchievements() { let container = document.getElementById("achievementsContainer"); container.innerHTML = EXTERNAL_ACHIEVEMENTS.map(ach => { let claimed = S.externalAchievements[ach.id]; return `<div class="achievement-card"><div><div style="font-weight:bold;">${ach.icon} ${ach.name} ${claimed ? '✓' : ''}</div><div>${ach.desc}</div><div>💰+${ach.rewardCoins} 💎+${ach.rewardGems}</div></div>${!claimed ? `<button class="shop-buy can-buy" onclick="claimExternalAchievement('${ach.id}','${ach.url}')">VISITAR</button>` : '<button class="shop-buy cant-buy">✓</button>'}</div>`; }).join(""); }
 function renderInvite() {
-  const bot = "MkeyzStudioBot";
-  const link = `https://t.me/${bot}?start=ref_${S.referralCode}`;
-  document.getElementById("inviteContainer").innerHTML = `<div class="invite-card" style="flex-direction:column;"><div style="font-weight:800;">🎫 CÓDIGO EXCLUSIVO</div><div style="background:#00000055; padding:6px; border-radius:60px; cursor:pointer; text-align:center;" onclick="navigator.clipboard.writeText('${link}');showToast('Link copiado')">${S.referralCode}<br><span style="font-size:0.55rem;">🔗 Toca para copiar</span></div><div style="margin-top:8px;">✨ Al invitar, ambos ganan +30💎<br>${S.referredBy ? `✅ Invitado por ${S.referredBy} +30💎` : '💎 Gemas = futuro token'}</div><div class="social-links"><a href="https://t.me/MkeyzStudioBot" class="social-btn">📱 Telegram</a><a href="https://twitter.com/JeffMkeyzx" class="social-btn">🐦 X</a><a href="https://www.youtube.com/@JeffMkeyz" class="social-btn">📺 YouTube</a><a href="https://open.spotify.com/artist/1PTk2yExL9jgOUPYEjWF1E" class="social-btn">🎵 Spotify</a><a href="https://www.tiktok.com/@JeffMkeyz" class="social-btn">📱 TikTok</a></div></div>`;
+  const botUsername = "MkeyzStudioBot";
+  const link = `https://t.me/${botUsername}?start=ref_${S.referralCode}`;
+  document.getElementById("inviteContainer").innerHTML = `<div class="invite-card" style="flex-direction:column;"><div style="font-weight:800;">🎫 CÓDIGO EXCLUSIVO</div><div style="background:#00000055; padding:6px; border-radius:60px; cursor:pointer;" onclick="navigator.clipboard.writeText('${link}');showToast('Link copiado')">${S.referralCode}<br><span style="font-size:0.55rem;">🔗 Toca para copiar</span></div><div style="margin-top:8px; font-size:0.65rem;">✨ Al invitar, ambos ganan +30💎<br>${S.referredBy ? `<span style="color:#ffd966;">✅ Invitado por ${S.referredBy} +30💎</span>` : '💎 Gemas = futuro token'}</div><div class="social-links"><a href="https://t.me/MkeyzStudioBot" class="social-btn">📱 Telegram</a><a href="https://twitter.com/JeffMkeyzx" class="social-btn">🐦 X</a><a href="https://www.youtube.com/@JeffMkeyz" class="social-btn">📺 YouTube</a><a href="https://open.spotify.com/artist/1PTk2yExL9jgOUPYEjWF1E" class="social-btn">🎵 Spotify</a><a href="https://www.tiktok.com/@JeffMkeyz" class="social-btn">📱 TikTok</a><a href="https://www.instagram.com/jeffmkeyz" class="social-btn">📸 Instagram</a></div></div>`;
 }
-function startTick() {
-  setInterval(() => {
-    let pending = pendingCoins();
-    let btn = document.getElementById("collectBtn");
-    if(pending>0) btn.innerHTML = "✨ RECOGER +"+formatNum(pending)+" 🪙 ✨";
-    else btn.innerHTML = "🎵 Generando...";
-    let live = S.coins + Math.floor((calcRate()/3600000)*Math.min(Date.now()-S.lastCollect,8*3600000));
-    document.getElementById("coinsDisplay").innerText = formatNum(live);
-    document.getElementById("pendingDisplay").innerText = formatNum(pending);
-  }, 500);
-}
+function startTick() { setInterval(() => { let pending = pendingCoins(); let btn = document.getElementById("collectBtn"); if(pending>0) btn.innerHTML = "✨ RECOGER +"+formatNum(pending)+" 🪙 ✨"; else btn.innerHTML = "🎵 Generando..."; let live = S.coins + Math.floor((calcRate()/3600000)*Math.min(Date.now()-S.lastCollect,8*3600000)); document.getElementById("coinsDisplay").innerText = formatNum(live); document.getElementById("pendingDisplay").innerText = formatNum(pending); }, 500); }
 function showPopup(emoji, title, desc) { document.getElementById("popEmoji").innerHTML = emoji; document.getElementById("popTitle").innerHTML = title; document.getElementById("popDesc").innerHTML = desc; document.getElementById("popup").style.display = "flex"; }
-function showLevelUp() { showPopup("🚀✨🎉", "¡NIVEL "+S.level+"!", "Nuevos módulos disponibles"); for(let i=0;i<20;i++){ let c=document.createElement("div"); c.textContent="🎉"; c.style.cssText=`position:fixed;left:${Math.random()*innerWidth}px;top:30%;font-size:1.5rem;pointer-events:none;z-index:999;animation:floatUp 0.8s forwards`; document.body.appendChild(c); setTimeout(()=>c.remove(),1500); } }
+function showLevelUp() {
+  showPopup("🚀✨🎉", "¡NIVEL "+S.level+"!", "Nuevos módulos disponibles");
+  for(let i=0;i<30;i++){
+    let conf = document.createElement("div");
+    conf.textContent = Math.random() > 0.5 ? "🎉" : "✨";
+    conf.className = "floating-emoji";
+    conf.style.left = Math.random() * window.innerWidth + "px";
+    conf.style.top = "30%";
+    conf.style.fontSize = "1.5rem";
+    document.body.appendChild(conf);
+    setTimeout(() => conf.remove(), 1500);
+  }
+}
 function closePopup() { document.getElementById("popup").style.display = "none"; }
 function showToast(msg) { let t=document.getElementById("toast"); t.innerText=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2000); }
-function showTab(tabName) { cleanupWave(); chordActive=false; document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active")); document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add("active"); document.getElementById("tab-missions").style.display = tabName==="missions" ? "block" : "none"; document.getElementById("tab-games").style.display = tabName==="games" ? "block" : "none"; document.getElementById("tab-achievements").style.display = tabName==="achievements" ? "block" : "none"; document.getElementById("tab-invite").style.display = tabName==="invite" ? "block" : "none"; document.getElementById("tab-stats").style.display = tabName==="stats" ? "block" : "none"; if(tabName==="games") renderGamesList(); if(tabName==="stats") renderStats(); if(tabName==="achievements") renderAchievements(); }
-window.collect = collect; window.claimMission = claimMission; window.claimStreak = claimStreak; window.startChordGame = startChordGame; window.startWaveGame = startWaveGame; window.chordClick = chordClick; window.upgradeModule = upgradeModule; window.showTab = showTab; window.closePopup = closePopup; window.claimExternalAchievement = claimExternalAchievement; window.openChest = openChest; window.spinRoulette = spinRoulette; window.buyBoostUpgrade = buyBoostUpgrade; window.buyTokensIncremental = buyTokensIncremental;
-document.getElementById("collectBtn").onclick = collect; document.getElementById("boostBtn").onclick = buyBoostUpgrade; document.getElementById("tokenBtn").onclick = buyTokensIncremental;
-document.querySelectorAll(".tab").forEach(t => t.onclick = () => showTab(t.getAttribute("data-tab")));
+function showTab(tabName) { cleanupWaveGame(); document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active")); document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add("active"); ["missions","games","achievements","invite","stats"].forEach(t=>document.getElementById(`tab-${t}`).style.display=t===tabName?"block":"none"); if(tabName==="games") renderGamesList(); if(tabName==="stats") renderStats(); if(tabName==="achievements") renderAchievements(); }
+window.collect = collect; window.claimMission = claimMission; window.claimStreak = claimStreak;
+window.startChordGame = startChordGame; window.startWaveGame = startWaveGame; window.chordClick = chordClick;
+window.upgradeModule = upgradeModule; window.showTab = showTab; window.closePopup = closePopup;
+window.claimExternalAchievement = claimExternalAchievement; window.openChest = openChest; window.spinRoulette = spinRoulette;
+window.buyBoostUpgrade = buyBoostUpgrade; window.buyTokensIncremental = buyTokensIncremental;
+document.getElementById("collectBtn").onclick = collect;
+document.querySelectorAll(".tab").forEach(tab => { tab.onclick = () => showTab(tab.getAttribute("data-tab")); });
 load();
 </script>
 </body>
