@@ -928,9 +928,13 @@ function shareText() {
 
   const text =
 `🖥️ VPS SIMULATOR
-⚡${res.cpu}vCPU · 💾${formatRAM(res.ram)} · 💿${formatDisk(res.storage)} · 🌐${usage.bandwidth_gb||0}GB/mes
-📊 ${profiles.length}/${cap.maxProfiles} perfiles (CPU ${usage.cpu}% · RAM ${usage.ram}%)
-${platLines ? platLines + '\n' : ''}💰 ~$${Math.round(cheapest ? cheapest.price + profiles.length*1.5 : profiles.length*1.5)}/mes · $${cheapest ? ((cheapest.price + profiles.length*1.5)/Math.max(profiles.length,1)).toFixed(2) : '—'}/perfil
+
+⚡ ${res.cpu} vCPU · 💾 ${formatRAM(res.ram)} · 💿 ${formatDisk(res.storage)}
+🌐 ${usage.bandwidth_gb||0}GB/mes · CPU ${usage.cpu}% · RAM ${usage.ram}%
+
+📊 ${profiles.length}/${cap.maxProfiles} perfiles
+${platLines}
+💰 ~$${Math.round(cheapest ? cheapest.price + profiles.length*1.5 : profiles.length*1.5)}/mes · $${cheapest ? ((cheapest.price + profiles.length*1.5)/Math.max(profiles.length,1)).toFixed(2) : '—'}/perfil
 ━━━━━━━━━━━━━━━━━━
 VPS Simulator`;
 
