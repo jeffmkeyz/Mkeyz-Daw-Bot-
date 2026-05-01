@@ -905,6 +905,13 @@ function shareText() {
     ? vpsState.profiles.filter(p => p.status === 'active')
     : vpsState.profiles;
   const plats = vpsState.platforms || {};
+  const res   = vpsState.resources;
+  const cap   = vpsState.capacity;
+  const usage = vpsState.usage;
+
+  // Find cheapest fitting VPS plan
+  const fitting  = QUICK_VPS.filter(v => v.maxP >= profiles.length);
+  const cheapest = fitting.length ? fitting.reduce((a,b) => a.price < b.price ? a : b) : null;
 
   // Group by platform
   const byPlat = {};
@@ -916,31 +923,16 @@ function shareText() {
 
   const platLines = Object.entries(byPlat).map(([key, ps]) => {
     const plat = plats[key] || { icon: '🖥️', name: key };
-    return `  ${plat.icon} ${plat.name}: ${ps.length} perfil${ps.length !== 1 ? 'es' : ''}`;
-  }).join('\n');
-
-  const res = vpsState.resources;
-  const cap = vpsState.capacity;
-  const usage = vpsState.usage;
+    return `${plat.icon} ${plat.name} ×${ps.length}`;
+  }).join(' · ');
 
   const text =
-`🖥️ VPS SIMULATOR — Config
+`🖥️ VPS SIMULATOR
+⚡${res.cpu}vCPU · 💾${formatRAM(res.ram)} · 💿${formatDisk(res.storage)} · 🌐${usage.bandwidth_gb||0}GB/mes
+📊 ${profiles.length}/${cap.maxProfiles} perfiles (CPU ${usage.cpu}% · RAM ${usage.ram}%)
+${platLines ? platLines + '\n' : ''}💰 ~$${Math.round(cheapest ? cheapest.price + profiles.length*1.5 : profiles.length*1.5)}/mes · $${cheapest ? ((cheapest.price + profiles.length*1.5)/Math.max(profiles.length,1)).toFixed(2) : '—'}/perfil
 ━━━━━━━━━━━━━━━━━━
-⚡ CPU: ${res.cpu} vCPU (uso ${usage.cpu}%)
-💾 RAM: ${formatRAM(res.ram)} (uso ${usage.ram}%)
-💿 Disco: ${formatDisk(res.storage)} (uso ${usage.storage}%)
-🌐 BW est: ${usage.bandwidth_gb || 0}GB/mes
-
-📊 Perfiles: ${profiles.length}/${cap.maxProfiles}
-${platLines}
-
-🔧 Navegadores:
-${[...new Set(profiles.map(p => p.browser))].map(b => `  · ${b}`).join('\n')}
-
-🖥️ Sistemas:
-${[...new Set(profiles.map(p => p.os))].map(o => `  · ${o}`).join('\n')}
-━━━━━━━━━━━━━━━━━━
-Generado con VPS Simulator`;
+VPS Simulator`;
 
   navigator.clipboard?.writeText(text)
     .then(() => {
