@@ -431,6 +431,58 @@ OS_LIST   = ["Windows 11","Windows 10","macOS 14","Ubuntu 22.04"]
 STATUSES  = ["idle","active","active","warming"]
 PROFILE_COST = {"cpu": 0.5, "ram": 512, "storage": 2}
 
+# ── Platform profiles ─────────────────────────────────────
+PLATFORMS = {
+    "youtube": {
+        "name": "YouTube", "icon": "▶️",
+        "cpu": 0.6, "ram": 700, "storage": 2, "bandwidth_gb": 15,
+        "proxy": "Residencial EU/US", "proxy_type": "res",
+        "geo": "Global", "risk": "bajo",
+        "browser": "Chrome 120", "os": "Windows 11",
+        "note": "Alta resolución — necesita proxy rápido"
+    },
+    "spotify": {
+        "name": "Spotify", "icon": "🎵",
+        "cpu": 0.3, "ram": 300, "storage": 2, "bandwidth_gb": 3,
+        "proxy": "Datacenter EU", "proxy_type": "dc",
+        "geo": "Global", "risk": "bajo",
+        "browser": "Chrome 120", "os": "Windows 10",
+        "note": "Bajo consumo — ideal para múltiples perfiles"
+    },
+    "apple_music": {
+        "name": "Apple Music", "icon": "🍎",
+        "cpu": 0.3, "ram": 350, "storage": 2, "bandwidth_gb": 4,
+        "proxy": "Datacenter US/EU", "proxy_type": "dc",
+        "geo": "Global", "risk": "bajo",
+        "browser": "Safari 17", "os": "macOS 14",
+        "note": "Mejor rendimiento con macOS + Safari"
+    },
+    "tidal": {
+        "name": "Tidal", "icon": "🌊",
+        "cpu": 0.4, "ram": 400, "storage": 3, "bandwidth_gb": 20,
+        "proxy": "Residencial EU/US", "proxy_type": "res",
+        "geo": "Global", "risk": "medio",
+        "browser": "Chrome 120", "os": "Windows 11",
+        "note": "HiFi/Lossless — alto consumo de banda"
+    },
+    "pandora": {
+        "name": "Pandora", "icon": "📻",
+        "cpu": 0.3, "ram": 300, "storage": 2, "bandwidth_gb": 5,
+        "proxy": "Residencial US obligatorio", "proxy_type": "mob",
+        "geo": "US only", "risk": "alto",
+        "browser": "Chrome 120", "os": "Windows 10",
+        "note": "Geo-restringido US — proxy americano obligatorio"
+    },
+    "general": {
+        "name": "General", "icon": "🖥️",
+        "cpu": 0.5, "ram": 512, "storage": 2, "bandwidth_gb": 8,
+        "proxy": "Cualquiera", "proxy_type": "dc",
+        "geo": "Global", "risk": "bajo",
+        "browser": "Chrome 120", "os": "Windows 11",
+        "note": "Configuración estándar multipropósito"
+    }
+}
+
 def _is_authorized(tg_id):
     allowed = os.environ.get("VIP_IDS", "")
     ids = [x.strip() for x in allowed.replace(",", " ").split() if x.strip()]
@@ -457,11 +509,25 @@ def _ensure_vps_tables(cur):
             proxy       TEXT,
             status      TEXT    DEFAULT 'idle',
             fingerprint TEXT,
+            platform    TEXT    DEFAULT 'general',
             last_activity INTEGER,
             created_at  INTEGER
         )""")
+    # Migrate: add platform column if missing
+    try:
+        cur.execute("ALTER TABLE vps_profiles ADD COLUMN platform TEXT DEFAULT 'general'")
+    except Exception:
+        pass
 
-def _compute_capacity(cpu, ram, storage):
+def _compute_capacity(cpu, ram, storage, profiles=None):
+    # Use actual platform costs if profiles provided, else default
+    if profiles:
+        used_cpu = sum(PLATFORMS.get(p.get("platform","general"), PLATFORMS["general"])["cpu"] for p in profiles if p.get("status") != "idle")
+        used_ram = sum(PLATFORMS.get(p.get("platform","general"), PLATFORMS["general"])["ram"] for p in profiles)
+        used_storage = sum(PLATFORMS.get(p.get("platform","general"), PLATFORMS["general"])["storage"] for p in profiles)
+    else:
+        used_cpu = used_ram = used_storage = 0
+
     by_cpu     = int(cpu / PROFILE_COST["cpu"])
     by_ram     = int(ram / PROFILE_COST["ram"])
     by_storage = int(storage / PROFILE_COST["storage"])
@@ -470,15 +536,24 @@ def _compute_capacity(cpu, ram, storage):
         [("cpu", by_cpu), ("ram", by_ram), ("storage", by_storage)],
         key=lambda x: x[1]
     )[0]
-    return {"maxProfiles": max_p, "limits": {"byCPU": by_cpu, "byRAM": by_ram, "byStorage": by_storage}, "bottleneck": bottleneck}
+    return {
+        "maxProfiles": max_p,
+        "limits": {"byCPU": by_cpu, "byRAM": by_ram, "byStorage": by_storage},
+        "bottleneck": bottleneck
+    }
 
 def _usage(cpu, ram, storage, profiles):
-    active = sum(1 for p in profiles if p["status"] != "idle")
-    total  = len(profiles)
+    active = [p for p in profiles if p.get("status") != "idle"]
+    total  = profiles
+    used_cpu     = sum(PLATFORMS.get(p.get("platform","general"), PLATFORMS["general"])["cpu"] for p in active)
+    used_ram     = sum(PLATFORMS.get(p.get("platform","general"), PLATFORMS["general"])["ram"] for p in total)
+    used_storage = sum(PLATFORMS.get(p.get("platform","general"), PLATFORMS["general"])["storage"] for p in total)
+    used_bw      = sum(PLATFORMS.get(p.get("platform","general"), PLATFORMS["general"])["bandwidth_gb"] for p in total)
     return {
-        "cpu":     min(100, round(active * PROFILE_COST["cpu"] / cpu * 100)),
-        "ram":     min(100, round(active * PROFILE_COST["ram"] / ram * 100)),
-        "storage": min(100, round(total  * PROFILE_COST["storage"] / storage * 100))
+        "cpu":       min(100, round(used_cpu / cpu * 100)) if cpu > 0 else 0,
+        "ram":       min(100, round(used_ram / ram * 100)) if ram > 0 else 0,
+        "storage":   min(100, round(used_storage / storage * 100)) if storage > 0 else 0,
+        "bandwidth_gb": round(used_bw, 1)
     }
 
 def _gen_profile(tg_id, index):
@@ -521,7 +596,7 @@ def _fill_profiles(cur, tg_id, current_count, max_profiles):
 def _vps_response(cur, tg_id):
     vps      = _get_vps(cur, tg_id)
     profiles = _get_profiles(cur, tg_id)
-    capacity = _compute_capacity(vps["cpu"], vps["ram"], vps["storage"])
+    capacity = _compute_capacity(vps["cpu"], vps["ram"], vps["storage"], profiles)
     usage    = _usage(vps["cpu"], vps["ram"], vps["storage"], profiles)
     return {
         "name":      vps["vps_name"],
@@ -530,7 +605,8 @@ def _vps_response(cur, tg_id):
         "resources": {"cpu": vps["cpu"], "ram": vps["ram"], "storage": vps["storage"], "bandwidth": vps["bandwidth"]},
         "profiles":  profiles,
         "capacity":  capacity,
-        "usage":     usage
+        "usage":     usage,
+        "platforms": PLATFORMS
     }
 
 # ── Serve page ─────────────────────────────────────────────
@@ -625,31 +701,50 @@ def api_profile_status():
 # ── GET /api/vps/profile/suggest ─────────────────────────
 @app.route("/api/vps/profile/suggest")
 def api_profile_suggest():
-    tg_id = request.args.get("tg_id")
+    tg_id    = request.args.get("tg_id")
+    platform = request.args.get("platform", "general")
     if not tg_id or not _is_authorized(tg_id):
         return jsonify({"error": "unauthorized"}), 403
     tg_id = int(tg_id)
+    if platform not in PLATFORMS:
+        platform = "general"
+
     con = get_db(); cur = con.cursor()
     _ensure_vps_tables(cur); con.commit()
     cur.execute("SELECT COUNT(*) FROM vps_profiles WHERE tg_id=?", (tg_id,))
     count = cur.fetchone()[0]
     con.close()
+
+    plat = PLATFORMS[platform]
     suggestion = _gen_profile(tg_id, count)
     suggestion.pop("tg_id", None)
     suggestion.pop("created_at", None)
     suggestion.pop("last_activity", None)
-    suggestion["status"] = "idle"
-    suggestion["suggested_use"] = random.choice([
-        "Gestión de redes sociales","Scraping de datos",
-        "Afiliados y e-commerce","Testing y QA",
-        "Publicidad y ads","Automatización web"
-    ])
-    suggestion["risk_level"] = random.choice(["bajo","medio","bajo","bajo"])
-    suggestion["recommended_proxy"] = random.choice([
-        "Residencial EU · IPRoyal","Datacenter US · Proxy-Cheap",
-        "Residencial ES · Smartproxy","Móvil 4G · Soax"
-    ])
+    suggestion["status"]   = "idle"
+    suggestion["platform"] = platform
+
+    # Override config with platform-specific values
+    suggestion["browser"]  = plat.get("browser", suggestion["browser"])
+    suggestion["os"]       = plat.get("os", suggestion["os"])
+    suggestion["recommended_proxy"]  = plat["proxy"]
+    suggestion["proxy_type"]         = plat["proxy_type"]
+    suggestion["risk_level"]         = plat["risk"]
+    suggestion["suggested_use"]      = plat["note"]
+    suggestion["bandwidth_gb"]       = plat["bandwidth_gb"]
+    suggestion["platform_name"]      = plat["name"]
+    suggestion["platform_icon"]      = plat["icon"]
+    suggestion["cpu_cost"]           = plat["cpu"]
+    suggestion["ram_cost"]           = plat["ram"]
+
     return jsonify(suggestion)
+
+# ── GET /api/vps/platforms ────────────────────────────────
+@app.route("/api/vps/platforms")
+def api_vps_platforms():
+    tg_id = request.args.get("tg_id")
+    if not tg_id or not _is_authorized(tg_id):
+        return jsonify({"error": "unauthorized"}), 403
+    return jsonify(PLATFORMS)
 
 # ── POST /api/vps/profile/add ─────────────────────────────
 @app.route("/api/vps/profile/add", methods=["POST"])
@@ -677,12 +772,13 @@ def api_profile_add():
         "proxy":         data.get("proxy", f"{random.randint(10,200)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(0,255)}"),
         "status":        "idle",
         "fingerprint":   data.get("fingerprint", _uuid.uuid4().hex[:16].upper()),
+        "platform":      data.get("platform", "general"),
         "last_activity": now,
         "created_at":    now
     }
     cur.execute("""
-        INSERT INTO vps_profiles (id,tg_id,name,browser,os,proxy,status,fingerprint,last_activity,created_at)
-        VALUES (:id,:tg_id,:name,:browser,:os,:proxy,:status,:fingerprint,:last_activity,:created_at)
+        INSERT INTO vps_profiles (id,tg_id,name,browser,os,proxy,status,fingerprint,platform,last_activity,created_at)
+        VALUES (:id,:tg_id,:name,:browser,:os,:proxy,:status,:fingerprint,:platform,:last_activity,:created_at)
     """, profile)
     con.commit()
     result = _vps_response(cur, tg_id)
