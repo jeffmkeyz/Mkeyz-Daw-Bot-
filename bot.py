@@ -44,11 +44,11 @@ PLAN_FREE   = "free"
 PLAN_PRO    = "pro"
 PLAN_STUDIO = "studio"
 
-PLAN_PRICES = {PLAN_PRO: 50, PLAN_STUDIO: 150}
+PLAN_PRICES = {PLAN_PRO: 1500, PLAN_STUDIO: 5000}
 PLAN_LABELS = {
     PLAN_FREE:   "🆓 Free",
-    PLAN_PRO:    "⭐ Pro — 300 Stars/mes",
-    PLAN_STUDIO: "🎛️ Studio — 750 Stars/mes",
+    PLAN_PRO:    "⭐ Pro — 1,500 Stars/mes",
+    PLAN_STUDIO: "🎛️ Studio — 5,000 Stars/mes",
 }
 
 PLAN_PERMS = {
@@ -146,6 +146,11 @@ async def award_mkeyz(tg_id: int, action: str):
     except: pass
 
 # ── Utilities ─────────────────────────────────────────────
+
+def game_reward_url(action: str) -> str:
+    """Build the game URL with a reward action parameter."""
+    base = GAME_URL.rstrip("/") + "/game2" if GAME_URL else ""
+    return f"{base}?reward={action}" if base else ""
 
 async def delete_after(msg, seconds: int = 10):
     """Delete a message after N seconds silently."""
@@ -712,14 +717,14 @@ def kb_upgrade(required_plan):
     """Keyboard showing ONLY the required plan — no other options."""
     if required_plan == PLAN_PRO:
         return InlineKeyboardMarkup([
-            [InlineKeyboardButton("⭐ Pro — 300 Stars/mes (~$4)",    callback_data="buy_pro")],
-            [InlineKeyboardButton("⭐ Pro — 3,000 Stars/año 🔥",     callback_data="buy_pro_year")],
+            [InlineKeyboardButton("⭐ Pro — 1,500 Stars/mes (~$20)",    callback_data="buy_pro")],
+            [InlineKeyboardButton("⭐ Pro — 15,000 Stars/año 🔥",     callback_data="buy_pro_year")],
             [InlineKeyboardButton("← Menú principal",               callback_data="sec_main")],
         ])
     else:
         return InlineKeyboardMarkup([
-            [InlineKeyboardButton("🎛️ Studio — 750 Stars/mes (~$10)", callback_data="buy_studio")],
-            [InlineKeyboardButton("🎛️ Studio — 7,500 Stars/año 🔥",   callback_data="buy_studio_year")],
+            [InlineKeyboardButton("🎛️ Studio — 5,000 Stars/mes (~$65)", callback_data="buy_studio")],
+            [InlineKeyboardButton("🎛️ Studio — 50,000 Stars/año 🔥",   callback_data="buy_studio_year")],
             [InlineKeyboardButton("← Menú principal",                callback_data="sec_main")],
         ])
 
@@ -729,11 +734,11 @@ async def ask_upgrade(query, required_plan):
 
     if required_plan == PLAN_PRO:
         plan_name  = "Pro ⭐"
-        price_info = "300 Stars/mes · 3,000 Stars/año (2 meses gratis 🎁)"
+        price_info = "1,500 Stars/mes · 15,000 Stars/año (2 meses gratis 🎁)"
         tools      = PRO_TOOLS
     else:
         plan_name  = "Studio 🎛️"
-        price_info = "750 Stars/mes · 7,500 Stars/año (2 meses gratis 🎁)"
+        price_info = "5,000 Stars/mes · 50,000 Stars/año (2 meses gratis 🎁)"
         tools      = STUDIO_TOOLS
 
     text = (
@@ -835,10 +840,10 @@ def kb_back():
 
 def kb_planes():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("⭐ Pro — 300 Stars/mes (~$4)",          callback_data="buy_pro")],
-        [InlineKeyboardButton("⭐ Pro — 3,000 Stars/año (2 meses gratis)", callback_data="buy_pro_year")],
-        [InlineKeyboardButton("🎛️ Studio — 750 Stars/mes (~$10)",       callback_data="buy_studio")],
-        [InlineKeyboardButton("🎛️ Studio — 7,500 Stars/año (2 meses gratis)", callback_data="buy_studio_year")],
+        [InlineKeyboardButton("⭐ Pro — 1,500 Stars/mes (~$20)",          callback_data="buy_pro")],
+        [InlineKeyboardButton("⭐ Pro — 15,000 Stars/año (2 meses gratis)", callback_data="buy_pro_year")],
+        [InlineKeyboardButton("🎛️ Studio — 5,000 Stars/mes (~$65)",       callback_data="buy_studio")],
+        [InlineKeyboardButton("🎛️ Studio — 50,000 Stars/año (2 meses gratis)", callback_data="buy_studio_year")],
         [InlineKeyboardButton("← Menú principal",                      callback_data="sec_main")],
     ])
 
@@ -1094,8 +1099,8 @@ async def cmd_planes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     plan = db_get_plan(update.effective_user.id)
     await update.message.reply_text(
         f"💳 *Planes de Mkeyz Studio*\n\nTu plan actual: *{PLAN_LABELS.get(plan, plan)}*\n\n"
-        "⭐ *Pro — 300 Stars/mes (~$4)*\n🎛️ DAW · 📊 Analizador · 🧮 Calculadora\n\n"
-        "🎛️ *Studio — 750 Stars/mes (~$10)*\nTodo lo Pro + 🎤 Zona Artistas",
+        "⭐ *Pro — 1,500 Stars/mes (~$20)*\n🎛️ DAW · 📊 Analizador · 🧮 Calculadora\n\n"
+        "🎛️ *Studio — 5,000 Stars/mes (~$65)*\nTodo lo Pro + 🎤 Zona Artistas",
         parse_mode="Markdown", reply_markup=kb_planes())
 
 async def cmd_mipan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1319,6 +1324,22 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 ]))
         else:
             await edit(q, "🎬 No disponible.", kb_back())
+        return
+
+    # ── Compartir con recompensa ──────────────────────────────
+    if d == "sec_qr":
+        game_url   = (GAME_URL.rstrip("/") + "/qr") if GAME_URL else None
+        reward_url = game_reward_url("share")
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📲 Ver QR para compartir", web_app=WebAppInfo(url=game_url))] if game_url else [],
+            [InlineKeyboardButton("🎁 +50 MKEYZ por compartir", web_app=WebAppInfo(url=reward_url))] if reward_url else [],
+            [InlineKeyboardButton("← Jeff Mkeyz", callback_data="sub_info")],
+        ])
+        await edit(q,
+            "📲 *Comparte el bot y gana recompensas*\n\n"
+            "Cada vez que compartes recibes *+50 MKEYZ* 🎁\n"
+            "Estos coins te servirán cuando lancemos el token oficial.",
+            kb)
         return
 
     # ── QR Compartir ───────────────────────────────────────
@@ -1649,7 +1670,7 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         game_url = (GAME_URL.rstrip("/") + "/game2") if GAME_URL else None
         if game_url:
             await edit(q,
-                "🏗️ *Mkeyz Studio — The Game* BETA\n\n"
+                "🏗️ *Mkeyz Studio — The Game* \[BETA\]\n\n"
                 "Construye tu estudio desde cero y genera MKEYZ coins:\n\n"
                 "🎚️ Compra equipos — cada uno genera coins/hora\n"
                 "⬆️ Sube de nivel hasta 100\n"
@@ -1723,9 +1744,9 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await edit(q,
             f"💳 *Planes de Mkeyz Studio*\n\nTu plan: *{PLAN_LABELS.get(plan)}*\n\n"
             "🆓 *Free* — Menú público · Buscar canciones\n\n"
-            "⭐ *Pro — 300 Stars/mes (~$4)*\n"
+            "⭐ *Pro — 1,500 Stars/mes (~$20)*\n"
             "✅ Mini DAW completo\n✅ Analizador\n✅ Calculadora\n✅ Proyección\n\n"
-            "🎛️ *Studio — 750 Stars/mes (~$10)*\n"
+            "🎛️ *Studio — 5,000 Stars/mes (~$65)*\n"
             "✅ Todo lo Pro\n✅ Zona Artistas\n✅ Colabs · Showcases",
             kb_planes())
         return
@@ -2790,11 +2811,19 @@ async def on_payment(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     log.info(f"Pago: {tg_id} → {payload}")
     duration = "12 meses" if "year" in payload else "30 días"
+    reward_url = game_reward_url("purchase")
+    kb_pay = kb_main()
+    if reward_url:
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        kb_pay = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🎁 Reclamar +100 MKEYZ por tu compra", web_app=WebAppInfo(url=reward_url))],
+        ] + kb_main().inline_keyboard)
     await update.message.reply_text(
         f"✅ *¡Plan {plan_name} activado!*\n\n"
         f"Tienes acceso completo durante {duration} 🎛️\n\n"
-        f"¿Qué quieres explorar primero? 👇",
-        parse_mode="Markdown", reply_markup=kb_main())
+        f"🎁 *¡Recibes 100 MKEYZ como incentivo!*\n"
+        f"_Acumula coins para cuando lancemos el token oficial._",
+        parse_mode="Markdown", reply_markup=kb_pay)
 
 # ══════════════════════════════════════════════════════════
 #  MAIN
