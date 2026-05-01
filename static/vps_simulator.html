@@ -1295,7 +1295,50 @@ function renderQuick() {
       </div>
       <div style="font-size:9px;color:var(--text-dim);margin-top:6px">$${((cheapest.price + n*1.5)/n).toFixed(2)}/perfil/mes · con proxy datacenter</div>
     </div>` : ''}
+
+    <button onclick="applyQuickConfig(${n})" style="width:100%;padding:14px;background:var(--green);border:none;border-radius:var(--radius);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#000;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:4px;">
+      ⚡ Aplicar configuración para ${n} perfiles
+    </button>
   `;
+}
+
+async function applyQuickConfig(n) {
+  if (!vpsState) return;
+  const cur = vpsState.resources;
+
+  // Required minimums for n profiles
+  const needCPU     = Math.ceil(n * 0.5 * 2) / 2;  // round to 0.5
+  const needRAM     = n * 512;                        // MB
+  const needStorage = n * 2;                          // GB
+
+  const upgrades = [];
+  if (cur.cpu < needCPU)         upgrades.push({ type: 'cpu',     amount: needCPU - cur.cpu });
+  if (cur.ram < needRAM)         upgrades.push({ type: 'ram',     amount: needRAM - cur.ram });
+  if (cur.storage < needStorage) upgrades.push({ type: 'storage', amount: needStorage - cur.storage });
+
+  if (upgrades.length === 0) {
+    showToast(`✓ Tu VPS ya soporta ${n} perfiles`);
+    closeQuick();
+    return;
+  }
+
+  // Apply all needed upgrades sequentially
+  for (const upg of upgrades) {
+    try {
+      vpsState = await apiFetch('/api/vps/upgrade', {
+        method: 'POST',
+        body: JSON.stringify({ tg_id: TG_ID, type: upg.type, amount: upg.amount })
+      });
+    } catch(e) {
+      showToast('Error aplicando configuración');
+      return;
+    }
+  }
+
+  closeQuick();
+  render();
+  showToast(`✓ VPS configurado para ${n} perfiles`);
+  tg?.HapticFeedback?.notificationOccurred('success');
 }
 
 loadVPS();
