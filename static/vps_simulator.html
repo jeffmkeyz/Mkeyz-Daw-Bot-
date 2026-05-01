@@ -108,6 +108,53 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
 #loading { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; height:100vh; color:var(--text-dim); font-size:11px; }
 .spinner { width:28px; height:28px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg);} }
+/* ── Calculator Panel ── */
+.calc-panel { position:fixed; inset:0; z-index:600; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.2,0.64,1); overflow-y:auto; }
+.calc-panel.open { transform:translateY(0); }
+.calc-header { position:sticky; top:0; background:rgba(8,11,15,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:14px 16px; display:flex; align-items:center; gap:12px; z-index:10; }
+.calc-back { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.calc-back:active { border-color:var(--green); color:var(--green); }
+.calc-title { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:#fff; }
+.calc-body { padding:0 16px calc(32px + var(--safe-bottom)); flex:1; }
+.calc-section { margin-top:20px; }
+.calc-section-label { font-size:9px; font-weight:600; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; margin-bottom:10px; }
+.calc-profiles-display { background:linear-gradient(135deg,rgba(0,232,122,0.06),transparent); border:1px solid rgba(0,232,122,0.2); border-radius:var(--radius); padding:14px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.calc-profiles-num { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; color:var(--green); line-height:1; }
+.calc-profiles-label { font-size:10px; color:var(--text-mid); }
+.plan-cards { display:flex; flex-direction:column; gap:6px; }
+.plan-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
+.plan-card.selected { border-color:var(--green); background:var(--green-dim); }
+.plan-card.insufficient { opacity:0.4; pointer-events:none; }
+.plan-left { display:flex; flex-direction:column; gap:3px; }
+.plan-provider { font-size:9px; letter-spacing:1px; color:var(--text-dim); }
+.plan-name { font-size:12px; font-weight:600; color:#fff; }
+.plan-specs { font-size:9px; color:var(--text-mid); }
+.plan-right { display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+.plan-price { font-size:14px; font-weight:700; color:var(--green); }
+.plan-capacity { font-size:9px; color:var(--text-dim); }
+.plan-badge { font-size:8px; padding:2px 6px; border-radius:4px; background:rgba(0,232,122,0.15); color:var(--green); border:1px solid rgba(0,232,122,0.2); }
+.proxy-options { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.proxy-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px; cursor:pointer; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
+.proxy-card.selected { border-color:var(--blue); background:rgba(79,195,247,0.08); }
+.proxy-type { font-size:11px; font-weight:600; color:#fff; margin-bottom:4px; }
+.proxy-price { font-size:13px; font-weight:700; color:var(--blue); }
+.proxy-detail { font-size:9px; color:var(--text-dim); margin-top:2px; }
+.software-options { display:flex; flex-direction:column; gap:6px; }
+.software-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
+.software-card.selected { border-color:#b388ff; background:rgba(179,136,255,0.08); }
+.software-name { font-size:12px; font-weight:600; color:#fff; }
+.software-plan { font-size:9px; color:var(--text-dim); margin-top:2px; }
+.software-price { font-size:13px; font-weight:700; color:#b388ff; }
+.total-box { margin-top:20px; background:linear-gradient(135deg,rgba(0,232,122,0.08),rgba(0,0,0,0)); border:1px solid rgba(0,232,122,0.25); border-radius:var(--radius); padding:16px; }
+.total-rows { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.total-row { display:flex; justify-content:space-between; align-items:center; }
+.total-row-label { font-size:11px; color:var(--text-dim); }
+.total-row-value { font-size:11px; color:var(--text); font-weight:600; }
+.total-divider { height:1px; background:var(--border); margin:4px 0; }
+.total-final { display:flex; justify-content:space-between; align-items:center; }
+.total-final-label { font-size:13px; font-weight:600; color:#fff; }
+.total-final-value { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--green); }
+.total-note { font-size:9px; color:var(--text-dim); margin-top:8px; line-height:1.6; }
 </style>
 </head>
 <body>
@@ -121,6 +168,15 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- Calculator Panel -->
+<div class="calc-panel" id="calcPanel">
+  <div class="calc-header">
+    <button class="calc-back" onclick="closeCalc()">← Volver</button>
+    <div class="calc-title">💰 Coste Real</div>
+  </div>
+  <div class="calc-body" id="calcBody"></div>
+</div>
 
 <script>
 // ── Telegram Init ─────────────────────────────────────────
@@ -261,8 +317,8 @@ function render() {
   document.getElementById('app').innerHTML = `
     <div class="header">
       <div class="header-left">
-        <div class="vps-name">${name}</div>
-        <div class="vps-meta">EU-WEST (Madrid) · Ubuntu 22.04</div>
+        <div class="vps-name">${name.replace(/MKEYZ/g,'SIM')}</div>
+        <div class="vps-meta">EU-WEST (Madrid) · Ubuntu 22.04 · <span style="color:var(--green);opacity:0.7">v1.2.0</span></div>
       </div>
       <div class="status-pill"><div class="pulse"></div>ONLINE</div>
     </div>
@@ -321,11 +377,179 @@ function render() {
     <div class="profiles-list">${profilesHTML}</div>
     <div class="bottom-bar">
       <button class="btn-primary" onclick="openModal('cpu')">⬆ ESCALAR SERVIDOR</button>
+      <button class="btn-secondary" onclick="openCalc()" style="padding:13px 14px;color:var(--amber);border-color:var(--amber-dim)">💰</button>
       <button class="btn-secondary" onclick="resetVPS()">↺</button>
     </div>
   `;
   document.getElementById('loading').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
+}
+
+// ── Cost Calculator ───────────────────────────────────────
+const VPS_PLANS = [
+  // Hetzner (precios EUR, muy populares en EU)
+  { provider:'HETZNER', name:'CX22',  specs:'2 vCPU · 4GB · 40GB SSD',  price:4.35,  profiles:8,  currency:'€' },
+  { provider:'HETZNER', name:'CX32',  specs:'4 vCPU · 8GB · 80GB SSD',  price:8.56,  profiles:16, currency:'€' },
+  { provider:'HETZNER', name:'CX42',  specs:'8 vCPU · 16GB · 160GB SSD', price:17.37, profiles:32, currency:'€' },
+  { provider:'HETZNER', name:'CX52',  specs:'16 vCPU · 32GB · 320GB SSD',price:54.12, profiles:64, currency:'€' },
+  // Contabo (mejor precio/potencia EU)
+  { provider:'CONTABO', name:'VPS S', specs:'4 vCPU · 8GB · 100GB SSD',  price:6.99,  profiles:16, currency:'€' },
+  { provider:'CONTABO', name:'VPS M', specs:'6 vCPU · 16GB · 200GB SSD', price:14.99, profiles:32, currency:'€' },
+  { provider:'CONTABO', name:'VPS L', specs:'8 vCPU · 30GB · 400GB SSD', price:26.99, profiles:60, currency:'€' },
+  // DigitalOcean (USD, más conocido)
+  { provider:'DIGITALOCEAN', name:'Basic 4GB',   specs:'2 vCPU · 4GB · 80GB SSD',   price:24, profiles:8,  currency:'$' },
+  { provider:'DIGITALOCEAN', name:'General 8GB', specs:'4 vCPU · 8GB · 160GB SSD',  price:48, profiles:16, currency:'$' },
+  { provider:'DIGITALOCEAN', name:'General 16GB',specs:'8 vCPU · 16GB · 320GB SSD', price:96, profiles:32, currency:'$' },
+];
+
+const PROXY_OPTIONS = [
+  { id:'dc',    type:'Datacenter',   detail:'IPRoyal · Proxy-Cheap',      pricePerProfile:1.5,  note:'Rápido, detectable' },
+  { id:'res',   type:'Residencial',  detail:'IPRoyal · Smartproxy',       pricePerProfile:8,    note:'~2GB/perfil/mes' },
+  { id:'mob',   type:'Móvil 4G',     detail:'Proxidize · Soax',           pricePerProfile:25,   note:'Máxima confianza' },
+  { id:'none',  type:'Sin proxy',    detail:'IP directa del VPS',         pricePerProfile:0,    note:'Solo para pruebas' },
+];
+
+const SOFTWARE_OPTIONS = [
+  { name:'AdsPower',    plan:'Team 50',       profiles:50,  price:50,  currency:'$', note:'Mejor precio/perfil' },
+  { name:'AdsPower',    plan:'Team 100',      profiles:100, price:88,  currency:'$', note:'' },
+  { name:'Dolphin Anty',plan:'Base 100',      profiles:100, price:89,  currency:'$', note:'Muy popular' },
+  { name:'Dolphin Anty',plan:'Base 300',      profiles:300, price:159, currency:'$', note:'' },
+  { name:'GoLogin',     plan:'Professional',  profiles:100, price:49,  currency:'$', note:'Más barato' },
+  { name:'GoLogin',     plan:'Business',      profiles:300, price:99,  currency:'$', note:'' },
+  { name:'Sin software',plan:'Perfiles manuales', profiles:999, price:0, currency:'$', note:'Solo simulación' },
+];
+
+let calcState = { vpsIdx: null, proxyId: 'dc', softwareIdx: 0 };
+
+function openCalc() {
+  if (!vpsState) return;
+  const needed = vpsState.capacity.maxProfiles;
+  // Auto-select cheapest fitting VPS
+  const fitting = VPS_PLANS.filter(p => p.profiles >= needed);
+  if (fitting.length && calcState.vpsIdx === null) {
+    calcState.vpsIdx = VPS_PLANS.indexOf(fitting[0]);
+  }
+  // Auto-select cheapest fitting software
+  const fittingSw = SOFTWARE_OPTIONS.findIndex(s => s.profiles >= needed);
+  if (fittingSw >= 0 && calcState.softwareIdx === 0) calcState.softwareIdx = fittingSw;
+
+  renderCalc();
+  document.getElementById('calcPanel').classList.add('open');
+  tg?.HapticFeedback?.impactOccurred('light');
+}
+
+function closeCalc() {
+  document.getElementById('calcPanel').classList.remove('open');
+}
+
+function selectVPS(idx) { calcState.vpsIdx = idx; renderCalc(); tg?.HapticFeedback?.selectionChanged?.(); }
+function selectProxy(id) { calcState.proxyId = id; renderCalc(); tg?.HapticFeedback?.selectionChanged?.(); }
+function selectSoftware(idx) { calcState.softwareIdx = idx; renderCalc(); tg?.HapticFeedback?.selectionChanged?.(); }
+
+function renderCalc() {
+  const needed = vpsState?.capacity?.maxProfiles || 0;
+  const vps    = calcState.vpsIdx !== null ? VPS_PLANS[calcState.vpsIdx] : null;
+  const proxy  = PROXY_OPTIONS.find(p => p.id === calcState.proxyId);
+  const sw     = SOFTWARE_OPTIONS[calcState.softwareIdx];
+
+  const vpsPlansHTML = VPS_PLANS.map((p, i) => {
+    const fits = p.profiles >= needed;
+    const isBest = fits && VPS_PLANS.filter(x => x.profiles >= needed)[0] === p;
+    return `
+    <div class="plan-card ${calcState.vpsIdx===i?'selected':''} ${!fits?'insufficient':''}" onclick="selectVPS(${i})">
+      <div class="plan-left">
+        <div class="plan-provider">${p.provider}</div>
+        <div class="plan-name">${p.name}</div>
+        <div class="plan-specs">${p.specs}</div>
+      </div>
+      <div class="plan-right">
+        <div class="plan-price">${p.currency}${p.price}/mes</div>
+        <div class="plan-capacity">hasta ${p.profiles} perfiles</div>
+        ${isBest ? '<div class="plan-badge">✓ RECOMENDADO</div>' : ''}
+        ${!fits ? '<div style="font-size:8px;color:var(--red)">insuficiente</div>' : ''}
+      </div>
+    </div>`}).join('');
+
+  const proxyHTML = PROXY_OPTIONS.map(p => `
+    <div class="proxy-card ${calcState.proxyId===p.id?'selected':''}" onclick="selectProxy('${p.id}')">
+      <div class="proxy-type">${p.type}</div>
+      <div class="proxy-price">${p.pricePerProfile > 0 ? '$'+p.pricePerProfile+'/perfil' : 'Gratis'}</div>
+      <div class="proxy-detail">${p.detail}</div>
+      <div class="proxy-detail" style="margin-top:2px;font-style:italic">${p.note}</div>
+    </div>`).join('');
+
+  const softwareHTML = SOFTWARE_OPTIONS.map((s, i) => `
+    <div class="software-card ${calcState.softwareIdx===i?'selected':''} ${s.profiles < needed && s.price > 0 ? 'insufficient':''}" onclick="selectSoftware(${i})">
+      <div class="plan-left">
+        <div class="software-name">${s.name}</div>
+        <div class="software-plan">${s.plan} · hasta ${s.profiles} perfiles ${s.note?'· '+s.note:''}</div>
+      </div>
+      <div class="software-price">${s.price > 0 ? s.currency+s.price+'/mes' : 'Gratis'}</div>
+    </div>`).join('');
+
+  // Totals
+  const vpsCost    = vps ? vps.price : 0;
+  const proxyCost  = proxy ? proxy.pricePerProfile * needed : 0;
+  const swCost     = sw ? sw.price : 0;
+  const total      = vpsCost + proxyCost + swCost;
+  const perProfile = needed > 0 ? (total / needed).toFixed(2) : 0;
+
+  document.getElementById('calcBody').innerHTML = `
+    <div class="calc-section">
+      <div class="calc-section-label">// Perfiles a cubrir</div>
+      <div class="calc-profiles-display">
+        <div>
+          <div class="calc-profiles-num">${needed}</div>
+          <div class="calc-profiles-label">perfiles simultáneos</div>
+        </div>
+        <div style="text-align:right;font-size:10px;color:var(--text-dim)">
+          <div>CPU: ${vpsState.resources.cpu} vCPU</div>
+          <div>RAM: ${formatRAM(vpsState.resources.ram)}</div>
+          <div>Disco: ${formatDisk(vpsState.resources.storage)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="calc-section">
+      <div class="calc-section-label">// Servidor VPS</div>
+      <div class="plan-cards">${vpsPlansHTML}</div>
+    </div>
+
+    <div class="calc-section">
+      <div class="calc-section-label">// Tipo de Proxy</div>
+      <div class="proxy-options">${proxyHTML}</div>
+    </div>
+
+    <div class="calc-section">
+      <div class="calc-section-label">// Software Antidetect</div>
+      <div class="software-options">${softwareHTML}</div>
+    </div>
+
+    <div class="total-box">
+      <div class="total-rows">
+        <div class="total-row">
+          <span class="total-row-label">VPS (${vps ? vps.provider+' '+vps.name : 'no seleccionado'})</span>
+          <span class="total-row-value">${vps ? vps.currency+vpsCost.toFixed(2) : '—'}</span>
+        </div>
+        <div class="total-row">
+          <span class="total-row-label">Proxies ${proxy?.type} (×${needed})</span>
+          <span class="total-row-value">${proxyCost > 0 ? '$'+proxyCost.toFixed(2) : 'Gratis'}</span>
+        </div>
+        <div class="total-row">
+          <span class="total-row-label">Software (${sw?.name})</span>
+          <span class="total-row-value">${swCost > 0 ? sw.currency+swCost : 'Gratis'}</span>
+        </div>
+        <div class="total-divider"></div>
+        <div class="total-final">
+          <span class="total-final-label">TOTAL / MES</span>
+          <span class="total-final-value">~$${total.toFixed(0)}</span>
+        </div>
+      </div>
+      <div class="total-note">
+        💡 $${perProfile}/perfil/mes · Los precios son estimados. Hetzner y Contabo en EUR (~1.08 USD). Proxies residenciales varían según consumo de GB.
+      </div>
+    </div>
+  `;
 }
 
 loadVPS();
