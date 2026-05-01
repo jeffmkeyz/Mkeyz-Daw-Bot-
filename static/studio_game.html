@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Mkeyz Studio — Compacto | Juego Musical</title>
+<title>Mkeyz Studio — Pulido | Juego Musical Élite</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 * {
@@ -15,8 +15,6 @@
 }
 
 :root {
-  --bg-dark: #0a0c16;
-  --card-bg: rgba(20, 25, 45, 0.85);
   --gold: #ffd966;
   --gold2: #ffb347;
   --purple: #c084fc;
@@ -28,13 +26,12 @@
 body {
   background: radial-gradient(circle at 10% 20%, #0f1222, #03050a);
   color: var(--text);
-  font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   min-height: 100vh;
   padding-bottom: 20px;
   overflow-x: hidden;
 }
 
-/* Fondo animado */
 #bg-canvas {
   position: fixed;
   inset: 0;
@@ -85,7 +82,11 @@ body {
   font-size: 0.7rem;
   border: 1px solid rgba(255, 200, 0, 0.5);
 }
-.coins-val, .gems-val { font-family: monospace; font-size: 0.85rem; font-weight: bold; }
+.coins-val, .gems-val {
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
 .coins-val { color: #ffd966; }
 .gems-val { color: #d8b4fe; }
 
@@ -185,6 +186,7 @@ body {
   box-shadow: 0 3px 0 #b57100;
   transform: translateY(-1px);
   cursor: pointer;
+  transition: 0.05s linear;
 }
 .collect-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #b57100; }
 .collect-btn.empty {
@@ -214,6 +216,7 @@ body {
   border-radius: 30px;
   font-weight: bold;
   font-size: 0.7rem;
+  cursor: pointer;
 }
 .rewards-grid {
   display: grid;
@@ -279,8 +282,11 @@ body {
   font-size: 0.65rem;
   font-weight: bold;
   border: none;
+  cursor: pointer;
 }
 .shop-buy.can-buy { background: linear-gradient(135deg, #ffd966, #ffaa33); color: #1e1a0a; }
+.shop-buy.cant-buy { background: #2d2f42; color: #aaa; cursor: not-allowed; }
+.shop-buy.maxed-btn { background: #4a4f70; color: #ccc; cursor: default; }
 
 /* Stats */
 .stat-row {
@@ -308,12 +314,12 @@ body {
   aspect-ratio: 1;
   border-radius: 16px;
   cursor: pointer;
+  transition: 0.05s linear;
 }
 .simon-btn[data-color="rojo"] { background: #ff4d4d; box-shadow: 0 0 10px red; }
 .simon-btn[data-color="azul"] { background: #4fc3f7; box-shadow: 0 0 10px #4fc3f7; }
 .simon-btn[data-color="verde"] { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
 .simon-btn[data-color="amarillo"] { background: #ffd966; box-shadow: 0 0 10px gold; }
-
 .timing-game {
   padding: 12px;
   text-align: center;
@@ -339,9 +345,8 @@ body {
   border: none;
   font-weight: bold;
   margin-top: 8px;
+  cursor: pointer;
 }
-
-/* Popups y toasts */
 .popup-overlay {
   position: fixed;
   inset: 0;
@@ -375,8 +380,6 @@ body {
   transition: 0.3s;
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
-
-/* Animaciones */
 .coin-float, .gem-float {
   position: fixed;
   pointer-events: none;
@@ -460,22 +463,22 @@ const tg = window.Telegram?.WebApp;
 if(tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#05070c"); tg.setBackgroundColor("#05070c"); }
 let USER_ID = tg?.initDataUnsafe?.user?.id || localStorage.getItem("mkeyz_uid") || "g_"+Math.random().toString(36).slice(2,8);
 if(!tg?.initDataUnsafe?.user?.id) localStorage.setItem("mkeyz_uid", USER_ID);
-const SAVE_KEY = "mkeyz_compact_"+USER_ID;
+const SAVE_KEY = "mkeyz_final_"+USER_ID;
 
 // --------------------------------------------------------------
-// EQUIPMENT
+// DATOS DEL JUEGO
 // --------------------------------------------------------------
 const EQUIPMENT = [
-  { id:"laptop",     emoji:"💻", name:"Laptop",            baseRate:5,    cost:0,      maxLevel:5, xpGain:10,  unlockLevel:1 },
-  { id:"headphones", emoji:"🎧", name:"Auriculares",       baseRate:8,    cost:40,     maxLevel:5, xpGain:15,  unlockLevel:1 },
-  { id:"mic",        emoji:"🎙️", name:"Micrófono",         baseRate:12,   cost:120,    maxLevel:5, xpGain:20,  unlockLevel:2 },
-  { id:"keyboard",   emoji:"🎹", name:"Teclado MIDI",      baseRate:18,   cost:300,    maxLevel:5, xpGain:25,  unlockLevel:3 },
-  { id:"drums",      emoji:"🥁", name:"Drum Machine",      baseRate:25,   cost:600,    maxLevel:5, xpGain:30,  unlockLevel:5 },
-  { id:"bass",       emoji:"🎸", name:"Bajo",              baseRate:35,   cost:1200,   maxLevel:5, xpGain:35,  unlockLevel:7 },
-  { id:"monitors",   emoji:"🔊", name:"Monitores",         baseRate:50,   cost:2500,   maxLevel:5, xpGain:40,  unlockLevel:10 },
-  { id:"synth",      emoji:"🎛️", name:"Sintetizador",      baseRate:70,   cost:5000,   maxLevel:5, xpGain:50,  unlockLevel:12 },
-  { id:"audio_int",  emoji:"🎚️", name:"Audio Interface",   baseRate:100,  cost:9000,   maxLevel:5, xpGain:60,  unlockLevel:15 },
-  { id:"console",    emoji:"🖥️", name:"Consola",           baseRate:140,  cost:18000,  maxLevel:5, xpGain:75,  unlockLevel:20 }
+  { id:"laptop",     emoji:"💻", name:"Laptop",        baseRate:5,    cost:0,      maxLevel:5, xpGain:10,  unlockLevel:1 },
+  { id:"headphones", emoji:"🎧", name:"Auriculares",   baseRate:8,    cost:40,     maxLevel:5, xpGain:15,  unlockLevel:1 },
+  { id:"mic",        emoji:"🎙️", name:"Micrófono",     baseRate:12,   cost:120,    maxLevel:5, xpGain:20,  unlockLevel:2 },
+  { id:"keyboard",   emoji:"🎹", name:"Teclado MIDI",  baseRate:18,   cost:300,    maxLevel:5, xpGain:25,  unlockLevel:3 },
+  { id:"drums",      emoji:"🥁", name:"Drum Machine",  baseRate:25,   cost:600,    maxLevel:5, xpGain:30,  unlockLevel:5 },
+  { id:"bass",       emoji:"🎸", name:"Bajo",          baseRate:35,   cost:1200,   maxLevel:5, xpGain:35,  unlockLevel:7 },
+  { id:"monitors",   emoji:"🔊", name:"Monitores",     baseRate:50,   cost:2500,   maxLevel:5, xpGain:40,  unlockLevel:10 },
+  { id:"synth",      emoji:"🎛️", name:"Sintetizador",  baseRate:70,   cost:5000,   maxLevel:5, xpGain:50,  unlockLevel:12 },
+  { id:"audio_int",  emoji:"🎚️", name:"Audio Int",     baseRate:100,  cost:9000,   maxLevel:5, xpGain:60,  unlockLevel:15 },
+  { id:"console",    emoji:"🖥️", name:"Consola",       baseRate:140,  cost:18000,  maxLevel:5, xpGain:75,  unlockLevel:20 }
 ];
 
 const DAILY_REWARDS = [
@@ -499,6 +502,7 @@ const MILESTONES = [
   { id:"coins_10k",  icon:"💰", name:"10,000 MKEYZ",     desc:"Acumula 10,000 coins",          req: v=>v.totalEarned>=10000 },
   { id:"streak_7",   icon:"⚡", name:"Semana Completa",  desc:"7 días seguidos",               req: v=>v.bestStreak>=7 },
   { id:"lvl_10",     icon:"🚀", name:"Nivel 10",         desc:"Alcanza nivel 10",              req: v=>v.level>=10 },
+  { id:"all_5",      icon:"🎛️", name:"5 Equipos",        desc:"Compra 5 equipos distintos",    req: v=>Object.keys(v.owned).length>=5 }
 ];
 
 // --------------------------------------------------------------
@@ -517,17 +521,29 @@ let S = {
 function loadState() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if(raw) { let p = JSON.parse(raw); Object.assign(S, p); if(!S.missions) S.missions={}; if(!S.miniGamesLimits) S.miniGamesLimits={}; }
-    else { S.lastCollect = Date.now() - 3600000; S.coins = 60; S.gems = 8; }
+    if(raw) {
+      let p = JSON.parse(raw);
+      Object.assign(S, p);
+      if(!S.missions) S.missions = {};
+      if(!S.miniGamesLimits) S.miniGamesLimits = {};
+    } else {
+      S.lastCollect = Date.now() - 3600000;
+      S.coins = 60;
+      S.gems = 8;
+    }
   } catch(e) {}
   if(!S.referralCode) S.referralCode = USER_ID.slice(-6).toUpperCase();
-  const url = new URLSearchParams(window.location.search);
-  const ref = url.get('start');
-  if(ref && ref.startsWith('ref_') && !S.referredBy) {
-    S.referredBy = ref.slice(4);
+  
+  // Procesar invitación por URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const refStart = urlParams.get('start');
+  if(refStart && refStart.startsWith('ref_') && !S.referredBy) {
+    S.referredBy = refStart.slice(4);
     S.gems += 30;
-    showToast(`🎉 Invitado +30💎`);
+    showToast(`🎉 Invitado por ${S.referredBy} +30💎`);
+    saveState();
   }
+  
   S.coinsPerHour = calcRate();
   checkDailyReset();
   renderAll();
@@ -535,62 +551,204 @@ function loadState() {
 }
 function saveState() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch(e){} }
 
-function calcRate() { return EQUIPMENT.reduce((s,eq)=> s + ((S.owned[eq.id]||0) ? eq.baseRate * (1 + ((S.owned[eq.id]-1)*0.5)) : 0), 0); }
-function getPending() { let hrs = (Date.now() - S.lastCollect) / 3600000; return Math.floor(calcRate() * Math.min(hrs, 8)); }
-function addXP(am) { S.xp += am; let need = Math.floor(100 * Math.pow(1.15, S.level-1)); while(S.xp >= need && S.level < 100) { S.xp -= need; S.level++; need = Math.floor(100 * Math.pow(1.15, S.level-1)); showPopup("🚀","¡NIVEL "+S.level+"!","Nuevos equipos!"); } }
-function addGems(am) { if(am>0) { S.gems += am; floatGems(am); saveState(); renderStats(); } }
-function floatCoins(am){ let e=document.createElement("div"); e.className="coin-float"; e.textContent="+"+fmtNum(am)+" 🪙"; e.style.cssText="left:50%;top:42%"; document.body.appendChild(e); setTimeout(()=>e.remove(),1000); }
-function floatGems(am){ let e=document.createElement("div"); e.className="gem-float"; e.textContent="+"+am+" 💎"; e.style.cssText="left:50%;top:42%"; document.body.appendChild(e); setTimeout(()=>e.remove(),1000); }
-
-function collectCoins() {
-  let pending = getPending();
-  if(pending <= 0) { showToast("🎧 Aún no, vuelve pronto"); return; }
-  S.coins += pending; S.totalEarned += pending; S.lastCollect = Date.now();
-  addXP(Math.floor(pending/10));
-  trackMission("collect", 1);
-  let flash = document.createElement("div"); flash.className="collect-flash"; document.body.appendChild(flash); setTimeout(()=>flash.remove(),500);
-  floatCoins(pending);
-  saveState(); renderAll(); checkMilestones();
-  if(tg) tg.HapticFeedback?.notificationOccurred("success");
+function calcRate() {
+  return EQUIPMENT.reduce((sum, eq) => sum + ((S.owned[eq.id]||0) ? eq.baseRate * (1 + ((S.owned[eq.id]-1)*0.5)) : 0), 0);
+}
+function getPending() {
+  let hrs = (Date.now() - S.lastCollect) / 3600000;
+  return Math.floor(calcRate() * Math.min(hrs, 8));
+}
+function addXP(amount) {
+  S.xp += amount;
+  let need = Math.floor(100 * Math.pow(1.15, S.level-1));
+  while(S.xp >= need && S.level < 100) {
+    S.xp -= need;
+    S.level++;
+    need = Math.floor(100 * Math.pow(1.15, S.level-1));
+    showPopup("🚀","¡NIVEL "+S.level+"!","Nuevos equipos disponibles!");
+  }
+}
+function addGems(amount) {
+  if(amount>0) {
+    S.gems += amount;
+    floatGems(amount);
+    saveState();
+    renderStats();
+  }
+}
+function floatCoins(amount){
+  let e = document.createElement("div");
+  e.className = "coin-float";
+  e.textContent = "+"+fmtNum(amount)+" 🪙";
+  e.style.cssText = "left:50%;top:42%;transform:translateX(-50%)";
+  document.body.appendChild(e);
+  setTimeout(()=>e.remove(), 1000);
+}
+function floatGems(amount){
+  let e = document.createElement("div");
+  e.className = "gem-float";
+  e.textContent = "+"+amount+" 💎";
+  e.style.cssText = "left:50%;top:42%;transform:translateX(-50%)";
+  document.body.appendChild(e);
+  setTimeout(()=>e.remove(), 1000);
 }
 
+// --------------------------------------------------------------
+// RECOGER (PULIDO - SIN BLOQUEOS)
+// --------------------------------------------------------------
+function collectCoins() {
+  let pending = getPending();
+  if(pending <= 0) {
+    showToast("🎧 Aún no hay nada... Vuelve en unos minutos.");
+    if(tg) tg.HapticFeedback?.impactOccurred("light");
+    return;
+  }
+  
+  S.coins += pending;
+  S.totalEarned += pending;
+  S.lastCollect = Date.now();   // Resetea el contador
+  addXP(Math.floor(pending / 10));
+  trackMission("collect", 1);
+  
+  // Efectos visuales
+  let flash = document.createElement("div");
+  flash.className = "collect-flash";
+  document.body.appendChild(flash);
+  setTimeout(()=>flash.remove(), 500);
+  floatCoins(pending);
+  
+  // Animación del contador
+  let el = document.getElementById("coins-display");
+  el.style.transform = "scale(1.2)";
+  setTimeout(()=>el.style.transform = "scale(1)", 200);
+  
+  saveState();
+  renderAll();          // Actualiza toda la interfaz
+  checkMilestones();
+  
+  if(tg) tg.HapticFeedback?.notificationOccurred("success");
+  showToast(`✨ +${fmtNum(pending)} MKEYZ!`);
+}
+
+// --------------------------------------------------------------
+// COMPRAR EQUIPO
+// --------------------------------------------------------------
 function buyEquipment(id) {
-  let eq = EQUIPMENT.find(e=>e.id===id); let lvl = S.owned[eq.id]||0;
-  if(lvl >= eq.maxLevel) { showToast("Nivel máximo"); return; }
-  if(S.level < eq.unlockLevel) { showToast("🔒 Nivel "+eq.unlockLevel); return; }
+  let eq = EQUIPMENT.find(e=>e.id===id);
+  let lvl = S.owned[eq.id] || 0;
+  if(lvl >= eq.maxLevel) { showToast("Nivel máximo ⭐"); return; }
+  if(S.level < eq.unlockLevel) { showToast("🔒 Nivel "+eq.unlockLevel+" requerido"); return; }
   let cost = Math.floor(eq.cost * Math.pow(1.8, lvl));
-  if(S.coins < cost) { showToast("🪙 Insuficiente"); return; }
-  S.coins -= cost; S.owned[eq.id] = lvl+1; S.totalPurchases++;
-  S.coinsPerHour = calcRate(); addXP(eq.xpGain);
-  if(lvl===0) showPopup(eq.emoji, "¡"+eq.name+"!", "+"+eq.baseRate+" 🪙/h");
-  saveState(); renderAll(); checkMilestones();
+  if(S.coins < cost) { showToast("🪙 Monedas insuficientes"); return; }
+  
+  S.coins -= cost;
+  S.owned[eq.id] = lvl + 1;
+  S.totalPurchases++;
+  S.coinsPerHour = calcRate();
+  addXP(eq.xpGain);
+  
+  if(lvl === 0) showPopup(eq.emoji, "¡"+eq.name+"!", "+"+eq.baseRate+" 🪙/hora");
+  else showToast(eq.emoji+" Nivel "+(lvl+1)+" activado");
+  
+  saveState();
+  renderAll();
+  checkMilestones();
   trackMission("upgrade", 1);
   if(tg) tg.HapticFeedback?.impactOccurred("medium");
 }
 
 // --------------------------------------------------------------
-// MISIONES
+// MISIONES DIARIAS
 // --------------------------------------------------------------
 function resetDailyMissions() {
   let today = new Date().toDateString();
-  if(S.missions.date !== today) { S.missions = { date: today, progress: { collect:0, upgrade:0, minigame:0 }, claimed: { collect:false, upgrade:false, minigame:false } }; saveState(); }
+  if(S.missions.date !== today) {
+    S.missions = { date: today, progress: { collect:0, upgrade:0, minigame:0 }, claimed: { collect:false, upgrade:false, minigame:false } };
+    saveState();
+  }
 }
 function trackMission(id, inc=1) {
   resetDailyMissions();
-  if(!S.missions.claimed[id]) { S.missions.progress[id] = (S.missions.progress[id]||0)+inc; if(S.missions.progress[id] >= MISSIONS_LIST.find(m=>m.id===id).target) showToast("✨ Misión completada!"); saveState(); renderMissions(); }
+  if(!S.missions.claimed[id]) {
+    S.missions.progress[id] = (S.missions.progress[id]||0) + inc;
+    let m = MISSIONS_LIST.find(m=>m.id===id);
+    if(S.missions.progress[id] >= m.target) {
+      showToast("✨ Misión completada: "+m.name+" ¡Reclama!");
+    }
+    saveState();
+    renderMissions();
+  }
 }
 function claimMission(id) {
-  resetDailyMissions(); if(S.missions.claimed[id]) return;
+  resetDailyMissions();
+  if(S.missions.claimed[id]) return;
   let m = MISSIONS_LIST.find(m=>m.id===id);
-  if(S.missions.progress[id] >= m.target) { S.coins += m.rewardCoins; S.totalEarned += m.rewardCoins; addXP(m.rewardXP); addGems(m.rewardGems); S.missions.claimed[id]=true; saveState(); renderAll(); showToast(`✅ +${m.rewardCoins}🪙 +${m.rewardGems}💎`); }
+  if(S.missions.progress[id] >= m.target) {
+    S.coins += m.rewardCoins;
+    S.totalEarned += m.rewardCoins;
+    addXP(m.rewardXP);
+    addGems(m.rewardGems);
+    S.missions.claimed[id] = true;
+    saveState();
+    renderAll();
+    showToast(`✅ +${m.rewardCoins}🪙 +${m.rewardGems}💎`);
+  }
 }
 
 // --------------------------------------------------------------
-// JUEGOS (Simón y Timing)
+// RECOMPENSAS DIARIAS Y RACHA
+// --------------------------------------------------------------
+function checkDailyReset() {
+  let today = new Date().toDateString();
+  if(S.lastLogin !== today) {
+    let yesterday = new Date(Date.now()-86400000).toDateString();
+    S.streak = (S.lastLogin === yesterday) ? S.streak+1 : 1;
+    S.bestStreak = Math.max(S.bestStreak, S.streak);
+    S.lastLogin = today;
+    S.daysPlayed++;
+    S.streakClaimedToday = false;
+    S.dailyRewards = {};
+    saveState();
+  }
+}
+function claimStreak() {
+  if(S.streakClaimedToday) { showToast("Ya reclamaste hoy"); return; }
+  let mult = Math.min(S.streak, 30);
+  let bonus = Math.floor(calcRate() * mult);
+  S.coins += bonus;
+  S.totalEarned += bonus;
+  S.streakClaimedToday = true;
+  addGems(Math.floor(mult/3)+2);
+  floatCoins(bonus);
+  saveState();
+  renderAll();
+  showToast(`🔥 +${fmtNum(bonus)}🪙 +${Math.floor(mult/3)+2}💎 por racha x${mult}`);
+  if(tg) tg.HapticFeedback?.notificationOccurred("success");
+}
+function claimDailyReward(r, card) {
+  let today = new Date().toDateString();
+  if(S.dailyRewards[r.id] === today) return;
+  S.dailyRewards[r.id] = today;
+  S.coins += r.coins;
+  S.totalEarned += r.coins;
+  addXP(r.xp);
+  addGems(r.gems);
+  floatCoins(r.coins);
+  if(r.gems) floatGems(r.gems);
+  card.innerHTML = `<div class="reward-emoji">${r.emoji}</div><div class="reward-label">${r.label}</div><div class="reward-coins">✅</div>`;
+  saveState();
+  renderAll();
+  showToast(`${r.emoji} +${r.coins}🪙 +${r.gems}💎`);
+}
+
+// --------------------------------------------------------------
+// JUEGOS (SIMÓN Y TIMING)
 // --------------------------------------------------------------
 let simonSequence = [], simonPlayer = [], simonActive = false;
 function startSimonGame() {
-  simonSequence = []; simonPlayer = []; simonActive = true;
+  simonSequence = [];
+  simonPlayer = [];
+  simonActive = true;
   nextSimonStep();
 }
 function nextSimonStep() {
@@ -603,10 +761,16 @@ function nextSimonStep() {
 function playSimonSequence() {
   let i = 0;
   function showNext() {
-    if(i >= simonSequence.length) { simonActive = true; return; }
+    if(i >= simonSequence.length) {
+      simonActive = true;
+      return;
+    }
     let color = simonSequence[i];
     let btn = document.querySelector(`.simon-btn[data-color="${color}"]`);
-    if(btn) { btn.classList.add("active"); setTimeout(()=>btn.classList.remove("active"), 250); }
+    if(btn) {
+      btn.classList.add("active");
+      setTimeout(()=>btn.classList.remove("active"), 250);
+    }
     i++;
     setTimeout(showNext, 500);
   }
@@ -614,13 +778,16 @@ function playSimonSequence() {
   showNext();
 }
 function simonClick(color) {
-  if(!simonActive) { showToast("¡Espera!"); return; }
+  if(!simonActive) { showToast("¡Espera tu turno!"); return; }
   simonPlayer.push(color);
   let btn = document.querySelector(`.simon-btn[data-color="${color}"]`);
-  if(btn) { btn.classList.add("active"); setTimeout(()=>btn.classList.remove("active"), 150); }
+  if(btn) {
+    btn.classList.add("active");
+    setTimeout(()=>btn.classList.remove("active"), 150);
+  }
   let idx = simonPlayer.length-1;
   if(simonPlayer[idx] !== simonSequence[idx]) {
-    showToast("❌ Fallaste");
+    showToast("❌ Fallaste... vuelve a intentarlo");
     simonActive = false;
     setTimeout(()=>startSimonGame(), 1500);
     return;
@@ -628,19 +795,24 @@ function simonClick(color) {
   if(simonPlayer.length === simonSequence.length) {
     simonActive = false;
     let reward = 30 + simonSequence.length * 3;
-    S.coins += reward; S.totalEarned += reward; addGems(2);
-    saveState(); renderAll(); showToast(`🎉 +${reward}🪙 +2💎`);
-    trackMission("minigame",1);
+    S.coins += reward;
+    S.totalEarned += reward;
+    addGems(2);
+    saveState();
+    renderAll();
+    showToast(`🎉 ¡Completaste la secuencia! +${reward}🪙 +2💎`);
+    trackMission("minigame", 1);
     setTimeout(()=>nextSimonStep(), 1000);
   }
 }
 
-let timingInterval, timingValue = 0, timingActive = false;
+let timingInterval = null, timingValue = 0, timingActive = false;
 function startTimingGame() {
-  timingActive = true; timingValue = 0;
+  if(timingInterval) clearInterval(timingInterval);
+  timingActive = true;
+  timingValue = 0;
   let bar = document.getElementById("timingFill");
   if(bar) bar.style.width = "10%";
-  if(timingInterval) clearInterval(timingInterval);
   timingInterval = setInterval(() => {
     if(!timingActive) return;
     timingValue = (timingValue + 2.5) % 100;
@@ -656,24 +828,43 @@ function hitTiming() {
   else if(diff <= 20) { reward = 35; gems = 1; showToast("👍 Perfecto +35🪙 +1💎"); }
   else if(diff <= 35) { reward = 15; gems = 0; showToast("✔️ Bien +15🪙"); }
   else { showToast("❌ Fallaste"); timingActive=false; clearInterval(timingInterval); return; }
-  S.coins += reward; S.totalEarned += reward; addGems(gems);
-  saveState(); renderAll(); trackMission("minigame",1);
-  timingActive=false; clearInterval(timingInterval);
+  S.coins += reward;
+  S.totalEarned += reward;
+  addGems(gems);
+  saveState();
+  renderAll();
+  trackMission("minigame", 1);
+  timingActive = false;
+  clearInterval(timingInterval);
 }
 
 // --------------------------------------------------------------
-// RENDER COMPLETO
+// RENDER COMPLETO (SIN UNDEFINED)
 // --------------------------------------------------------------
-function fmtNum(n){ n=Math.floor(n); if(n>=1e6) return (n/1e6).toFixed(1)+"M"; if(n>=1e3) return (n/1e3).toFixed(1)+"K"; return n.toString(); }
-function renderAll(){
+function fmtNum(n) {
+  n = Math.floor(n);
+  if(n >= 1e6) return (n/1e6).toFixed(1)+"M";
+  if(n >= 1e3) return (n/1e3).toFixed(1)+"K";
+  return n.toString();
+}
+function renderAll() {
   document.getElementById("coins-display").innerText = fmtNum(S.coins);
   document.getElementById("gems-display").innerText = fmtNum(S.gems);
   let need = Math.floor(100 * Math.pow(1.15, S.level-1));
-  document.getElementById("xp-fill").style.width = Math.min(100,(S.xp/need)*100)+"%";
+  let pct = Math.min(100, (S.xp/need)*100);
+  document.getElementById("xp-fill").style.width = pct+"%";
   document.getElementById("xp-text").innerHTML = fmtNum(S.xp)+"/"+fmtNum(need);
   document.getElementById("level-badge").innerHTML = "LVL "+S.level;
   document.getElementById("rate-display").innerHTML = fmtNum(calcRate());
-  renderRoom(); renderShop(); renderMissions(); renderMinigames(); renderRewards(); renderStreak(); renderStats(); renderMilestones(); renderInvite();
+  renderRoom();
+  renderShop();
+  renderMissions();
+  renderMinigames();
+  renderRewards();
+  renderStreak();
+  renderStats();
+  renderMilestones();
+  renderInvite();
 }
 function renderRoom() {
   let grid = document.getElementById("studio-grid");
@@ -684,58 +875,119 @@ function renderRoom() {
     let div = document.createElement("div");
     div.className = "studio-item" + (lvl>0 ? " owned" : locked ? " locked" : "");
     if(lvl>0) {
-      let r = document.createElement("div"); r.className = "item-rate";
+      let r = document.createElement("div");
+      r.className = "item-rate";
       r.innerText = "+"+fmtNum(Math.floor(eq.baseRate*(1+(lvl-1)*0.5)));
       div.appendChild(r);
     }
-    let em = document.createElement("div"); em.className = "item-emoji"; em.innerText = eq.emoji; div.appendChild(em);
-    let lbl = document.createElement("div"); lbl.className = "item-label"; lbl.innerText = eq.name.split(" ")[0]; div.appendChild(lbl);
+    let em = document.createElement("div");
+    em.className = "item-emoji";
+    em.innerText = eq.emoji;
+    div.appendChild(em);
+    let lbl = document.createElement("div");
+    lbl.className = "item-label";
+    lbl.innerText = eq.name.split(" ")[0];
+    div.appendChild(lbl);
     if(lvl>0) {
-      let l = document.createElement("div"); l.className = "item-lvl"; l.innerText = "Lv"+lvl; div.appendChild(l);
+      let l = document.createElement("div");
+      l.className = "item-lvl";
+      l.innerText = "Lv"+lvl;
+      div.appendChild(l);
     }
     grid.appendChild(div);
   });
 }
-function renderShop(){
+function renderShop() {
   let list = document.getElementById("shop-list");
   list.innerHTML = "";
   EQUIPMENT.forEach(eq => {
-    let lvl = S.owned[eq.id]||0; let locked = S.level<eq.unlockLevel; let maxed = lvl>=eq.maxLevel;
+    let lvl = S.owned[eq.id] || 0;
+    let locked = S.level < eq.unlockLevel;
+    let maxed = lvl >= eq.maxLevel;
     let cost = Math.floor(eq.cost * Math.pow(1.8, lvl));
-    let canBuy = !locked && !maxed && S.coins>=cost;
-    let rate = Math.floor(eq.baseRate*(1+lvl*0.5));
-    let btnClass = maxed?"maxed-btn":locked?"cant-buy":lvl>0?(canBuy?"upgrade":"cant-buy"):(canBuy?"can-buy":"cant-buy");
-    let btnText = maxed?"MAX":locked?"Lv"+eq.unlockLevel:fmtNum(cost);
-    let div = document.createElement("div"); div.className = "shop-item";
-    div.innerHTML = `<div class="shop-emoji">${eq.emoji}</div><div class="shop-info"><div class="shop-name">${eq.name}${lvl>0?" Lv"+lvl:""}</div><div class="shop-desc">${locked?`Nivel ${eq.unlockLevel}`:eq.desc}</div><div class="shop-rate">+${fmtNum(rate)}/h</div></div><button class="shop-buy ${btnClass}">${btnText}</button>`;
+    let canBuy = !locked && !maxed && S.coins >= cost;
+    let rate = Math.floor(eq.baseRate * (1 + lvl * 0.5));
+    let btnClass = maxed ? "maxed-btn" : locked ? "cant-buy" : lvl>0 ? (canBuy ? "upgrade" : "cant-buy") : (canBuy ? "can-buy" : "cant-buy");
+    let btnText = maxed ? "MAX" : locked ? "Lv"+eq.unlockLevel : fmtNum(cost);
+    let div = document.createElement("div");
+    div.className = "shop-item";
+    div.innerHTML = `<div class="shop-emoji">${eq.emoji}</div>
+                     <div class="shop-info">
+                       <div class="shop-name">${eq.name}${lvl>0 ? " Lv"+lvl : ""}</div>
+                       <div class="shop-desc">${locked ? `Nivel ${eq.unlockLevel}` : eq.desc}</div>
+                       <div class="shop-rate">+${fmtNum(rate)}/h</div>
+                     </div>
+                     <button class="shop-buy ${btnClass}">${btnText}</button>`;
     div.querySelector("button").onclick = () => buyEquipment(eq.id);
     list.appendChild(div);
   });
 }
-function renderMissions(){
+function renderMissions() {
   let cont = document.getElementById("missions-list");
   if(!cont) return;
   resetDailyMissions();
   cont.innerHTML = MISSIONS_LIST.map(m => {
-    let prog = S.missions.progress[m.id]||0; let claimed = S.missions.claimed[m.id];
-    let complete = prog>=m.target;
-    return `<div class="mission-item"><div class="mission-icon">${m.id==="collect"?"🪙":m.id==="upgrade"?"🔧":"🎮"}</div><div class="mission-info"><div class="mission-name">${m.name}</div><div class="mission-desc">${m.desc} (${prog}/${m.target})</div><div class="mission-progress">💰+${m.rewardCoins} ✨+${m.rewardXP} 💎+${m.rewardGems}</div></div>${!claimed&&complete?`<button class="shop-buy can-buy" onclick="claimMission('${m.id}')">RECLAMAR</button>`:claimed?`<button class="shop-buy maxed-btn" disabled>✓</button>`:`<button class="shop-buy cant-buy">🔒</button>`}</div>`;
+    let prog = S.missions.progress[m.id] || 0;
+    let claimed = S.missions.claimed[m.id];
+    let complete = prog >= m.target;
+    let icon = m.id==="collect" ? "🪙" : m.id==="upgrade" ? "🔧" : "🎮";
+    return `<div class="mission-item">
+              <div class="mission-icon">${icon}</div>
+              <div class="mission-info">
+                <div class="mission-name">${m.name}</div>
+                <div class="mission-desc">${m.desc} (${prog}/${m.target})</div>
+                <div class="mission-progress">💰+${m.rewardCoins} ✨+${m.rewardXP} 💎+${m.rewardGems}</div>
+              </div>
+              ${!claimed && complete ? `<button class="shop-buy can-buy" onclick="claimMission('${m.id}')">RECLAMAR</button>` : 
+                claimed ? `<button class="shop-buy maxed-btn" disabled>✓</button>` : 
+                `<button class="shop-buy cant-buy">🔒</button>`}
+             </div>`;
   }).join("");
 }
-function renderMinigames(){
+function renderMinigames() {
   let cont = document.getElementById("minigames-list");
   cont.innerHTML = `
-    <div class="minigame-card" onclick="startSimonGame();showPopup('🎛️','SIMÓN DICE','Memoriza la secuencia');"><div class="mission-icon">🔴🟡</div><div class="mission-info"><div class="mission-name">SIMÓN DICE</div><div class="mission-desc">Repite la secuencia de colores. Recompensa +🪙 y +💎</div></div></div>
-    <div class="minigame-card" onclick="startTimingGame();showPopup('🎚️','TIMING PERFECTO','Aprieta en la zona dorada (85%)');"><div class="mission-icon">⏱️</div><div class="mission-info"><div class="mission-name">TIMING PERFECTO</div><div class="mission-desc">Pulsa cuando la barra llegue al final dorado</div></div></div>
-    <div id="simonGameArea" style="display:none"><div class="simon-game"><div class="simon-grid"><div class="simon-btn" data-color="rojo" onclick="simonClick('rojo')"></div><div class="simon-btn" data-color="azul" onclick="simonClick('azul')"></div><div class="simon-btn" data-color="verde" onclick="simonClick('verde')"></div><div class="simon-btn" data-color="amarillo" onclick="simonClick('amarillo')"></div></div><button class="collect-btn" style="margin-top:8px" onclick="startSimonGame()">NUEVO JUEGO</button></div></div>
-    <div id="timingGameArea" style="display:none"><div class="timing-game"><div class="timing-bar"><div class="timing-fill" id="timingFill"></div></div><button class="timing-btn" onclick="hitTiming()">🎯 APRETAR</button><button class="collect-btn" style="margin-top:5px" onclick="startTimingGame()">REINICIAR</button></div></div>
+    <div class="minigame-card" onclick="startSimonGame();showPopup('🎛️','SIMÓN DICE','Memoriza la secuencia');">
+      <div class="mission-icon">🔴🟡</div>
+      <div class="mission-info">
+        <div class="mission-name">SIMÓN DICE</div>
+        <div class="mission-desc">Repite la secuencia de colores. +🪙 y +💎</div>
+      </div>
+    </div>
+    <div class="minigame-card" onclick="startTimingGame();showPopup('🎚️','TIMING PERFECTO','Aprieta en la zona dorada (85%)');">
+      <div class="mission-icon">⏱️</div>
+      <div class="mission-info">
+        <div class="mission-name">TIMING PERFECTO</div>
+        <div class="mission-desc">Pulsa cuando la barra llegue al final dorado</div>
+      </div>
+    </div>
+    <div id="simonGameArea" style="display:none">
+      <div class="simon-game">
+        <div class="simon-grid">
+          <div class="simon-btn" data-color="rojo" onclick="simonClick('rojo')"></div>
+          <div class="simon-btn" data-color="azul" onclick="simonClick('azul')"></div>
+          <div class="simon-btn" data-color="verde" onclick="simonClick('verde')"></div>
+          <div class="simon-btn" data-color="amarillo" onclick="simonClick('amarillo')"></div>
+        </div>
+        <button class="collect-btn" style="margin-top:8px" onclick="startSimonGame()">NUEVO JUEGO</button>
+      </div>
+    </div>
+    <div id="timingGameArea" style="display:none">
+      <div class="timing-game">
+        <div class="timing-bar"><div class="timing-fill" id="timingFill"></div></div>
+        <button class="timing-btn" onclick="hitTiming()">🎯 APRETAR</button>
+        <button class="collect-btn" style="margin-top:5px" onclick="startTimingGame()">REINICIAR</button>
+      </div>
+    </div>
   `;
   setTimeout(() => {
-    let s = document.getElementById("simonGameArea"); if(s) s.style.display = "block";
-    let t = document.getElementById("timingGameArea"); if(t) t.style.display = "block";
-  }, 100);
+    let s = document.getElementById("simonGameArea");
+    if(s) s.style.display = "block";
+    let t = document.getElementById("timingGameArea");
+    if(t) t.style.display = "block";
+  }, 50);
 }
-function renderRewards(){
+function renderRewards() {
   let grid = document.getElementById("rewards-grid");
   grid.innerHTML = "";
   let today = new Date().toDateString();
@@ -743,116 +995,166 @@ function renderRewards(){
     let claimed = S.dailyRewards[r.id] === today;
     let card = document.createElement("div");
     card.className = "reward-card " + (claimed ? "claimed" : "available");
-    card.innerHTML = `<div class="reward-emoji">${r.emoji}</div><div class="reward-label">${r.label}</div><div class="reward-coins">${claimed?"✅":"+"+r.coins+"🪙 +"+r.gems+"💎"}</div>`;
+    card.innerHTML = `<div class="reward-emoji">${r.emoji}</div>
+                      <div class="reward-label">${r.label}</div>
+                      <div class="reward-coins">${claimed ? "✅" : "+"+r.coins+"🪙 +"+r.gems+"💎"}</div>`;
     if(!claimed) card.onclick = () => claimDailyReward(r, card);
     grid.appendChild(card);
   });
 }
-function claimDailyReward(r, card) {
-  let today = new Date().toDateString();
-  if(S.dailyRewards[r.id] === today) return;
-  S.dailyRewards[r.id] = today;
-  S.coins += r.coins; S.totalEarned += r.coins; addXP(r.xp); addGems(r.gems);
-  floatCoins(r.coins); if(r.gems) floatGems(r.gems);
-  card.innerHTML = `<div class="reward-emoji">${r.emoji}</div><div class="reward-label">${r.label}</div><div class="reward-coins">✅</div>`;
-  saveState(); renderAll(); showToast(`+${r.coins}🪙 +${r.gems}💎`);
-}
-function renderStreak(){
-  document.getElementById("streak-icon").innerHTML = S.streak>0?"🔥":"💤";
-  document.getElementById("streak-title").innerHTML = S.streak>0?"Racha "+S.streak+" días":"Sin racha";
-  let mult = Math.min(S.streak,30);
+function renderStreak() {
+  document.getElementById("streak-icon").innerHTML = S.streak > 0 ? "🔥" : "💤";
+  document.getElementById("streak-title").innerHTML = S.streak > 0 ? "Racha "+S.streak+" días" : "Sin racha";
+  let mult = Math.min(S.streak, 30);
   let bonus = Math.floor(calcRate() * mult);
-  document.getElementById("streak-sub").innerHTML = S.streakClaimedToday?"✅ Reclamado hoy":S.streak>0?`Bonus: +${fmtNum(bonus)}🪙 +${Math.floor(mult/3)+1}💎 (×${mult})`:"Entra mañana";
+  document.getElementById("streak-sub").innerHTML = S.streakClaimedToday ? "✅ Reclamado hoy" : 
+    (S.streak > 0 ? `Bonus: +${fmtNum(bonus)}🪙 +${Math.floor(mult/3)+2}💎 (×${mult})` : "Entra mañana");
   document.getElementById("streak-btn").onclick = claimStreak;
 }
-function claimStreak(){
-  if(S.streakClaimedToday) { showToast("Ya reclamaste"); return; }
-  let mult = Math.min(S.streak,30);
-  let bonus = Math.floor(calcRate() * mult);
-  S.coins += bonus; S.totalEarned += bonus; S.streakClaimedToday = true;
-  addGems(Math.floor(mult/3)+2);
-  floatCoins(bonus);
-  saveState(); renderAll();
-  showToast(`🔥 +${fmtNum(bonus)}🪙 +${Math.floor(mult/3)+2}💎`);
-}
-function renderStats(){
+function renderStats() {
   let st = document.getElementById("stats-section");
-  st.innerHTML = `<div class="stat-row"><span>🪙 Total ganado</span><span class="s-val">${fmtNum(S.totalEarned)}</span></div>
-  <div class="stat-row"><span>💎 Gemas (futuro token)</span><span class="s-val">${fmtNum(S.gems)}</span></div>
-  <div class="stat-row"><span>⚡ Coins/hora</span><span class="s-val">${fmtNum(calcRate())}</span></div>
-  <div class="stat-row"><span>🔥 Racha actual</span><span class="s-val">${S.streak} días</span></div>
-  <div class="stat-row"><span>🏆 Mejor racha</span><span class="s-val">${S.bestStreak} días</span></div>
-  <div class="stat-row"><span>🎚️ Equipos comprados</span><span class="s-val">${S.totalPurchases}</span></div>
-  <div class="stat-row"><span>📅 Días jugando</span><span class="s-val">${S.daysPlayed}</span></div>
-  <div class="stat-row"><span>👤 ID Élite</span><span class="s-val">${S.referralCode}</span></div>`;
+  st.innerHTML = `
+    <div class="stat-row"><span>🪙 Total ganado</span><span class="s-val">${fmtNum(S.totalEarned)}</span></div>
+    <div class="stat-row"><span>💎 Gemas (futuro token)</span><span class="s-val">${fmtNum(S.gems)}</span></div>
+    <div class="stat-row"><span>⚡ Coins/hora</span><span class="s-val">${fmtNum(calcRate())}</span></div>
+    <div class="stat-row"><span>🔥 Racha actual</span><span class="s-val">${S.streak} días</span></div>
+    <div class="stat-row"><span>🏆 Mejor racha</span><span class="s-val">${S.bestStreak} días</span></div>
+    <div class="stat-row"><span>🎚️ Equipos comprados</span><span class="s-val">${S.totalPurchases}</span></div>
+    <div class="stat-row"><span>📅 Días jugando</span><span class="s-val">${S.daysPlayed}</span></div>
+    <div class="stat-row"><span>👤 ID Élite</span><span class="s-val">${S.referralCode || "—"}</span></div>
+  `;
 }
-function renderMilestones(){
+function renderMilestones() {
   let list = document.getElementById("ms-list");
   list.innerHTML = MILESTONES.map(m => {
     let reached = !!S.milestones[m.id];
-    return `<div class="ms-item${reached?" reached":""}"><div class="ms-icon">${m.icon}</div><div><div class="ms-name">${m.name}${reached?" ✓":""}</div><div class="ms-req">${m.desc}</div></div></div>`;
+    return `<div class="ms-item${reached ? " reached" : ""}">
+              <div class="ms-icon">${m.icon}</div>
+              <div><div class="ms-name">${m.name}${reached ? " ✓" : ""}</div><div class="ms-req">${m.desc}</div></div>
+            </div>`;
   }).join("");
 }
-function renderInvite(){
+function renderInvite() {
   let div = document.getElementById("invite-section");
-  let bot = tg?.initDataUnsafe?.user?.username ? `t.me/${tg.initDataUnsafe.user.username}` : "t.me/mkeyz_bot";
-  let link = `https://${bot}?start=ref_${S.referralCode}`;
-  div.innerHTML = `<div style="text-align:center"><span style="font-size:1.5rem;">🎫</span><div style="font-weight:bold;">CÓDIGO ÉLITE</div></div>
-  <div style="background:#00000066; padding:6px; border-radius:40px; text-align:center; font-size:0.7rem; cursor:pointer;" onclick="navigator.clipboard.writeText('${link}');showToast('Link copiado')">${S.referralCode}<br><span style="font-size:0.55rem;">🔗 toca para copiar</span></div>
-  <div style="margin-top:6px; background:#1a1e30; padding:8px; border-radius:16px; font-size:0.65rem;">✨ Cada amigo invitado te da 5% de sus ganancias en GEMS.<br>${S.referredBy ? `<span style="color:#ffd966;">✅ Invitado por ${S.referredBy} +30💎</span>` : '💎 Las gemas serán tokens exclusivos'}</div>`;
+  let botName = tg?.initDataUnsafe?.user?.username ? `t.me/${tg.initDataUnsafe.user.username}` : "t.me/mkeyz_bot";
+  let link = `https://${botName}?start=ref_${S.referralCode || USER_ID.slice(-6)}`;
+  div.innerHTML = `
+    <div style="text-align:center"><span style="font-size:1.5rem;">🎫</span><div style="font-weight:bold;">CÓDIGO ÉLITE</div></div>
+    <div style="background:#00000066; padding:6px; border-radius:40px; text-align:center; font-size:0.7rem; cursor:pointer;" onclick="navigator.clipboard.writeText('${link}');showToast('Link copiado')">
+      ${S.referralCode || USER_ID.slice(-6)}<br><span style="font-size:0.55rem;">🔗 toca para copiar</span>
+    </div>
+    <div style="margin-top:6px; background:#1a1e30; padding:8px; border-radius:16px; font-size:0.65rem;">
+      ✨ Cada amigo invitado te da 5% de sus ganancias en GEMS.<br>
+      ${S.referredBy ? `<span style="color:#ffd966;">✅ Invitado por ${S.referredBy} +30💎</span>` : '💎 Las gemas se convertirán en tokens exclusivos MKEYZ'}
+    </div>
+  `;
 }
-function checkMilestones(){
-  MILESTONES.forEach(m => { if(!S.milestones[m.id] && m.req(S)){ S.milestones[m.id]=true; saveState(); setTimeout(()=>showPopup(m.icon,m.name,m.desc),600); } });
+function checkMilestones() {
+  MILESTONES.forEach(m => {
+    if(!S.milestones[m.id] && m.req(S)) {
+      S.milestones[m.id] = true;
+      saveState();
+      setTimeout(() => showPopup(m.icon, m.name, m.desc), 600);
+    }
+  });
 }
 
-function checkDailyReset() {
-  let today = new Date().toDateString();
-  if(S.lastLogin !== today) {
-    let yest = new Date(Date.now()-86400000).toDateString();
-    S.streak = S.lastLogin===yest ? S.streak+1 : 1;
-    S.bestStreak = Math.max(S.bestStreak, S.streak);
-    S.lastLogin = today; S.daysPlayed++; S.streakClaimedToday = false; S.dailyRewards = {};
-    saveState();
-  }
-}
-function showPopup(e,t,d){ document.getElementById("pop-emoji").innerHTML=e; document.getElementById("pop-title").innerHTML=t; document.getElementById("pop-desc").innerHTML=d; document.getElementById("popup").classList.add("show"); }
-function closePopup(){ document.getElementById("popup").classList.remove("show"); }
-function showToast(msg){ let t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2000); }
-function startTick(){
-  setInterval(()=>{
+// --------------------------------------------------------------
+// TIEMPO REAL (CONTADOR VIVO)
+// --------------------------------------------------------------
+function startTick() {
+  setInterval(() => {
     let pending = getPending();
     let btn = document.getElementById("collect-btn");
-    if(pending>0){ btn.className="collect-btn"; btn.innerHTML="✨ RECOGER +"+fmtNum(pending)+" 🪙 ✨"; }
-    else { btn.className="collect-btn empty"; btn.innerHTML="🎵 Generando ritmo..."; }
-    let live = S.coins + Math.floor((calcRate()/3600000)*Math.min(Date.now()-S.lastCollect,8*3600000));
-    document.getElementById("coins-display").innerText = fmtNum(live);
+    if(pending > 0) {
+      btn.className = "collect-btn";
+      btn.innerHTML = "✨ RECOGER +"+fmtNum(pending)+" 🪙 ✨";
+    } else {
+      btn.className = "collect-btn empty";
+      btn.innerHTML = "🎵 Generando ritmo...";
+    }
+    // Muestra las monedas actuales + las que se están generando (en tiempo real)
+    let elapsed = Math.min(Date.now() - S.lastCollect, 8 * 3600000);
+    let liveCoins = S.coins + Math.floor((calcRate() / 3600000) * elapsed);
+    document.getElementById("coins-display").innerText = fmtNum(liveCoins);
   }, 500);
 }
-function showTab(name,btn){
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active")); btn.classList.add("active");
-  ["shop","missions","games","invite","stats","milestones"].forEach(t=>document.getElementById("tab-"+t).style.display=name===t?"":"none");
-  if(name==="games") renderMinigames();
-  if(name==="stats") renderStats();
+
+// --------------------------------------------------------------
+// UTILIDADES
+// --------------------------------------------------------------
+function showPopup(emoji, title, desc) {
+  document.getElementById("pop-emoji").innerHTML = emoji;
+  document.getElementById("pop-title").innerHTML = title;
+  document.getElementById("pop-desc").innerHTML = desc;
+  document.getElementById("popup").classList.add("show");
+}
+function closePopup() {
+  document.getElementById("popup").classList.remove("show");
+}
+function showToast(msg) {
+  let t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2000);
+}
+function showTab(name, btn) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  btn.classList.add("active");
+  ["shop","missions","games","invite","stats","milestones"].forEach(t => {
+    document.getElementById("tab-"+t).style.display = (name === t) ? "" : "none";
+  });
+  if(name === "games") renderMinigames();
+  if(name === "stats") renderStats();
 }
 
-// Bg canvas
-const bgCanvas = document.getElementById("bg-canvas"), ctx = bgCanvas.getContext("2d");
+// --------------------------------------------------------------
+// FONDO DE PARTÍCULAS
+// --------------------------------------------------------------
+const bgCanvas = document.getElementById("bg-canvas");
+const ctx = bgCanvas.getContext("2d");
 let particles = [];
-function resizeCanvas(){ bgCanvas.width=window.innerWidth; bgCanvas.height=window.innerHeight; }
-window.addEventListener("resize",resizeCanvas); resizeCanvas();
-function drawBg(){
+function resizeCanvas() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+function drawBg() {
   requestAnimationFrame(drawBg);
-  ctx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
-  if(particles.length<30 && Math.random()<0.2) particles.push({x:Math.random()*bgCanvas.width, y:bgCanvas.height+5, r:Math.random()*1.5+0.8, sp:Math.random()*0.5+0.3});
-  particles = particles.filter(p=>p.y>-10);
-  particles.forEach(p=>{ p.y-=p.sp; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=`rgba(255,200,100,0.5)`; ctx.fill(); });
+  ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  if(particles.length < 30 && Math.random() < 0.2) {
+    particles.push({
+      x: Math.random() * bgCanvas.width,
+      y: bgCanvas.height + 5,
+      r: Math.random() * 1.5 + 0.8,
+      sp: Math.random() * 0.5 + 0.3
+    });
+  }
+  particles = particles.filter(p => p.y > -10);
+  particles.forEach(p => {
+    p.y -= p.sp;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255, 200, 100, 0.5)";
+    ctx.fill();
+  });
 }
 drawBg();
 
-// Exports
-window.collectCoins = collectCoins; window.claimMission = claimMission; window.showTab = showTab; window.closePopup = closePopup;
-window.startSimonGame = startSimonGame; window.simonClick = simonClick; window.startTimingGame = startTimingGame; window.hitTiming = hitTiming;
-window.claimStreak = claimStreak; window.buyEquipment = buyEquipment;
+// --------------------------------------------------------------
+// EXPOSICIÓN GLOBAL
+// --------------------------------------------------------------
+window.collectCoins = collectCoins;
+window.claimMission = claimMission;
+window.startSimonGame = startSimonGame;
+window.simonClick = simonClick;
+window.startTimingGame = startTimingGame;
+window.hitTiming = hitTiming;
+window.claimStreak = claimStreak;
+window.buyEquipment = buyEquipment;
+window.showTab = showTab;
+window.closePopup = closePopup;
 
 loadState();
 </script>
