@@ -108,6 +108,15 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
 #loading { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; height:100vh; color:var(--text-dim); font-size:11px; }
 .spinner { width:28px; height:28px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg);} }
+/* ── Rotation ── */
+.rot-badge { font-size:8px; padding:2px 6px; border-radius:4px; background:rgba(179,136,255,0.15); color:#b388ff; border:1px solid rgba(179,136,255,0.2); margin-left:4px; vertical-align:middle; }
+.rot-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; }
+.rot-card.active-rot { border-color:#b388ff; background:rgba(179,136,255,0.06); }
+.rot-toggle { width:40px; height:22px; border-radius:11px; background:var(--border); border:none; cursor:pointer; position:relative; transition:background 0.2s; flex-shrink:0; }
+.rot-toggle.on { background:#b388ff; }
+.rot-toggle::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.2s; }
+.rot-toggle.on::after { transform:translateX(18px); }
+.rot-timer { font-size:9px; color:#b388ff; font-weight:600; margin-top:2px; }
 /* ── Health Monitor ── */
 .health-panel { position:fixed; inset:0; z-index:950; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.2,0.64,1); overflow-y:auto; }
 .health-panel.open { transform:translateY(0); }
@@ -458,17 +467,28 @@ function render() {
   const profilesHTML = profiles.length === 0
     ? `<div class="profiles-empty"><span class="big-icon">🖥️</span>Sin perfiles activos.<br/>Agrega recursos para crear perfiles.</div>`
     : profiles.map((p,i) => {
-        const plat = vpsState.platforms?.[p.platform] || vpsState.platforms?.general || {};
+        const plat    = vpsState.platforms?.[p.platform] || vpsState.platforms?.general || {};
+        const isRot   = rotationEnabled[p.id];
+        const limits  = ROTATION_LIMITS[p.platform || 'general'] || ROTATION_LIMITS.general;
         return `
-      <div class="profile-card status-${p.status}" onclick="toggleProfileStatus('${p.id}','${p.status}')" style="animation-delay:${i*0.04}s">
-        <div class="profile-status-dot"></div>
-        <div class="profile-info">
-          <div class="profile-name">${plat.icon||'🖥️'} ${p.name}</div>
-          <div class="profile-meta">${p.browser} · ${p.os} · ${timeAgo(p.last_activity)}</div>
+      <div class="profile-card status-${p.status} ${isRot?'rot-card active-rot':''}" style="animation-delay:${i*0.04}s;flex-direction:column;align-items:stretch;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="profile-status-dot" onclick="toggleProfileStatus('${p.id}','${p.status}')"></div>
+          <div class="profile-info" onclick="toggleProfileStatus('${p.id}','${p.status}')">
+            <div class="profile-name">${plat.icon||'🖥️'} ${p.name}${isRot?'<span class="rot-badge">AUTO</span>':''}</div>
+            <div class="profile-meta">${p.browser} · ${p.os} · ${timeAgo(p.last_activity)}</div>
+          </div>
+          <div class="profile-right">
+            <div class="profile-status-label">${p.status.toUpperCase()}</div>
+            <div class="profile-fp">${p.fingerprint.substring(0,8)}</div>
+          </div>
         </div>
-        <div class="profile-right">
-          <div class="profile-status-label">${p.status.toUpperCase()}</div>
-          <div class="profile-fp">${p.fingerprint.substring(0,8)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:6px;border-top:1px solid var(--border)">
+          <div>
+            <div style="font-size:9px;color:var(--text-dim)">Rotación auto · ${limits.active/60}h activo / ${limits.idle}min descanso</div>
+            <div class="rot-timer" id="rot-timer-${p.id}">${isRot ? (getRotationCountdown(p.id)||'') : ''}</div>
+          </div>
+          <button class="rot-toggle ${isRot?'on':''}" onclick="toggleRotation('${p.id}')"></button>
         </div>
       </div>`}).join('');
 
@@ -1524,6 +1544,101 @@ function renderHealth() {
     ${cards}
   `;
 }
+
+// ── Auto Rotation ─────────────────────────────────────────
+
+// Active session limits per platform (minutes)
+const ROTATION_LIMITS = {
+  youtube:     { active: 240, idle: 30  },  // 4h active, 30min rest
+  spotify:     { active: 480, idle: 20  },  // 8h active, 20min rest
+  apple_music: { active: 480, idle: 20  },  // 8h active, 20min rest
+  tidal:       { active: 360, idle: 25  },  // 6h active, 25min rest
+  pandora:     { active: 360, idle: 30  },  // 6h active, 30min rest
+  general:     { active: 720, idle: 15  }   // 12h active, 15min rest
+};
+
+const rotationTimers  = {};  // profileId → { timer, startTime, duration }
+let   rotationEnabled = {};  // profileId → bool
+
+function toggleRotation(profileId) {
+  if (rotationEnabled[profileId]) {
+    stopRotation(profileId);
+  } else {
+    startRotation(profileId);
+  }
+  render();
+}
+
+function startRotation(profileId) {
+  if (rotationTimers[profileId]) clearTimeout(rotationTimers[profileId].timer);
+  rotationEnabled[profileId] = true;
+
+  const profile  = vpsState?.profiles?.find(p => p.id === profileId);
+  if (!profile) return;
+
+  const platform = profile.platform || 'general';
+  const limits   = ROTATION_LIMITS[platform] || ROTATION_LIMITS.general;
+
+  // If active → schedule idle after active limit
+  // If idle   → schedule active after idle limit
+  const isActive   = profile.status === 'active';
+  const delayMins  = isActive ? limits.active : limits.idle;
+  const nextStatus = isActive ? 'idle' : 'active';
+
+  rotationTimers[profileId] = {
+    startTime: Date.now(),
+    duration:  delayMins * 60 * 1000,
+    nextStatus,
+    timer: setTimeout(() => rotateProfile(profileId, nextStatus), delayMins * 60 * 1000)
+  };
+}
+
+function stopRotation(profileId) {
+  if (rotationTimers[profileId]) {
+    clearTimeout(rotationTimers[profileId].timer);
+    delete rotationTimers[profileId];
+  }
+  delete rotationEnabled[profileId];
+}
+
+async function rotateProfile(profileId, newStatus) {
+  try {
+    await apiFetch('/api/vps/profile/status', {
+      method: 'PATCH',
+      body: JSON.stringify({ tg_id: TG_ID, profile_id: profileId, status: newStatus })
+    });
+    const profile = vpsState?.profiles?.find(p => p.id === profileId);
+    if (profile) profile.status = newStatus;
+
+    showToast(`↻ ${profile?.name || 'Perfil'} → ${newStatus.toUpperCase()}`);
+    tg?.HapticFeedback?.impactOccurred('light');
+
+    // Schedule next rotation
+    if (rotationEnabled[profileId]) {
+      startRotation(profileId);
+    }
+    render();
+  } catch(e) {
+    stopRotation(profileId);
+  }
+}
+
+function getRotationCountdown(profileId) {
+  const t = rotationTimers[profileId];
+  if (!t) return null;
+  const remaining = Math.max(0, t.startTime + t.duration - Date.now());
+  const mins = Math.floor(remaining / 60000);
+  const secs = Math.floor((remaining % 60000) / 1000);
+  return `→ ${t.nextStatus.toUpperCase()} en ${mins}m ${secs}s`;
+}
+
+// Update countdown display every second
+setInterval(() => {
+  Object.keys(rotationTimers).forEach(id => {
+    const el = document.getElementById(`rot-timer-${id}`);
+    if (el) el.textContent = getRotationCountdown(id) || '';
+  });
+}, 1000);
 
 loadVPS();
 setInterval(loadVPS, 30000);
