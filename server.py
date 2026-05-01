@@ -671,9 +671,7 @@ def api_vps_reset():
     cur.execute("UPDATE vps_state SET cpu=1,ram=1024,storage=20,bandwidth=1,updated_at=? WHERE tg_id=?",
                 (int(time.time()), tg_id))
     cur.execute("DELETE FROM vps_profiles WHERE tg_id=?", (tg_id,))
-    cap = _compute_capacity(1, 1024, 20)
-    _fill_profiles(cur, tg_id, 0, cap["maxProfiles"])
-    con.commit()
+    con.commit()  # Start with 0 profiles — user adds manually
     result = _vps_response(cur, tg_id)
     con.close()
     return jsonify(result)
