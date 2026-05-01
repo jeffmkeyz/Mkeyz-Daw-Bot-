@@ -108,6 +108,33 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
 #loading { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; height:100vh; color:var(--text-dim); font-size:11px; }
 .spinner { width:28px; height:28px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg);} }
+/* ── Routine Generator ── */
+.routine-panel { position:fixed; inset:0; z-index:950; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.2,0.64,1); overflow-y:auto; }
+.routine-panel.open { transform:translateY(0); }
+.routine-body { padding:16px; flex:1; display:flex; flex-direction:column; gap:14px; }
+.routine-week { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.routine-day-col { display:flex; flex-direction:column; gap:3px; }
+.routine-day-label { font-size:8px; color:var(--text-dim); text-align:center; letter-spacing:0.5px; padding-bottom:4px; border-bottom:1px solid var(--border); margin-bottom:2px; }
+.routine-slot { height:8px; border-radius:2px; background:var(--border); transition:background 0.2s; }
+.routine-slot.active-slot { background:var(--green); }
+.routine-slot.rest-slot   { background:var(--amber); opacity:0.5; }
+.routine-profile-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; }
+.routine-profile-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.routine-profile-name { font-size:12px; font-weight:600; color:#fff; }
+.routine-profile-plat { font-size:9px; color:var(--text-dim); }
+.routine-days-row { display:flex; gap:4px; }
+.routine-day-pill { flex:1; text-align:center; border-radius:6px; padding:4px 2px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.routine-day-pill.on  { background:var(--green-dim); border:1px solid rgba(0,232,122,0.3); }
+.routine-day-pill.off { background:var(--surface2); border:1px solid var(--border); }
+.routine-day-pill-label { font-size:8px; color:var(--text-dim); display:block; }
+.routine-day-pill.on .routine-day-pill-label { color:var(--green); }
+.routine-hours { display:flex; gap:6px; align-items:center; margin-top:8px; }
+.routine-hours-label { font-size:9px; color:var(--text-dim); flex-shrink:0; }
+.routine-hours-val { font-size:11px; font-weight:600; color:#fff; }
+.routine-time-range { font-size:9px; color:var(--text-dim); margin-left:auto; }
+.routine-legend { display:flex; gap:12px; padding:4px 0; }
+.routine-legend-item { display:flex; align-items:center; gap:5px; font-size:9px; color:var(--text-dim); }
+.routine-legend-dot { width:10px; height:10px; border-radius:2px; }
 /* ── Platform Limits ── */
 .limit-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; }
 .limit-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
@@ -317,6 +344,15 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- Routine Generator Panel -->
+<div class="routine-panel" id="routinePanel">
+  <div class="export-header">
+    <button class="calc-back" onclick="closeRoutine()">← Volver</button>
+    <div class="calc-title">📅 Rutinas de Actividad</div>
+  </div>
+  <div class="routine-body" id="routineBody"></div>
+</div>
 
 <!-- Health Monitor Panel -->
 <div class="health-panel" id="healthPanel">
@@ -564,6 +600,7 @@ function render() {
     </div>
     <div class="bottom-bar">
       <button class="btn-primary" onclick="openQuick()">⚡ ¿CUÁNTOS PERFILES?</button>
+      <button class="btn-secondary" onclick="openRoutine()" style="padding:13px 14px;color:#4fc3f7;border-color:rgba(79,195,247,0.2)">📅</button>
       <button class="btn-secondary" onclick="openHealth()" style="padding:13px 14px;color:#ff6b9d;border-color:rgba(255,107,157,0.2)">🩺</button>
       <button class="btn-secondary" onclick="openNewProfile()" style="padding:13px 14px;color:var(--green);border-color:var(--green-dim)">➕</button>
       <button class="btn-secondary" onclick="openExport()" style="padding:13px 14px;color:#4fc3f7;border-color:rgba(79,195,247,0.2)">📤</button>
@@ -1697,7 +1734,195 @@ function renderHealth() {
   `;
 }
 
-// ── Auto Rotation ─────────────────────────────────────────
+// ── Routine Generator ─────────────────────────────────────
+
+const DAYS      = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const DAYS_FULL = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+// Human-like activity patterns per platform
+const ROUTINE_PATTERNS = {
+  youtube:     { activeDays:[1,1,1,1,1,0.6,0.7], peakHours:[18,22], minH:1, maxH:4,  pauseChance:0.3 },
+  spotify:     { activeDays:[1,1,1,1,1,0.9,0.8], peakHours:[8,12,17,22], minH:2, maxH:8, pauseChance:0.2 },
+  apple_music: { activeDays:[1,1,1,1,1,0.9,0.8], peakHours:[8,12,17,22], minH:2, maxH:8, pauseChance:0.2 },
+  tidal:       { activeDays:[0.8,0.8,0.8,0.8,1,1,0.9], peakHours:[20,23], minH:1, maxH:6, pauseChance:0.25 },
+  pandora:     { activeDays:[1,1,1,1,0.9,0.7,0.6], peakHours:[9,12,17,20], minH:1, maxH:6, pauseChance:0.35 },
+  general:     { activeDays:[1,1,1,1,1,0.7,0.6], peakHours:[10,20], minH:1, maxH:8, pauseChance:0.3 }
+};
+
+// Generate deterministic-but-varied routine per profile
+function generateRoutine(profile) {
+  const platform = profile.platform || 'general';
+  const pattern  = ROUTINE_PATTERNS[platform] || ROUTINE_PATTERNS.general;
+  const limits   = ROTATION_LIMITS[platform]  || ROTATION_LIMITS.general;
+  const seed     = profile.id ? profile.id.charCodeAt(0) + profile.id.charCodeAt(4) : 42;
+
+  // Seeded random for consistency per profile
+  const rand = (min, max, offset=0) => {
+    const x = Math.sin(seed + offset) * 10000;
+    return min + ((x - Math.floor(x)) * (max - min));
+  };
+
+  const weekPlan = DAYS.map((day, d) => {
+    const isActive = rand(0, 1, d * 7) < pattern.activeDays[d];
+    if (!isActive) return { day, active: false, hours: 0, startHour: null, sessions: [] };
+
+    // Pick start hour near peak
+    const peakIdx  = Math.floor(rand(0, pattern.peakHours.length, d * 13)) ;
+    const peak     = pattern.peakHours[Math.min(peakIdx, pattern.peakHours.length - 1)];
+    const startH   = Math.round(Math.max(6, Math.min(22, peak - 1 + rand(-2, 2, d * 17))));
+    const totalH   = Math.round(rand(pattern.minH, Math.min(pattern.maxH, limits.active / 60), d * 23));
+
+    // Split into sessions with natural pauses
+    const sessions = [];
+    let remaining  = totalH;
+    let cursor     = startH;
+    while (remaining > 0 && cursor < 24) {
+      const sessionH = Math.min(remaining, Math.round(rand(1, Math.min(3, remaining + 1), cursor * 31)));
+      sessions.push({ start: cursor, duration: sessionH });
+      remaining -= sessionH;
+      cursor    += sessionH + Math.round(rand(0.5, 2, cursor * 41)); // natural pause
+    }
+
+    return { day, active: true, hours: totalH, startHour: startH, sessions };
+  });
+
+  return weekPlan;
+}
+
+// Generate global heatmap (all profiles combined)
+function generateGlobalHeatmap() {
+  const profiles = vpsState?.profiles || [];
+  const heatmap  = Array(7).fill(null).map(() => Array(24).fill(0));
+
+  profiles.forEach(p => {
+    const plan = generateRoutine(p);
+    plan.forEach((day, d) => {
+      day.sessions?.forEach(s => {
+        for (let h = s.start; h < Math.min(24, s.start + s.duration); h++) {
+          heatmap[d][h]++;
+        }
+      });
+    });
+  });
+
+  return heatmap;
+}
+
+let routineView = 'global'; // 'global' | 'profiles'
+
+function openRoutine() {
+  if (!vpsState || vpsState.profiles.length === 0) {
+    showToast('Sin perfiles para generar rutinas');
+    return;
+  }
+  renderRoutine();
+  document.getElementById('routinePanel').classList.add('open');
+  tg?.HapticFeedback?.impactOccurred('light');
+}
+
+function closeRoutine() {
+  document.getElementById('routinePanel').classList.remove('open');
+}
+
+function setRoutineView(view) {
+  routineView = view;
+  renderRoutine();
+}
+
+function renderRoutine() {
+  const profiles = vpsState?.profiles || [];
+  const plats    = vpsState?.platforms || {};
+  const heatmap  = generateGlobalHeatmap();
+  const maxVal   = Math.max(...heatmap.flat(), 1);
+
+  // Global heatmap — 7 days × 24 hours
+  const heatCols = DAYS.map((day, d) => {
+    const slots = Array(24).fill(0).map((_, h) => {
+      const val     = heatmap[d][h];
+      const pct     = val / maxVal;
+      const color   = pct === 0 ? 'var(--border)'
+                    : pct < 0.4 ? 'rgba(0,232,122,0.25)'
+                    : pct < 0.7 ? 'rgba(0,232,122,0.55)'
+                    : 'var(--green)';
+      return `<div class="routine-slot" style="background:${color};height:6px" title="${val} perfiles activos ${h}:00"></div>`;
+    }).join('');
+    return `<div class="routine-day-col"><div class="routine-day-label">${day}</div>${slots}</div>`;
+  }).join('');
+
+  // Per-profile cards
+  const profileCards = profiles.map(p => {
+    const plat  = plats[p.platform] || { icon:'🖥️', name:'General' };
+    const plan  = generateRoutine(p);
+    const totalH = plan.reduce((s, d) => s + d.hours, 0);
+    const activeDays = plan.filter(d => d.active).length;
+
+    const dayPills = plan.map((d, i) => `
+      <div class="routine-day-pill ${d.active?'on':'off'}">
+        <span class="routine-day-pill-label">${DAYS[i]}</span>
+        <span style="font-size:9px;font-weight:600;color:${d.active?'var(--green)':'var(--text-dim)'}">${d.active ? d.hours+'h' : '—'}</span>
+      </div>`).join('');
+
+    const peakDay  = plan.reduce((a, b) => b.hours > a.hours ? b : a, plan[0]);
+    const startAvg = Math.round(plan.filter(d=>d.active && d.startHour).reduce((s,d)=>s+d.startHour,0) / Math.max(activeDays,1));
+
+    return `
+    <div class="routine-profile-card">
+      <div class="routine-profile-header">
+        <div>
+          <div class="routine-profile-name">${plat.icon} ${p.name}</div>
+          <div class="routine-profile-plat">${activeDays} días/sem · ~${totalH}h totales · arranca ~${startAvg}:00h</div>
+        </div>
+        <div style="text-align:right;font-size:9px;color:var(--text-dim)">
+          <div>Pico: ${peakDay.day} ${peakDay.hours}h</div>
+        </div>
+      </div>
+      <div class="routine-days-row">${dayPills}</div>
+    </div>`;
+  }).join('');
+
+  // Overlap analysis
+  const maxSimul = Math.max(...heatmap.flat());
+  const peakHour = heatmap.flat().indexOf(maxSimul);
+  const peakDay2 = Math.floor(peakHour / 24);
+  const peakH2   = peakHour % 24;
+  const overlapWarning = maxSimul > 3 ? `
+    <div style="background:var(--amber-dim);border:1px solid rgba(255,184,0,0.2);border-radius:var(--radius);padding:12px 14px;font-size:10px;color:var(--amber)">
+      ⚠️ Pico de ${maxSimul} perfiles activos simultáneos el ${DAYS_FULL[peakDay2]} a las ${peakH2}:00h — considera distribuir mejor los horarios.
+    </div>` : `
+    <div style="background:var(--green-dim);border:1px solid rgba(0,232,122,0.2);border-radius:var(--radius);padding:12px 14px;font-size:10px;color:var(--green)">
+      ✓ Distribución de perfiles saludable — máximo ${maxSimul} activos simultáneos.
+    </div>`;
+
+  document.getElementById('routineBody').innerHTML = `
+    <div style="display:flex;gap:8px">
+      <div onclick="setRoutineView('global')" style="flex:1;padding:9px;text-align:center;border-radius:8px;border:1px solid ${routineView==='global'?'var(--green)':'var(--border)'};background:${routineView==='global'?'var(--green-dim)':'var(--surface)'};cursor:pointer;font-size:11px;color:${routineView==='global'?'var(--green)':'var(--text-dim)'}">Vista global</div>
+      <div onclick="setRoutineView('profiles')" style="flex:1;padding:9px;text-align:center;border-radius:8px;border:1px solid ${routineView==='profiles'?'var(--green)':'var(--border)'};background:${routineView==='profiles'?'var(--green-dim)':'var(--surface)'};cursor:pointer;font-size:11px;color:${routineView==='profiles'?'var(--green)':'var(--text-dim)'}">Por perfil</div>
+    </div>
+
+    ${routineView === 'global' ? `
+    <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase">// Heatmap semanal — ${profiles.length} perfiles</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div class="routine-week">${heatCols}</div>
+      <div class="routine-legend" style="margin-top:10px">
+        <div class="routine-legend-item"><div class="routine-legend-dot" style="background:var(--border)"></div>Sin actividad</div>
+        <div class="routine-legend-item"><div class="routine-legend-dot" style="background:rgba(0,232,122,0.25)"></div>Baja</div>
+        <div class="routine-legend-item"><div class="routine-legend-dot" style="background:rgba(0,232,122,0.55)"></div>Media</div>
+        <div class="routine-legend-item"><div class="routine-legend-dot" style="background:var(--green)"></div>Alta</div>
+      </div>
+    </div>
+    ${overlapWarning}
+    <div style="font-size:9px;color:var(--text-dim);line-height:1.7;padding:4px 0">
+      💡 Las rutinas se generan según el patrón de cada plataforma — días laborables con más actividad, horarios pico realistas, pausas naturales entre sesiones. Cada perfil tiene un patrón único basado en su ID.
+    </div>` : `
+    <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase">// Rutina por perfil</div>
+    ${profileCards}
+    <div style="font-size:9px;color:var(--text-dim);line-height:1.7">
+      💡 Toca un día en gris para ver que el perfil descansa ese día. Los horarios son consistentes semana a semana para el mismo perfil.
+    </div>`}
+
+    <div style="padding-bottom:16px"></div>
+  `;
+}
 
 // Active session limits per platform (minutes)
 const ROTATION_LIMITS = {
