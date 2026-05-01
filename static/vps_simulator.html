@@ -203,9 +203,10 @@ async function loadVPS() {
     document.getElementById('loading').innerHTML = `
       <div style="text-align:center;padding:32px 24px">
         <div style="font-size:32px;margin-bottom:16px">⚠️</div>
-        <div style="color:#ff4757;font-size:13px;margin-bottom:8px">No se pudo conectar</div>
-        <div style="color:#4a6070;font-size:11px;margin-bottom:20px">${err.message}</div>
-        <button onclick="loadVPS()" style="background:var(--green);border:none;border-radius:8px;padding:10px 20px;font-family:inherit;font-size:12px;font-weight:600;color:#000;cursor:pointer">↺ Reintentar</button>
+        <div style="font-size:13px;color:#fff;font-weight:600;margin-bottom:6px">Acceso Restringido</div>
+        <div style="color:#7a9ab0;font-size:11px;margin-bottom:24px;line-height:1.7">Esta herramienta es exclusiva.<br/>Únete al canal para solicitar acceso.</div>
+        <a href="https://t.me/MkeyzDawBot" target="_blank" style="display:block;background:var(--green);border:none;border-radius:8px;padding:13px 20px;font-family:inherit;font-size:12px;font-weight:700;color:#000;cursor:pointer;text-decoration:none;margin-bottom:10px">📡 Ir a Mkeyz Daw Bot</a>
+        <button onclick="loadVPS()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-family:inherit;font-size:11px;color:var(--text-dim);cursor:pointer;width:100%">↺ Ya tengo acceso</button>
       </div>`;
   }
 }
