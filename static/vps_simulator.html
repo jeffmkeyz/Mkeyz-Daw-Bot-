@@ -108,6 +108,31 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
 #loading { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; height:100vh; color:var(--text-dim); font-size:11px; }
 .spinner { width:28px; height:28px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg);} }
+/* ── Export Panel ── */
+.export-panel { position:fixed; inset:0; z-index:700; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.2,0.64,1); overflow-y:auto; }
+.export-panel.open { transform:translateY(0); }
+.export-header { position:sticky; top:0; background:rgba(8,11,15,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:14px 16px; display:flex; align-items:center; gap:12px; z-index:10; }
+.export-body { padding:16px; flex:1; display:flex; flex-direction:column; gap:14px; }
+.format-cards { display:flex; flex-direction:column; gap:8px; }
+.format-card { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius); padding:14px; cursor:pointer; transition:all 0.15s; -webkit-tap-highlight-color:transparent; display:flex; align-items:center; gap:12px; }
+.format-card.selected { border-color:var(--green); background:var(--green-dim); }
+.format-card:active { border-color:var(--green); }
+.format-icon { font-size:22px; flex-shrink:0; }
+.format-info { flex:1; }
+.format-name { font-size:13px; font-weight:700; color:#fff; margin-bottom:2px; }
+.format-desc { font-size:10px; color:var(--text-dim); line-height:1.5; }
+.format-badge { font-size:8px; padding:2px 7px; border-radius:4px; background:var(--green-dim); color:var(--green); border:1px solid rgba(0,232,122,0.2); margin-top:4px; display:inline-block; }
+.export-preview { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.export-preview-header { padding:10px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.export-preview-label { font-size:9px; letter-spacing:1px; color:var(--text-dim); text-transform:uppercase; }
+.export-copy-btn { font-size:10px; color:var(--green); cursor:pointer; background:none; border:none; font-family:inherit; padding:2px 8px; border-radius:4px; background:var(--green-dim); }
+.export-preview textarea { width:100%; background:transparent; border:none; outline:none; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-mid); padding:12px 14px; resize:none; height:160px; line-height:1.6; }
+.export-actions { display:flex; gap:8px; padding-bottom:calc(16px + var(--safe-bottom)); }
+.export-dl-btn { flex:1; padding:14px; background:var(--green); border:none; border-radius:var(--radius); font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:#000; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.export-dl-btn:active { opacity:0.85; transform:scale(0.97); }
+.export-scope { display:flex; gap:6px; margin-bottom:4px; }
+.scope-btn { flex:1; padding:9px; background:var(--surface); border:1px solid var(--border); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-dim); cursor:pointer; text-align:center; transition:all 0.15s; }
+.scope-btn.active { border-color:var(--green); color:var(--green); background:var(--green-dim); }
 /* ── Calculator Panel ── */
 .calc-panel { position:fixed; inset:0; z-index:600; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.2,0.64,1); overflow-y:auto; }
 .calc-panel.open { transform:translateY(0); }
@@ -168,6 +193,15 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- Export Panel -->
+<div class="export-panel" id="exportPanel">
+  <div class="export-header">
+    <button class="calc-back" onclick="closeExport()">← Volver</button>
+    <div class="calc-title">📤 Exportar Perfiles</div>
+  </div>
+  <div class="export-body" id="exportBody"></div>
+</div>
 
 <!-- Calculator Panel -->
 <div class="calc-panel" id="calcPanel">
@@ -377,7 +411,8 @@ function render() {
     </div>
     <div class="profiles-list">${profilesHTML}</div>
     <div class="bottom-bar">
-      <button class="btn-primary" onclick="openModal('cpu')">⬆ ESCALAR SERVIDOR</button>
+      <button class="btn-primary" onclick="openModal('cpu')">⬆ ESCALAR</button>
+      <button class="btn-secondary" onclick="openExport()" style="padding:13px 14px;color:#4fc3f7;border-color:rgba(79,195,247,0.2)">📤</button>
       <button class="btn-secondary" onclick="openCalc()" style="padding:13px 14px;color:var(--amber);border-color:var(--amber-dim)">💰</button>
       <button class="btn-secondary" onclick="resetVPS()">↺</button>
     </div>
@@ -551,6 +586,222 @@ function renderCalc() {
       </div>
     </div>
   `;
+}
+
+// ── Export ────────────────────────────────────────────────
+let exportState = { format: 'gologin', scope: 'all' };
+
+const FORMATS = {
+  gologin: {
+    name: 'GoLogin',
+    icon: '🦊',
+    desc: 'Importa directo en GoLogin.\nFormato JSON oficial.',
+    badge: 'JSON · Recomendado',
+    ext: 'json',
+    mime: 'application/json'
+  },
+  dolphin: {
+    name: 'Dolphin Anty',
+    icon: '🐬',
+    desc: 'Compatible con Dolphin Anty.\nFormato CSV con todos los campos.',
+    badge: 'CSV · Soportado',
+    ext: 'csv',
+    mime: 'text/csv'
+  },
+  adspower: {
+    name: 'AdsPower',
+    icon: '⚡',
+    desc: 'Importa en AdsPower Team.\nFormato JSON extendido.',
+    badge: 'JSON · Extendido',
+    ext: 'json',
+    mime: 'application/json'
+  }
+};
+
+function _osMap(os) {
+  if (os.includes('Windows 11')) return 'win';
+  if (os.includes('Windows 10')) return 'win';
+  if (os.includes('macOS'))      return 'mac';
+  return 'linux';
+}
+function _browserVer(browser) {
+  const m = browser.match(/\d+/);
+  return m ? m[0] : '120';
+}
+function _browserName(browser) {
+  if (browser.includes('Firefox')) return 'firefox';
+  if (browser.includes('Edge'))    return 'edge';
+  return 'chrome';
+}
+
+function generateExport(profiles, format) {
+  if (format === 'gologin') {
+    const data = profiles.map(p => ({
+      name: p.name,
+      os: _osMap(p.os),
+      browser: _browserName(p.browser),
+      browserVersion: _browserVer(p.browser),
+      fingerprint: p.fingerprint,
+      proxy: {
+        mode: 'http',
+        host: p.proxy,
+        port: 8080,
+        username: '',
+        password: ''
+      },
+      navigator: {
+        language: 'en-US,en',
+        resolution: '1920x1080',
+        platform: _osMap(p.os) === 'mac' ? 'MacIntel' : 'Win32'
+      },
+      timezone: { fillBasedOnExternalIp: true },
+      webRTC: { mode: 'disabled' },
+      canvas: { mode: 'noise' },
+      webGL: { mode: 'noise' },
+      fonts: { enableMasking: true }
+    }));
+    return JSON.stringify(data, null, 2);
+  }
+
+  if (format === 'dolphin') {
+    const headers = 'name,browser_type,browser_version,os,proxy_type,proxy_host,proxy_port,proxy_login,proxy_password,notes';
+    const rows = profiles.map(p =>
+      [p.name, _browserName(p.browser), _browserVer(p.browser),
+       _osMap(p.os), 'http', p.proxy, '8080', '', '',
+       p.fingerprint].join(',')
+    );
+    return [headers, ...rows].join('\n');
+  }
+
+  if (format === 'adspower') {
+    const data = profiles.map(p => ({
+      name: p.name,
+      domain_name: '',
+      open_urls: [],
+      username: '',
+      password: '',
+      fakey: '',
+      cookie: '',
+      ignore_cookie_error: '0',
+      ip: p.proxy,
+      ip_country: 'ES',
+      sys_app_cate_id: '0',
+      fingerprint_config: {
+        ua: `Mozilla/5.0 (${_osMap(p.os) === 'mac' ? 'Macintosh; Intel Mac OS X 10_15_7' : 'Windows NT 10.0; Win64; x64'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${_browserVer(p.browser)}.0.0.0 Safari/537.36`,
+        screen_resolution: '1920_1080',
+        canvas: '1',
+        webgl: '1',
+        webgl_info: '1',
+        audio: '1',
+        do_not_track: 'default',
+        hardware_concurrency: '4',
+        device_memory: '8',
+        flash: 'block',
+        client_rects: '1',
+        device_name_switch: '0',
+        random_ua: {
+          ua_browser: [_browserName(p.browser)],
+          ua_version: [[_browserVer(p.browser), _browserVer(p.browser)]]
+        }
+      }
+    }));
+    return JSON.stringify(data, null, 2);
+  }
+}
+
+function openExport() {
+  if (!vpsState || vpsState.profiles.length === 0) {
+    showToast('Sin perfiles para exportar');
+    return;
+  }
+  renderExport();
+  document.getElementById('exportPanel').classList.add('open');
+  tg?.HapticFeedback?.impactOccurred('light');
+}
+
+function closeExport() {
+  document.getElementById('exportPanel').classList.remove('open');
+}
+
+function setExportFormat(fmt) {
+  exportState.format = fmt;
+  renderExport();
+}
+
+function setExportScope(scope) {
+  exportState.scope = scope;
+  renderExport();
+}
+
+function renderExport() {
+  const profiles = exportState.scope === 'active'
+    ? vpsState.profiles.filter(p => p.status === 'active')
+    : vpsState.profiles;
+
+  const content = profiles.length > 0 ? generateExport(profiles, exportState.format) : '';
+  const fmt = FORMATS[exportState.format];
+  const preview = content.substring(0, 800) + (content.length > 800 ? '\n...' : '');
+
+  document.getElementById('exportBody').innerHTML = `
+    <div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px">// Seleccionar formato</div>
+      <div class="format-cards">
+        ${Object.entries(FORMATS).map(([key, f]) => `
+          <div class="format-card ${exportState.format===key?'selected':''}" onclick="setExportFormat('${key}')">
+            <div class="format-icon">${f.icon}</div>
+            <div class="format-info">
+              <div class="format-name">${f.name}</div>
+              <div class="format-desc">${f.desc.replace('\n','<br/>')}</div>
+              <span class="format-badge">${f.badge}</span>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px">// Perfiles a exportar</div>
+      <div class="export-scope">
+        <div class="scope-btn ${exportState.scope==='all'?'active':''}" onclick="setExportScope('all')">Todos (${vpsState.profiles.length})</div>
+        <div class="scope-btn ${exportState.scope==='active'?'active':''}" onclick="setExportScope('active')">Solo activos (${vpsState.profiles.filter(p=>p.status==='active').length})</div>
+      </div>
+    </div>
+
+    ${profiles.length > 0 ? `
+    <div class="export-preview">
+      <div class="export-preview-header">
+        <span class="export-preview-label">Preview · ${profiles.length} perfiles · .${fmt.ext}</span>
+        <button class="export-copy-btn" onclick="copyExport()">Copiar</button>
+      </div>
+      <textarea readonly>${preview}</textarea>
+    </div>
+    <div class="export-actions">
+      <button class="export-dl-btn" onclick="downloadExport()">⬇ Descargar ${fmt.name} (.${fmt.ext})</button>
+    </div>` : `<div style="text-align:center;color:var(--text-dim);font-size:11px;padding:20px">Sin perfiles en este filtro</div>`}
+  `;
+
+  // Store content for download/copy
+  window._exportContent = content;
+  window._exportExt = fmt.ext;
+  window._exportMime = fmt.mime;
+  window._exportName = exportState.format;
+}
+
+function copyExport() {
+  navigator.clipboard?.writeText(window._exportContent)
+    .then(() => showToast('Copiado al portapapeles ✓'))
+    .catch(() => showToast('Selecciona el texto manualmente'));
+}
+
+function downloadExport() {
+  const blob = new Blob([window._exportContent], { type: window._exportMime });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `vps-profiles-${window._exportName}-${Date.now()}.${window._exportExt}`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Descargando ${window._exportName}.${window._exportExt} ✓`);
+  tg?.HapticFeedback?.notificationOccurred('success');
 }
 
 loadVPS();
