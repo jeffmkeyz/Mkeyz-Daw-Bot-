@@ -1793,7 +1793,17 @@ setInterval(() => {
 }, 1000);
 
 loadVPS();
-setInterval(loadVPS, 30000);
+
+// Silent background refresh — only re-render if data changed
+setInterval(async () => {
+  try {
+    const fresh = await apiFetch(`/api/vps?tg_id=${TG_ID}`);
+    const changed = JSON.stringify(fresh.profiles) !== JSON.stringify(vpsState?.profiles)
+                 || JSON.stringify(fresh.resources) !== JSON.stringify(vpsState?.resources)
+                 || JSON.stringify(fresh.usage)     !== JSON.stringify(vpsState?.usage);
+    if (changed) { vpsState = fresh; render(); }
+  } catch(e) {}
+}, 30000);
 </script>
 </body>
 </html>
