@@ -108,8 +108,11 @@
     .card-bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; transition: background 0.4s; }
     .card-inner { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
 
-    /* Textos con sombreado para legibilidad */
-    .card-name { font-weight: 900; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; text-shadow: var(--text-shadow); }
+    .card-name {
+      font-weight: 900; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: #fff; text-shadow: var(--text-shadow);
+      display: inline-block;
+    }
     .card-sub { font-size: 12px; margin-top: 2px; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: var(--text-shadow); }
     .card-badge { flex-shrink: 0; font-size: 10px; font-weight: 800; padding: 5px 12px; border-radius: 100px; letter-spacing: 0.5px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
     .card-stat-n { font-size: 17px; font-weight: 900; transition: color 0.3s; text-shadow: var(--text-shadow); }
@@ -120,7 +123,6 @@
     .card-footer-logo { font-weight: 800; letter-spacing: 1.5px; opacity: 0.7; text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
     .card-ig { opacity: 0.7; text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
 
-    /* Sombreado global */
     .card-inner .card-top .card-info .card-name,
     .card-inner .card-top .card-info .card-sub,
     .card-inner .card-stats .card-stat .card-stat-n,
@@ -132,10 +134,16 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5);
     }
 
-    /* ─── Ajustes por formato ─── */
-    /* Square: valores por defecto, sin cambios */
+    @keyframes flashBounce {
+      0% { transform: scale(1); text-shadow: var(--text-shadow); }
+      30% { transform: scale(1.15); text-shadow: 0 0 15px rgba(255,255,255,0.9), 0 0 30px var(--gold); }
+      60% { transform: scale(0.98); text-shadow: var(--text-shadow); }
+      100% { transform: scale(1); text-shadow: var(--text-shadow); }
+    }
+    .card-name.flash-bounce {
+      animation: flashBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
 
-    /* Stories (9:16) */
     #artist-card.fmt-stories .card-top { padding: 12px 14px; gap: 8px; }
     #artist-card.fmt-stories .card-avatar { width: 42px; height: 42px; }
     #artist-card.fmt-stories .card-name { font-size: 16px; }
@@ -149,7 +157,6 @@
     #artist-card.fmt-stories .card-bio { font-size: 10px; padding: 6px 12px; }
     #artist-card.fmt-stories .card-footer { padding: 6px 12px; font-size: 8px; }
 
-    /* Banner (16:9) */
     #artist-card.fmt-banner .card-top { padding: 10px 16px; gap: 10px; }
     #artist-card.fmt-banner .card-avatar { width: 40px; height: 40px; }
     #artist-card.fmt-banner .card-name { font-size: 17px; }
@@ -163,7 +170,6 @@
     #artist-card.fmt-banner .card-bio { font-size: 10px; padding: 4px 16px; }
     #artist-card.fmt-banner .card-footer { padding: 4px 16px; font-size: 8px; }
 
-    /* Twitter (2:1) */
     #artist-card.fmt-twitter .card-top { padding: 8px 12px; gap: 6px; }
     #artist-card.fmt-twitter .card-avatar { width: 34px; height: 34px; }
     #artist-card.fmt-twitter .card-name { font-size: 14px; }
@@ -177,7 +183,6 @@
     #artist-card.fmt-twitter .card-bio { font-size: 9px; padding: 3px 12px; }
     #artist-card.fmt-twitter .card-footer { padding: 3px 12px; font-size: 7px; }
 
-    /* Facebook (820x312) - ajuste máximo para que quepa la marca */
     #artist-card.fmt-facebook .card-top { padding: 6px 10px !important; gap: 6px !important; }
     #artist-card.fmt-facebook .card-avatar { width: 30px !important; height: 30px !important; }
     #artist-card.fmt-facebook .card-name { font-size: 13px !important; }
@@ -195,7 +200,6 @@
     #artist-card.fmt-facebook .wave { gap: 1px !important; }
     #artist-card.fmt-facebook .wave-bar { width: 1px !important; }
 
-    /* Layouts */
     .card-layout-classic .card-top { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
     .card-layout-classic .card-avatar { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
     .card-layout-centered .card-top { flex-direction: column; align-items: center; text-align: center; padding: 18px 16px 10px; }
@@ -507,7 +511,12 @@
 
   function applyInfoChanges() {
     const name = document.getElementById('inputName').value.trim() || 'Jeff Mkeyz';
-    document.getElementById('cardName').textContent = name;
+    const nameEl = document.getElementById('cardName');
+    nameEl.textContent = name;
+    nameEl.classList.remove('flash-bounce');
+    void nameEl.offsetWidth;
+    nameEl.classList.add('flash-bounce');
+
     document.getElementById('cardInitials').textContent = name.split(' ').map(w=>w[0]?.toUpperCase()).join('').slice(0,2) || 'JM';
     document.getElementById('cardBio').textContent = document.getElementById('inputBio').value.trim() || 'Productor independiente · Beats que cuentan historias';
     document.getElementById('cardIg').textContent = '@' + (document.getElementById('inputIg').value.trim() || 'jeffmkeyz');
@@ -675,39 +684,104 @@
   }
 
   async function exportHQ() {
-    document.getElementById('overlay').classList.add('active');
+    const overlay = document.getElementById('overlay');
+    overlay.classList.add('active');
     try {
       const card = document.getElementById('artist-card');
-      const canvas = await html2canvas(card, { backgroundColor: null, scale: 4, useCORS: true, allowTaint: true, logging: false });
-      const link = document.createElement('a');
-      const name = (document.getElementById('inputName').value || 'artista').replace(/\s+/g,'_');
-      link.download = `${name}_card_${currentFormat}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
-      link.click();
-      showToast('✅ Imagen HQ descargada');
-    } catch(e) { showToast('❌ Error: ' + e.message); }
-    document.getElementById('overlay').classList.remove('active');
+      // Asegurar que el elemento esté visible y con dimensiones
+      const canvas = await html2canvas(card, {
+        backgroundColor: null,
+        scale: 3,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        imageTimeout: 15000,
+        onclone: (clonedDoc) => {
+          // Pausar animaciones para la captura
+          clonedDoc.querySelectorAll('.wave-bar').forEach(el => {
+            el.style.animation = 'none';
+            el.style.transform = 'scaleY(0.7)';
+          });
+        }
+      });
+      
+      // Convertir a blob y descargar
+      canvas.toBlob((blob) => {
+        overlay.classList.remove('active');
+        if (!blob) {
+          showToast('❌ Error generando la imagen');
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const name = (document.getElementById('inputName').value || 'artista').replace(/\s+/g,'_');
+        link.download = `${name}_card_${currentFormat}.png`;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        showToast('✅ Imagen HQ descargada');
+        if(tg) tg.HapticFeedback?.notificationOccurred('success');
+      }, 'image/png', 1.0);
+    } catch(e) {
+      overlay.classList.remove('active');
+      showToast('❌ Error: ' + e.message);
+      console.error(e);
+    }
   }
 
   async function shareCard() {
-    document.getElementById('overlay').classList.add('active');
+    const overlay = document.getElementById('overlay');
+    overlay.classList.add('active');
     try {
       const card = document.getElementById('artist-card');
-      const canvas = await html2canvas(card, { backgroundColor: null, scale: 2, useCORS: true, allowTaint: true });
-      canvas.toBlob(async blob => {
-        document.getElementById('overlay').classList.remove('active');
-        if (!blob) { showToast('Error generando imagen'); return; }
+      const canvas = await html2canvas(card, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        imageTimeout: 15000,
+        onclone: (clonedDoc) => {
+          clonedDoc.querySelectorAll('.wave-bar').forEach(el => {
+            el.style.animation = 'none';
+            el.style.transform = 'scaleY(0.7)';
+          });
+        }
+      });
+      
+      canvas.toBlob(async (blob) => {
+        overlay.classList.remove('active');
+        if (!blob) {
+          showToast('Error generando imagen');
+          return;
+        }
         const file = new File([blob], 'mkeyz_card.png', { type: 'image/png' });
         const text = `${document.getElementById('cardName').textContent}\n${document.getElementById('cardBio').textContent}\n📸 @${document.getElementById('inputIg').value || 'jeffmkeyz'}`;
+        
         if (navigator.share) {
-          await navigator.share({ title: 'Tarjeta de Artista', text, files: [file] });
+          try {
+            await navigator.share({ title: 'Tarjeta de Artista', text, files: [file] });
+          } catch(e) {
+            if (e.name !== 'AbortError') {
+              // Si falla, abrir en pestaña nueva
+              const url = URL.createObjectURL(blob);
+              window.open(url, '_blank');
+              showToast('Mantén presionada para guardar');
+              setTimeout(() => URL.revokeObjectURL(url), 30000);
+            }
+          }
         } else {
           const url = URL.createObjectURL(blob);
           window.open(url, '_blank');
           showToast('Mantén presionada para guardar');
+          setTimeout(() => URL.revokeObjectURL(url), 30000);
         }
       }, 'image/png');
-    } catch(e) { document.getElementById('overlay').classList.remove('active'); showToast('Error: ' + e.message); }
+    } catch(e) {
+      overlay.classList.remove('active');
+      showToast('Error: ' + e.message);
+    }
   }
 
   function saveDesign() {
