@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Detector de Escala Pro — Mkeyz Studio</title>
+  <title>Generador de Acordes y Escalas Pro — Mkeyz Studio</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/abcjs@6.2.3/dist/abcjs-basic-min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Montserrat:wght@700;900&family=Oswald:wght@700&family=Playfair+Display:wght@700;900&family=Roboto:wght@700;900&family=Bebas+Neue&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #03050a;
@@ -13,17 +14,17 @@
       --border: #1a1d2e;
       --gold: #f0b90b;
       --purple: #b388ff;
-      --purple2: #7c4dff;
       --green: #00e676;
       --text: #fff;
       --muted: #6a6d7a;
       --radius: 16px;
+      --text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.4);
     }
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -32,7 +33,7 @@
     }
     .app-container {
       width: 100%;
-      max-width: 500px;
+      max-width: 520px;
       padding: 16px 12px 80px;
       position: relative;
       z-index: 1;
@@ -56,7 +57,7 @@
     .scale-name { font-size:32px; font-weight:900; color:var(--gold); text-align:center; }
     .scale-mood { font-size:14px; color:var(--purple); text-align:center; font-weight:600; }
     .confidence-bar { height:5px; background:rgba(255,255,255,0.05); border-radius:10px; margin-top:8px; }
-    .confidence-fill { height:100%; border-radius:10px; background:linear-gradient(90deg,var(--purple2),var(--gold)); transition:width 0.4s; }
+    .confidence-fill { height:100%; border-radius:10px; background:linear-gradient(90deg,var(--purple),var(--gold)); transition:width 0.4s; }
 
     .piano-wrap {
       overflow-x: auto;
@@ -172,14 +173,14 @@
     .panel.active { display: block; }
     @keyframes fadeSlide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-    .section-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:12px 0 8px; }
+    .section-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin:12px 0 8px; }
     .btn {
       padding: 10px 16px; border-radius: 20px; border: 1px solid var(--border);
       background: var(--card); color: var(--text); font-weight: 700; cursor: pointer;
       transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
     }
     .btn:active { transform: scale(0.96); background: #1a1028; border-color: var(--purple); }
-    .btn.primary { background: linear-gradient(135deg,var(--purple2),#4a0072); border: none; color: #fff; }
+    .btn.primary { background: linear-gradient(135deg,var(--purple),#4a0072); border: none; color: #fff; }
     .btn-sm { padding: 6px 12px; font-size: 11px; }
 
     .slider-row { display:flex; align-items:center; gap:8px; margin:6px 0; }
@@ -241,7 +242,7 @@
 <div class="app-container">
   <div class="header">
     <div class="icon">🎹</div>
-    <h1>Detector de Escala Pro</h1>
+    <h1>Generador de Acordes y Escalas</h1>
   </div>
 
   <div class="detection-card">
@@ -251,7 +252,7 @@
     <div style="text-align:right;font-size:10px;color:var(--muted)" id="confidence-text"></div>
   </div>
 
-  <!-- PANEL PRINCIPAL: PIANO + EFECTOS + ANALIZADOR -->
+  <!-- PANEL PRINCIPAL -->
   <div class="panel active" id="panel-piano">
     <div class="piano-wrap"><div class="piano" id="piano"></div></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;">
@@ -300,7 +301,7 @@
     <canvas id="analyzer-canvas"></canvas>
   </div>
 
-  <!-- PANEL ESTUDIO: ACORDES, PROGRESIONES, PARTITURA, BIBLIOTECA -->
+  <!-- PANEL ESTUDIO -->
   <div class="panel" id="panel-studio">
     <div class="section-title">🎸 Acordes que funcionan</div>
     <div class="chord-grid" id="chord-grid"></div>
@@ -345,7 +346,6 @@
     "default": [["I","IV","V"],["i","iv","V"]]
   };
 
-  // selectedNotes ahora usa MIDI completo (0-127) para identificar cada tecla individualmente
   let selectedNotes = new Set();
   let audioCtx = null;
   let masterGain, analyserNode, lowEQ, midEQ, highEQ;
@@ -448,12 +448,9 @@
   }
 
   function updateFx(type, val) {
-    const numVal = parseInt(val);
-    fxSettings[type] = numVal;
+    fxSettings[type] = parseInt(val);
     const display = document.getElementById(`val-${type}`);
-    if (display) {
-      display.textContent = type.startsWith('eq') ? numVal + ' dB' : numVal + '%';
-    }
+    if (display) display.textContent = type.startsWith('eq') ? val + ' dB' : val + '%';
     updateAllFx();
   }
 
@@ -842,6 +839,18 @@
     })();
   }
 
+  // Selector de sonido con confirmación
+  document.getElementById('sound-selector').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#sound-selector .btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSound = btn.dataset.sound;
+    showToast(`Sonido: ${btn.textContent.trim()}`);
+    if (tg) tg.HapticFeedback?.impactOccurred('light');
+  });
+
+  // Tabs
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -849,14 +858,6 @@
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       document.getElementById(btn.dataset.panel).classList.add('active');
     });
-  });
-
-  document.getElementById('sound-selector').addEventListener('click', e => {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-    document.querySelectorAll('#sound-selector .btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentSound = btn.dataset.sound;
   });
 
   function showToast(msg) {
