@@ -414,6 +414,209 @@ def api_artist_profile():
         con.close()
         return jsonify({"error": str(e)}), 500
 
+# ── VPS Simulator ─────────────────────────────────────────────────────────────
+# Pega este bloque al final de server.py, antes del if __name__ == "__main__"
+# ──────────────────────────────────────────────────────────────────────────────
+
+import json, random, uuid as _uuid
+
+PROFILE_NAMES = [
+    "Shadow Fox","Neon Wolf","Ghost Hawk","Cyber Bear","Phantom Cat",
+    "Iron Lynx","Dark Eagle","Stealth Owl","Rogue Tiger","Silent Viper",
+    "Black Mamba","Storm Raven","Void Shark","Apex Cobra","Digital Puma",
+    "Chrome Falcon","Onyx Drake","Lunar Panther","Obsidian Kite","Nova Hound"
+]
+BROWSERS  = ["Chrome 120","Chrome 119","Firefox 121","Edge 120"]
+OS_LIST   = ["Windows 11","Windows 10","macOS 14","Ubuntu 22.04"]
+STATUSES  = ["idle","active","active","warming"]
+PROFILE_COST = {"cpu": 0.5, "ram": 512, "storage": 2}
+
+def _ensure_vps_tables(cur):
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS vps_state (
+            tg_id      INTEGER PRIMARY KEY,
+            cpu        REAL    DEFAULT 1,
+            ram        INTEGER DEFAULT 1024,
+            storage    INTEGER DEFAULT 20,
+            bandwidth  INTEGER DEFAULT 1,
+            vps_name   TEXT    DEFAULT 'VPS-MKEYZ-01',
+            updated_at INTEGER DEFAULT 0
+        )""")
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS vps_profiles (
+            id          TEXT    PRIMARY KEY,
+            tg_id       INTEGER NOT NULL,
+            name        TEXT,
+            browser     TEXT,
+            os          TEXT,
+            proxy       TEXT,
+            status      TEXT    DEFAULT 'idle',
+            fingerprint TEXT,
+            last_activity INTEGER,
+            created_at  INTEGER
+        )""")
+
+def _compute_capacity(cpu, ram, storage):
+    by_cpu     = int(cpu / PROFILE_COST["cpu"])
+    by_ram     = int(ram / PROFILE_COST["ram"])
+    by_storage = int(storage / PROFILE_COST["storage"])
+    max_p = min(by_cpu, by_ram, by_storage)
+    bottleneck = min(
+        [("cpu", by_cpu), ("ram", by_ram), ("storage", by_storage)],
+        key=lambda x: x[1]
+    )[0]
+    return {"maxProfiles": max_p, "limits": {"byCPU": by_cpu, "byRAM": by_ram, "byStorage": by_storage}, "bottleneck": bottleneck}
+
+def _usage(cpu, ram, storage, profiles):
+    active = sum(1 for p in profiles if p["status"] != "idle")
+    total  = len(profiles)
+    return {
+        "cpu":     min(100, round(active * PROFILE_COST["cpu"] / cpu * 100)),
+        "ram":     min(100, round(active * PROFILE_COST["ram"] / ram * 100)),
+        "storage": min(100, round(total  * PROFILE_COST["storage"] / storage * 100))
+    }
+
+def _gen_profile(tg_id, index):
+    now = int(time.time())
+    return {
+        "id":            str(_uuid.uuid4()),
+        "tg_id":         tg_id,
+        "name":          f"{PROFILE_NAMES[index % len(PROFILE_NAMES)]} #{index+1}",
+        "browser":       random.choice(BROWSERS),
+        "os":            random.choice(OS_LIST),
+        "proxy":         f"{random.randint(10,200)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(0,255)}",
+        "status":        random.choice(STATUSES),
+        "fingerprint":   _uuid.uuid4().hex[:16].upper(),
+        "last_activity": now - random.randint(0, 86400),
+        "created_at":    now
+    }
+
+def _get_vps(cur, tg_id):
+    cur.execute("SELECT * FROM vps_state WHERE tg_id=?", (tg_id,))
+    row = cur.fetchone()
+    if not row:
+        cur.execute("""INSERT INTO vps_state (tg_id, updated_at) VALUES (?,?)""",
+                    (tg_id, int(time.time())))
+        return {"cpu":1,"ram":1024,"storage":20,"bandwidth":1,"vps_name":"VPS-MKEYZ-01"}
+    return dict(row)
+
+def _get_profiles(cur, tg_id):
+    cur.execute("SELECT * FROM vps_profiles WHERE tg_id=? ORDER BY created_at", (tg_id,))
+    return [dict(r) for r in cur.fetchall()]
+
+def _fill_profiles(cur, tg_id, current_count, max_profiles):
+    """Create profiles up to max_profiles if slots are available."""
+    for i in range(current_count, max_profiles):
+        p = _gen_profile(tg_id, i)
+        cur.execute("""
+            INSERT INTO vps_profiles (id,tg_id,name,browser,os,proxy,status,fingerprint,last_activity,created_at)
+            VALUES (:id,:tg_id,:name,:browser,:os,:proxy,:status,:fingerprint,:last_activity,:created_at)
+        """, p)
+
+def _vps_response(cur, tg_id):
+    vps      = _get_vps(cur, tg_id)
+    profiles = _get_profiles(cur, tg_id)
+    capacity = _compute_capacity(vps["cpu"], vps["ram"], vps["storage"])
+    usage    = _usage(vps["cpu"], vps["ram"], vps["storage"], profiles)
+    return {
+        "name":      vps["vps_name"],
+        "region":    "EU-WEST (Madrid)",
+        "os":        "Ubuntu 22.04 LTS",
+        "resources": {"cpu": vps["cpu"], "ram": vps["ram"], "storage": vps["storage"], "bandwidth": vps["bandwidth"]},
+        "profiles":  profiles,
+        "capacity":  capacity,
+        "usage":     usage
+    }
+
+# ── Serve page ─────────────────────────────────────────────
+@app.route("/vps")
+def serve_vps():
+    return send_from_directory("static", "vps_simulator.html")
+
+# ── GET /api/vps?tg_id=xxx ────────────────────────────────
+@app.route("/api/vps")
+def api_vps_get():
+    tg_id = request.args.get("tg_id")
+    if not tg_id:
+        return jsonify({"error": "no tg_id"}), 400
+    tg_id = int(tg_id)
+    con = get_db(); cur = con.cursor()
+    _ensure_vps_tables(cur); con.commit()
+    data = _vps_response(cur, tg_id)
+    con.close()
+    return jsonify(data)
+
+# ── POST /api/vps/upgrade ─────────────────────────────────
+@app.route("/api/vps/upgrade", methods=["POST"])
+def api_vps_upgrade():
+    data   = request.json or {}
+    tg_id  = data.get("tg_id")
+    rtype  = data.get("type")   # cpu, ram, storage, bandwidth
+    amount = data.get("amount", 0)
+    if not all([tg_id, rtype, amount]):
+        return jsonify({"error": "missing params"}), 400
+    tg_id = int(tg_id)
+    LIMITS = {"cpu":32,"ram":65536,"storage":2000,"bandwidth":100}
+    MINS   = {"cpu":1, "ram":512, "storage":10,   "bandwidth":1}
+    if rtype not in LIMITS:
+        return jsonify({"error": "unknown type"}), 400
+
+    con = get_db(); cur = con.cursor()
+    _ensure_vps_tables(cur); con.commit()
+    vps = _get_vps(cur, tg_id)
+
+    new_val = min(LIMITS[rtype], vps[rtype] + float(amount) if rtype == "cpu" else vps[rtype] + int(amount))
+    cur.execute(f"UPDATE vps_state SET {rtype}=?, updated_at=? WHERE tg_id=?",
+                (new_val, int(time.time()), tg_id))
+
+    # Auto-fill profiles to new capacity
+    vps[rtype] = new_val
+    cap = _compute_capacity(vps["cpu"], vps["ram"], vps["storage"])
+    profiles = _get_profiles(cur, tg_id)
+    _fill_profiles(cur, tg_id, len(profiles), cap["maxProfiles"])
+    con.commit()
+
+    result = _vps_response(cur, tg_id)
+    con.close()
+    return jsonify(result)
+
+# ── POST /api/vps/reset ───────────────────────────────────
+@app.route("/api/vps/reset", methods=["POST"])
+def api_vps_reset():
+    data  = request.json or {}
+    tg_id = data.get("tg_id")
+    if not tg_id:
+        return jsonify({"error": "no tg_id"}), 400
+    tg_id = int(tg_id)
+    con = get_db(); cur = con.cursor()
+    _ensure_vps_tables(cur)
+    cur.execute("UPDATE vps_state SET cpu=1,ram=1024,storage=20,bandwidth=1,updated_at=? WHERE tg_id=?",
+                (int(time.time()), tg_id))
+    cur.execute("DELETE FROM vps_profiles WHERE tg_id=?", (tg_id,))
+    cap = _compute_capacity(1, 1024, 20)
+    _fill_profiles(cur, tg_id, 0, cap["maxProfiles"])
+    con.commit()
+    result = _vps_response(cur, tg_id)
+    con.close()
+    return jsonify(result)
+
+# ── PATCH /api/vps/profile/status ────────────────────────
+@app.route("/api/vps/profile/status", methods=["PATCH"])
+def api_profile_status():
+    data      = request.json or {}
+    tg_id     = data.get("tg_id")
+    profile_id = data.get("profile_id")
+    status    = data.get("status")
+    if status not in ("idle","active","warming"):
+        return jsonify({"error": "invalid status"}), 400
+    con = get_db(); cur = con.cursor()
+    _ensure_vps_tables(cur)
+    cur.execute("UPDATE vps_profiles SET status=?,last_activity=? WHERE id=? AND tg_id=?",
+                (status, int(time.time()), profile_id, int(tg_id)))
+    con.commit()
+    con.close()
+    return jsonify({"ok": True})
+    
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
