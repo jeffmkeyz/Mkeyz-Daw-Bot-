@@ -22,7 +22,7 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
 #app { min-height:100vh; padding:0 0 calc(80px + var(--safe-bottom)); display:flex; flex-direction:column; }
 .header { position:sticky; top:0; z-index:100; background:rgba(8,11,15,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:14px 16px 12px; display:flex; align-items:center; justify-content:space-between; }
 .header-left { display:flex; flex-direction:column; gap:2px; }
-.vps-name { font-family:'Syne',sans-serif; font-weight:800; font-size:17px; color:#fff; letter-spacing:-0.3px; }
+.vps-name { font-family:'Syne',sans-serif; font-weight:800; font-size:20px; color:#fff; letter-spacing:2px; text-transform:uppercase; }
 .vps-meta { color:var(--text-dim); font-size:10px; letter-spacing:0.5px; }
 .status-pill { display:flex; align-items:center; gap:6px; background:var(--green-dim); border:1px solid rgba(0,232,122,0.25); border-radius:20px; padding:4px 10px; font-size:10px; color:var(--green); letter-spacing:0.5px; }
 .pulse { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse-anim 2s ease-in-out infinite; }
@@ -318,7 +318,7 @@ function render() {
   document.getElementById('app').innerHTML = `
     <div class="header">
       <div class="header-left">
-        <div class="vps-name">${name.replace(/MKEYZ/g,'SIM')}</div>
+        <div class="vps-name">VPS <span style="color:var(--green)">SIM</span></div>
         <div class="vps-meta">EU-WEST (Madrid) · Ubuntu 22.04 · <span style="color:var(--green);opacity:0.7">v1.2.0</span></div>
       </div>
       <div class="status-pill"><div class="pulse"></div>ONLINE</div>
