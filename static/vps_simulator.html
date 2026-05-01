@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>VPS Simulator</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#080b0f; --surface:#0e1318; --surface2:#141c24; --border:#1e2d3d;
+  --green:#00e87a; --green-dim:rgba(0,232,122,0.12);
+  --amber:#ffb800; --amber-dim:rgba(255,184,0,0.12);
+  --red:#ff4757; --blue:#4fc3f7;
+  --text:#c8d8e8; --text-dim:#4a6070; --text-mid:#7a9ab0;
+  --radius:10px; --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body { height:100%; background:var(--bg); color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px); pointer-events:none; z-index:1000; }
+#app { min-height:100vh; padding:0 0 calc(80px + var(--safe-bottom)); display:flex; flex-direction:column; }
+.header { position:sticky; top:0; z-index:100; background:rgba(8,11,15,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:14px 16px 12px; display:flex; align-items:center; justify-content:space-between; }
+.header-left { display:flex; flex-direction:column; gap:2px; }
+.vps-name { font-family:'Syne',sans-serif; font-weight:800; font-size:17px; color:#fff; letter-spacing:-0.3px; }
+.vps-meta { color:var(--text-dim); font-size:10px; letter-spacing:0.5px; }
+.status-pill { display:flex; align-items:center; gap:6px; background:var(--green-dim); border:1px solid rgba(0,232,122,0.25); border-radius:20px; padding:4px 10px; font-size:10px; color:var(--green); letter-spacing:0.5px; }
+.pulse { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse-anim 2s ease-in-out infinite; }
+@keyframes pulse-anim { 0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(0,232,122,0.5);} 50%{opacity:0.7;transform:scale(0.9);box-shadow:0 0 0 4px rgba(0,232,122,0);} }
+.section-title { font-size:9px; font-weight:600; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; padding:18px 16px 10px; }
+.resources-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 16px; }
+.res-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px; position:relative; overflow:hidden; cursor:pointer; }
+.res-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; border-radius:var(--radius) var(--radius) 0 0; }
+.res-card.cpu::after { background:var(--green); }
+.res-card.ram::after { background:var(--blue); }
+.res-card.disk::after { background:var(--amber); }
+.res-card.bw::after { background:#b388ff; }
+.res-card:active { border-color:var(--green); background:var(--green-dim); }
+.res-icon { font-size:18px; margin-bottom:6px; }
+.res-label { font-size:9px; letter-spacing:1px; color:var(--text-dim); margin-bottom:4px; }
+.res-value { font-size:16px; font-weight:700; color:#fff; margin-bottom:8px; }
+.res-sub { font-size:9px; color:var(--text-dim); margin-bottom:8px; }
+.bar-track { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:2px; transition:width 0.6s cubic-bezier(0.4,0,0.2,1); }
+.cpu .bar-fill { background:var(--green); }
+.ram .bar-fill { background:var(--blue); }
+.disk .bar-fill { background:var(--amber); }
+.bw .bar-fill { background:#b388ff; }
+.capacity-panel { margin:8px 16px 0; background:linear-gradient(135deg,rgba(0,232,122,0.06) 0%,rgba(0,0,0,0) 60%); border:1px solid rgba(0,232,122,0.2); border-radius:var(--radius); padding:16px; display:flex; align-items:center; justify-content:space-between; }
+.cap-left { display:flex; flex-direction:column; gap:4px; }
+.cap-label { font-size:9px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; }
+.cap-number { font-family:'Syne',sans-serif; font-size:42px; font-weight:800; color:var(--green); line-height:1; text-shadow:0 0 30px rgba(0,232,122,0.4); }
+.cap-sublabel { font-size:10px; color:var(--text-mid); }
+.bottleneck-badge { font-size:9px; letter-spacing:0.5px; padding:3px 8px; border-radius:4px; background:var(--amber-dim); border:1px solid rgba(255,184,0,0.25); color:var(--amber); margin-top:4px; }
+.cap-limits { display:flex; flex-direction:column; gap:5px; text-align:right; }
+.cap-limit-row { font-size:10px; color:var(--text-dim); }
+.cap-limit-row span { color:var(--text); }
+.upgrade-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 16px; }
+.upg-btn { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:11px 10px; display:flex; align-items:center; gap:8px; cursor:pointer; transition:all 0.15s; color:var(--text); -webkit-tap-highlight-color:transparent; }
+.upg-btn:active { transform:scale(0.97); border-color:var(--green); background:var(--green-dim); }
+.upg-icon { font-size:14px; }
+.upg-text { display:flex; flex-direction:column; gap:1px; }
+.upg-name { font-size:11px; font-weight:600; color:#fff; }
+.upg-detail { font-size:9px; color:var(--text-dim); }
+.upg-arrow { margin-left:auto; font-size:10px; color:var(--green); opacity:0.6; }
+.profiles-header { padding:18px 16px 10px; display:flex; align-items:center; justify-content:space-between; }
+.profiles-header .section-title { padding:0; }
+.profile-count-badge { font-size:9px; letter-spacing:1px; color:var(--green); background:var(--green-dim); border:1px solid rgba(0,232,122,0.2); padding:2px 8px; border-radius:20px; }
+.profiles-list { display:flex; flex-direction:column; gap:6px; padding:0 16px; }
+.profile-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:11px 12px; display:flex; align-items:center; gap:10px; cursor:pointer; transition:border-color 0.15s; animation:card-in 0.3s ease both; }
+@keyframes card-in { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+.profile-card:active { background:var(--surface2); }
+.profile-status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.status-active .profile-status-dot { background:var(--green); box-shadow:0 0 6px rgba(0,232,122,0.6); }
+.status-warming .profile-status-dot { background:var(--amber); box-shadow:0 0 6px rgba(255,184,0,0.6); }
+.status-idle .profile-status-dot { background:var(--text-dim); }
+.profile-info { flex:1; min-width:0; }
+.profile-name { font-size:12px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.profile-meta { font-size:9px; color:var(--text-dim); margin-top:2px; }
+.profile-right { text-align:right; flex-shrink:0; }
+.profile-status-label { font-size:9px; letter-spacing:0.5px; }
+.status-active .profile-status-label { color:var(--green); }
+.status-warming .profile-status-label { color:var(--amber); }
+.status-idle .profile-status-label { color:var(--text-dim); }
+.profile-fp { font-size:8px; color:var(--text-dim); margin-top:1px; }
+.profiles-empty { padding:30px 16px; text-align:center; color:var(--text-dim); font-size:11px; line-height:1.8; }
+.profiles-empty .big-icon { font-size:36px; display:block; margin-bottom:10px; opacity:0.4; }
+.bottom-bar { position:fixed; bottom:0; left:0; right:0; padding:10px 16px calc(10px + var(--safe-bottom)); background:rgba(8,11,15,0.95); backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; gap:8px; z-index:200; }
+.btn-primary { flex:1; padding:13px; background:var(--green); border:none; border-radius:var(--radius); font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#000; cursor:pointer; letter-spacing:0.3px; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
+.btn-primary:active { transform:scale(0.97); opacity:0.85; }
+.btn-secondary { padding:13px 18px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim); cursor:pointer; letter-spacing:0.3px; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
+.btn-secondary:active { transform:scale(0.97); border-color:var(--red); color:var(--red); }
+.modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.7); display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity 0.25s; }
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal-sheet { width:100%; background:var(--surface); border:1px solid var(--border); border-bottom:none; border-radius:18px 18px 0 0; padding:20px 16px calc(24px + var(--safe-bottom)); transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.modal-overlay.open .modal-sheet { transform:translateY(0); }
+.modal-handle { width:36px; height:4px; border-radius:2px; background:var(--border); margin:0 auto 20px; }
+.modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:#fff; margin-bottom:18px; }
+.modal-options { display:flex; flex-direction:column; gap:8px; }
+.modal-option { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.modal-option:active { border-color:var(--green); background:var(--green-dim); }
+.modal-opt-left { display:flex; flex-direction:column; gap:2px; }
+.modal-opt-label { font-size:13px; font-weight:600; color:#fff; }
+.modal-opt-detail { font-size:10px; color:var(--text-dim); }
+.modal-opt-plus { font-size:12px; color:var(--green); font-weight:700; }
+.toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:#1a2430; border:1px solid var(--green); color:var(--green); font-size:11px; letter-spacing:0.3px; padding:8px 16px; border-radius:20px; opacity:0; pointer-events:none; transition:all 0.3s; z-index:1000; white-space:nowrap; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+#loading { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; height:100vh; color:var(--text-dim); font-size:11px; }
+.spinner { width:28px; height:28px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg);} }
+</style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div><span>INICIANDO SISTEMA...</span></div>
+<div id="app" style="display:none"></div>
+<div class="modal-overlay" id="upgradeModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">Upgrade</div>
+    <div class="modal-options" id="modalOptions"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Telegram Init ─────────────────────────────────────────
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#080b0f'); tg.setBackgroundColor('#080b0f'); }
+
+// Obtener tg_id del usuario de Telegram
+const TG_ID = tg?.initDataUnsafe?.user?.id || 0;
+
+let vpsState = null;
+
+// ── API ───────────────────────────────────────────────────
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(path, { headers: {'Content-Type':'application/json'}, ...opts });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+async function loadVPS() {
+  try {
+    vpsState = await apiFetch(`/api/vps?tg_id=${TG_ID}`);
+    render();
+  } catch (err) {
+    document.getElementById('loading').innerHTML = `
+      <div style="text-align:center;padding:32px 24px">
+        <div style="font-size:32px;margin-bottom:16px">⚠️</div>
+        <div style="color:#ff4757;font-size:13px;margin-bottom:8px">No se pudo conectar</div>
+        <div style="color:#4a6070;font-size:11px;margin-bottom:20px">${err.message}</div>
+        <button onclick="loadVPS()" style="background:var(--green);border:none;border-radius:8px;padding:10px 20px;font-family:inherit;font-size:12px;font-weight:600;color:#000;cursor:pointer">↺ Reintentar</button>
+      </div>`;
+  }
+}
+
+async function upgrade(type, amount) {
+  closeModal();
+  try {
+    vpsState = await apiFetch('/api/vps/upgrade', {
+      method:'POST', body: JSON.stringify({tg_id: TG_ID, type, amount})
+    });
+    render();
+    showToast(`+${formatAmount(type, amount)} ${type.toUpperCase()} añadido ✓`);
+    tg?.HapticFeedback?.impactOccurred('medium');
+  } catch(e) { showToast('Error al actualizar'); }
+}
+
+async function resetVPS() {
+  if (!confirm('¿Resetear el VPS a configuración base?')) return;
+  try {
+    vpsState = await apiFetch('/api/vps/reset', {
+      method:'POST', body: JSON.stringify({tg_id: TG_ID})
+    });
+    render();
+    showToast('VPS reseteado');
+  } catch(e) { showToast('Error al resetear'); }
+}
+
+async function toggleProfileStatus(id, currentStatus) {
+  const next = {idle:'active', active:'warming', warming:'idle'}[currentStatus];
+  try {
+    await apiFetch('/api/vps/profile/status', {
+      method:'PATCH', body: JSON.stringify({tg_id: TG_ID, profile_id: id, status: next})
+    });
+    const p = vpsState.profiles.find(p => p.id === id);
+    if (p) { p.status = next; p.last_activity = Date.now()/1000; }
+    render();
+    tg?.HapticFeedback?.impactOccurred('light');
+  } catch(e) {}
+}
+
+// ── Format ────────────────────────────────────────────────
+function formatRAM(mb)  { return mb >= 1024 ? `${mb/1024}GB` : `${mb}MB`; }
+function formatDisk(gb) { return gb >= 1000 ? `${gb/1000}TB` : `${gb}GB`; }
+function formatAmount(type, v) {
+  if (type==='ram') return formatRAM(v);
+  if (type==='cpu') return `${v} vCPU`;
+  if (type==='storage') return formatDisk(v);
+  return `${v}TB`;
+}
+function timeAgo(ts) {
+  const diff = Math.floor((Date.now()/1000 - ts) / 60);
+  if (diff < 1) return 'ahora';
+  if (diff < 60) return `${diff}m`;
+  return `${Math.floor(diff/60)}h`;
+}
+
+// ── Modal ─────────────────────────────────────────────────
+const UPGRADE_OPTIONS = {
+  cpu:      {label:'Potencia CPU',     options:[{amount:1,label:'+1 vCPU',detail:'añade 2 perfiles'},{amount:2,label:'+2 vCPU',detail:'añade 4 perfiles'},{amount:4,label:'+4 vCPU',detail:'añade 8 perfiles'}]},
+  ram:      {label:'Memoria RAM',      options:[{amount:512,label:'+512MB',detail:'añade 1 perfil'},{amount:1024,label:'+1GB RAM',detail:'añade 2 perfiles'},{amount:4096,label:'+4GB RAM',detail:'añade 8 perfiles'}]},
+  storage:  {label:'Almacenamiento',   options:[{amount:10,label:'+10GB',detail:'añade 5 perfiles'},{amount:25,label:'+25GB',detail:'añade 12 perfiles'},{amount:100,label:'+100GB',detail:'añade 50 perfiles'}]},
+  bandwidth:{label:'Bandwidth',        options:[{amount:1,label:'+1TB/mes',detail:'más ancho de banda'},{amount:5,label:'+5TB/mes',detail:'alta velocidad'}]}
+};
+
+function openModal(type) {
+  const conf = UPGRADE_OPTIONS[type];
+  document.getElementById('modalTitle').textContent = conf.label;
+  document.getElementById('modalOptions').innerHTML = conf.options.map(o => `
+    <div class="modal-option" onclick="upgrade('${type}',${o.amount})">
+      <div class="modal-opt-left">
+        <span class="modal-opt-label">${o.label}</span>
+        <span class="modal-opt-detail">${o.detail}</span>
+      </div>
+      <span class="modal-opt-plus">+ AGREGAR</span>
+    </div>`).join('');
+  document.getElementById('upgradeModal').classList.add('open');
+  tg?.HapticFeedback?.impactOccurred('light');
+}
+function closeModal() { document.getElementById('upgradeModal').classList.remove('open'); }
+document.getElementById('upgradeModal').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Render ────────────────────────────────────────────────
+function render() {
+  if (!vpsState) return;
+  const { resources, profiles, capacity, usage, name } = vpsState;
+  const bottleneckLabels = {cpu:'⚡ CPU es el límite', ram:'💾 RAM es el límite', storage:'💿 Disco es el límite'};
+
+  const profilesHTML = profiles.length === 0
+    ? `<div class="profiles-empty"><span class="big-icon">🖥️</span>Sin perfiles activos.<br/>Agrega recursos para crear perfiles.</div>`
+    : profiles.map((p,i) => `
+      <div class="profile-card status-${p.status}" onclick="toggleProfileStatus('${p.id}','${p.status}')" style="animation-delay:${i*0.04}s">
+        <div class="profile-status-dot"></div>
+        <div class="profile-info">
+          <div class="profile-name">${p.name}</div>
+          <div class="profile-meta">${p.browser} · ${p.os} · ${timeAgo(p.last_activity)}</div>
+        </div>
+        <div class="profile-right">
+          <div class="profile-status-label">${p.status.toUpperCase()}</div>
+          <div class="profile-fp">${p.fingerprint.substring(0,8)}</div>
+        </div>
+      </div>`).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="header">
+      <div class="header-left">
+        <div class="vps-name">${name}</div>
+        <div class="vps-meta">EU-WEST (Madrid) · Ubuntu 22.04</div>
+      </div>
+      <div class="status-pill"><div class="pulse"></div>ONLINE</div>
+    </div>
+    <div class="section-title">// RECURSOS DEL SERVIDOR</div>
+    <div class="resources-grid">
+      <div class="res-card cpu" onclick="openModal('cpu')">
+        <div class="res-icon">⚡</div><div class="res-label">CPU</div>
+        <div class="res-value">${resources.cpu} vCPU</div>
+        <div class="res-sub">Uso: ${usage.cpu}%</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${usage.cpu}%"></div></div>
+      </div>
+      <div class="res-card ram" onclick="openModal('ram')">
+        <div class="res-icon">💾</div><div class="res-label">RAM</div>
+        <div class="res-value">${formatRAM(resources.ram)}</div>
+        <div class="res-sub">Uso: ${usage.ram}%</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${usage.ram}%"></div></div>
+      </div>
+      <div class="res-card disk" onclick="openModal('storage')">
+        <div class="res-icon">💿</div><div class="res-label">DISCO</div>
+        <div class="res-value">${formatDisk(resources.storage)}</div>
+        <div class="res-sub">Uso: ${usage.storage}%</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${usage.storage}%"></div></div>
+      </div>
+      <div class="res-card bw" onclick="openModal('bandwidth')">
+        <div class="res-icon">🌐</div><div class="res-label">BANDWIDTH</div>
+        <div class="res-value">${resources.bandwidth}TB/mes</div>
+        <div class="res-sub">Sin límite de velocidad</div>
+        <div class="bar-track"><div class="bar-fill" style="width:20%"></div></div>
+      </div>
+    </div>
+    <div class="section-title">// CAPACIDAD DE PERFILES</div>
+    <div class="capacity-panel">
+      <div class="cap-left">
+        <div class="cap-label">Perfiles disponibles</div>
+        <div class="cap-number">${capacity.maxProfiles}</div>
+        <div class="cap-sublabel">${profiles.filter(p=>p.status==='active').length} activos · ${profiles.filter(p=>p.status==='idle').length} inactivos</div>
+        ${capacity.maxProfiles < 20 ? `<div class="bottleneck-badge">⚠ ${bottleneckLabels[capacity.bottleneck]||''}</div>` : ''}
+      </div>
+      <div class="cap-limits">
+        <div class="cap-limit-row">CPU → <span>${capacity.limits.byCPU}</span></div>
+        <div class="cap-limit-row">RAM → <span>${capacity.limits.byRAM}</span></div>
+        <div class="cap-limit-row">Disco → <span>${capacity.limits.byStorage}</span></div>
+      </div>
+    </div>
+    <div class="section-title">// AGREGAR POTENCIA</div>
+    <div class="upgrade-grid">
+      <div class="upg-btn" onclick="openModal('cpu')"><span class="upg-icon">⚡</span><div class="upg-text"><span class="upg-name">+ CPU</span><span class="upg-detail">Más procesos</span></div><span class="upg-arrow">›</span></div>
+      <div class="upg-btn" onclick="openModal('ram')"><span class="upg-icon">💾</span><div class="upg-text"><span class="upg-name">+ RAM</span><span class="upg-detail">Más perfiles</span></div><span class="upg-arrow">›</span></div>
+      <div class="upg-btn" onclick="openModal('storage')"><span class="upg-icon">💿</span><div class="upg-text"><span class="upg-name">+ Disco</span><span class="upg-detail">Más datos</span></div><span class="upg-arrow">›</span></div>
+      <div class="upg-btn" onclick="openModal('bandwidth')"><span class="upg-icon">🌐</span><div class="upg-text"><span class="upg-name">+ BW</span><span class="upg-detail">Más velocidad</span></div><span class="upg-arrow">›</span></div>
+    </div>
+    <div class="profiles-header">
+      <div class="section-title">// PERFILES DE NAVEGADOR</div>
+      <div class="profile-count-badge">${profiles.length}/${capacity.maxProfiles}</div>
+    </div>
+    <div class="profiles-list">${profilesHTML}</div>
+    <div class="bottom-bar">
+      <button class="btn-primary" onclick="openModal('cpu')">⬆ ESCALAR SERVIDOR</button>
+      <button class="btn-secondary" onclick="resetVPS()">↺</button>
+    </div>
+  `;
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+}
+
+loadVPS();
+setInterval(loadVPS, 30000);
+</script>
+</body>
+</html>
