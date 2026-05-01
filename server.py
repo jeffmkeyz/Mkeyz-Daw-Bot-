@@ -650,11 +650,8 @@ def api_vps_upgrade():
     cur.execute(f"UPDATE vps_state SET {rtype}=?, updated_at=? WHERE tg_id=?",
                 (new_val, int(time.time()), tg_id))
 
-    # Auto-fill profiles to new capacity
+    # Do NOT auto-fill — user adds profiles manually
     vps[rtype] = new_val
-    cap = _compute_capacity(vps["cpu"], vps["ram"], vps["storage"])
-    profiles = _get_profiles(cur, tg_id)
-    _fill_profiles(cur, tg_id, len(profiles), cap["maxProfiles"])
     con.commit()
 
     result = _vps_response(cur, tg_id)
