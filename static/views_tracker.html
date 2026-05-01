@@ -445,6 +445,7 @@ canvas#chart {
   <div class="earn-item"><div class="earn-n" id="e-day">$0</div><div class="earn-l">☀️ Diario</div></div>
   <div class="earn-item"><div class="earn-n" id="e-month">$0</div><div class="earn-l">📅 Mensual</div></div>
   <div class="earn-item"><div class="earn-n" id="e-year">$0</div><div class="earn-l">📆 Anual</div></div>
+  <div id="earn-note" style="display:none;grid-column:1/-1;font-size:10px;color:rgba(255,167,38,0.8);text-align:center;padding-top:2px;letter-spacing:0.3px"></div>
 </div>
 
 <div class="stats-row">
@@ -786,14 +787,13 @@ function getFiltered() {
   const cut=cutoff();
   let f=entries.filter(e=>e.date>=cut);
   if (selPlatform!=="all") {
-    f=f.filter(e=>e.platform===selPlatform);
-    // Plataformas con fechas de reporte periódico: si no hay datos en el período
-    // seleccionado, mostrar todos sus datos disponibles (fallback)
-    if (NOSPIKE_PLATS.includes(selPlatform) && f.length===0) {
+    // Plataformas periódicas: mostrar SIEMPRE todos los datos disponibles
+    if (NOSPIKE_PLATS.includes(selPlatform)) {
       f=entries.filter(e=>e.platform===selPlatform);
+    } else {
+      f=f.filter(e=>e.platform===selPlatform);
     }
   } else {
-    // Modo Todo: respetar activePlats (noSpike off por defecto, activables por el usuario)
     if (activePlats.size>0) {
       f=f.filter(e=>activePlats.has(e.platform));
     }
@@ -801,18 +801,16 @@ function getFiltered() {
   return f.sort((a,b)=>a.date.localeCompare(b.date));
 }
 
-// Datos para STATS (total, avg, max): incluye TODAS las plataformas en el período
 function getStatsData() {
   const cut=cutoff();
   let f=entries.filter(e=>e.date>=cut);
   if (selPlatform!=="all") {
-    f=f.filter(e=>e.platform===selPlatform);
-    // Mismo fallback para plataformas periódicas
-    if (NOSPIKE_PLATS.includes(selPlatform) && f.length===0) {
+    if (NOSPIKE_PLATS.includes(selPlatform)) {
       f=entries.filter(e=>e.platform===selPlatform);
+    } else {
+      f=f.filter(e=>e.platform===selPlatform);
     }
   }
-  // En modo "all": respetar activePlats para que el total refleje lo que está activo
   if (selPlatform==="all" && activePlats.size>0) {
     f=f.filter(e=>activePlats.has(e.platform));
   }
@@ -839,10 +837,7 @@ function render() {
   }
 
   // Label dinámico del total
-  const cut=cutoff();
-  const noSpikeWithFallback=NOSPIKE_PLATS.includes(selPlatform)&&
-    entries.filter(e=>e.platform===selPlatform&&e.date>=cut).length===0&&
-    entries.some(e=>e.platform===selPlatform);
+  const noSpikeWithFallback=NOSPIKE_PLATS.includes(selPlatform)&&entries.some(e=>e.platform===selPlatform);
   const lbl=document.getElementById("total-lbl");
   const activePlatsArr=[...activePlats];
   const activePlatLabel=selPlatform==="all"&&activePlatsArr.length>0&&activePlatsArr.length<5
@@ -858,14 +853,13 @@ function render() {
   gEl.textContent=(growth>=0?"+":"")+growth+"%";
   gEl.style.color=growth>=0?"var(--green)":"var(--fire)";
 
-  // Earnings
+  // Earnings — usa promedio sin outliers (±2σ) para proyecciones realistas
   let rate=0;
   if (currentMetric==="streams") {
     if (selPlatform!=="all") {
       const plat=PLATFORMS.find(p=>p.id===selPlatform);
       rate=plat?.rate||0;
     } else {
-      // Weighted avg rate usando statsData (todas las plataformas)
       const totals={}; let grandTotal=0;
       statsData.forEach(e=>{ totals[e.platform]=(totals[e.platform]||0)+getVal(e); grandTotal+=getVal(e); });
       if (grandTotal>0) Object.entries(totals).forEach(([pid,cnt])=>{
@@ -873,13 +867,38 @@ function render() {
       });
     }
   }
-  const dayEarn=avg*rate;
-  const earnBox=document.getElementById("earn-box");
-  if (rate>0&&total>0) {
+
+  // Promedio limpio sin outliers para earnings
+  function cleanAvg(values) {
+    if (values.length < 4) return values.reduce((a,b)=>a+b,0)/Math.max(1,values.length);
+    const mean = values.reduce((a,b)=>a+b,0) / values.length;
+    const std  = Math.sqrt(values.reduce((s,v)=>s+(v-mean)**2,0) / values.length);
+    const clean = std > 0 ? values.filter(v => Math.abs(v-mean) <= 2*std) : values;
+    return clean.reduce((a,b)=>a+b,0) / Math.max(1,clean.length);
+  }
+
+  const earnVals  = statsData.map(e=>getVal(e)).filter(v=>v>0);
+  const cleanAvgV = earnVals.length ? cleanAvg(earnVals) : 0;
+  const outlierCount = earnVals.length - (earnVals.length < 4 ? earnVals.length :
+    earnVals.filter(v=>{ const m=earnVals.reduce((a,b)=>a+b,0)/earnVals.length; const s=Math.sqrt(earnVals.reduce((x,vv)=>x+(vv-m)**2,0)/earnVals.length); return s>0?Math.abs(v-m)<=2*s:true; }).length);
+
+  const dayEarn = cleanAvgV * rate;
+  const earnBox = document.getElementById("earn-box");
+  if (rate>0 && total>0) {
     earnBox.style.display="grid";
-    document.getElementById("e-day").textContent  =fmtMoney(dayEarn);
-    document.getElementById("e-month").textContent=fmtMoney(dayEarn*30);
-    document.getElementById("e-year").textContent =fmtMoney(dayEarn*365);
+    document.getElementById("e-day").textContent   = fmtMoney(dayEarn);
+    document.getElementById("e-month").textContent = fmtMoney(dayEarn*30);
+    document.getElementById("e-year").textContent  = fmtMoney(dayEarn*365);
+    // Aviso si se excluyeron outliers
+    const earnNote = document.getElementById("earn-note");
+    if (earnNote) {
+      if (outlierCount > 0) {
+        earnNote.textContent = `⚠️ ${outlierCount} día${outlierCount>1?"s":""} anómal${outlierCount>1?"os":"o"} excluido${outlierCount>1?"s":""} del cálculo`;
+        earnNote.style.display = "block";
+      } else {
+        earnNote.style.display = "none";
+      }
+    }
   } else {
     earnBox.style.display="none";
   }
