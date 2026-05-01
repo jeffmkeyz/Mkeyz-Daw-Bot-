@@ -3,872 +3,1762 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Detector de Escala Pro — Mkeyz Studio</title>
+  <title>Playlist Generator Pro — Mkeyz Studio</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/abcjs@6.2.3/dist/abcjs-basic-min.js"></script>
   <style>
     :root {
       --bg: #03050a;
       --card: #0a0c14;
       --border: #1a1d2e;
       --gold: #f0b90b;
-      --purple: #b388ff;
-      --purple2: #7c4dff;
       --green: #00e676;
-      --text: #fff;
+      --fire: #ff3b3b;
+      --blue: #4fc3f7;
+      --purple: #b388ff;
+      --text: #ffffff;
       --muted: #6a6d7a;
-      --radius: 16px;
+      --radius: 18px;
+      --glass: rgba(10, 12, 20, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.06);
     }
-    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
     body {
       background: var(--bg);
       color: var(--text);
       font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Fondo animado */
+    .bg-aurora {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(0, 230, 118, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 30%, rgba(179, 136, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 70%, rgba(240, 185, 11, 0.04) 0%, transparent 50%);
+      animation: auroraShift 20s ease-in-out infinite alternate;
+    }
+    @keyframes auroraShift {
+      0% {
+        transform: scale(1) translate(0, 0);
+        opacity: 0.7;
+      }
+      100% {
+        transform: scale(1.2) translate(2%, -1%);
+        opacity: 1;
+      }
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 20px 16px 80px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 20px 0 12px;
+    }
+    .header .icon {
+      font-size: 52px;
+      animation: floatIcon 3s ease-in-out infinite;
+      display: inline-block;
+      filter: drop-shadow(0 0 25px rgba(0, 230, 118, 0.4));
+    }
+    @keyframes floatIcon {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+      30% {
+        transform: translateY(-12px) rotate(3deg);
+      }
+      60% {
+        transform: translateY(4px) rotate(-2deg);
+      }
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      background: linear-gradient(135deg, #ffffff 0%, #00e676 30%, #4fc3f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+    .header .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    /* Cards con glassmorphism */
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .section-title {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      opacity: 0.5;
+    }
+
+    /* Genre grid */
+    .genre-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+    .genre-circle {
+      aspect-ratio: 1;
+      border-radius: 50%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      overflow-x: hidden;
-    }
-    .app-container {
-      width: 100%;
-      max-width: 500px;
-      padding: 16px 12px 80px;
+      justify-content: center;
+      cursor: pointer;
+      border: 2px solid transparent;
       position: relative;
-      z-index: 1;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      background: rgba(26, 26, 26, 0.6);
+      overflow: visible;
     }
-    .header {
+    .genre-circle .g-emoji {
+      font-size: 15px;
+      margin-bottom: 2px;
+      line-height: 1;
+      transition: transform 0.3s ease;
+    }
+    .genre-circle .g-name {
+      font-size: 7px;
+      font-weight: 800;
       text-align: center;
-      padding: 16px 0 8px;
+      color: #666;
+      letter-spacing: 0.3px;
+      line-height: 1.2;
+      padding: 0 3px;
+      transition: color 0.3s;
     }
-    .header .icon { font-size: 42px; animation: float 3s infinite; display: inline-block; }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-    .header h1 {
-      font-size: 24px; font-weight:900; letter-spacing:-1px;
-      background: linear-gradient(135deg,#fff,#b388ff,#f0b90b);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    .genre-circle:active {
+      transform: scale(0.9);
     }
-    .detection-card {
-      background: linear-gradient(145deg,#0f0a1e,#120d24,#0a0f1a);
-      border:1px solid #2a1f4a; border-radius:var(--radius); padding:16px; margin-bottom:12px;
-      box-shadow: 0 0 30px rgba(179,136,255,0.2);
+    .genre-circle.selected {
+      transform: scale(1.08);
+      z-index: 2;
     }
-    .scale-name { font-size:32px; font-weight:900; color:var(--gold); text-align:center; }
-    .scale-mood { font-size:14px; color:var(--purple); text-align:center; font-weight:600; }
-    .confidence-bar { height:5px; background:rgba(255,255,255,0.05); border-radius:10px; margin-top:8px; }
-    .confidence-fill { height:100%; border-radius:10px; background:linear-gradient(90deg,var(--purple2),var(--gold)); transition:width 0.4s; }
+    .genre-circle.selected .g-emoji {
+      transform: scale(1.3);
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .genre-circle.selected .g-name {
+      color: #fff;
+      font-weight: 900;
+    }
+    @keyframes popIn {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1.3);
+        opacity: 1;
+      }
+    }
+    .genre-circle::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      opacity: 0;
+      transition: all 0.4s ease;
+    }
+    .genre-circle.selected::after {
+      opacity: 1;
+      animation: borderPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes borderPulse {
+      0%, 100% {
+        inset: -3px;
+        opacity: 0.6;
+      }
+      50% {
+        inset: -6px;
+        opacity: 1;
+      }
+    }
 
-    .piano-wrap {
-      overflow-x: auto;
-      margin: 8px 0;
-      padding-bottom: 6px;
-      scrollbar-width: thin;
-      scrollbar-color: var(--border) transparent;
-      -webkit-overflow-scrolling: touch;
+    /* Chips */
+    .chip-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .piano-wrap::-webkit-scrollbar { height: 6px; }
-    .piano-wrap::-webkit-scrollbar-track { background: transparent; }
-    .piano-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    .chip {
+      padding: 10px 18px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(26, 26, 26, 0.5);
+      color: #888;
+      border: 2px solid rgba(42, 42, 42, 0.6);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .chip::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 100px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .chip.selected {
+      color: #fff;
+      border-color: transparent;
+      transform: scale(1.04);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .chip.selected::before {
+      opacity: 0.2;
+      background: currentColor;
+    }
+    .chip:active {
+      transform: scale(0.94);
+    }
 
-    .piano { display:flex; position:relative; height:130px; width:max-content; min-width:100%; }
-    .white-key {
-      width:40px; height:130px;
-      background: linear-gradient(180deg, #f5f5f5 0%, #e0e0e0 40%, #d0d0d0 100%);
-      border: 2px solid #b0b0b0;
-      border-radius: 0 0 8px 8px;
+    /* Length buttons */
+    .len-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .len-btn {
+      padding: 14px 6px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(26, 26, 26, 0.5);
+      color: #888;
+      border: 2px solid rgba(42, 42, 42, 0.6);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .len-btn.active {
+      color: var(--green);
+      border-color: rgba(0, 230, 118, 0.4);
+      background: rgba(0, 230, 118, 0.08);
+      box-shadow: 0 0 20px rgba(0, 230, 118, 0.15);
+      transform: scale(1.03);
+    }
+    .len-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+    .toggle-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .toggle-sublabel {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .toggle-switch {
+      width: 50px;
+      height: 28px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      background: var(--gold);
+      box-shadow: 0 0 16px rgba(240, 185, 11, 0.3);
+    }
+    .toggle-switch.off {
+      background: var(--border);
+      box-shadow: none;
+    }
+    .toggle-switch span {
+      position: absolute;
+      top: 3px;
+      left: 24px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    .toggle-switch.off span {
+      left: 3px;
+    }
+
+    /* Generate button */
+    .btn-gen {
+      width: 100%;
+      padding: 20px;
+      border: none;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #00e676 0%, #00bcd4 100%);
+      font-size: 19px;
+      font-weight: 900;
+      color: #000;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 12px 40px rgba(0, 230, 118, 0.3);
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 1px;
+    }
+    .btn-gen::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.2) 50%, transparent 60%);
+      animation: btnShine 3s ease-in-out infinite;
+    }
+    @keyframes btnShine {
+      0% {
+        transform: translateX(-100%) rotate(45deg);
+      }
+      100% {
+        transform: translateX(100%) rotate(45deg);
+      }
+    }
+    .btn-gen:active {
+      transform: scale(0.96);
+      box-shadow: 0 6px 20px rgba(0, 230, 118, 0.2);
+    }
+    .btn-gen:disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* Playlist result */
+    .playlist-card {
+      background: var(--glass);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid var(--glass-border);
+      border-radius: 22px;
+      overflow: hidden;
+      margin-top: 20px;
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Playlist cover */
+    .playlist-cover {
+      height: 180px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .playlist-cover .cover-art {
+      position: absolute;
+      inset: 0;
+      transition: all 0.5s ease;
+    }
+    .playlist-cover .cover-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 30%, rgba(3, 5, 10, 0.9) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 24px;
+    }
+    .playlist-cover .pl-name {
+      font-size: 24px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+      letter-spacing: -1px;
+      text-align: center;
+      padding: 0 20px;
+    }
+    .playlist-cover .pl-desc {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    .playlist-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .playlist-meta {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .playlist-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .playlist-tag {
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(0, 230, 118, 0.1);
+      color: var(--green);
+      border: 1px solid rgba(0, 230, 118, 0.2);
+    }
+    .playlist-tag.mkeyz-tag {
+      background: rgba(240, 185, 11, 0.1);
+      color: var(--gold);
+      border-color: rgba(240, 185, 11, 0.3);
+    }
+
+    /* Track list */
+    .track-list {
+      padding: 4px 0;
+    }
+    .track-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.2s ease;
       cursor: pointer;
       position: relative;
-      transition: all 0.1s ease;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      padding-bottom: 8px;
-      font-size: 10px;
+    }
+    .track-item:last-child {
+      border-bottom: none;
+    }
+    .track-item:active {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .track-item.is-mkeyz {
+      background: rgba(240, 185, 11, 0.04);
+    }
+    .track-num {
+      font-size: 14px;
+      color: var(--muted);
+      min-width: 24px;
+      text-align: center;
       font-weight: 700;
-      color: #555;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.15), inset 0 -6px 12px rgba(0,0,0,0.08);
-      transform-origin: top center;
-      z-index: 1;
     }
-    .white-key:active {
-      background: linear-gradient(180deg, #e8e8e8 0%, #c8c8c8 40%, #b8b8b8 100%);
-      transform: scaleY(0.97);
+    .track-item.is-mkeyz .track-num {
+      color: var(--gold);
     }
-    .white-key.selected {
-      border-color: var(--gold);
-      box-shadow: 0 0 20px rgba(240,185,11,0.7), 0 2px 4px rgba(0,0,0,0.3);
-      background: linear-gradient(180deg, #fff9c4 0%, #ffe082 40%, #f9a825 100%);
-      color: #000;
-      z-index: 3;
+    .track-cover {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 900;
+      color: #fff;
     }
-    .white-key.in-scale {
-      background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 40%, #a5d6a7 100%);
-      border-color: #81c784;
+    .track-info {
+      flex: 1;
     }
-    .white-key.selected.in-scale {
-      background: linear-gradient(180deg, #b9f6ca 0%, #69f0ae 40%, #00c853 100%);
-      border-color: var(--gold);
-      box-shadow: 0 0 25px rgba(0,230,118,0.8), 0 0 15px rgba(240,185,11,0.5);
-      color: #000;
+    .track-name {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+    .track-item.is-mkeyz .track-name {
+      color: var(--gold);
+    }
+    .track-artist {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .track-energy {
+      display: flex;
+      gap: 2px;
+      align-items: center;
+    }
+    .energy-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+    .energy-dot.filled {
+      background: var(--green);
+      box-shadow: 0 0 4px rgba(0, 230, 118, 0.5);
+    }
+    .track-duration {
+      font-size: 12px;
+      color: var(--muted);
+      min-width: 36px;
+      text-align: right;
+    }
+    .mkeyz-badge {
+      font-size: 9px;
+      background: rgba(240, 185, 11, 0.15);
+      color: var(--gold);
+      border: 1px solid rgba(240, 185, 11, 0.3);
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-left: 6px;
+      vertical-align: middle;
+      font-weight: 700;
     }
 
-    .black-key {
-      width: 28px; height: 84px;
-      background: linear-gradient(180deg, #2a2a2a 0%, #0d0d0d 30%, #000000 100%);
-      border-radius: 0 0 5px 5px;
-      cursor: pointer;
-      position: absolute;
-      top: 0;
-      z-index: 2;
-      transition: all 0.1s ease;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      padding-bottom: 6px;
-      font-size: 8px;
-      font-weight: 700;
-      color: #777;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.6), inset 0 -4px 8px rgba(0,0,0,0.4);
-      transform-origin: top center;
-      border: 2px solid #000;
-    }
-    .black-key:active { transform: scaleY(0.96); }
-    .black-key.selected {
-      border-color: var(--gold);
-      background: linear-gradient(180deg, #ffe082 0%, #ffb300 40%, #e65100 100%);
-      color: #000;
-      box-shadow: 0 0 20px rgba(240,185,11,0.7), 0 3px 8px rgba(0,0,0,0.5);
-    }
-    .black-key.in-scale {
-      background: linear-gradient(180deg, #1b3a1b 0%, #0d2a0d 30%, #051a05 100%);
-      border-color: #2e7d32;
-    }
-    .black-key.selected.in-scale {
-      background: linear-gradient(180deg, #69f0ae 0%, #00c853 40%, #00600f 100%);
-      border-color: var(--gold);
-      box-shadow: 0 0 20px rgba(0,230,118,0.8), 0 0 15px rgba(240,185,11,0.5);
-      color: #000;
+    /* Section divider */
+    .section-divider {
+      padding: 10px 20px;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      background: rgba(255, 255, 255, 0.02);
+      font-weight: 600;
     }
 
-    .tab-bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      display: flex;
-      background: var(--card);
+    /* Action buttons */
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 16px 20px;
       border-top: 1px solid var(--border);
-      z-index: 100;
-      padding: 6px 0 env(safe-area-inset-bottom);
-      justify-content: space-around;
     }
-    .tab-btn {
-      flex: 1; text-align: center; padding: 6px; color: var(--muted);
-      font-size: 11px; font-weight: 600; cursor: pointer; border: none;
-      background: transparent; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    .action-btn {
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
-    .tab-btn.active { color: var(--gold); }
-    .tab-btn .tab-icon { font-size: 20px; }
+    .action-btn:active {
+      transform: scale(0.95);
+    }
+    .btn-copy-pl {
+      background: rgba(0, 230, 118, 0.12);
+      color: var(--green);
+    }
+    .btn-shuffle {
+      background: rgba(79, 195, 247, 0.12);
+      color: var(--blue);
+    }
+    .btn-new {
+      width: calc(100% - 40px);
+      margin: 0 20px 20px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .btn-new:active {
+      background: rgba(255, 255, 255, 0.08);
+    }
 
-    .panel { display: none; animation: fadeSlide 0.3s; }
-    .panel.active { display: block; }
-    @keyframes fadeSlide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-
-    .section-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:12px 0 8px; }
-    .btn {
-      padding: 10px 16px; border-radius: 20px; border: 1px solid var(--border);
-      background: var(--card); color: var(--text); font-weight: 700; cursor: pointer;
-      transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
+    /* Spinner */
+    .spinner-wrap {
+      text-align: center;
+      padding: 50px 20px;
     }
-    .btn:active { transform: scale(0.96); background: #1a1028; border-color: var(--purple); }
-    .btn.primary { background: linear-gradient(135deg,var(--purple2),#4a0072); border: none; color: #fff; }
-    .btn-sm { padding: 6px 12px; font-size: 11px; }
-
-    .slider-row { display:flex; align-items:center; gap:8px; margin:6px 0; }
-    .slider-row label { font-size:11px; color:var(--muted); min-width:55px; font-weight:600; }
-    input[type=range] {
-      flex: 1; -webkit-appearance:none; appearance:none;
-      height:5px; background: linear-gradient(90deg, var(--border), #2a2a40);
-      border-radius:5px; outline:none;
+    .spinner-orbit {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 16px;
     }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance:none; width:20px; height:20px; border-radius:50%;
-      background: linear-gradient(135deg, var(--purple), var(--purple2));
-      cursor:pointer; border:2px solid #000; box-shadow: 0 0 10px rgba(179,136,255,0.4);
+    .spinner-orbit .orbit-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      animation: orbitSpin 1.5s linear infinite;
+    }
+    .spinner-orbit .orbit-ring:nth-child(1) {
+      inset: 0;
+      border-top-color: var(--green);
+      animation-duration: 1.2s;
+    }
+    .spinner-orbit .orbit-ring:nth-child(2) {
+      inset: 6px;
+      border-right-color: var(--blue);
+      animation-duration: 1.6s;
+      animation-direction: reverse;
+    }
+    .spinner-orbit .orbit-ring:nth-child(3) {
+      inset: 12px;
+      border-bottom-color: var(--gold);
+      animation-duration: 2s;
+    }
+    .spinner-core {
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: corePulse 1s ease-in-out infinite;
+      box-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
+    }
+    @keyframes orbitSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    @keyframes corePulse {
+      0%, 100% {
+        transform: scale(0.8);
+        opacity: 0.6;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+    }
+    .spinner-text {
+      font-size: 14px;
+      color: var(--muted);
+      animation: textFade 1.5s ease-in-out infinite;
+    }
+    @keyframes textFade {
+      0%, 100% {
+        opacity: 0.5;
+      }
+      50% {
+        opacity: 1;
+      }
     }
 
-    .chord-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:12px; }
-    .chord-card {
-      background:var(--card); border:1px solid var(--border); border-radius:12px;
-      padding:10px; text-align:center; cursor:pointer;
-    }
-    .chord-card:active { background:#1a1028; border-color:var(--purple); }
-    .chord-num { font-size:10px; color:var(--muted); margin-bottom:4px; }
-    .chord-name { font-size:15px; font-weight:800; color:var(--gold); }
-    .chord-type { font-size:10px; color:var(--muted); margin-top:2px; }
-
-    .progression-list { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
-    .prog-chip {
-      padding:8px 14px; border-radius:20px; background:var(--card);
-      border:1px solid var(--border); font-size:12px; font-weight:600; cursor:pointer;
-    }
-    .prog-chip:active { background:#1a1028; border-color:var(--gold); }
-
-    canvas { border-radius:12px; background:#0a0c14; width:100%; height:100px; display:block; margin-top:8px; }
-
-    .fx-panel {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 12px; margin-top: 8px;
-    }
-    .fx-toggle-btn {
-      width: 100%; padding: 8px; background: transparent; border: 1px solid var(--border);
-      color: var(--muted); border-radius: 20px; font-weight: 700; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-    }
-    .fx-toggle-btn.active { color: var(--gold); border-color: var(--purple); }
-    .fx-controls { display: none; margin-top: 8px; }
-    .fx-controls.show { display: block; }
-
+    /* Toast */
     .toast {
-      position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-120px);
-      background: #1a1028; border: 2px solid var(--purple); border-radius: 20px;
-      padding: 12px 20px; z-index: 1000; font-weight: 700; color: var(--gold);
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      pointer-events: none; text-align: center; white-space: nowrap;
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #fff;
+      color: #000;
+      padding: 14px 24px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 700;
+      z-index: 999;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      pointer-events: none;
     }
-    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 420px) {
+      .genre-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+      }
+      .genre-circle .g-emoji {
+        font-size: 12px;
+      }
+      .genre-circle .g-name {
+        font-size: 6px;
+      }
+      .playlist-cover {
+        height: 140px;
+      }
+      .playlist-cover .pl-name {
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>
-<div class="app-container">
-  <div class="header">
-    <div class="icon">🎹</div>
-    <h1>Detector de Escala Pro</h1>
-  </div>
-
-  <div class="detection-card">
-    <div class="scale-name" id="scale-name-display">—</div>
-    <div class="scale-mood" id="scale-mood-display">Toca algunas notas</div>
-    <div class="confidence-bar"><div class="confidence-fill" id="confidence-fill" style="width:0%"></div></div>
-    <div style="text-align:right;font-size:10px;color:var(--muted)" id="confidence-text"></div>
-  </div>
-
-  <!-- PANEL PRINCIPAL: PIANO + EFECTOS + ANALIZADOR -->
-  <div class="panel active" id="panel-piano">
-    <div class="piano-wrap"><div class="piano" id="piano"></div></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;">
-      <button class="btn btn-sm" id="sustain-btn" onclick="toggleSustain()">🎹 Sustain</button>
-      <button class="btn btn-sm" id="arp-btn" onclick="toggleArp()">🔄 Arp</button>
-      <button class="btn btn-sm" onclick="clearAll()">🗑️ Limpiar</button>
-      <button class="btn btn-sm primary" onclick="playScale()">▶ Escuchar escala</button>
-    </div>
-    <div class="slider-row">
-      <label>Pitch</label>
-      <input type="range" id="pitch-bend" min="-12" max="12" value="0" oninput="updatePitchBend(this.value)">
-      <span id="pitch-val" style="font-size:11px;color:var(--text)">0</span>
+  <div class="bg-aurora"></div>
+  <div class="app-container">
+    <div class="header">
+      <div class="icon">🎵</div>
+      <h1>Playlist Generator Pro</h1>
+      <div class="subtitle">Curaduría musical inteligente · Playlists que fluyen</div>
     </div>
 
-    <!-- Selector de sonido -->
-    <div class="section-title">🎛️ Sonido</div>
-    <div id="sound-selector" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-      <button class="btn btn-sm active" data-sound="piano">🎹 Piano</button>
-      <button class="btn btn-sm" data-sound="organ">🎛️ Órgano</button>
-      <button class="btn btn-sm" data-sound="guitar">🎸 Guitarra</button>
-      <button class="btn btn-sm" data-sound="synth">🎧 Synth</button>
-      <button class="btn btn-sm" data-sound="bells">🔔 Campanas</button>
+    <!-- Género -->
+    <div class="glass-card">
+      <div class="section-title">🎧 Género principal</div>
+      <div class="genre-grid" id="genre-chips"></div>
     </div>
 
-    <!-- Panel de efectos desplegable -->
-    <div class="fx-panel">
-      <button class="fx-toggle-btn" id="fx-toggle" onclick="toggleFxPanel()">⚙️ Efectos y EQ</button>
-      <div class="fx-controls" id="fx-controls">
-        <div class="slider-row"><label>Reverb</label><input type="range" id="fx-reverb" min="0" max="100" value="30" oninput="updateFx('reverb',this.value)"><span id="val-reverb">30%</span></div>
-        <div class="slider-row"><label>Delay</label><input type="range" id="fx-delay" min="0" max="100" value="0" oninput="updateFx('delay',this.value)"><span id="val-delay">0%</span></div>
-        <div class="slider-row"><label>Chorus</label><input type="range" id="fx-chorus" min="0" max="100" value="0" oninput="updateFx('chorus',this.value)"><span id="val-chorus">0%</span></div>
-        <div class="slider-row"><label>Distortion</label><input type="range" id="fx-distortion" min="0" max="100" value="0" oninput="updateFx('distortion',this.value)"><span id="val-distortion">0%</span></div>
-        <div class="slider-row"><label>Compressor</label><input type="range" id="fx-compressor" min="0" max="100" value="50" oninput="updateFx('compressor',this.value)"><span id="val-compressor">50%</span></div>
-        <div class="section-title">🎚️ Ecualizador</div>
-        <div class="slider-row"><label>Low</label><input type="range" id="fx-eqLow" min="-12" max="12" value="0" oninput="updateFx('eqLow',this.value)"><span id="val-eqLow">0 dB</span></div>
-        <div class="slider-row"><label>Mid</label><input type="range" id="fx-eqMid" min="-12" max="12" value="0" oninput="updateFx('eqMid',this.value)"><span id="val-eqMid">0 dB</span></div>
-        <div class="slider-row"><label>High</label><input type="range" id="fx-eqHigh" min="-12" max="12" value="0" oninput="updateFx('eqHigh',this.value)"><span id="val-eqHigh">0 dB</span></div>
-        <div style="margin-top:8px;display:flex;gap:6px;">
-          <button class="btn btn-sm" onclick="saveFxPreset()">💾 Guardar preset</button>
-          <button class="btn btn-sm" onclick="loadFxPreset()">📂 Cargar preset</button>
+    <!-- Mood -->
+    <div class="glass-card">
+      <div class="section-title">🌊 Mood / Ambiente</div>
+      <div class="chip-grid" id="mood-chips"></div>
+    </div>
+
+    <!-- Contexto -->
+    <div class="glass-card">
+      <div class="section-title">📍 Contexto</div>
+      <div class="chip-grid" id="ctx-chips"></div>
+    </div>
+
+    <!-- Duración -->
+    <div class="glass-card">
+      <div class="section-title">⏱️ Duración</div>
+      <div class="len-row" id="len-btns"></div>
+      <div class="len-row" style="margin-top:8px" id="len-btns2"></div>
+    </div>
+
+    <!-- Jeff Mkeyz toggle -->
+    <div class="glass-card">
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">🎛️ Incluir Jeff Mkeyz</div>
+          <div class="toggle-sublabel">Beats exclusivos del productor</div>
         </div>
+        <button class="toggle-switch" id="mkeyz-toggle" onclick="toggleMkeyz()">
+          <span></span>
+        </button>
       </div>
     </div>
 
-    <div class="section-title">📊 Analizador de Espectro</div>
-    <canvas id="analyzer-canvas"></canvas>
+    <button class="btn-gen" id="btn-gen" onclick="generatePlaylist()">🎵 GENERAR PLAYLIST</button>
+
+    <div id="result"></div>
   </div>
 
-  <!-- PANEL ESTUDIO: ACORDES, PROGRESIONES, PARTITURA, BIBLIOTECA -->
-  <div class="panel" id="panel-studio">
-    <div class="section-title">🎸 Acordes que funcionan</div>
-    <div class="chord-grid" id="chord-grid"></div>
-    <div class="section-title">🎼 Progresiones de Acordes</div>
-    <div class="progression-list" id="progression-list"></div>
-    <button class="btn btn-sm primary" style="margin-top:8px;" onclick="generateProgression()">✨ Generar progresión</button>
-    <div class="section-title">🎵 Partitura</div>
-    <div id="sheet-music" style="background:var(--card);border-radius:12px;padding:8px;min-height:60px;"></div>
-    <button class="btn btn-sm" style="margin-top:4px;" onclick="exportSheet()">📤 Exportar partitura</button>
-    <div class="section-title">📚 Mis Escalas</div>
-    <div id="scale-library"></div>
-    <button class="btn btn-sm" onclick="saveCurrentScale()">💾 Guardar escala actual</button>
-    <button class="btn btn-sm" onclick="createCustomScale()">➕ Crear escala personalizada</button>
-  </div>
-</div>
+  <div class="toast" id="toast"></div>
 
-<div class="tab-bar">
-  <button class="tab-btn active" data-panel="panel-piano"><span class="tab-icon">🎹</span>Piano</button>
-  <button class="tab-btn" data-panel="panel-studio"><span class="tab-icon">🎼</span>Estudio</button>
-</div>
-<div class="toast" id="toast"></div>
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.ready();
+      tg.expand();
+      tg.setHeaderColor("#03050a");
+      tg.setBackgroundColor("#03050a"); }
 
-<script>
-  const tg = window.Telegram?.WebApp;
-  if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#03050a"); tg.setBackgroundColor("#03050a"); }
+    // ── EXPANDED DATABASE ────────────────────────────────────────
+    const GENRES = ["Pop Latino", "Trap", "Reggaeton", "Afrobeats", "R&B", "Hip-Hop", "Lo-Fi", "Dancehall", "Drill",
+      "Salsa", "Bachata", "EDM", "House", "Dembow", "Indie", "Rock Alternativo"
+    ];
+    const MOODS = ["Energético", "Relajado", "Romántico", "Melancólico", "Motivacional", "Oscuro", "Alegre", "Fiesta",
+      "Concentración", "Workout"
+    ];
+    const CTXS = ["En el carro", "Sesión de estudio", "Gym", "Fiesta", "Trabajo", "Antes de dormir", "Viaje",
+      "Tarde de lluvia", "Verano", "After party"
+    ];
 
-  const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  const WHITE_NOTES = [0,2,4,5,7,9,11];
-  const BLACK_NOTES = [1,3,null,6,8,10];
-  const SCALES = {
-    "Mayor":           { intervals:[0,2,4,5,7,9,11], chords:["Maj","min","min","Maj","Maj","min","dim"], mood:"Alegre, brillante" },
-    "Menor Natural":   { intervals:[0,2,3,5,7,8,10], chords:["min","dim","Maj","min","min","Maj","Maj"], mood:"Oscura, melancólica" },
-    "Dórico":          { intervals:[0,2,3,5,7,9,10], chords:["min","min","Maj","Maj","min","dim","Maj"], mood:"Jazz, funk, groove" },
-    "Frigio":          { intervals:[0,1,3,5,7,8,10], chords:["min","Maj","Maj","min","dim","Maj","min"], mood:"Flamenco, dramático" },
-    "Lidio":           { intervals:[0,2,4,6,7,9,11], chords:["Maj","Maj","min","dim","Maj","min","min"], mood:"Épico, flotante" },
-    "Mixolidio":       { intervals:[0,2,4,5,7,9,10], chords:["Maj","min","dim","Maj","min","min","Maj"], mood:"Rock, blues" },
-  };
-  const ROMAN = ["I","II","III","IV","V","VI","VII"];
-  const PROGRESSIONS = {
-    "Mayor": [["I","V","vi","IV"],["I","IV","V","I"],["ii","V","I"],["I","vi","IV","V"]],
-    "Menor Natural": [["i","iv","v","i"],["i","VI","III","VII"],["i","iv","VII","III"]],
-    "default": [["I","IV","V"],["i","iv","V"]]
-  };
-
-  // selectedNotes ahora usa MIDI completo (0-127) para identificar cada tecla individualmente
-  let selectedNotes = new Set();
-  let audioCtx = null;
-  let masterGain, analyserNode, lowEQ, midEQ, highEQ;
-  let delayNode, delayFeedback, delayMix, reverbGain, reverbNode;
-  let chorusNode, chorusGain, distortionNode, compressorNode;
-  let fxSettings = { reverb:30, delay:0, chorus:0, distortion:0, compressor:50, eqLow:0, eqMid:0, eqHigh:0 };
-  let currentSound = 'piano';
-  let currentOctaveStart = 4;
-  let lastDetectedScale = null;
-  let sustainActive = false;
-  let arpActive = false;
-  let arpInterval = null;
-  let activeOscillators = [];
-  let pitchBend = 0;
-  let recordedNotes = [];
-  let scaleLibrary = JSON.parse(localStorage.getItem('scaleLibrary') || '[]');
-  let fxPresets = JSON.parse(localStorage.getItem('fxPresets') || '[]');
-  let analyzerAnimFrame = null;
-
-  function getAudio() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      setupAudioGraph();
-    }
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    return audioCtx;
-  }
-
-  function setupAudioGraph() {
-    masterGain = audioCtx.createGain(); masterGain.gain.value = 0.8;
-    lowEQ = audioCtx.createBiquadFilter(); lowEQ.type = "lowshelf"; lowEQ.frequency.value = 250;
-    midEQ = audioCtx.createBiquadFilter(); midEQ.type = "peaking"; midEQ.frequency.value = 1000; midEQ.Q.value = 1;
-    highEQ = audioCtx.createBiquadFilter(); highEQ.type = "highshelf"; highEQ.frequency.value = 4000;
-    delayNode = audioCtx.createDelay(1); delayNode.delayTime.value = 0.3;
-    delayFeedback = audioCtx.createGain(); delayFeedback.gain.value = 0;
-    delayMix = audioCtx.createGain(); delayMix.gain.value = 0;
-    reverbGain = audioCtx.createGain(); reverbGain.gain.value = 0.2;
-    reverbNode = audioCtx.createConvolver(); reverbNode.buffer = createReverbImpulse(1.5);
-    chorusNode = audioCtx.createDelay(0.03); chorusNode.delayTime.value = 0.015;
-    chorusGain = audioCtx.createGain(); chorusGain.gain.value = 0;
-    distortionNode = audioCtx.createWaveShaper(); distortionNode.curve = makeDistortionCurve(0);
-    compressorNode = audioCtx.createDynamicsCompressor(); compressorNode.threshold.value = -24; compressorNode.ratio.value = 12;
-    analyserNode = audioCtx.createAnalyser(); analyserNode.fftSize = 256;
-
-    masterGain.connect(lowEQ);
-    lowEQ.connect(midEQ);
-    midEQ.connect(highEQ);
-    highEQ.connect(audioCtx.destination);
-    highEQ.connect(delayNode);
-    delayNode.connect(delayFeedback);
-    delayFeedback.connect(delayNode);
-    delayNode.connect(delayMix);
-    delayMix.connect(audioCtx.destination);
-    highEQ.connect(reverbGain);
-    reverbGain.connect(reverbNode);
-    reverbNode.connect(audioCtx.destination);
-    highEQ.connect(chorusNode);
-    chorusNode.connect(chorusGain);
-    chorusGain.connect(audioCtx.destination);
-    highEQ.connect(distortionNode);
-    distortionNode.connect(compressorNode);
-    compressorNode.connect(audioCtx.destination);
-    highEQ.connect(analyserNode);
-    updateAllFx();
-  }
-
-  function createReverbImpulse(duration) {
-    const sr = audioCtx.sampleRate;
-    const len = sr * duration;
-    const buf = audioCtx.createBuffer(2, len, sr);
-    for (let ch = 0; ch < 2; ch++) {
-      const data = buf.getChannelData(ch);
-      for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (sr * 0.8));
-    }
-    return buf;
-  }
-
-  function makeDistortionCurve(amount) {
-    const k = amount * 100;
-    const n_samples = 44100;
-    const curve = new Float32Array(n_samples);
-    for (let i = 0; i < n_samples; i++) {
-      const x = i * 2 / n_samples - 1;
-      curve[i] = Math.tanh(k * x) / Math.tanh(k || 1);
-    }
-    return curve;
-  }
-
-  function updateAllFx() {
-    if (!audioCtx) return;
-    reverbGain.gain.value = fxSettings.reverb / 100 * 0.7;
-    delayFeedback.gain.value = fxSettings.delay / 100 * 0.6;
-    delayMix.gain.value = fxSettings.delay / 100 * 0.5;
-    chorusGain.gain.value = fxSettings.chorus / 100 * 0.5;
-    distortionNode.curve = makeDistortionCurve(fxSettings.distortion / 100);
-    compressorNode.threshold.value = -24 + (fxSettings.compressor / 100) * 12;
-    lowEQ.gain.value = fxSettings.eqLow;
-    midEQ.gain.value = fxSettings.eqMid;
-    highEQ.gain.value = fxSettings.eqHigh;
-  }
-
-  function updateFx(type, val) {
-    const numVal = parseInt(val);
-    fxSettings[type] = numVal;
-    const display = document.getElementById(`val-${type}`);
-    if (display) {
-      display.textContent = type.startsWith('eq') ? numVal + ' dB' : numVal + '%';
-    }
-    updateAllFx();
-  }
-
-  function playNote(midi, dur = 0.8, velocity = 0.8) {
-    const ctx = getAudio();
-    const freq = 440 * Math.pow(2, (midi - 69) / 12) * Math.pow(2, pitchBend / 12);
-    const now = ctx.currentTime;
-    const createOsc = (type, freq, gainVal, detune = 0) => {
-      const osc = ctx.createOscillator();
-      osc.type = type; osc.frequency.value = freq; osc.detune.value = detune;
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(gainVal * velocity, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-      osc.connect(gain); gain.connect(masterGain);
-      osc.start(now); osc.stop(now + dur);
-      return { osc, gain };
+    const GENRE_COLORS = {
+      "Pop Latino": "#e91e63",
+      "Trap": "#ff4d4d",
+      "Reggaeton": "#ff6b35",
+      "Afrobeats": "#ff9800",
+      "R&B": "#9c27b0",
+      "Hip-Hop": "#2196f3",
+      "Lo-Fi": "#4fc3f7",
+      "Dancehall": "#00bcd4",
+      "Drill": "#607d8b",
+      "Salsa": "#f44336",
+      "Bachata": "#e91e63",
+      "EDM": "#00e5ff",
+      "House": "#7c4dff",
+      "Dembow": "#ff6d00",
+      "Indie": "#ffeb3b",
+      "Rock Alternativo": "#ff5722"
     };
-    const oscs = [];
-    switch (currentSound) {
-      case 'piano':
-        oscs.push(createOsc('triangle', freq, 0.35));
-        oscs.push(createOsc('sine', freq * 2, 0.12));
-        break;
-      case 'organ':
-        [1, 2, 3, 4].forEach((mult, i) => oscs.push(createOsc('sine', freq * mult, 0.15 / (i + 1))));
-        break;
-      case 'guitar':
-        oscs.push(createOsc('triangle', freq, 0.45));
-        break;
-      case 'synth':
-        oscs.push(createOsc('sawtooth', freq, 0.2));
-        break;
-      case 'bells':
-        oscs.push(createOsc('sine', freq, 0.25));
-        const lfo = ctx.createOscillator(); lfo.frequency.value = 5;
-        const lfoGain = ctx.createGain(); lfoGain.gain.value = 10;
-        lfo.connect(lfoGain); lfoGain.connect(oscs[0].osc.frequency);
-        lfo.start(now); lfo.stop(now + dur);
-        break;
-    }
-    if (sustainActive) {
-      activeOscillators.push(...oscs);
-      setTimeout(() => { activeOscillators = activeOscillators.filter(o => !oscs.includes(o)); }, dur * 1000);
-    } else {
-      activeOscillators.push(...oscs);
-      setTimeout(() => oscs.forEach(o => { try { o.osc.stop(); } catch (e) {} }), dur * 1000);
-    }
-    recordedNotes.push({ midi, time: Date.now() });
-  }
+    const GENRE_EMOJIS = {
+      "Pop Latino": "🌴",
+      "Trap": "🔥",
+      "Reggaeton": "💃",
+      "Afrobeats": "🌍",
+      "R&B": "💜",
+      "Hip-Hop": "🎤",
+      "Lo-Fi": "☁️",
+      "Dancehall": "🏝️",
+      "Drill": "🖤",
+      "Salsa": "🎺",
+      "Bachata": "❤️",
+      "EDM": "⚡",
+      "House": "🏠",
+      "Dembow": "🇩🇴",
+      "Indie": "🎸",
+      "Rock Alternativo": "🤘"
+    };
 
-  function stopAllOscillators() {
-    activeOscillators.forEach(o => { try { o.osc.stop(); } catch (e) {} });
-    activeOscillators = [];
-  }
+    // Base de datos masiva de artistas con energía y popularidad
+    const ARTISTS = {
+      "Pop Latino": [
+        { name: "Bad Bunny", tracks: ["Tití Me Preguntó", "Me Porto Bonito", "El Apagón", "Neverita",
+            "Moscow Mule", "Callaíta", "Yo Perreo Sola", "Efecto", "La Noche de Anoche", "Si Veo a Tu Mamá"
+          ], energy: 8, pop: 98 },
+        { name: "J Balvin", tracks: ["Con Calma", "Mi Gente", "Safari", "Vibras", "Bonita", "Rojo", "Amarillo",
+            "Blanco", "In Da Ghetto", "Qué Más Pues"
+          ], energy: 7, pop: 92 },
+        { name: "Ozuna", tracks: ["Taki Taki", "Bésame", "Única", "Dile Que Tú Me Quieres", "Hey Mor", "Se Preparó",
+            "El Farsante", "Criminal", "La Modelo", "Caramelo"
+          ], energy: 7, pop: 90 },
+        { name: "Maluma", tracks: ["Hawái", "Felices Los 4", "Chantaje", "Cuatro Babys", "11 PM", "Sobrio",
+            "Mala Mía", "El Perdedor", "Sin Contrato", "Corazón"
+          ], energy: 7, pop: 88 },
+        { name: "Daddy Yankee", tracks: ["Gasolina", "Con Calma", "Dura", "Rompe", "Lo Que Pasó Pasó",
+            "Shaky Shaky", "Limbo", "El Amante", "Problema", "La Despedida"
+          ], energy: 9, pop: 95 },
+        { name: "Rauw Alejandro", tracks: ["Todo De Ti", "Lokura", "Tattoo", "Esencial", "Cúrame", "Punto 40",
+            "Fantasías", "Elegí", "Enchule", "Desenfocao"
+          ], energy: 8, pop: 91 },
+        { name: "Myke Towers", tracks: ["Girl", "Bandido", "La Playa", "Pa Mí", "Si Se Da", "Diosa",
+            "Experimento", "Mírenme Ahora", "La Curiosidad", "París"
+          ], energy: 7, pop: 85 },
+        { name: "Sech", tracks: ["Otro Trago", "Relación", "911", "Quiero Más", "Señorita", "Sal y Perrea",
+            "Confía", "La Luz", "Bentley", "Wao"
+          ], energy: 6, pop: 82 },
+        { name: "Jhay Cortez", tracks: ["Dakiti", "No Me Conoce", "Porfa", "Fresa", "La Capi", "Cómo Amigos",
+            "En Mi Cuarto", "Tokyo", "Sensual Bebé", "Tarot"
+          ], energy: 7, pop: 84 },
+        { name: "Farruko", tracks: ["Pepas", "Callaíta", "Krippy Kush", "Pa Romperla", "Inolvidable", "La Tóxica",
+            "Nadie", "Coolant", "Obsesionado", "Chillax"
+          ], energy: 8, pop: 87 },
+        { name: "Natti Natasha", tracks: ["Criminal", "Sin Pijama", "La Mejor Versión de Mí", "Pa Mala Yo",
+            "Ram Pam Pam", "Mayor Que Usted", "Las Nenas", "No Voy a Llorar", "Me Gusta", "Tonta"
+          ], energy: 7, pop: 83 },
+        { name: "Becky G", tracks: ["MAMIII", "Sin Pijama", "Mayores", "Fulanito", "Bubalu", "Shower", "Can't Stop",
+            "La Respuesta", "Cuando Te Besé", "Booty"
+          ], energy: 8, pop: 86 }
+      ],
+      "Trap": [
+        { name: "Travis Scott", tracks: ["SICKO MODE", "Goosebumps", "Antidote", "Highest in the Room", "FEIN",
+            "Butterfly Effect", "STARGAZING", "YOSEMITE", "CAROUSEL", "ESCAPE PLAN"
+          ], energy: 9, pop: 97 },
+        { name: "Future", tracks: ["Mask Off", "March Madness", "Low Life", "Jumpin on a Jet", "I'm on One",
+            "Life Is Good", "Wait for U", "Crushed Up", "Never Stop", "Puffin on Zootiez"
+          ], energy: 8, pop: 93 },
+        { name: "Lil Baby", tracks: ["Drip Too Hard", "Yes Indeed", "Sum 2 Prove", "On Me", "Forever",
+            "The Bigger Picture", "Emotionally Scarred", "Woah", "Close Friends", "Pure Cocaine"
+          ], energy: 7, pop: 90 },
+        { name: "21 Savage", tracks: ["Rockstar", "Bank Account", "A Lot", "No Heart", "Runnin", "Glock in My Lap",
+            "Rich Flex", "Spin Bout U", "Mr. Right Now", "Many Men"
+          ], energy: 8, pop: 91 },
+        { name: "Young Thug", tracks: ["Best Friend", "Digits", "Havana", "Hot", "Tick Tock", "Relationship",
+            "Check", "Wyclef Jean", "The London", "Bad Bad Bad"
+          ], energy: 8, pop: 85 },
+        { name: "Gunna", tracks: ["Drip Season", "Speed It Up", "Pushin P", "Turks", "Banking on Me", "Top Floor",
+            "Dollaz on My Head", "Skybox", "Wunna", "Met Gala"
+          ], energy: 7, pop: 82 },
+        { name: "Polo G", tracks: ["Pop Out", "Heartless", "Martin & Gina", "Finer Things", "Gang Gang",
+            "RAPSTAR", "Bad Man", "Distraction", "No Return", "21"
+          ], energy: 7, pop: 88 },
+        { name: "Roddy Ricch", tracks: ["The Box", "High Fashion", "Tip Toe", "Start Wit Me", "Ballin", "Late at Night",
+            "Down Below", "Die Young", "Every Season", "Twin"
+          ], energy: 7, pop: 86 },
+        { name: "Metro Boomin", tracks: ["Space Cadet", "No Complaints", "10 Freaky Girls", "Overdue",
+            "Don't Come Out the House", "Creepin", "Superhero", "Too Many Nights", "Trance", "Niagara Falls"
+          ], energy: 8, pop: 94 },
+        { name: "Don Toliver", tracks: ["After Party", "No Idea", "Cardigan", "Lemonade", "Flocky Flocky",
+            "Do It Right", "Company", "Swangin'", "Bogus", "Private Landing"
+          ], energy: 7, pop: 80 }
+      ],
+      "Reggaeton": [
+        { name: "Bad Bunny", tracks: ["Callaíta", "Yo Perreo Sola", "La Noche de Anoche", "Si Veo a Tu Mamá",
+            "Efecto", "Tití Me Preguntó", "Me Porto Bonito", "El Apagón", "Neverita", "Moscow Mule"
+          ], energy: 8, pop: 98 },
+        { name: "Daddy Yankee", tracks: ["Gasolina", "Shaky Shaky", "Limbo", "El Amante", "Problema", "Dura",
+            "Rompe", "Lo Que Pasó Pasó", "Con Calma", "La Despedida"
+          ], energy: 9, pop: 95 },
+        { name: "Anuel AA", tracks: ["China", "Secreto", "Keii", "Ella Quiere Besar", "Brindemos", "Medusa",
+            "Narcos", "Ayer", "La Jeepeta", "McGregor"
+          ], energy: 8, pop: 88 },
+        { name: "Karol G", tracks: ["MAMIII", "Bichota", "Tusa", "Mi Cama", "Ocean", "Provenza", "El Makinon",
+            "Gatúbela", "Cairo", "X Si Volvemos"
+          ], energy: 8, pop: 93 },
+        { name: "Nicki Nicole", tracks: ["Colocao", "Wapo Traketero", "Mamichula", "No Toque Mi Naik",
+            "Buenos Aires", "Frío", "Parte de Mí", "Darling", "Me Has Dejado", "Nobody Like Yo"
+          ], energy: 6, pop: 78 },
+        { name: "Mora", tracks: ["Soltera", "Jangueo", "Mía", "Por el Mar", "Estoy Enamorado", "512", "Tuyo",
+            "Memorias", "Pégate", "Reina"
+          ], energy: 7, pop: 76 },
+        { name: "Lunay", tracks: ["Soltera", "Cuando Te Besé", "Fin de Semana", "Aventura", "Como Antes",
+            "Relaciones", "La Cama", "Luna", "De Cero", "Victoria"
+          ], energy: 7, pop: 79 },
+        { name: "Eladio Carrión", tracks: ["Tata", "Kemba Walker", "Morir Soñando", "Nene Malo", "Senator",
+            "Coco Chanel", "3 Am", "Mala Mía", "Si Salimos", "Air France"
+          ], energy: 7, pop: 81 },
+        { name: "Lyanno", tracks: ["Illusion", "Adicto", "Solo Yo", "Pienso En Ti", "Llegaste Tú", "En Tu Cuerpo",
+            "Te Extraño", "Dime", "Contigo", "Fantasía"
+          ], energy: 6, pop: 72 },
+        { name: "Jay Wheeler", tracks: ["Eazt Side", "La Curiosidad", "Otro Más", "Amor de Febrero",
+            "No Te Enamores", "Take It Easy", "Sin Ti", "Otra Noche Más", "Duele", "Te Soñé"
+          ], energy: 5, pop: 77 }
+      ],
+      "Afrobeats": [
+        { name: "Burna Boy", tracks: ["Last Last", "Ye", "Outside", "23", "Gbona", "On the Low", "Kilometre",
+            "It's Plenty", "Common Person", "Sittin' On Top of the World"
+          ], energy: 8, pop: 94 },
+        { name: "Wizkid", tracks: ["Essence", "Come Closer", "Ojuelegba", "Joro", "Mood", "Blessed", "Ginger",
+            "No Stress", "Bad To Me", "Money & Love"
+          ], energy: 7, pop: 92 },
+        { name: "Davido", tracks: ["Fall", "If", "Assurance", "FEM", "Stand Strong", "Unavailable", "Risky",
+            "Blow My Mind", "A Good Time", "Jowo"
+          ], energy: 8, pop: 89 },
+        { name: "Tems", tracks: ["Free Mind", "Higher", "Crazy Tings", "Try Me", "Broken Holes", "Damages",
+            "Looku Looku", "The Key", "Ice T", "Found"
+          ], energy: 6, pop: 85 },
+        { name: "Rema", tracks: ["Calm Down", "Dumebi", "Iron Man", "Bad Commando", "FYN", "Charm", "Holiday",
+            "Reason You", "Soundgasm", "Dirty"
+          ], energy: 7, pop: 88 },
+        { name: "Ckay", tracks: ["Love Nwantiti", "Felony", "Emiliana", "Watawi", "Feels", "Kiss Me Like You",
+            "You", "Mmadu", "By Your Side", "Leave Me Alone"
+          ], energy: 6, pop: 82 },
+        { name: "Fireboy DML", tracks: ["Peru", "Jealous", "Like I Do", "What If I Say", "New York City Boy",
+            "Bandana", "Scatter", "Vibration", "King", "Afar"
+          ], energy: 7, pop: 83 },
+        { name: "Omah Lay", tracks: ["Godly", "Bad Influence", "Lo Lo", "You", "Attention", "Understand",
+            "Woman", "Infinity", "Never Forget", "Soso"
+          ], energy: 6, pop: 79 },
+        { name: "Asake", tracks: ["Terminator", "Joha", "Palazzo", "Reason", "Lonely at the Top", "Organise",
+            "Sungba", "Peace Be Unto You", "Dupe", "Amapiano"
+          ], energy: 8, pop: 86 },
+        { name: "Ayra Starr", tracks: ["Rush", "19 & Dangerous", "Bloody Samaritan", "Fashion Killer", "Ase",
+            "Sability", "Bridgertn", "Beggie Beggie", "Toxic", "Rhythm & Blues"
+          ], energy: 7, pop: 80 }
+      ],
+      "R&B": [
+        { name: "The Weeknd", tracks: ["Blinding Lights", "Starboy", "Save Your Tears", "Die For You", "Earned It",
+            "Can't Feel My Face", "The Hills", "I Feel It Coming", "Heartless", "Call Out My Name"
+          ], energy: 7, pop: 97 },
+        { name: "SZA", tracks: ["Kill Bill", "Good Days", "Shirt", "Snooze", "Nobody Gets Me", "I Hate U",
+            "The Weekend", "Love Galore", "Drew Barrymore", "Broken Clocks"
+          ], energy: 6, pop: 93 },
+        { name: "Frank Ocean", tracks: ["Chanel", "Nights", "Pink + White", "Ivy", "Lost", "Thinkin Bout You",
+            "Pyramid", "Novacane", "Super Rich Kids", "Forrest Gump"
+          ], energy: 5, pop: 90 },
+        { name: "H.E.R.", tracks: ["Best Part", "Focus", "Could've Been", "Hold On", "Lights On", "Damage",
+            "Slide", "Come Through", "Every Kind of Way", "As I Am"
+          ], energy: 5, pop: 82 },
+        { name: "Jhené Aiko", tracks: ["None of Your Concern", "Bed Peace", "While We're Young",
+            "Trigger Protection", "Sativa", "The Worst", "Eternal Sunshine", "Wading", "Summer 2020", "Born Tired"
+          ], energy: 4, pop: 80 },
+        { name: "Daniel Caesar", tracks: ["Best Part", "Blessed", "Get You", "Superposition", "Cyanide",
+            "Japanese Denim", "Who Hurt You?", "Always", "Let Me Go", "Freudian"
+          ], energy: 4, pop: 78 },
+        { name: "Brent Faiyaz", tracks: ["Gravity", "Clouded", "Wasting Time", "First World Problems",
+            "Show U Off", "Dead Man Walking", "All Mine", "Price of Fame", "Loose Change", "So Far Gone"
+          ], energy: 5, pop: 76 },
+        { name: "Giveon", tracks: ["Heartbreak Anniversary", "Like I Want You", "Favorite Mistake", "For Tonight",
+            "Lay You Down", "Stuck on You", "Lost Me", "This Will Do", "Another Heartbreak", "Time"
+          ], energy: 5, pop: 79 },
+        { name: "Summer Walker", tracks: ["Playing Games", "Come Thru", "Girls Need Love", "I'll Kill You",
+            "Lake Tahoe", "No Love", "Something Real", "Unloyal", "Body", "Karma"
+          ], energy: 5, pop: 81 },
+        { name: "Snoh Aalegra", tracks: ["I Want You Around", "Fool For You", "Whoa", "Dying 4 Your Love",
+            "Lost You", "Find Someone Like You", "Situationship", "In Your Eyes", "Nothing to Me", "We Don't Talk"
+          ], energy: 4, pop: 73 }
+      ],
+      "Hip-Hop": [
+        { name: "Drake", tracks: ["God's Plan", "In My Feelings", "One Dance", "Started From the Bottom",
+            "Hotline Bling", "Nice for What", "Passionfruit", "Marvins Room", "Headlines", "The Motto"
+          ], energy: 7, pop: 98 },
+        { name: "Kendrick Lamar", tracks: ["HUMBLE.", "Swimming Pools", "Alright", "Money Trees", "DNA.",
+            "King Kunta", "i", "Bitch Don't Kill My Vibe", "Backseat Freestyle", "LOYALTY."
+          ], energy: 8, pop: 95 },
+        { name: "J. Cole", tracks: ["No Role Modelz", "MIDDLE CHILD", "Work Out", "ATM", "Photograph",
+            "Love Yourz", "Deja Vu", "Power Trip", "Apparently", "She Knows"
+          ], energy: 7, pop: 92 },
+        { name: "Kanye West", tracks: ["POWER", "Stronger", "Gold Digger", "All Falls Down", "Flashing Lights",
+            "Heartless", "Jesus Walks", "Runaway", "Bound 2", "All of the Lights"
+          ], energy: 8, pop: 94 },
+        { name: "Tyler the Creator", tracks: ["EARFQUAKE", "See You Again", "IGOR'S THEME", "NEW MAGIC WAND",
+            "911", "Yonkers", "She", "Who Dat Boy", "Lumberjack", "WUSYANAME"
+          ], energy: 7, pop: 88 },
+        { name: "Mac Miller", tracks: ["Self Care", "Come Back to Earth", "Small Worlds", "Good News", "Circles",
+            "Don't Mind", "Blue World", "Ladders", "Weekend", "Dang!"
+          ], energy: 6, pop: 85 },
+        { name: "A$AP Rocky", tracks: ["FUKK SLEEP", "Fashion Killa", "Praise the Lord", "Everyday", "Phoenix",
+            "LSD", "L$D", "Goldie", "Peso", "Kids Turned Out Fine"
+          ], energy: 7, pop: 86 },
+        { name: "Childish Gambino", tracks: ["Redbone", "This Is America", "3005", "Sweatpants", "Terrified",
+            "Feels Like Summer", "Sober", "Heartbeat", "Bonfire", "V. 3005"
+          ], energy: 6, pop: 84 },
+        { name: "Cardi B", tracks: ["Bodak Yellow", "I Like It", "WAP", "Money", "Up", "Bartier Cardi", "Please Me",
+            "Ring", "Be Careful", "Press"
+          ], energy: 9, pop: 90 },
+        { name: "Nicki Minaj", tracks: ["Super Bass", "Anaconda", "Bang Bang", "Starships", "Pills N Potions",
+            "Moment 4 Life", "Chun-Li", "Barbie Dreams", "Beez in the Trap", "Only"
+          ], energy: 9, pop: 91 }
+      ],
+      "Lo-Fi": [
+        { name: "Nujabes", tracks: ["Feather", "Aruarian Dance", "F.I.L.O.", "Reflection Eternal",
+            "Lady Brown", "Luv(sic) pt3", "Spiritual State", "Counting Stars", "World's End Rhapsody",
+            "Prayer"
+          ], energy: 3, pop: 88 },
+        { name: "J Dilla", tracks: ["Donuts", "Time: The Donut", "Workinonit", "So Far to Go",
+            "Welcome to Detroit", "The Light", "Won't Do", "Nothing Like This", "E=MC2", "Two Can Win"
+          ], energy: 4, pop: 90 },
+        { name: "Idealism", tracks: ["Take It Easy", "Somewhere", "Rain", "Floating", "Morning", "Last Time",
+            "Another Perspective", "Controlla", "Both of Us", "Phosphenes"
+          ], energy: 2, pop: 70 },
+        { name: "Philanthrope", tracks: ["We Stay Together", "Higher", "Time Flies", "Be Here", "Motion",
+            "Clouds", "Just a Moment", "Waves", "Forest", "Reflections"
+          ], energy: 2, pop: 65 },
+        { name: "Potsu", tracks: ["i'm sorry", "after rain", "with you", "take me back", "forever", "letting go",
+            "closing", "breeze", "sunlight", "dreams"
+          ], energy: 2, pop: 62 },
+        { name: "Jinsang", tracks: ["solitude", "tender", "u", "life", "adore", "affection", "herewego", "bliss",
+            "untold", "feelings"
+          ], energy: 2, pop: 68 },
+        { name: "Kupla", tracks: ["Feelings", "Nostalgia", "Petrichor", "Alone", "Calm", "Drift", "VHS",
+            "Someday", "Empty", "Warmth"
+          ], energy: 2, pop: 60 },
+        { name: "Oatmello", tracks: ["love you", "drifting", "warmth", "tender", "relax", "cozy", "dreams",
+            "soft", "quiet", "peace"
+          ], energy: 2, pop: 58 },
+        { name: "Shing02", tracks: ["Luv(sic)", "411", "Spiritual State", "Latitude", "Perfect Circle",
+            "Battlecry", "South Side", "Pearl Harbor", "Love You Like Water", "Gigabyte"
+          ], energy: 4, pop: 72 },
+        { name: "Uyama Hiroto", tracks: ["A Son of the Sun", "Life Time", "Horizon", "Freedom", "Fly",
+            "Stratus", "Vision", "Light in the Darkness", "Compass", "Magic Music"
+          ], energy: 3, pop: 66 }
+      ],
+      "Dancehall": [
+        { name: "Vybz Kartel", tracks: ["Fever", "Temperature", "Clarks", "Straight Jeans and Fitted",
+            "Wi Nuh Tek Friend", "Romping Shop", "Summer Time", "Mhm Hm", "Don't Come Back", "Gaza"
+          ], energy: 8, pop: 90 },
+        { name: "Popcaan", tracks: ["Everything Nice", "Family", "Body So Good", "Only Man She Want", "Ravin",
+            "Silence", "Firm and Strong", "Win", "Superstar", "Twist & Turn"
+          ], energy: 7, pop: 85 },
+        { name: "Alkaline", tracks: ["Champion Boy", "Build a Fence", "Levels", "Fight Back", "DJ", "City",
+            "Formula", "Extra Lesson", "After All", "Top Prize"
+          ], energy: 8, pop: 82 },
+        { name: "Skillibeng", tracks: ["Whap Whap", "Crocodile Teeth", "Italian", "Mr. Universe", "Psycho",
+            "Short Skirt", "Guide Me", "Real Boss", "Brik Pan Brik", "Deja Vu"
+          ], energy: 9, pop: 78 },
+        { name: "Shenseea", tracks: ["Run Run", "Blessed", "Lighter", "Bad Alone", "Trending", "Foreplay",
+            "ShenYeng Anthem", "Rebel", "You're the One", "Trick'a Treat"
+          ], energy: 8, pop: 80 },
+        { name: "Spice", tracks: ["So Mi Like It", "Sheet", "Back Way", "Conjugal Visit", "Needle Eye",
+            "Jim Screechie", "Romantic Mood", "Genie", "Tick Tock", "Cool It"
+          ], energy: 8, pop: 76 },
+        { name: "Masicka", tracks: ["Greatest", "Royalty", "Bigger Than", "High", "Elevated", "They Don't Know",
+            "Stay Strong", "Top Speed", "Darker Days", "Update"
+          ], energy: 8, pop: 74 },
+        { name: "Squash", tracks: ["Trending", "Six Boss", "Leave it Alone", "6ix World", "Lean", "Gvnman",
+            "Money Me a Look", "Beat Dem Bad", "Shub Out", "Darkness"
+          ], energy: 8, pop: 70 },
+        { name: "Jahshii", tracks: ["Consumer", "Trust the Universe", "Prisoner", "Born Warrior", "Heaven",
+            "Feelings", "Real Rich", "Keep Going", "Legacy", "Time"
+          ], energy: 7, pop: 68 },
+        { name: "Chronic Law", tracks: ["Picture Perfect", "Love Sick", "Circle", "Natural", "Rise", "Pain",
+            "Loyalty", "Memories", "Empty", "Corrupt"
+          ], energy: 7, pop: 72 }
+      ],
+      "Salsa": [
+        { name: "Marc Anthony", tracks: ["Vivir Mi Vida", "Valió la Pena", "Flor Pálida", "Y Hubo Alguien",
+            "Que Precio Tiene el Cielo", "Ahora Quién", "Tu Amor Me Hace Bien", "Contra la Corriente",
+            "Te Conozco Bien", "I Need to Know"
+          ], energy: 7, pop: 94 },
+        { name: "Víctor Manuelle", tracks: ["Un Siglo Sin Ti", "Tengo Ganas", "Sobreviviré", "Necesito Verte",
+            "Que Manera de Amarte", "Apiádate de Mí", "Dile a Ella", "He Tratado", "Si Tú Me Besas",
+            "Por Ella"
+          ], energy: 7, pop: 88 },
+        { name: "Gilberto Santa Rosa", tracks: ["Que Manera de Quererte", "Conciencia", "Perdoname",
+            "Que Alguien Me Diga", "Comparsa de la Vida", "Conteo Regresivo", "No Tengo Suerte",
+            "Me Volvieron Hablar de Ella", "Vivir Sin Ella", "Amor Mío No Te Vayas"
+          ], energy: 6, pop: 86 },
+        { name: "Celia Cruz", tracks: ["La Vida Es Un Carnaval", "Quimbara", "Bemba Colora", "Guaracha",
+            "Toro Mata", "La Negra Tiene Tumbao", "Usted Abusó", "Ríe y Llora", "Azúcar Negra",
+            "Cúcala"
+          ], energy: 9, pop: 96 },
+        { name: "Willie Colón", tracks: ["El Malo", "Che Che Colé", "Oh That's Nice", "Te Conozco",
+            "Calle Luna Calle Sol", "Talento de Televisión", "Idilio", "El Día de Mi Suerte",
+            "Sin Poderte Hablar", "Gitana"
+          ], energy: 8, pop: 90 },
+        { name: "Rubén Blades", tracks: ["Pedro Navaja", "Plástico", "El Padre Antonio", "Pablo Pueblo",
+            "Buscando América", "Decisiones", "Amor y Control", "Ligia Elena", "Maestra Vida",
+            "El Cantante"
+          ], energy: 7, pop: 88 },
+        { name: "Oscar D'León", tracks: ["Llorarás", "Detalles", "Medley", "Juanita", "La Salsa de Mi Vida",
+            "Me Voy Pa' Cali", "Casas de Cartón", "Que Bueno Baila Usted", "Sigue Tu Camino",
+            "El Manicero"
+          ], energy: 8, pop: 85 },
+        { name: "Tito Nieves", tracks: ["I'll Always Love You", "Me Niego a Ser Tuyo", "Como Es Posible",
+            "Voy a Sobrevivir", "Te Quiero", "Fabricando Fantasías", "De Mí Enamórate",
+            "El Amor Más Bonito", "Sonámbulo", "Más Que Tu Amigo"
+          ], energy: 7, pop: 82 },
+        { name: "Frankie Ruiz", tracks: ["La Cura", "Quiero Llenarte", "Mi Libertad", "Imposible Amor",
+            "El Camionero", "Deseándote", "Bailando", "La Rueda", "Vuelvo a Nacer", "Tú Con Él"
+          ], energy: 8, pop: 84 },
+        { name: "La India", tracks: ["Ese Hombre", "Mi Mayor Venganza", "Dicen", "Sedúceme",
+            "Vivir Lo Nuestro", "Nunca Voy a Olvidarte", "Turn Off the Lights", "Costumbres",
+            "Si Tú Eres Mi Hombre", "Hielo"
+          ], energy: 7, pop: 80 }
+      ],
+      "Bachata": [
+        { name: "Romeo Santos", tracks: ["Propuesta Indecente", "Eres Mía", "Odio", "Yo También",
+            "Bella y Sensual", "Imitadora", "Héroe Favorito", "Cancioncitas de Amor", "Necio",
+            "Amigo"
+          ], energy: 6, pop: 96 },
+        { name: "Prince Royce", tracks: ["Corazón Sin Cara", "Stand by Me", "Darte un Beso", "Incondicional",
+            "Culpa al Corazón", "El Amor Que Perdimos", "Te Me Vas", "La Carretera", "Recházame",
+            "Morir Solo"
+          ], energy: 6, pop: 92 },
+        { name: "Aventura", tracks: ["Obsesión", "Por Un Segundo", "El Malo", "Tu Eres Mi Todo",
+            "Cuando Volveras", "Un Beso", "Mi Corazoncito", "Los Infieles", "Dile al Amor", "La Boda"
+          ], energy: 7, pop: 94 },
+        { name: "Juan Luis Guerra", tracks: ["Bachata en Fukuoka", "Visa Para un Sueño", "A Pedir su Mano",
+            "Burbujas de Amor", "Ojalá Que Llueva Café", "Bachata Rosa", "La Travesía",
+            "Cuando Me Enamoro", "El Niagara en Bicicleta", "Las Avispas"
+          ], energy: 5, pop: 90 },
+        { name: "Frank Reyes", tracks: ["Principe de las Baches", "Tu Eres Todo", "Necesito un Amor",
+            "Por el Resto de mi Vida", "Eres Mia", "Vine a Decirte", "Como Sanar",
+            "Nada de Nada", "El Alcohol", "Te Pienso"
+          ], energy: 6, pop: 82 },
+        { name: "Toby Love", tracks: ["Llorar Lloviendo", "Un Besito Más", "Carmín", "Poquito a Poco",
+            "Mi Todo Eres Tú", "Lejos", "Como Tú", "Amor Primero", "Te Necesito", "Dile"
+          ], energy: 6, pop: 76 },
+        { name: "Anthony Santos", tracks: ["Voy pa'llá", "Tu Mala Manera", "Grítame", "Me Duele la Cabeza",
+            "Que Se Muera", "Creíste", "Solo Te Tengo a Ti", "Vuelve", "Corazón Culpable",
+            "Si Tu Cariño No Está"
+          ], energy: 7, pop: 84 },
+        { name: "Xtreme", tracks: ["Te Extraño", "Como yo Nadie Te Ha Amado", "Tu Amor", "Shorty",
+            "Honey I Do", "Adicto", "Through That Window", "Sé", "Si La Ves", "Amor Eterno"
+          ], energy: 6, pop: 74 },
+        { name: "Grupo Extra", tracks: ["Niña Bonita", "Me Cambiaste", "Enséñame", "Fria",
+            "Que me des una razon", "Te Vas", "No Soy un Santo", "Loco Enamorado", "La Mitad",
+            "Vuelve Conmigo"
+          ], energy: 7, pop: 72 },
+        { name: "Zacarias Ferreira", tracks: ["Adiós Amor", "Te Fuiste", "Si Tú lo Dices", "Loco de Amor",
+            "El Pasado", "No Hay Palabras", "El Intruso", "Te Necesito", "Simplemente Gracias",
+            "Yo Te Amo"
+          ], energy: 6, pop: 78 }
+      ],
+      "EDM": [
+        { name: "Martin Garrix", tracks: ["Animals", "In the Name of Love", "Scared to Be Lonely",
+            "Waiting for Tomorrow", "High on Life", "There for You", "No Sleep", "Byte", "Forever",
+            "Limitless"
+          ], energy: 9, pop: 94 },
+        { name: "Marshmello", tracks: ["Alone", "Happier", "Silence", "Friends", "Wolves", "Here with Me",
+            "Be Kind", "OK Not to Be OK", "Leave Before You Love Me", "Numb"
+          ], energy: 8, pop: 92 },
+        { name: "Calvin Harris", tracks: ["This Is What You Came For", "Summer", "Feel So Close",
+            "Sweet Nothing", "Acceptable in the 80s", "Slide", "Feels", "One Kiss", "Giant", "Promises"
+          ], energy: 8, pop: 95 },
+        { name: "Avicii", tracks: ["Wake Me Up", "Levels", "Hey Brother", "Addicted to You",
+            "Waiting for Love", "The Nights", "Without You", "Lonely Together", "Heaven", "SOS"
+          ], energy: 9, pop: 97 },
+        { name: "Kygo", tracks: ["Firestone", "Stay", "Stole the Show", "Happy Now", "Remind Me to Forget",
+            "Higher Love", "It Ain't Me", "First Time", "Born to Be Yours", "Like It Is"
+          ], energy: 7, pop: 90 },
+        { name: "Zedd", tracks: ["Clarity", "The Middle", "Beautiful Now", "Stay the Night", "Spectrum",
+            "Break Free", "I Want You to Know", "Stay", "Get Low", "Funny"
+          ], energy: 9, pop: 88 },
+        { name: "Illenium", tracks: ["Crawl Outta Love", "Good Things Fall Apart", "Beautiful Creatures",
+            "Feel Good", "Gorgeous", "Takeaway", "Nightlight", "Paper Thin", "Hearts on Fire",
+            "Sideways"
+          ], energy: 8, pop: 82 },
+        { name: "Alesso", tracks: ["Heroes", "If I Lose Myself", "Cool", "Calling", "Years", "Remedy",
+            "Let Me Go", "Falling", "Time", "Words"
+          ], energy: 8, pop: 85 },
+        { name: "Alan Walker", tracks: ["Faded", "Alone", "The Spectre", "Darkside", "On My Way", "Sing Me",
+            "Play", "Ignite", "Different World", "Heading Home"
+          ], energy: 8, pop: 89 },
+        { name: "Skrillex", tracks: ["Bangarang", "Scary Monsters", "First of the Year", "Where Are Ü Now",
+            "Purple Lamborghini", "Rumble", "Leave Me Like This", "Butterflies", "Midnight Hour",
+            "Face My Fears"
+          ], energy: 10, pop: 91 }
+      ],
+      "House": [
+        { name: "Fisher", tracks: ["Losing It", "You Little Beauty", "Wanna Feel", "Crowd Control", "Stop It",
+            "Just Feels Tight", "Palm Beach Banga", "Freaks", "Yeah the Girls", "Atmosphere"
+          ], energy: 9, pop: 88 },
+        { name: "Chris Lake", tracks: ["I Want You", "Human", "Operator", "Turn Off the Lights", "Chest",
+            "Deceiver", "A Drug from God", "In the Yuma", "Free Your Body", "Changes"
+          ], energy: 9, pop: 84 },
+        { name: "John Summit", tracks: ["La Danza", "Shrooms", "Where You Are", "On My Way", "Human",
+            "Deep End", "Beauty Sleep", "What a Life", "Revolution", "In Chicago"
+          ], energy: 9, pop: 82 },
+        { name: "Dom Dolla", tracks: ["Take It", "San Frandisco", "Eat Your Man", "Move", "Miracle Maker",
+            "Pump the Brakes", "Rhyme Dust", "Define", "You", "Strangers"
+          ], energy: 8, pop: 80 },
+        { name: "Vintage Culture", tracks: ["Numb", "So Alive", "Future", "Deep Delight", "Pra Não Dizer",
+            "In the Dark", "You Give Me", "It Is What It Is", "Maniac", "Coffee"
+          ], energy: 8, pop: 76 },
+        { name: "Meduza", tracks: ["Piece of Your Heart", "Lose Control", "Phone", "Tell It to My Heart",
+            "Bad Guy", "Paradise", "Fire", "Everything You Have Done", "Upside Down", "Friends"
+          ], energy: 8, pop: 86 },
+        { name: "Disclosure", tracks: ["Latch", "You & Me", "White Noise", "When a Fire Starts to Burn",
+            "Help Me Lose My Mind", "Magnets", "Omen", "Holding On", "Ultimatum", "Energy"
+          ], energy: 7, pop: 90 },
+        { name: "Duke Dumont", tracks: ["I Got U", "Need U", "Ocean Drive", "Won't Look Back", "Duality",
+            "The Giver", "Real Life", "Let Me Go", "Nightcrawler", "Red Light Green Light"
+          ], energy: 8, pop: 84 },
+        { name: "Tchami", tracks: ["After Life", "Adieu", "Do You Feel", "Promesses", "Untrue", "World to Me",
+            "Praise", "Ghosts", "Buenos Aires", "Rainforest"
+          ], energy: 8, pop: 78 },
+        { name: "Malaa", tracks: ["Notorious", "Bling Bling", "Addiction", "Hostyl", "Diamonds",
+            "Contagious", "Ring the Alarm", "Discipline", "No Rivals", "We Get Crunk"
+          ], energy: 9, pop: 74 }
+      ],
+      "Dembow": [
+        { name: "El Alfa", tracks: ["Coronao Now", "La Mamá de la Mamá", "Muevete pa ca", "Gogo Dance",
+            "Tiguere de Verdad", "Plebada", "Acuetate", "Rulay", "Chu Chu", "Pal De Pesos"
+          ], energy: 9, pop: 88 },
+        { name: "Rochy RD", tracks: ["Ela Ela", "Cayó La Noche", "La Llevo", "Descontrolao", "Pata",
+            "Uva Bombón", "Los Poderes", "El Sistema", "No Tengo Para", "Vivo Por Palos"
+          ], energy: 9, pop: 80 },
+        { name: "Chimbala", tracks: ["Loco", "Me Tiene", "Tembleque", "Pam", "Yo Soy", "Maniqui",
+            "Lo' Prieto", "Que Me Importa", "Se Me Nota", "La Conet"
+          ], energy: 9, pop: 78 },
+        { name: "Mark B", tracks: ["Pa' Encima", "No Quiere Novio", "La Mia", "Ven Pa Ca", "Dime",
+            "Que Se Repita", "Delincuente", "Bebé", "Clásico", "Solo"
+          ], energy: 8, pop: 72 },
+        { name: "Bulova", tracks: ["Maquiavélico", "Mentiroso", "Cama Grande", "Bruta", "Independiente",
+            "Tu Eres un Malo", "Singapur", "La Red", "El Coba", "Envidia"
+          ], energy: 8, pop: 70 },
+        { name: "Shadow Blow", tracks: ["La Calle", "El Hombre", "Monstruo", "Fuego", "Rompiendo",
+            "Millonario", "La Presión", "Vuelve", "Bandido", "El Más Buscado"
+          ], energy: 8, pop: 74 },
+        { name: "Ceky Viciny", tracks: ["La Melaza", "Yo Soy El Que Soy", "La Formula", "Sin Miedo", "Pa Ti",
+            "Klk", "El Pito", "La Pampara", "Tu No Ta'", "Dejate Ver"
+          ], energy: 9, pop: 68 },
+        { name: "Mozart La Para", tracks: ["Que Se Muera", "Sube El Volumen", "El Dentista",
+            "Suelta La Pose", "Queso", "Toy Enamorado", "Pa' Gozar", "Mujeres", "Fiesta",
+            "El Ganador"
+          ], energy: 8, pop: 72 },
+        { name: "Bulin 47", tracks: ["La Culpable", "Pal Party", "Tu No Sei", "Sanguinaria", "La Formula",
+            "Calle", "Que Importa", "Dinero", "Viral", "Prendio"
+          ], energy: 9, pop: 70 },
+        { name: "Químico Ultra Mega", tracks: ["Caution", "Explosivo", "Mi Ritmo", "Guerrero",
+            "Tumbando el Club", "Los Ganster", "La Vuelta", "Pila De Nota", "Ella Quiere",
+            "Prende El Arcoiris"
+          ], energy: 9, pop: 74 }
+      ],
+      "Indie": [
+        { name: "Tame Impala", tracks: ["The Less I Know the Better", "Let It Happen", "Feels Like We Only Go",
+            "Elephant", "Borderline", "New Person", "Lost in Yesterday", "It Might Be Time",
+            "Posthumous Forgiveness", "Breathe Deeper"
+          ], energy: 6, pop: 88 },
+        { name: "Arctic Monkeys", tracks: ["Do I Wanna Know?", "R U Mine?", "505", "Why'd You Only Call Me",
+            "Fluorescent Adolescent", "Arabella", "Brianstorm", "Crying Lightning", "Teddy Picker",
+            "Cornerstone"
+          ], energy: 7, pop: 92 },
+        { name: "Mac DeMarco", tracks: ["Chamber of Reflection", "Salad Days", "Blue Boy", "Freaking Out",
+            "My Kind of Woman", "Ode to Viceroy", "Passing Out Pieces", "Another One", "The Way",
+            "On the Level"
+          ], energy: 4, pop: 80 },
+        { name: "Beach House", tracks: ["Space Song", "Myth", "PPP", "Silver Soul", "Take Care", "Lemon Glow",
+            "Drunk in LA", "Dark Spring", "Wishes", "Lazuli"
+          ], energy: 4, pop: 78 },
+        { name: "Vampire Weekend", tracks: ["A-Punk", "Oxford Comma", "Campus", "Cape Cod Kwassa Kwassa",
+            "Harmony Hall", "This Life", "Sunflower", "Diane Young", "Step", "Unbelievers"
+          ], energy: 7, pop: 82 }
+      ],
+      "Rock Alternativo": [
+        { name: "Linkin Park", tracks: ["In the End", "Numb", "Crawling", "Somewhere I Belong",
+            "Breaking the Habit", "What I've Done", "Shadow of the Day", "New Divide", "Burn It Down",
+            "One Step Closer"
+          ], energy: 9, pop: 95 },
+        { name: "Foo Fighters", tracks: ["Everlong", "The Pretender", "Learn to Fly", "My Hero", "Best of You",
+            "Times Like These", "Walk", "Something from Nothing", "Run", "No Son of Mine"
+          ], energy: 9, pop: 92 },
+        { name: "Red Hot Chili Peppers", tracks: ["Californication", "Under the Bridge", "Snow (Hey Oh)",
+            "Can't Stop", "Scar Tissue", "Otherside", "Dani California", "Black Summer", "Dark",
+            "Give It Away"
+          ], energy: 8, pop: 93 },
+        { name: "Muse", tracks: ["Uprising", "Starlight", "Supermassive Black Hole", "Madness",
+            "Knights of Cydonia", "Hysteria", "Time Is Running Out", "Resistance", "Plug In Baby",
+            "Psycho"
+          ], energy: 9, pop: 88 },
+        { name: "The Killers", tracks: ["Mr. Brightside", "When You Were Young", "Human", "Somebody Told Me",
+            "Read My Mind", "All These Things That I've Done", "Spaceman", "Runaways", "The Man",
+            "Caution"
+          ], energy: 8, pop: 86 }
+      ]
+    };
 
-  function buildPiano() {
-    const piano = document.getElementById('piano');
-    piano.innerHTML = '';
-    const startMIDI = currentOctaveStart * 12;
-    let whiteIdx = 0;
+    // Jeff Mkeyz tracks
+    const MKEYZ_TRACKS = {
+      "Pop Latino": [{ title: "No Me Creo", bpm: 95, energy: 7 }, { title: "Una Luz", bpm: 88, energy: 6 },
+      { title: "Que Será", bpm: 92, energy: 7 }],
+      "Trap": [{ title: "Dark Session", bpm: 140, energy: 9 }, { title: "Night Mode", bpm: 145, energy: 9 },
+      { title: "808 Vision", bpm: 138, energy: 8 }],
+      "Reggaeton": [{ title: "Perreo Suave", bpm: 98, energy: 8 }, { title: "La Noche", bpm: 96, energy: 7 },
+      { title: "Fuego", bpm: 100, energy: 9 }],
+      "Afrobeats": [{ title: "Lagos Nights", bpm: 105, energy: 7 }, { title: "Afro Soul", bpm: 102,
+      energy: 6 }, { title: "Groove", bpm: 108, energy: 7 }],
+      "R&B": [{ title: "Velvet", bpm: 80, energy: 5 }, { title: "Soft Landing", bpm: 78, energy: 4 },
+      { title: "Golden Hour", bpm: 85, energy: 6 }],
+      "Hip-Hop": [{ title: "Real Talk", bpm: 90, energy: 7 }, { title: "Street Gospel", bpm: 88, energy: 7 },
+      { title: "Level Up", bpm: 92, energy: 8 }],
+      "Lo-Fi": [{ title: "Late Night Coffee", bpm: 75, energy: 2 }, { title: "Rain Session", bpm: 72,
+        energy: 2 }, { title: "Study Mode", bpm: 78, energy: 3 }
+      ],
+      "Dancehall": [{ title: "Island Vibes", bpm: 100, energy: 8 }, { title: "Caribbean Heat", bpm: 98,
+      energy: 8 }],
+      "Drill": [{ title: "Cold World", bpm: 142, energy: 9 }, { title: "Street Chronicles", bpm: 140,
+      energy: 9 }],
+      "Dembow": [{ title: "Tiguere Beat", bpm: 120, energy: 9 }, { title: "Caribe Flow", bpm: 118, energy: 8 },
+      { title: "Movimiento", bpm: 122, energy: 9 }],
+      "Salsa": [{ title: "Sabor Latino", bpm: 185, energy: 8 }],
+      "Bachata": [{ title: "Corazón Roto", bpm: 130, energy: 6 }],
+      "EDM": [{ title: "Electric Dreams", bpm: 128, energy: 9 }, { title: "Festival Mode", bpm: 132,
+      energy: 10 }],
+      "House": [{ title: "Deep Groove", bpm: 124, energy: 8 }, { title: "Club Sessions", bpm: 126, energy: 9 }],
+      "Indie": [{ title: "Indie Vibes", bpm: 110, energy: 6 }],
+      "Rock Alternativo": [{ title: "Rock Fusion", bpm: 130, energy: 8 }]
+    };
 
-    for (let oct = 0; oct < 2; oct++) {
-      const octBase = startMIDI + oct * 12;
-      for (let w = 0; w < 7; w++) {
-        const noteIdx = WHITE_NOTES[w];
-        const midi = octBase + noteIdx;
-        const key = document.createElement('div');
-        key.className = 'white-key';
-        key.dataset.note = noteIdx;
-        key.dataset.midi = midi;
-        key.innerHTML = `<span>${NOTE_NAMES[noteIdx]}</span>`;
-        key.addEventListener('pointerdown', (e) => { e.preventDefault(); handleKeyPress(midi, key, e); });
-        piano.appendChild(key);
-        whiteIdx++;
-      }
-      const blackOffsets = [0.55, 1.55, null, 3.55, 4.55, 5.55];
-      blackOffsets.forEach((offset, i) => {
-        if (offset === null) return;
-        const noteIdx = BLACK_NOTES[i];
-        if (noteIdx === null) return;
-        const midi = octBase + noteIdx;
-        const baseX = (oct * 7) * 40;
-        const key = document.createElement('div');
-        key.className = 'black-key';
-        key.dataset.note = noteIdx;
-        key.dataset.midi = midi;
-        key.innerHTML = `<span>${NOTE_NAMES[noteIdx]}</span>`;
-        key.style.left = (baseX + offset * 40 + 5) + 'px';
-        key.addEventListener('pointerdown', (e) => { e.preventDefault(); handleKeyPress(midi, key, e); });
-        piano.appendChild(key);
+    const PLAYLIST_NAMES = {
+      "Energético": ["Full Power 🔋", "No Pare 🚀", "Máxima Energía ⚡", "Ultra Boost 💥"],
+      "Relajado": ["Chill Mode 😌", "Smooth Vibes 🌊", "Take It Easy ☁️", "Zero Stress 🧘"],
+      "Romántico": ["Love Playlist 💕", "Corazón Abierto ❤️", "Noche de Amor 🌹", "Piel con Piel 🔥"],
+      "Melancólico": ["Feelings 😔", "Lluvia de Pensamientos 🌧️", "Soul Session 💙", "Deep Thoughts 🌙"],
+      "Motivacional": ["Beast Mode 💪", "On Top 👑", "Champions Playlist 🏆", "Rise & Grind 🌅"],
+      "Oscuro": ["Dark Side 🌑", "Midnight Sessions 🌃", "Shadow Mode 🖤", "No Light 🕷️"],
+      "Alegre": ["Good Vibes ✨", "Happy Hour 🎉", "Smile Playlist 😊", "Sunshine ☀️"],
+      "Fiesta": ["Party Mode 🎊", "Fuego en la Pista 🔥", "Club Bangers 🎵", "100% Fiesta 🥳"],
+      "Concentración": ["Focus Zone 🎯", "Deep Work 💻", "Flow State 🧠", "Study Session 📚"],
+      "Workout": ["Gym Playlist 🏋️", "Run Mode 🏃", "No Days Off 💦", "Training Day 🥊"]
+    };
+
+    let selectedGenre = "";
+    let selectedMood = "";
+    let selectedCtx = "";
+    let playlistLen = 15;
+    let includeMkeyz = true;
+
+    // ── BUILD UI ──────────────────────────────────
+    function buildGenreCircles() {
+      const el = document.getElementById("genre-chips");
+      GENRES.forEach(g => {
+        const color = GENRE_COLORS[g] || "#f5c518";
+        const circle = document.createElement("div");
+        circle.className = "genre-circle";
+        circle.innerHTML =
+          `<div class="g-emoji">${GENRE_EMOJIS[g]||"🎵"}</div><div class="g-name">${g}</div>`;
+        circle.style.background = color + "15";
+        circle.style.borderColor = color + "33";
+        circle.onclick = () => {
+          el.querySelectorAll(".genre-circle").forEach(c => {
+            c.classList.remove("selected");
+            const gc = GENRE_COLORS[c.dataset.genre] || "#f5c518";
+            c.style.background = gc + "15";
+            c.style.borderColor = gc + "33";
+            c.style.boxShadow = "none";
+            c.querySelector(".g-name").style.color = "#666";
+          });
+          circle.classList.add("selected");
+          circle.style.background = color + "35";
+          circle.style.borderColor = color;
+          circle.style.boxShadow = `0 0 25px ${color}55`;
+          circle.querySelector(".g-name").style.color = "#fff";
+          selectedGenre = g;
+          if (tg) tg.HapticFeedback?.impactOccurred("medium");
+        };
+        circle.dataset.genre = g;
+        el.appendChild(circle);
       });
     }
-    refreshPianoVisuals();
-  }
 
-  function handleKeyPress(midi, key, e) {
-    const rect = key.getBoundingClientRect();
-    const y = e.clientY - rect.top;
-    const velocity = Math.max(0.3, Math.min(1, 1 - (y / rect.height)));
-
-    if (selectedNotes.has(midi)) {
-      selectedNotes.delete(midi);
-    } else {
-      selectedNotes.add(midi);
-      playNote(midi, 0.6, velocity);
+    function buildChips(containerId, items, colorFn, onSelect) {
+      const el = document.getElementById(containerId);
+      items.forEach(item => {
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.textContent = item;
+        const color = colorFn(item);
+        chip.style.borderColor = color + "44";
+        chip.style.color = color;
+        chip.onclick = () => {
+          el.querySelectorAll(".chip").forEach(c => {
+            c.classList.remove("selected");
+            c.style.background = "";
+            c.style.borderColor = colorFn(c.textContent) + "44";
+            c.style.color = colorFn(c.textContent);
+            c.style.boxShadow = "none";
+          });
+          chip.classList.add("selected");
+          chip.style.background = color + "22";
+          chip.style.borderColor = color;
+          chip.style.boxShadow = `0 0 16px ${color}33`;
+          chip.style.color = "#fff";
+          onSelect(item);
+          if (tg) tg.HapticFeedback?.impactOccurred("light");
+        };
+        el.appendChild(chip);
+      });
     }
 
-    key.style.transform = 'scaleY(0.94)';
-    setTimeout(() => key.style.transform = '', 80);
+    const MOOD_COLORS = {
+      "Energético": "#ff4d4d", "Relajado": "#4fc3f7", "Romántico": "#e91e63",
+      "Melancólico": "#7c4dff", "Motivacional": "#ff9800", "Oscuro": "#607d8b",
+      "Alegre": "#f5c518", "Fiesta": "#ff6d00", "Concentración": "#00e676", "Workout": "#ff1744"
+    };
+    buildChips("mood-chips", MOODS, m => MOOD_COLORS[m] || "#00e676", m => selectedMood = m);
 
-    clearTimeout(window._analysisTimeout);
-    window._analysisTimeout = setTimeout(analyzeScale, 200);
-    refreshPianoVisuals();
-  }
+    const CTX_COLORS = ["#ff6b35", "#4fc3f7", "#ff4d4d", "#9c27b0", "#00e676", "#607d8b", "#f5c518", "#ff9800",
+      "#00bcd4", "#ffeb3b"
+    ];
+    buildChips("ctx-chips", CTXS, c => CTX_COLORS[CTXS.indexOf(c)] || "#4fc3f7", c => selectedCtx = c);
 
-  function refreshPianoVisuals() {
-    document.querySelectorAll('.white-key, .black-key').forEach(k => {
-      const midi = parseInt(k.dataset.midi);
-      k.classList.toggle('selected', selectedNotes.has(midi));
-      k.classList.remove('in-scale');
-      if (lastDetectedScale) {
-        const noteIdx = midi % 12;
-        if (lastDetectedScale.scaleNotes.includes(noteIdx)) {
-          k.classList.add('in-scale');
+    function buildLenButtons() {
+      const lengths1 = [10, 20, 30, 50];
+      const lengths2 = [75, 100, 150, 200];
+      const times1 = ["~30 min", "~60 min", "~90 min", "~2.5h"];
+      const times2 = ["~3.5h", "~5h", "~7h", "~10h"];
+      [["len-btns", lengths1, times1], ["len-btns2", lengths2, times2]].forEach(([id, lens, times]) => {
+        const el = document.getElementById(id);
+        lens.forEach((n, i) => {
+          const btn = document.createElement("div");
+          btn.className = "len-btn" + (n === 15 ? " active" : "");
+          btn.innerHTML = `${n}<br><span style="font-size:9px;opacity:0.6">${times[i]}</span>`;
+          btn.onclick = () => {
+            document.querySelectorAll(".len-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            playlistLen = n;
+          };
+          if (n === 15) playlistLen = 15;
+          el.appendChild(btn);
+        });
+      });
+      // Set default active
+      document.querySelectorAll(".len-btn").forEach(b => {
+        if (b.textContent.startsWith("15")) b.classList.add("active");
+      });
+    }
+
+    function toggleMkeyz() {
+      includeMkeyz = !includeMkeyz;
+      const btn = document.getElementById("mkeyz-toggle");
+      btn.classList.toggle("off", !includeMkeyz);
+      if (tg) tg.HapticFeedback?.impactOccurred("light");
+    }
+
+    // ── GENERATE PLAYLIST ────────────────────────
+    function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math
+        .random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+    function randDuration(minSec = 150, maxSec = 300) {
+      const s = Math.floor(Math.random() * (maxSec - minSec)) + minSec;
+      return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+    }
+
+    function generatePlaylist() {
+      if (!selectedGenre) { showToast("🎵 Elige un género primero"); return; }
+      if (!selectedMood) { showToast("🌊 Elige un mood"); return; }
+
+      document.getElementById("result").innerHTML = `
+        <div class="spinner-wrap">
+          <div class="spinner-orbit">
+            <div class="orbit-ring"></div><div class="orbit-ring"></div><div class="orbit-ring"></div>
+            <div class="spinner-core"></div>
+          </div>
+          <div class="spinner-text">Creando tu playlist curada...</div>
+        </div>`;
+
+      setTimeout(() => buildPlaylist(), 900);
+    }
+
+    function buildPlaylist() {
+      const artists = ARTISTS[selectedGenre] || ARTISTS["Hip-Hop"];
+      const mkeyzT = MKEYZ_TRACKS[selectedGenre] || [];
+      const color = GENRE_COLORS[selectedGenre] || "#f5c518";
+      const namePool = PLAYLIST_NAMES[selectedMood] || ["Mi Playlist 🎵"];
+      const plName = namePool[Math.floor(Math.random() * namePool.length)];
+
+      // Crear pool de canciones con metadatos
+      let trackPool = [];
+      const usedArtistNames = new Set();
+
+      artists.forEach(artist => {
+        artist.tracks.forEach(track => {
+          trackPool.push({
+            name: track,
+            artist: artist.name,
+            energy: artist.energy + (Math.random() - 0.5) * 2,
+            pop: artist.pop,
+            isMkeyz: false,
+            genre: selectedGenre
+          });
+        });
+      });
+
+      // Añadir tracks de Jeff Mkeyz
+      mkeyzT.forEach(mk => {
+        trackPool.push({
+          name: mk.title,
+          artist: "Jeff Mkeyz",
+          energy: mk.energy || 7,
+          pop: 70,
+          isMkeyz: true,
+          genre: selectedGenre,
+          bpm: mk.bpm
+        });
+      });
+
+      // Seleccionar canciones asegurando variedad de artistas
+      let selected = [];
+      let pool = shuffle([...trackPool]);
+      let mkeyzCount = 0;
+      const maxMkeyz = includeMkeyz ? Math.min(mkeyzT.length, Math.floor(playlistLen * 0.2)) : 0;
+
+      // Priorizar incluir Jeff Mkeyz si está activado
+      if (includeMkeyz && mkeyzT.length > 0) {
+        const mkeyzPool = pool.filter(t => t.isMkeyz);
+        const regularPool = pool.filter(t => !t.isMkeyz);
+        pool = [...shuffle(mkeyzPool).slice(0, maxMkeyz), ...shuffle(regularPool)];
+      }
+
+      // Selección con diversidad de artistas
+      let artistCount = {};
+      for (const track of pool) {
+        if (selected.length >= playlistLen) break;
+        const artistKey = track.artist;
+        artistCount[artistKey] = (artistCount[artistKey] || 0);
+        if (artistCount[artistKey] < 3 && (track.isMkeyz ? mkeyzCount < maxMkeyz : true)) {
+          selected.push(track);
+          artistCount[artistKey]++;
+          if (track.isMkeyz) mkeyzCount++;
         }
       }
-    });
-  }
 
-  function analyzeScale() {
-    const noteIdxs = new Set(Array.from(selectedNotes).map(midi => midi % 12));
-    if (noteIdxs.size === 0) {
-      document.getElementById('scale-name-display').textContent = '—';
-      document.getElementById('scale-mood-display').textContent = 'Toca algunas notas';
-      document.getElementById('confidence-fill').style.width = '0%';
-      document.getElementById('confidence-text').textContent = '';
-      lastDetectedScale = null;
-      refreshPianoVisuals();
-      updateChordsAndProgs();
-      updateSheetMusic();
-      return;
-    }
-    const notes = Array.from(noteIdxs);
-    let allMatches = [];
-    for (let root = 0; root < 12; root++) {
-      for (const [scaleName, scaleData] of Object.entries(SCALES)) {
-        const scaleNotes = scaleData.intervals.map(i => (root + i) % 12);
-        let matches = notes.filter(n => scaleNotes.includes(n)).length;
-        const coverage = matches / notes.length;
-        const efficiency = matches / scaleNotes.length;
-        allMatches.push({ root, scaleName, score: coverage * 0.7 + efficiency * 0.3, scaleData, scaleNotes });
+      // Si faltan canciones, rellenar
+      if (selected.length < playlistLen) {
+        const remaining = pool.filter(t => !selected.includes(t));
+        selected = [...selected, ...remaining.slice(0, playlistLen - selected.length)];
       }
-    }
-    allMatches.sort((a, b) => b.score - a.score);
-    lastDetectedScale = allMatches[0];
-    const best = lastDetectedScale;
-    document.getElementById('scale-name-display').textContent = `${NOTE_NAMES[best.root]} ${best.scaleName}`;
-    document.getElementById('scale-mood-display').textContent = best.scaleData.mood;
-    const confidence = Math.round(best.score * 100);
-    document.getElementById('confidence-fill').style.width = confidence + '%';
-    document.getElementById('confidence-text').textContent = confidence + '% coincidencia';
-    refreshPianoVisuals();
-    updateChordsAndProgs();
-    updateSheetMusic();
-  }
 
-  function updateChordsAndProgs() {
-    const chordGrid = document.getElementById('chord-grid');
-    const progList = document.getElementById('progression-list');
-    if (!lastDetectedScale || !lastDetectedScale.scaleData.chords) {
-      chordGrid.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:13px;text-align:center;">Selecciona notas para ver acordes</div>';
-      progList.innerHTML = '';
-      return;
-    }
-    const scale = lastDetectedScale;
-    chordGrid.innerHTML = scale.scaleData.chords.map((type, i) => {
-      const chordRoot = NOTE_NAMES[(scale.root + scale.scaleData.intervals[i]) % 12];
-      let symbol = chordRoot;
-      if (type === "min") symbol += "m";
-      else if (type === "dim") symbol += "°";
-      else if (type === "Aug") symbol += "+";
-      return `<div class="chord-card" onclick="playChord(${i})">
-        <div class="chord-num">${ROMAN[i]}</div>
-        <div class="chord-name">${symbol}</div>
-        <div class="chord-type">${type}</div>
-      </div>`;
-    }).join('');
-
-    const scaleType = scale.scaleName.includes('Mayor') ? 'Mayor' : 'Menor Natural';
-    const progs = PROGRESSIONS[scaleType] || PROGRESSIONS.default;
-    progList.innerHTML = progs.map(p => `<div class="prog-chip" onclick="playProgression('${p.join(',')}')">${p.join(' - ')}</div>`).join('');
-  }
-
-  function playChord(index) {
-    if (!lastDetectedScale || !lastDetectedScale.scaleData.chords) return;
-    const scale = lastDetectedScale;
-    const chordType = scale.scaleData.chords[index];
-    const intervals = [0, chordType === 'min' ? 3 : 2, chordType === 'dim' ? 6 : chordType === 'Aug' ? 8 : 4];
-    const rootMIDI = currentOctaveStart * 12 + scale.scaleNotes[index];
-    intervals.forEach(i => playNote(rootMIDI + i, 0.6, 0.7));
-  }
-
-  function playProgression(chordStr) {
-    if (!lastDetectedScale || !lastDetectedScale.scaleData.chords) return;
-    const chords = chordStr.split(',');
-    const scale = lastDetectedScale;
-    let delay = 0;
-    chords.forEach((roman, idx) => {
-      const degree = ROMAN.indexOf(roman.replace('i','I').replace('v','V'));
-      if (degree === -1) return;
-      const type = scale.scaleData.chords[degree];
-      const intervals = [0, type === 'min' ? 3 : 2, type === 'dim' ? 6 : type === 'Aug' ? 8 : 4];
-      const root = currentOctaveStart * 12 + scale.scaleNotes[degree];
-      setTimeout(() => intervals.forEach(i => playNote(root + i, 0.5, 0.7)), delay + idx * 400);
-    });
-  }
-
-  function generateProgression() {
-    if (!lastDetectedScale) { showToast('Detecta una escala primero'); return; }
-    const scaleType = lastDetectedScale.scaleName.includes('Mayor') ? 'Mayor' : 'Menor Natural';
-    const progs = PROGRESSIONS[scaleType] || PROGRESSIONS.default;
-    playProgression(progs[Math.floor(Math.random() * progs.length)].join(','));
-  }
-
-  function updateSheetMusic() {
-    const div = document.getElementById('sheet-music');
-    if (!lastDetectedScale || recordedNotes.length === 0) {
-      div.innerHTML = '<span style="color:var(--muted);">Toca notas para ver partitura</span>';
-      return;
-    }
-    const recent = recordedNotes.slice(-16);
-    const abc = recent.map(n => `${NOTE_NAMES[n.midi % 12]}${Math.floor(n.midi/12)-1}`).join(' ');
-    try { ABCJS.renderAbc(div, `X:1\nM:4/4\nK:C\n${abc}`, { scale:1.2, responsive:'resize' }); }
-    catch(e) { div.innerHTML = '<span style="color:var(--muted);">Error al generar partitura</span>'; }
-  }
-
-  function exportSheet() {
-    const svg = document.querySelector('#sheet-music svg');
-    if (!svg) { showToast('No hay partitura'); return; }
-    const blob = new Blob([new XMLSerializer().serializeToString(svg)], {type:'image/svg+xml'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'partitura.svg'; a.click();
-  }
-
-  function saveCurrentScale() {
-    if (!lastDetectedScale) { showToast('Detecta una escala primero'); return; }
-    const name = prompt('Nombre:', `${NOTE_NAMES[lastDetectedScale.root]} ${lastDetectedScale.scaleName}`);
-    if (!name) return;
-    scaleLibrary.push({ name, notes: lastDetectedScale.scaleNotes });
-    localStorage.setItem('scaleLibrary', JSON.stringify(scaleLibrary));
-    renderScaleLibrary();
-    showToast('Escala guardada ✅');
-  }
-
-  function createCustomScale() {
-    const name = prompt('Nombre de la escala:');
-    if (!name) return;
-    const noteStr = prompt('Notas (ej: C,D,E,G,A):');
-    if (!noteStr) return;
-    const notes = noteStr.split(',').map(n => NOTE_NAMES.indexOf(n.trim())).filter(n => n >= 0);
-    if (!notes.length) return;
-    scaleLibrary.push({ name, notes });
-    localStorage.setItem('scaleLibrary', JSON.stringify(scaleLibrary));
-    renderScaleLibrary();
-    showToast('Escala creada ✅');
-  }
-
-  function renderScaleLibrary() {
-    const div = document.getElementById('scale-library');
-    div.innerHTML = scaleLibrary.map((s, i) => `
-      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:6px;">
-        <span><strong>${s.name}</strong> - ${s.notes.map(n=>NOTE_NAMES[n]).join(', ')}</span>
-        <div style="display:flex;gap:4px;">
-          <button class="btn btn-sm" onclick="loadScale(${i})">Cargar</button>
-          <button class="btn btn-sm" onclick="deleteScale(${i})">🗑️</button>
-        </div>
-      </div>`).join('') || '<span style="color:var(--muted);">No hay escalas guardadas</span>';
-  }
-
-  function loadScale(idx) {
-    const scale = scaleLibrary[idx];
-    selectedNotes.clear();
-    document.querySelectorAll('[data-midi]').forEach(k => {
-      if (scale.notes.includes(parseInt(k.dataset.midi) % 12)) {
-        selectedNotes.add(parseInt(k.dataset.midi));
+      // Ordenar por arco de energía (curva narrativa)
+      selected.sort((a, b) => a.energy - b.energy);
+      // Reorganizar para crear arco: inicio medio, subida, pico, bajada
+      const mid = Math.floor(selected.length / 2);
+      const highEnergy = selected.filter(t => t.energy >= 7);
+      const lowEnergy = selected.filter(t => t.energy < 7);
+      let ordered = [];
+      // Intro (energía media-baja)
+      ordered.push(...lowEnergy.slice(0, Math.floor(lowEnergy.length * 0.4)));
+      // Desarrollo (subida)
+      ordered.push(...highEnergy.slice(0, Math.floor(highEnergy.length * 0.3)));
+      // Clímax (máxima energía)
+      ordered.push(...highEnergy.slice(Math.floor(highEnergy.length * 0.3)));
+      // Cierre (bajada)
+      ordered.push(...lowEnergy.slice(Math.floor(lowEnergy.length * 0.4)));
+      // Si hay Jeff Mkeyz, distribuir uno en el clímax
+      const mkeyzTracks = ordered.filter(t => t.isMkeyz);
+      const nonMkeyz = ordered.filter(t => !t.isMkeyz);
+      if (mkeyzTracks.length > 0) {
+        // Insertar Mkeyz en posiciones estratégicas
+        const insertPositions = [Math.floor(ordered.length * 0.3), Math.floor(ordered.length * 0.6)];
+        let finalList = [...nonMkeyz];
+        mkeyzTracks.forEach((mk, i) => {
+          const pos = Math.min(insertPositions[i] || Math.floor(finalList.length / 2), finalList.length);
+          finalList.splice(pos, 0, mk);
+        });
+        ordered = finalList;
       }
-    });
-    refreshPianoVisuals();
-    analyzeScale();
-  }
 
-  function deleteScale(idx) { scaleLibrary.splice(idx,1); localStorage.setItem('scaleLibrary',JSON.stringify(scaleLibrary)); renderScaleLibrary(); }
+      // Asignar duraciones realistas
+      ordered = ordered.map(t => ({ ...t, duration: randDuration(t.energy > 7 ? 160 : 180, t.energy > 7 ? 280 :
+          320) }));
 
-  function toggleSustain() {
-    sustainActive = !sustainActive;
-    document.getElementById('sustain-btn').classList.toggle('primary', sustainActive);
-    if (!sustainActive) stopAllOscillators();
-  }
+      const totalSec = ordered.reduce((s, t) => {
+        const [m, sec] = t.duration.split(":").map(Number);
+        return s + m * 60 + sec;
+      }, 0);
+      const totalStr = `${Math.floor(totalSec/3600)}h ${Math.floor((totalSec%3600)/60)}m`;
 
-  function toggleArp() {
-    arpActive = !arpActive;
-    document.getElementById('arp-btn').classList.toggle('primary', arpActive);
-    if (arpActive) {
-      arpInterval = setInterval(() => {
-        if (selectedNotes.size > 0) {
-          const arr = Array.from(selectedNotes);
-          playNote(arr[Math.floor(Date.now()/200) % arr.length], 0.2, 0.6);
+      // Generar descripción
+      const descriptions = {
+        "Energético": "Una explosión de energía para mantenerte al máximo.",
+        "Relajado": "Deja que el ritmo te lleve a un estado de calma.",
+        "Romántico": "La banda sonora perfecta para el amor.",
+        "Melancólico": "Para sentir profundo y reflexionar.",
+        "Motivacional": "El impulso que necesitas para conquistar el día.",
+        "Oscuro": "Sumérgete en las sombras con estos beats.",
+        "Alegre": "Sonrisas garantizadas con cada canción.",
+        "Fiesta": "Prende la fiesta con esta selección explosiva.",
+        "Concentración": "Enfócate y alcanza tu máximo potencial.",
+        "Workout": "El combustible perfecto para tu entrenamiento."
+      };
+
+      renderPlaylist(plName, ordered, color, totalStr, descriptions[selectedMood] ||
+        "Una selección curada especialmente para ti.");
+    }
+
+    function renderPlaylist(name, tracks, color, totalDur, description) {
+      const ctx = selectedCtx || "";
+      // Generar gradiente único para la portada
+      const hue1 = parseInt(color.slice(1), 16) % 360;
+      const hue2 = (hue1 + 40) % 360;
+      const coverGradient = `linear-gradient(135deg, hsl(${hue1},70%,30%) 0%, hsl(${hue2},80%,20%) 50%, hsl(${hue1},60%,10%) 100%)`;
+
+      // Agrupar tracks en secciones
+      const sections = [];
+      const total = tracks.length;
+      const sectionSize = Math.ceil(total / 3);
+      for (let i = 0; i < total; i += sectionSize) {
+        sections.push(tracks.slice(i, i + sectionSize));
+      }
+      const sectionNames = ["🎬 Intro", "🔥 Desarrollo", "🌙 Cierre"];
+
+      let html = `
+        <div class="playlist-card">
+          <div class="playlist-cover" style="background:${coverGradient}">
+            <div class="cover-overlay">
+              <div class="pl-name">${name}</div>
+              <div class="pl-desc">${description}</div>
+            </div>
+          </div>
+          <div class="playlist-header">
+            <div class="playlist-meta">
+              <span>📀 ${tracks.length} canciones</span>
+              <span>⏱️ ${totalDur}</span>
+              <span>🎧 ${selectedGenre}</span>
+            </div>
+            <div class="playlist-tags">
+              <span class="playlist-tag">${selectedGenre}</span>
+              <span class="playlist-tag">${selectedMood}</span>
+              ${ctx ? `<span class="playlist-tag">${ctx}</span>` : ""}
+              ${includeMkeyz ? '<span class="playlist-tag mkeyz-tag">🎛️ Jeff Mkeyz</span>' : ""}
+            </div>
+          </div>
+          <div class="track-list">`;
+
+      sections.forEach((section, si) => {
+        if (sections.length > 1) {
+          html += `<div class="section-divider">${sectionNames[si] || '• • •'}</div>`;
         }
-      }, 200);
-    } else clearInterval(arpInterval);
-  }
+        section.forEach((t, i) => {
+          const colors = ["#e91e63","#ff6b35","#9c27b0","#2196f3","#00bcd4","#4caf50","#ff9800","#7c4dff"];
+          const bgColor = colors[Math.floor(Math.random() * colors.length)];
+          html += `
+            <div class="track-item ${t.isMkeyz ? "is-mkeyz" : ""}">
+              <div class="track-num">${tracks.indexOf(t)+1}</div>
+              <div class="track-cover" style="background:${bgColor};opacity:0.8">${t.name.charAt(0)}</div>
+              <div class="track-info">
+                <div class="track-name">
+                  ${t.name}
+                  ${t.isMkeyz ? '<span class="mkeyz-badge">Jeff Mkeyz</span>' : ""}
+                </div>
+                <div class="track-artist">${t.artist}</div>
+              </div>
+              <div class="track-duration">${t.duration}</div>
+            </div>`;
+        });
+      });
 
-  function updatePitchBend(val) { pitchBend = parseInt(val); document.getElementById('pitch-val').textContent = val; }
+      html += `
+          </div>
+          <div class="action-row">
+            <button class="action-btn btn-copy-pl" onclick="copyPlaylist('${encodeURIComponent(JSON.stringify(tracks))}', '${name.replace(/'/g, "\\'")}')">📋 Copiar lista</button>
+            <button class="action-btn btn-shuffle" onclick="generatePlaylist()">🔀 Regenerar</button>
+          </div>
+          <button class="btn-new" onclick="generatePlaylist()">🔄 Nueva playlist</button>
+        </div>`;
 
-  function playScale() {
-    if (!lastDetectedScale) { showToast('Toca notas primero'); return; }
-    const notes = lastDetectedScale.scaleNotes;
-    const base = currentOctaveStart * 12;
-    let delay = 0;
-    [...notes, ...notes.slice(0,-1).reverse()].forEach((n,i) => setTimeout(() => playNote(base+n,0.3,0.7), delay + i*200));
-  }
+      document.getElementById("result").innerHTML = html;
+      document.getElementById("result").scrollIntoView({ behavior: "smooth" });
+      if (tg) tg.HapticFeedback?.notificationOccurred("success");
+    }
 
-  function clearAll() {
-    selectedNotes.clear();
-    stopAllOscillators();
-    document.querySelectorAll('.white-key,.black-key').forEach(k => k.classList.remove('selected','in-scale'));
-    ['scale-name-display','scale-mood-display'].forEach(id => document.getElementById(id).textContent = id.includes('name') ? '—' : 'Toca algunas notas');
-    document.getElementById('confidence-fill').style.width = '0%';
-    document.getElementById('confidence-text').textContent = '';
-    lastDetectedScale = null; recordedNotes = [];
-    updateChordsAndProgs(); updateSheetMusic();
-  }
+    function copyPlaylist(encodedTracks, name) {
+      const tracks = JSON.parse(decodeURIComponent(encodedTracks));
+      const text = `🎵 ${name}\n\n` + tracks.map((t, i) => `${i+1}. ${t.name} — ${t.artist}`).join("\n") +
+        `\n\n🤖 Generado por Mkeyz Studio\nt.me/MkeyzDAWbot`;
+      navigator.clipboard?.writeText(text).then(() => showToast("✅ Playlist copiada al portapapeles"));
+      if (tg) tg.HapticFeedback?.impactOccurred("light");
+    }
 
-  function toggleFxPanel() {
-    const ctrl = document.getElementById('fx-controls');
-    const btn = document.getElementById('fx-toggle');
-    ctrl.classList.toggle('show');
-    btn.classList.toggle('active');
-  }
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2500);
+    }
 
-  function saveFxPreset() {
-    const name = prompt('Nombre del preset:');
-    if (!name) return;
-    fxPresets.push({ name, settings: { ...fxSettings } });
-    localStorage.setItem('fxPresets', JSON.stringify(fxPresets));
-    showToast('Preset guardado 💾');
-  }
-
-  function loadFxPreset() {
-    if (!fxPresets.length) { showToast('No hay presets'); return; }
-    const preset = fxPresets[fxPresets.length-1];
-    Object.assign(fxSettings, preset.settings);
-    Object.keys(fxSettings).forEach(k => {
-      const slider = document.getElementById(`fx-${k}`);
-      if (slider) {
-        slider.value = fxSettings[k];
-        const disp = document.getElementById(`val-${k}`);
-        if (disp) disp.textContent = k.startsWith('eq') ? fxSettings[k]+' dB' : fxSettings[k]+'%';
-      }
-    });
-    updateAllFx();
-    showToast(`Preset cargado: ${preset.name}`);
-  }
-
-  function startAnalyzer() {
-    const canvas = document.getElementById('analyzer-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    (function draw() {
-      if (!analyserNode) { analyzerAnimFrame = requestAnimationFrame(draw); return; }
-      const W = canvas.width = canvas.offsetWidth * devicePixelRatio;
-      const H = canvas.height = canvas.offsetHeight * devicePixelRatio;
-      const data = new Uint8Array(analyserNode.frequencyBinCount);
-      analyserNode.getByteFrequencyData(data);
-      ctx.clearRect(0,0,W,H);
-      const bw = (W / data.length) * 2.5;
-      let x = 0;
-      for (let i = 0; i < data.length; i++) {
-        const h = data[i]/255 * H;
-        const g = ctx.createLinearGradient(0,H,0,H-h);
-        g.addColorStop(0,'#7c4dff'); g.addColorStop(1,'#f0b90b');
-        ctx.fillStyle = g;
-        ctx.fillRect(x, H-h, bw, h);
-        x += bw + 1;
-      }
-      analyzerAnimFrame = requestAnimationFrame(draw);
-    })();
-  }
-
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-      document.getElementById(btn.dataset.panel).classList.add('active');
-    });
-  });
-
-  document.getElementById('sound-selector').addEventListener('click', e => {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-    document.querySelectorAll('#sound-selector .btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentSound = btn.dataset.sound;
-  });
-
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2000);
-  }
-
-  buildPiano();
-  renderScaleLibrary();
-  updateAllFx();
-  startAnalyzer();
-</script>
+    // ── INIT ──────────────────────────────────────
+    buildGenreCircles();
+    buildLenButtons();
+  </script>
 </body>
 </html>
