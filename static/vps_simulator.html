@@ -108,6 +108,35 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
 #loading { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; height:100vh; color:var(--text-dim); font-size:11px; }
 .spinner { width:28px; height:28px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg);} }
+/* ── Quick Calc Panel ── */
+.quick-panel { position:fixed; inset:0; z-index:900; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.34,1.2,0.64,1); overflow-y:auto; }
+.quick-panel.open { transform:translateY(0); }
+.quick-body { padding:20px 16px calc(32px + var(--safe-bottom)); flex:1; display:flex; flex-direction:column; gap:16px; }
+.quick-counter { display:flex; align-items:center; justify-content:center; gap:0; margin:8px 0; }
+.quick-num { font-family:'Syne',sans-serif; font-size:72px; font-weight:800; color:var(--green); line-height:1; text-align:center; min-width:120px; text-shadow:0 0 40px rgba(0,232,122,0.3); }
+.quick-btn { width:52px; height:52px; border-radius:50%; border:2px solid var(--border); background:var(--surface); color:#fff; font-size:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; -webkit-tap-highlight-color:transparent; flex-shrink:0; }
+.quick-btn:active { background:var(--green); border-color:var(--green); color:#000; transform:scale(0.92); }
+.quick-presets { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+.quick-preset { padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); cursor:pointer; -webkit-tap-highlight-color:transparent; transition:all 0.15s; }
+.quick-preset:active, .quick-preset.active { border-color:var(--green); color:var(--green); background:var(--green-dim); }
+.quick-result { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.quick-result-header { background:linear-gradient(135deg,rgba(0,232,122,0.08),transparent); padding:14px 16px; border-bottom:1px solid var(--border); }
+.quick-result-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:#fff; margin-bottom:2px; }
+.quick-result-sub { font-size:10px; color:var(--text-dim); }
+.quick-result-body { padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+.quick-spec-row { display:flex; align-items:center; justify-content:space-between; }
+.quick-spec-left { display:flex; align-items:center; gap:8px; }
+.quick-spec-icon { font-size:16px; }
+.quick-spec-label { font-size:11px; color:var(--text-dim); }
+.quick-spec-value { font-size:13px; font-weight:700; color:#fff; }
+.quick-spec-sub { font-size:9px; color:var(--text-dim); }
+.quick-providers { display:flex; flex-direction:column; gap:6px; margin-top:4px; }
+.quick-provider { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; }
+.quick-provider.best { border-color:var(--green); background:var(--green-dim); }
+.quick-prov-name { font-size:11px; font-weight:600; color:#fff; }
+.quick-prov-spec { font-size:9px; color:var(--text-dim); margin-top:2px; }
+.quick-prov-price { font-size:12px; font-weight:700; color:var(--green); }
+.quick-prov-badge { font-size:8px; padding:1px 6px; border-radius:3px; background:var(--green-dim); color:var(--green); border:1px solid rgba(0,232,122,0.2); margin-top:2px; display:inline-block; }
 /* ── Platform Selector ── */
 .platform-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
 .plat-btn { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius); padding:10px 6px; cursor:pointer; text-align:center; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
@@ -227,6 +256,15 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- Quick Calc Panel -->
+<div class="quick-panel" id="quickPanel">
+  <div class="export-header">
+    <button class="calc-back" onclick="closeQuick()">← Volver</button>
+    <div class="calc-title">⚡ ¿Cuántos perfiles?</div>
+  </div>
+  <div class="quick-body" id="quickBody"></div>
+</div>
 
 <!-- New Profile Panel -->
 <div class="newp-panel" id="newpPanel">
@@ -456,11 +494,10 @@ function render() {
     </div>
     <div class="profiles-list">${profilesHTML}</div>
     <div class="bottom-bar">
-      <button class="btn-primary" onclick="openModal('cpu')">⬆ ESCALAR</button>
+      <button class="btn-primary" onclick="openQuick()">⚡ ¿CUÁNTOS PERFILES?</button>
       <button class="btn-secondary" onclick="openNewProfile()" style="padding:13px 14px;color:var(--green);border-color:var(--green-dim)">➕</button>
       <button class="btn-secondary" onclick="openExport()" style="padding:13px 14px;color:#4fc3f7;border-color:rgba(79,195,247,0.2)">📤</button>
       <button class="btn-secondary" onclick="openCalc()" style="padding:13px 14px;color:var(--amber);border-color:var(--amber-dim)">💰</button>
-      <button class="btn-secondary" onclick="resetVPS()">↺</button>
     </div>
   `;
   document.getElementById('loading').style.display = 'none';
@@ -1014,6 +1051,173 @@ async function saveNewProfile() {
     showToast(`✓ ${payload.name} ${icon} creado`);
     tg?.HapticFeedback?.notificationOccurred('success');
   } catch(e) { showToast('Error al crear perfil'); }
+}
+
+// ── Quick Calculator ──────────────────────────────────────
+let quickProfiles = 10;
+
+const QUICK_VPS = [
+  { provider:'HETZNER',      name:'CX22',        specs:'2 vCPU · 4GB RAM · 40GB',   price:4.35,  maxP:8,  currency:'€' },
+  { provider:'HETZNER',      name:'CX32',        specs:'4 vCPU · 8GB RAM · 80GB',   price:8.56,  maxP:16, currency:'€' },
+  { provider:'HETZNER',      name:'CX42',        specs:'8 vCPU · 16GB RAM · 160GB', price:17.37, maxP:32, currency:'€' },
+  { provider:'HETZNER',      name:'CX52',        specs:'16 vCPU · 32GB RAM · 320GB',price:54.12, maxP:64, currency:'€' },
+  { provider:'CONTABO',      name:'VPS S',       specs:'4 vCPU · 8GB RAM · 100GB',  price:6.99,  maxP:16, currency:'€' },
+  { provider:'CONTABO',      name:'VPS M',       specs:'6 vCPU · 16GB RAM · 200GB', price:14.99, maxP:32, currency:'€' },
+  { provider:'CONTABO',      name:'VPS L',       specs:'8 vCPU · 30GB RAM · 400GB', price:26.99, maxP:60, currency:'€' },
+  { provider:'DIGITALOCEAN', name:'Basic 4GB',   specs:'2 vCPU · 4GB RAM · 80GB',   price:24,    maxP:8,  currency:'$' },
+  { provider:'DIGITALOCEAN', name:'General 8GB', specs:'4 vCPU · 8GB RAM · 160GB',  price:48,    maxP:16, currency:'$' },
+  { provider:'DIGITALOCEAN', name:'General 16GB',specs:'8 vCPU · 16GB RAM · 320GB', price:96,    maxP:32, currency:'$' },
+];
+
+function openQuick() {
+  renderQuick();
+  document.getElementById('quickPanel').classList.add('open');
+  tg?.HapticFeedback?.impactOccurred('light');
+}
+
+function closeQuick() {
+  document.getElementById('quickPanel').classList.remove('open');
+}
+
+function changeQuick(delta) {
+  quickProfiles = Math.max(1, Math.min(200, quickProfiles + delta));
+  renderQuick();
+  tg?.HapticFeedback?.selectionChanged?.();
+}
+
+function setQuick(n) {
+  quickProfiles = n;
+  renderQuick();
+  tg?.HapticFeedback?.selectionChanged?.();
+}
+
+function renderQuick() {
+  const n = quickProfiles;
+
+  // Required specs
+  const reqCPU     = Math.ceil(n * 0.5 * 10) / 10;
+  const reqRAM     = n * 512;
+  const reqStorage = n * 2;
+  const reqBW      = Math.ceil(n * 8 / 1024 * 10) / 10; // avg 8GB/profile in TB
+
+  // Find fitting VPS plans
+  const fitting  = QUICK_VPS.filter(v => v.maxP >= n);
+  const cheapest = fitting.length ? fitting.reduce((a,b) => a.price < b.price ? a : b) : null;
+  const bestValue= fitting.filter(v=>v.provider==='CONTABO').sort((a,b)=>a.price-b.price)[0] || cheapest;
+
+  const planRows = QUICK_VPS.filter(v => v.maxP >= n).slice(0, 5).map((v, i) => {
+    const isBest = v === cheapest;
+    return `
+    <div class="quick-provider ${isBest?'best':''}">
+      <div>
+        <div class="quick-prov-name">${v.provider} ${v.name}</div>
+        <div class="quick-prov-spec">${v.specs}</div>
+        ${isBest ? '<span class="quick-prov-badge">✓ MÁS BARATO</span>' : ''}
+      </div>
+      <div style="text-align:right">
+        <div class="quick-prov-price">${v.currency}${v.price}/mes</div>
+        <div style="font-size:9px;color:var(--text-dim)">hasta ${v.maxP} perfiles</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const noFit = fitting.length === 0 ? `
+    <div style="background:var(--red-dim);border:1px solid rgba(255,71,87,0.2);border-radius:8px;padding:12px;font-size:11px;color:var(--red);text-align:center">
+      ⚠️ Ningún plan estándar cubre ${n} perfiles.<br/>
+      <span style="font-size:9px;color:var(--text-dim)">Contacta Hetzner/Contabo para servidores dedicados.</span>
+    </div>` : '';
+
+  const presets = [5, 10, 20, 50, 100];
+
+  document.getElementById('quickBody').innerHTML = `
+    <div style="text-align:center">
+      <div style="font-size:10px;letter-spacing:1px;color:var(--text-dim);margin-bottom:16px">NÚMERO DE PERFILES</div>
+      <div class="quick-counter">
+        <button class="quick-btn" onclick="changeQuick(-10)">−10</button>
+        <button class="quick-btn" onclick="changeQuick(-1)" style="margin:0 8px">−</button>
+        <div class="quick-num">${n}</div>
+        <button class="quick-btn" onclick="changeQuick(1)" style="margin:0 8px">+</button>
+        <button class="quick-btn" onclick="changeQuick(10)">+10</button>
+      </div>
+      <div class="quick-presets" style="margin-top:16px">
+        ${presets.map(p => `<div class="quick-preset ${quickProfiles===p?'active':''}" onclick="setQuick(${p})">${p}</div>`).join('')}
+      </div>
+    </div>
+
+    <div class="quick-result">
+      <div class="quick-result-header">
+        <div class="quick-result-title">Necesitas para ${n} perfiles</div>
+        <div class="quick-result-sub">Configuración mínima recomendada</div>
+      </div>
+      <div class="quick-result-body">
+        <div class="quick-spec-row">
+          <div class="quick-spec-left">
+            <span class="quick-spec-icon">⚡</span>
+            <span class="quick-spec-label">CPU mínima</span>
+          </div>
+          <div style="text-align:right">
+            <div class="quick-spec-value">${reqCPU} vCPU</div>
+            <div class="quick-spec-sub">0.5 vCPU × ${n}</div>
+          </div>
+        </div>
+        <div class="quick-spec-row">
+          <div class="quick-spec-left">
+            <span class="quick-spec-icon">💾</span>
+            <span class="quick-spec-label">RAM mínima</span>
+          </div>
+          <div style="text-align:right">
+            <div class="quick-spec-value">${formatRAM(reqRAM)}</div>
+            <div class="quick-spec-sub">512MB × ${n}</div>
+          </div>
+        </div>
+        <div class="quick-spec-row">
+          <div class="quick-spec-left">
+            <span class="quick-spec-icon">💿</span>
+            <span class="quick-spec-label">Disco mínimo</span>
+          </div>
+          <div style="text-align:right">
+            <div class="quick-spec-value">${formatDisk(reqStorage)}</div>
+            <div class="quick-spec-sub">2GB × ${n}</div>
+          </div>
+        </div>
+        <div class="quick-spec-row">
+          <div class="quick-spec-left">
+            <span class="quick-spec-icon">🌐</span>
+            <span class="quick-spec-label">Bandwidth est.</span>
+          </div>
+          <div style="text-align:right">
+            <div class="quick-spec-value">${reqBW}TB/mes</div>
+            <div class="quick-spec-sub">~8GB × ${n} promedio</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px">// Planes que encajan</div>
+      ${noFit}
+      <div class="quick-providers">${planRows}</div>
+    </div>
+
+    ${cheapest ? `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+      <div style="font-size:9px;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px">// Coste total estimado</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--text-dim)">VPS (${cheapest.provider} ${cheapest.name})</span>
+        <span style="font-size:11px;font-weight:600">${cheapest.currency}${cheapest.price}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--text-dim)">Proxies datacenter (×${n})</span>
+        <span style="font-size:11px;font-weight:600">$${(n*1.5).toFixed(0)}</span>
+      </div>
+      <div style="height:1px;background:var(--border);margin:8px 0"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;font-weight:600;color:#fff">TOTAL / MES</span>
+        <span style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--green)">~$${Math.round(cheapest.price + n*1.5)}/mes</span>
+      </div>
+      <div style="font-size:9px;color:var(--text-dim);margin-top:6px">$${((cheapest.price + n*1.5)/n).toFixed(2)}/perfil/mes · con proxy datacenter</div>
+    </div>` : ''}
+  `;
 }
 
 loadVPS();
