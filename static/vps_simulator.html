@@ -108,6 +108,27 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
 #loading { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; height:100vh; color:var(--text-dim); font-size:11px; }
 .spinner { width:28px; height:28px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg);} }
+/* ── Platform Limits ── */
+.limit-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; }
+.limit-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.limit-plat { display:flex; align-items:center; gap:8px; }
+.limit-plat-icon { font-size:18px; }
+.limit-plat-name { font-size:12px; font-weight:600; color:#fff; }
+.limit-plat-count { font-size:9px; color:var(--text-dim); }
+.limit-status { font-size:9px; padding:3px 8px; border-radius:4px; font-weight:600; }
+.limit-ok   { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,232,122,0.2); }
+.limit-warn { background:var(--amber-dim); color:var(--amber); border:1px solid rgba(255,184,0,0.2); }
+.limit-crit { background:var(--red-dim);   color:var(--red);   border:1px solid rgba(255,71,87,0.2); }
+.limit-rows { display:flex; flex-direction:column; gap:7px; }
+.limit-row { display:flex; flex-direction:column; gap:3px; }
+.limit-row-top { display:flex; justify-content:space-between; align-items:center; }
+.limit-row-label { font-size:9px; color:var(--text-dim); }
+.limit-row-val { font-size:9px; font-weight:600; color:var(--text); }
+.limit-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+.limit-bar-fill { height:100%; border-radius:2px; transition:width 0.5s; }
+.fill-ok   { background:var(--green); }
+.fill-warn { background:var(--amber); }
+.fill-crit { background:var(--red); }
 /* ── Rotation ── */
 .rot-badge { font-size:8px; padding:2px 6px; border-radius:4px; background:rgba(179,136,255,0.15); color:#b388ff; border:1px solid rgba(179,136,255,0.2); margin-left:4px; vertical-align:middle; }
 .rot-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; }
@@ -1485,15 +1506,143 @@ function closeHealth() {
   document.getElementById('healthPanel').classList.remove('open');
 }
 
+// ── Platform Limits ───────────────────────────────────────
+const PLATFORM_LIMITS = {
+  youtube: {
+    maxSimultaneous: 3,    // max perfiles activos al mismo tiempo
+    maxDailyHours: 8,      // horas de uso diario antes de riesgo
+    maxWeeklyAccounts: 10, // cuentas únicas por IP/semana
+    warningAt: 70,         // % para mostrar advertencia
+    rules: [
+      { label: 'Perfiles activos simultáneos', max: 3, unit: 'perfiles' },
+      { label: 'Horas de uso diario estimadas', max: 8, unit: 'h/día' },
+      { label: 'Reproducciones por perfil/día', max: 200, unit: 'reprod.' }
+    ]
+  },
+  spotify: {
+    maxSimultaneous: 5,
+    maxDailyHours: 16,
+    maxWeeklyAccounts: 20,
+    warningAt: 75,
+    rules: [
+      { label: 'Perfiles activos simultáneos', max: 5, unit: 'perfiles' },
+      { label: 'Horas de streaming diario', max: 16, unit: 'h/día' },
+      { label: 'Canciones por hora por perfil', max: 25, unit: 'canciones' }
+    ]
+  },
+  apple_music: {
+    maxSimultaneous: 4,
+    maxDailyHours: 16,
+    maxWeeklyAccounts: 15,
+    warningAt: 75,
+    rules: [
+      { label: 'Perfiles activos simultáneos', max: 4, unit: 'perfiles' },
+      { label: 'Horas de streaming diario', max: 16, unit: 'h/día' },
+      { label: 'Dispositivos por cuenta', max: 5, unit: 'dispositivos' }
+    ]
+  },
+  tidal: {
+    maxSimultaneous: 2,
+    maxDailyHours: 12,
+    maxWeeklyAccounts: 8,
+    warningAt: 65,
+    rules: [
+      { label: 'Perfiles activos simultáneos', max: 2, unit: 'perfiles' },
+      { label: 'Horas de streaming HiFi', max: 12, unit: 'h/día' },
+      { label: 'Ancho de banda por perfil', max: 20, unit: 'GB/mes' }
+    ]
+  },
+  pandora: {
+    maxSimultaneous: 3,
+    maxDailyHours: 10,
+    maxWeeklyAccounts: 8,
+    warningAt: 60,
+    rules: [
+      { label: 'Perfiles activos simultáneos', max: 3, unit: 'perfiles' },
+      { label: 'Horas de radio diarias', max: 10, unit: 'h/día' },
+      { label: 'Skips por hora por perfil', max: 6, unit: 'skips' }
+    ]
+  }
+};
+
+function analyzePlatformLimits() {
+  const profiles  = vpsState?.profiles || [];
+  const platforms = vpsState?.platforms || {};
+  const results   = [];
+
+  Object.entries(PLATFORM_LIMITS).forEach(([key, limits]) => {
+    const platProfiles = profiles.filter(p => p.platform === key);
+    if (platProfiles.length === 0) return;
+
+    const plat       = platforms[key] || { name: key, icon: '🖥️' };
+    const activeCount = platProfiles.filter(p => p.status === 'active').length;
+    const pct        = Math.round(activeCount / limits.maxSimultaneous * 100);
+    const status     = pct >= 100 ? 'crit' : pct >= limits.warningAt ? 'warn' : 'ok';
+
+    const rowData = limits.rules.map((rule, i) => {
+      let current = 0;
+      let pctFill = 0;
+      if (i === 0) {
+        current = activeCount;
+        pctFill = Math.min(100, Math.round(current / rule.max * 100));
+      } else if (i === 1) {
+        // Estimate daily hours from rotation limits
+        const rl = ROTATION_LIMITS[key] || ROTATION_LIMITS.general;
+        current  = Math.round(rl.active / 60 * platProfiles.length);
+        pctFill  = Math.min(100, Math.round(current / rule.max * 100));
+      } else {
+        // Third rule — static estimate
+        current  = platProfiles.length;
+        pctFill  = Math.min(100, Math.round(current / rule.max * 100));
+      }
+      const fillClass = pctFill >= 100 ? 'fill-crit' : pctFill >= limits.warningAt ? 'fill-warn' : 'fill-ok';
+      return { ...rule, current, pctFill, fillClass };
+    });
+
+    results.push({ key, plat, platProfiles, activeCount, pct, status, rowData, limits });
+  });
+
+  return results;
+}
+
 function renderHealth() {
-  const profiles = vpsState.profiles;
-  const analyses = profiles.map(p => ({ ...analyzeProfileHealth(p), profile: p }))
-    .sort((a, b) => a.score - b.score); // worst first
+  const profiles  = vpsState.profiles;
+  const analyses  = profiles.map(p => ({ ...analyzeProfileHealth(p), profile: p }))
+    .sort((a, b) => a.score - b.score);
 
   const safe   = analyses.filter(a => a.risk === 'low').length;
   const warn   = analyses.filter(a => a.risk === 'medium').length;
   const danger = analyses.filter(a => a.risk === 'high').length;
   const avgScore = Math.round(analyses.reduce((s, a) => s + a.score, 0) / analyses.length);
+
+  const platformLimits = analyzePlatformLimits();
+  const limitCards = platformLimits.length === 0
+    ? `<div style="color:var(--text-dim);font-size:11px;text-align:center;padding:16px">Crea perfiles con plataforma asignada para ver sus límites</div>`
+    : platformLimits.map(p => `
+      <div class="limit-card">
+        <div class="limit-header">
+          <div class="limit-plat">
+            <span class="limit-plat-icon">${p.plat.icon}</span>
+            <div>
+              <div class="limit-plat-name">${p.plat.name}</div>
+              <div class="limit-plat-count">${p.platProfiles.length} perfiles · ${p.activeCount} activos</div>
+            </div>
+          </div>
+          <span class="limit-status limit-${p.status}">
+            ${p.status === 'ok' ? '✓ OK' : p.status === 'warn' ? '⚠ ALERTA' : '🚨 CRÍTICO'}
+          </span>
+        </div>
+        <div class="limit-rows">
+          ${p.rowData.map(r => `
+            <div class="limit-row">
+              <div class="limit-row-top">
+                <span class="limit-row-label">${r.label}</span>
+                <span class="limit-row-val">${r.current}/${r.max} ${r.unit}</span>
+              </div>
+              <div class="limit-bar"><div class="limit-bar-fill ${r.fillClass}" style="width:${r.pctFill}%"></div></div>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
 
   const cards = analyses.map(a => `
     <div class="health-card risk-${a.risk}">
@@ -1533,6 +1682,9 @@ function renderHealth() {
         ${avgScore}<span style="font-size:14px;color:var(--text-dim)">/100</span>
       </div>
     </div>
+
+    <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px;margin-top:4px">// Límites por plataforma</div>
+    ${limitCards}
 
     <div class="health-legend">
       <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Seguro (75-100)</div>
