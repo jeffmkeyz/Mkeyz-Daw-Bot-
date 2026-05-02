@@ -39,8 +39,6 @@
             z-index: 0;
             pointer-events: none;
         }
-
-        /* Capas de ambiente detrás de todo */
         .cross-rays {
             position: fixed;
             inset: 0;
@@ -189,6 +187,8 @@
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
         }
+
+        /* Logo con animación fluida */
         .logo {
             font-family: 'Orbitron', monospace;
             font-size: 56px;
@@ -199,23 +199,30 @@
             color: #fff;
             text-shadow: 0 0 30px rgba(245, 197, 24, 0.8), 0 0 60px rgba(245, 197, 24, 0.5), 0 0 10px rgba(255, 255, 255, 0.5);
             opacity: 0;
-            transform: scale(0.4) rotateX(25deg);
-            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: scale(0.7) rotateY(15deg) translateY(20px);
+            filter: blur(6px);
+            transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform, opacity, filter;
         }
         .logo.in {
             opacity: 1;
-            transform: scale(1) rotateX(0deg);
+            transform: scale(1) rotateY(0deg) translateY(0);
+            filter: blur(0px);
         }
+
+        /* Subtítulo ajustado y centrado */
         .sub {
-            font-size: 15px;
+            font-size: 12px;
             color: #ffffff;
-            margin-top: 16px;
-            letter-spacing: 6px;
+            margin-top: 20px;
+            letter-spacing: 5px;
             text-transform: uppercase;
-            font-weight: 700;
+            font-weight: 600;
             opacity: 0;
             transition: all 0.7s ease 0.6s;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.3), 0 0 30px rgba(245, 197, 24, 0.2);
+            text-align: center;
+            width: 100%;
         }
         .sub.in { opacity: 1; }
         .line-h {
@@ -227,6 +234,8 @@
             box-shadow: 0 0 12px rgba(245, 197, 24, 0.7);
         }
         .line-h.in { width: 200px; }
+
+        /* Resto de estilos (igual que antes) */
         .tl {
             font-family: 'Orbitron', monospace;
             font-size: 32px;
@@ -405,11 +414,14 @@
     <div id="prog" style="width:0%"></div>
     <button id="skip" onclick="goFin()">Saltar →</button>
 
+    <!-- S0 INTRO: Ajustada la animación y centrado -->
     <div class="sc on" id="s0">
         <div class="logo" id="logo">MKEYZ<br>STUDIO</div>
         <div class="sub" id="sub">La plataforma musical dentro de Telegram</div>
         <div class="line-h" id="line"></div>
     </div>
+
+    <!-- El resto de escenas se mantienen idénticas -->
     <div class="sc" id="s1">
         <div>
             <span class="tl" id="tl0">Tu estudio.</span>
