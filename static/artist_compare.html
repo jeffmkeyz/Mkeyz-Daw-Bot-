@@ -1,231 +1,515 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Comparador de Artistas — Mkeyz Studio</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-:root { --bg:#0a0a0a; --card:#111; --border:#1f1f1f; --gold:#f5c518; --green:#00e676; --fire:#ff4d4d; --blue:#4fc3f7; --text:#fff; --muted:#555; }
-body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,sans-serif; padding:16px; padding-bottom:40px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Comparador de Artistas Pro — Mkeyz Studio</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050510;
+      --surface: #0a0c18;
+      --border: #1a1d30;
+      --gold: #f0b90b;
+      --fire: #ff3b3b;
+      --green: #00e676;
+      --blue: #4fc3f7;
+      --purple: #b388ff;
+      --text: #e8e8f0;
+      --muted: #5a5d6e;
+      --radius: 16px;
+      --neon-glow: 0 0 8px, 0 0 16px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      padding: 16px 12px 80px;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: ''; position: fixed; inset:0; pointer-events:none; z-index:0;
+      background: radial-gradient(ellipse at 20% 20%, rgba(255,59,59,0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 30%, rgba(79,195,247,0.05) 0%, transparent 50%),
+                  radial-gradient(ellipse at 50% 70%, rgba(240,185,11,0.04) 0%, transparent 50%);
+    }
+    .app-container { width:100%; max-width:560px; margin:0 auto; position:relative; z-index:1; }
 
-.header { text-align:center; padding:16px 0 20px; }
-.header h1 { font-size:22px; font-weight:900; background:linear-gradient(135deg,#fff,var(--fire)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:4px; }
-.header p { font-size:13px; color:var(--muted); }
+    .header { text-align:center; padding:20px 0 10px; }
+    .header h1 {
+      font-size:26px; font-weight:900; letter-spacing:-1px;
+      background: linear-gradient(135deg, #fff 0%, var(--fire) 30%, var(--blue) 60%, var(--gold) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      animation: titleGlow 2s ease-in-out infinite alternate;
+    }
+    @keyframes titleGlow { 0%{filter:brightness(1)} 100%{filter:brightness(1.2)} }
+    .header p { font-size:11px; color:var(--muted); letter-spacing:1px; }
 
-.search-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
-.search-box { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; }
-.search-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
-.search-input {
-  width:100%; background:var(--border); border:none; border-radius:8px;
-  padding:10px; color:#fff; font-size:14px; outline:none;
-}
-.search-input::placeholder { color:var(--muted); }
+    .search-grid { display:grid; grid-template-columns:1fr auto 1fr; gap:6px; margin:16px 0; align-items:center; }
+    .search-box {
+      background:var(--surface); border:2px solid var(--border); border-radius:var(--radius);
+      padding:12px; transition:all 0.3s;
+    }
+    .search-box:focus-within { border-color:var(--blue); }
+    .search-box.a1:focus-within { border-color:var(--fire); box-shadow:0 0 12px rgba(255,59,59,0.3); }
+    .search-box.a2:focus-within { border-color:var(--blue); box-shadow:0 0 12px rgba(79,195,247,0.3); }
+    .search-label { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; font-weight:700; }
+    .search-input {
+      width:100%; background:transparent; border:none; color:var(--text); font-size:14px; font-weight:600;
+      outline:none; padding:2px 0;
+    }
+    .search-input::placeholder { color:var(--muted); font-weight:400; }
+    .vs-badge {
+      width:40px; height:40px; border-radius:50%;
+      background:linear-gradient(135deg, var(--fire), var(--blue));
+      display:flex; align-items:center; justify-content:center;
+      font-weight:900; font-size:14px; color:#fff; flex-shrink:0;
+      box-shadow:0 0 20px rgba(255,255,255,0.2);
+      animation: vsPulse 2s ease-in-out infinite;
+    }
+    @keyframes vsPulse { 0%,100%{box-shadow:0 0 15px rgba(255,255,255,0.2)} 50%{box-shadow:0 0 25px rgba(255,255,255,0.4),0 0 40px rgba(255,59,59,0.3)} }
 
-.btn-compare {
-  width:100%; padding:16px; border:none; border-radius:16px;
-  background:linear-gradient(135deg,var(--fire),#ff8c00);
-  font-size:16px; font-weight:800; color:#fff; cursor:pointer; margin-bottom:16px;
-}
-.btn-compare:active { transform:scale(0.97); }
-.btn-compare:disabled { opacity:0.4; }
+    .btn-primary {
+      width:100%; padding:14px; border:none; border-radius:20px;
+      background:linear-gradient(135deg, var(--fire), var(--blue));
+      font-size:15px; font-weight:800; color:#fff; cursor:pointer; margin:8px 0;
+      letter-spacing:1px; transition:all 0.2s;
+      box-shadow:0 6px 20px rgba(255,59,59,0.3);
+    }
+    .btn-primary:active { transform:scale(0.97); }
+    .btn-primary:disabled { opacity:0.4; pointer-events:none; }
 
-/* Artist cards */
-.compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
-.artist-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:14px; text-align:center; }
-.artist-img { width:64px; height:64px; border-radius:50%; object-fit:cover; margin-bottom:8px; border:2px solid var(--border); }
-.artist-img-placeholder { width:64px; height:64px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 8px; }
-.artist-name { font-size:14px; font-weight:800; margin-bottom:4px; }
-.artist-listeners { font-size:12px; color:var(--gold); }
-.artist-genre { font-size:11px; color:var(--muted); margin-top:2px; }
+    .tabs { display:flex; gap:6px; margin:12px 0; }
+    .tab {
+      flex:1; padding:10px 8px; border-radius:20px; border:2px solid var(--border);
+      background:transparent; color:var(--muted); font-weight:700; font-size:11px;
+      cursor:pointer; transition:all 0.2s; text-align:center;
+    }
+    .tab.active { border-color:var(--gold); color:var(--gold); box-shadow:0 0 10px rgba(240,185,11,0.3); }
 
-/* Stats bars */
-.stat-row { margin-bottom:10px; }
-.stat-header { display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; }
-.stat-name { color:var(--muted); }
-.stat-vals { display:flex; gap:8px; }
-.stat-val1 { color:var(--fire); font-weight:700; }
-.stat-val2 { color:var(--blue); font-weight:700; }
-.bar-container { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
-.bar-wrap { background:var(--border); border-radius:100px; height:6px; overflow:hidden; }
-.bar-fill { height:100%; border-radius:100px; transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1); }
-.bar1 { background:linear-gradient(90deg,var(--fire),#ff8c00); }
-.bar2 { background:linear-gradient(90deg,var(--blue),#00bcd4); }
+    /* Battle cards */
+    .battle-result { animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .winner-crown { text-align:center; padding:12px; }
+    .crown-emoji { font-size:40px; animation: float 2s ease-in-out infinite; display:inline-block; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    .winner-text { font-size:20px; font-weight:900; color:var(--gold); margin:4px 0; }
+    .winner-subtext { font-size:11px; color:var(--muted); }
 
-/* Tags */
-.tags-row { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
-.tag { padding:4px 10px; border-radius:100px; background:var(--border); font-size:11px; color:var(--muted); }
+    .cards-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+    .player-card {
+      background:var(--surface); border:2px solid var(--border); border-radius:var(--radius);
+      padding:14px; text-align:center; position:relative; overflow:hidden;
+    }
+    .player-card.p1 { border-color:#ff3b3b44; }
+    .player-card.p1::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, transparent, var(--fire), transparent); }
+    .player-card.p2 { border-color:#4fc3f744; }
+    .player-card.p2::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, transparent, var(--blue), transparent); }
+    .avatar { width:64px; height:64px; border-radius:50%; object-fit:cover; margin-bottom:6px; border:3px solid var(--border); }
+    .avatar-placeholder { width:64px; height:64px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 6px; }
+    .player-name { font-size:14px; font-weight:800; margin-bottom:2px; }
+    .player-listeners { font-size:11px; color:var(--gold); font-weight:600; }
+    .player-score { font-size:24px; font-weight:900; margin:6px 0 2px; }
+    .player-score-label { font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+    .tags { display:flex; flex-wrap:wrap; gap:3px; margin-top:6px; justify-content:center; }
+    .tag { padding:3px 8px; border-radius:100px; font-size:9px; font-weight:600; background:var(--border); color:var(--muted); }
 
-/* Winner */
-.winner-box { background:linear-gradient(135deg,#1a1500,#111); border:1px solid var(--gold); border-radius:16px; padding:16px; text-align:center; margin-bottom:16px; }
-.winner-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
-.winner-name { font-size:22px; font-weight:900; color:var(--gold); }
+    .section-card {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      padding:14px; margin-bottom:10px;
+    }
+    .section-title { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:10px; font-weight:700; text-align:center; }
+    canvas { display:block; margin:0 auto; border-radius:8px; }
 
-.loader { text-align:center; padding:40px; color:var(--muted); }
-.spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--fire); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px; }
-@keyframes spin { to { transform:rotate(360deg); } }
+    .bar-row { margin-bottom:8px; }
+    .bar-label { display:flex; justify-content:space-between; font-size:10px; margin-bottom:3px; }
+    .bar-outer { background:var(--border); border-radius:10px; height:7px; overflow:hidden; display:flex; }
+    .bar-inner { height:100%; transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+    .bar-red { background:linear-gradient(90deg, var(--fire), #ff8c00); box-shadow:0 0 6px rgba(255,59,59,0.4); }
+    .bar-blue { background:linear-gradient(90deg, var(--blue), #00bcd4); box-shadow:0 0 6px rgba(79,195,247,0.4); }
 
-.error-box { background:var(--card); border:1px solid var(--fire); border-radius:14px; padding:16px; text-align:center; color:var(--fire); font-size:14px; margin-bottom:16px; }
-</style>
+    .track-item {
+      display:flex; align-items:center; gap:8px; padding:8px 0;
+      border-bottom:1px solid var(--border); font-size:12px;
+    }
+    .track-item:last-child { border-bottom:none; }
+    .track-pos { width:20px; font-weight:700; color:var(--muted); text-align:center; }
+    .track-info { flex:1; min-width:0; }
+    .track-title { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .track-plays { font-size:10px; color:var(--muted); }
+
+    .history-select {
+      width:100%; padding:8px; background:var(--border); color:var(--text);
+      border-radius:8px; border:none; margin-bottom:10px; font-size:12px; outline:none;
+    }
+    .prediction { font-size:12px; color:var(--gold); text-align:center; margin-top:8px; font-weight:600; }
+
+    .share-btn {
+      width:100%; padding:12px; border-radius:20px; border:2px solid var(--gold);
+      background:transparent; color:var(--gold); font-weight:700; font-size:13px;
+      cursor:pointer; transition:all 0.2s; margin-top:8px; text-align:center;
+    }
+    .share-btn:active { background:rgba(240,185,11,0.1); }
+
+    .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:#fff; color:#000; padding:12px 20px; border-radius:100px; font-weight:700; z-index:999; transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+    .loading { text-align:center; padding:24px; color:var(--muted); }
+    .spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--fire); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 10px; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+  </style>
 </head>
 <body>
-
-<div class="header">
-  <h1>📊 Comparador de Artistas</h1>
-  <p>Compara dos artistas usando datos de Last.fm</p>
-</div>
-
-<div class="search-grid">
-  <div class="search-box">
-    <div class="search-label" style="color:var(--fire)">🔴 Artista 1</div>
-    <input class="search-input" id="artist1" placeholder="Jeff Mkeyz" value="Jeff Mkeyz">
+<div class="app-container">
+  <div class="header">
+    <h1>Comparador de Artistas Pro</h1>
+    <p>Análisis multidimensional · Radar · Historial · Canciones</p>
   </div>
-  <div class="search-box">
-    <div class="search-label" style="color:var(--blue)">🔵 Artista 2</div>
-    <input class="search-input" id="artist2" placeholder="Bad Bunny">
+
+  <div class="search-grid">
+    <div class="search-box a1">
+      <div class="search-label" style="color:var(--fire)">🔴 Artista 1</div>
+      <input class="search-input" id="artist1" placeholder="Jeff Mkeyz" value="Jeff Mkeyz">
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="search-box a2">
+      <div class="search-label" style="color:var(--blue)">🔵 Artista 2</div>
+      <input class="search-input" id="artist2" placeholder="Bad Bunny">
+    </div>
   </div>
+
+  <button class="btn-primary" id="btn-compare" onclick="compare()">⚡ Analizar y Comparar</button>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="comparison">📊 Comparación</button>
+    <button class="tab" data-tab="history">📈 Historial</button>
+    <button class="tab" data-tab="tracks">🎵 Canciones</button>
+  </div>
+
+  <div id="tab-content"></div>
+  <button class="share-btn" id="share-btn" style="display:none" onclick="shareComparison()">📤 Compartir comparación</button>
 </div>
-
-<button class="btn-compare" id="btn-compare" onclick="compare()">⚡ Comparar ahora</button>
-
-<div id="results"></div>
+<div class="toast" id="toast"></div>
 
 <script>
-const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
+  const tg = window.Telegram?.WebApp;
+  if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#050510"); tg.setBackgroundColor("#050510"); }
 
-const API_KEY = "1820e2706ba7dbb030a6d2de30f2b2cf";
+  const API_KEY = "1820e2706ba7dbb030a6d2de30f2b2cf";
+  let lastData = null;
+  let currentTab = 'comparison';
+  let cachedArtists = {};
 
-function fmtNum(n) {
-  if (!n) return "N/D";
-  n = parseInt(n);
-  if (n >= 1000000) return (n/1000000).toFixed(1) + "M";
-  if (n >= 1000)    return (n/1000).toFixed(0) + "K";
-  return n.toLocaleString();
-}
-
-async function fetchArtist(name) {
-  const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${encodeURIComponent(name)}&api_key=${API_KEY}&format=json`;
-  const res  = await fetch(url);
-  const data = await res.json();
-  if (data.error) throw new Error(data.message);
-  return data.artist;
-}
-
-async function compare() {
-  const name1 = document.getElementById("artist1").value.trim();
-  const name2 = document.getElementById("artist2").value.trim();
-  if (!name1 || !name2) { alert("Escribe ambos artistas."); return; }
-
-  document.getElementById("results").innerHTML = `
-    <div class="loader"><div class="spinner"></div>Buscando artistas...</div>`;
-  document.getElementById("btn-compare").disabled = true;
-
-  try {
-    const [a1, a2] = await Promise.all([fetchArtist(name1), fetchArtist(name2)]);
-
-    const listeners1 = parseInt(a1.stats?.listeners || 0);
-    const listeners2 = parseInt(a2.stats?.listeners || 0);
-    const plays1     = parseInt(a1.stats?.playcount || 0);
-    const plays2     = parseInt(a2.stats?.playcount || 0);
-    const maxL       = Math.max(listeners1, listeners2) || 1;
-    const maxP       = Math.max(plays1, plays2) || 1;
-
-    const tags1 = (a1.tags?.tag || []).slice(0,4).map(t => t.name);
-    const tags2 = (a2.tags?.tag || []).slice(0,4).map(t => t.name);
-
-    const winner = listeners1 > listeners2 ? a1.name : listeners2 > listeners1 ? a2.name : "Empate";
-
-    const img1 = a1.image?.find(i => i.size === "large")?.["#text"] || "";
-    const img2 = a2.image?.find(i => i.size === "large")?.["#text"] || "";
-
-    document.getElementById("results").innerHTML = `
-      <div class="winner-box">
-        <div class="winner-label">🏆 Más oyentes</div>
-        <div class="winner-name">${winner}</div>
-      </div>
-
-      <div class="compare-grid">
-        <div class="artist-card" style="border-color:#ff4d4d44">
-          ${img1 ? `<img class="artist-img" src="${img1}" onerror="this.style.display='none'">` : `<div class="artist-img-placeholder">🎤</div>`}
-          <div class="artist-name" style="color:var(--fire)">${a1.name}</div>
-          <div class="artist-listeners">${fmtNum(listeners1)} oyentes</div>
-          <div class="tags-row">${tags1.map(t => `<div class="tag">${t}</div>`).join("")}</div>
-        </div>
-        <div class="artist-card" style="border-color:#4fc3f744">
-          ${img2 ? `<img class="artist-img" src="${img2}" onerror="this.style.display='none'">` : `<div class="artist-img-placeholder">🎤</div>`}
-          <div class="artist-name" style="color:var(--blue)">${a2.name}</div>
-          <div class="artist-listeners">${fmtNum(listeners2)} oyentes</div>
-          <div class="tags-row">${tags2.map(t => `<div class="tag">${t}</div>`).join("")}</div>
-        </div>
-      </div>
-
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px">
-        <div class="stat-row">
-          <div class="stat-header">
-            <span class="stat-name">👥 Oyentes</span>
-            <div class="stat-vals">
-              <span class="stat-val1">${fmtNum(listeners1)}</span>
-              <span class="stat-val2">${fmtNum(listeners2)}</span>
-            </div>
-          </div>
-          <div class="bar-container">
-            <div class="bar-wrap"><div class="bar-fill bar1" style="width:${(listeners1/maxL*100).toFixed(0)}%"></div></div>
-            <div class="bar-wrap"><div class="bar-fill bar2" style="width:${(listeners2/maxL*100).toFixed(0)}%"></div></div>
-          </div>
-        </div>
-
-        <div class="stat-row">
-          <div class="stat-header">
-            <span class="stat-name">🔄 Total plays</span>
-            <div class="stat-vals">
-              <span class="stat-val1">${fmtNum(plays1)}</span>
-              <span class="stat-val2">${fmtNum(plays2)}</span>
-            </div>
-          </div>
-          <div class="bar-container">
-            <div class="bar-wrap"><div class="bar-fill bar1" style="width:${(plays1/maxP*100).toFixed(0)}%"></div></div>
-            <div class="bar-wrap"><div class="bar-fill bar2" style="width:${(plays2/maxP*100).toFixed(0)}%"></div></div>
-          </div>
-        </div>
-
-        <div class="stat-row">
-          <div class="stat-header">
-            <span class="stat-name">🔁 Plays por oyente</span>
-            <div class="stat-vals">
-              <span class="stat-val1">${listeners1 ? (plays1/listeners1).toFixed(1) : "N/D"}</span>
-              <span class="stat-val2">${listeners2 ? (plays2/listeners2).toFixed(1) : "N/D"}</span>
-            </div>
-          </div>
-          <div class="bar-container">
-            <div class="bar-wrap"><div class="bar-fill bar1" style="width:${Math.min(100,(plays1/(listeners1||1))/20*100).toFixed(0)}%"></div></div>
-            <div class="bar-wrap"><div class="bar-fill bar2" style="width:${Math.min(100,(plays2/(listeners2||1))/20*100).toFixed(0)}%"></div></div>
-          </div>
-        </div>
-      </div>
-
-      ${a1.bio?.summary ? `
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px">
-        <div style="font-size:11px;color:var(--fire);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">${a1.name}</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.6">${a1.bio.summary.replace(/<[^>]+>/g,"").slice(0,200)}...</div>
-      </div>` : ""}
-
-      ${a2.bio?.summary ? `
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px">
-        <div style="font-size:11px;color:var(--blue);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">${a2.name}</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.6">${a2.bio.summary.replace(/<[^>]+>/g,"").slice(0,200)}...</div>
-      </div>` : ""}
-    `;
-
-    if (tg) tg.HapticFeedback?.notificationOccurred("success");
-  } catch(e) {
-    document.getElementById("results").innerHTML = `
-      <div class="error-box">❌ No se encontró un artista. Verifica los nombres e intenta de nuevo.</div>`;
+  function fmtNum(n) {
+    if (!n) return "N/D";
+    n = parseInt(n);
+    if (n >= 1000000) return (n/1000000).toFixed(1) + "M";
+    if (n >= 1000) return (n/1000).toFixed(0) + "K";
+    return n.toLocaleString();
   }
 
-  document.getElementById("btn-compare").disabled = false;
-}
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      currentTab = t.dataset.tab;
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      t.classList.add('active');
+      renderTab();
+    });
+  });
+
+  async function fetchArtist(name) {
+    if (cachedArtists[name]) return cachedArtists[name];
+    const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${encodeURIComponent(name)}&api_key=${API_KEY}&format=json`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.error) throw new Error(data.message);
+    cachedArtists[name] = data.artist;
+    return data.artist;
+  }
+
+  async function fetchTopTracks(name) {
+    const url = `https://ws.audioscrobbler.com/2.0/?method=artist.gettoptracks&artist=${encodeURIComponent(name)}&api_key=${API_KEY}&format=json&limit=6`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return (data.toptracks?.track || []).slice(0, 6);
+  }
+
+  function calcDims(artist) {
+    const l = parseInt(artist.stats?.listeners || 0);
+    const p = parseInt(artist.stats?.playcount || 0);
+    const tags = (artist.tags?.tag || []).slice(0, 8);
+    const tc = tags.length;
+    const ppl = l > 0 ? p / l : 0;
+    return {
+      popularity: Math.min(100, Math.round(Math.log10(l + 1) * 15)),
+      engagement: Math.min(100, Math.round(Math.log10(ppl + 1) * 25)),
+      versatility: Math.min(100, tc * 12 + 10),
+      consistency: Math.min(100, Math.round((p / (l || 1)) * 5)),
+      reach: Math.min(100, Math.round(Math.sqrt(l / 1000) * 2)),
+      impact: Math.min(100, Math.round(Math.log10(p + 1) * 10))
+    };
+  }
+
+  function saveHistory(name, metrics) {
+    const h = JSON.parse(localStorage.getItem('artistHistory') || '{}');
+    if (!h[name]) h[name] = [];
+    h[name].push({ date: new Date().toISOString().slice(0, 10), listeners: metrics.listeners, plays: metrics.plays, score: metrics.score });
+    if (h[name].length > 30) h[name].shift();
+    localStorage.setItem('artistHistory', JSON.stringify(h));
+  }
+
+  function drawRadar(canvas, d1, d2) {
+    const ctx = canvas.getContext('2d');
+    const size = 240;
+    canvas.width = size * devicePixelRatio;
+    canvas.height = size * devicePixelRatio;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    const cx = size/2, cy = size/2, r = 90;
+    const keys = ['popularity','engagement','versatility','consistency','reach','impact'];
+    const labels = ['Pop.','Eng.','Vers.','Cons.','Alc.','Imp.'];
+    const n = keys.length;
+    ctx.clearRect(0,0,size,size);
+    for (let lv=1; lv<=4; lv++) {
+      ctx.beginPath();
+      for (let i=0; i<n; i++) {
+        const a = (Math.PI*2/n)*i - Math.PI/2;
+        const x = cx + Math.cos(a)*r*(lv/4), y = cy + Math.sin(a)*r*(lv/4);
+        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.closePath(); ctx.strokeStyle='#1a1d30'; ctx.lineWidth=1; ctx.stroke();
+    }
+    for (let i=0; i<n; i++) {
+      const a = (Math.PI*2/n)*i - Math.PI/2;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
+      ctx.strokeStyle='#1a1d30'; ctx.stroke();
+      ctx.fillStyle='#5a5d6e'; ctx.font='8px Inter'; ctx.textAlign='center';
+      ctx.fillText(labels[i], cx+Math.cos(a)*(r+14), cy+Math.sin(a)*(r+14));
+    }
+    [d1, d2].forEach((d, idx) => {
+      ctx.beginPath();
+      for (let i=0; i<n; i++) {
+        const a = (Math.PI*2/n)*i - Math.PI/2;
+        const v = (d[keys[i]]||50)/100;
+        const x = cx + Math.cos(a)*r*v, y = cy + Math.sin(a)*r*v;
+        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = idx===0 ? 'rgba(255,59,59,0.2)' : 'rgba(79,195,247,0.2)';
+      ctx.fill();
+      ctx.strokeStyle = idx===0 ? '#ff3b3b' : '#4fc3f7';
+      ctx.lineWidth=2; ctx.stroke();
+      for (let i=0; i<n; i++) {
+        const a = (Math.PI*2/n)*i - Math.PI/2;
+        const v = (d[keys[i]]||50)/100;
+        ctx.beginPath(); ctx.arc(cx+Math.cos(a)*r*v, cy+Math.sin(a)*r*v, 3, 0, Math.PI*2);
+        ctx.fillStyle = idx===0 ? '#ff3b3b' : '#4fc3f7'; ctx.fill();
+      }
+    });
+  }
+
+  function drawHistoryChart(canvas, data) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.offsetWidth * devicePixelRatio;
+    const H = 180 * devicePixelRatio;
+    canvas.width = W; canvas.height = H;
+    canvas.style.width = canvas.offsetWidth + 'px';
+    canvas.style.height = '180px';
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    const pad = 30, w = canvas.offsetWidth - pad*2, h = 180 - pad*2;
+    const maxS = Math.max(...data.map(d=>d.score), 1);
+    const minS = Math.min(...data.map(d=>d.score), 0);
+    ctx.clearRect(0,0,canvas.offsetWidth,180);
+    ctx.strokeStyle='#1a1d30'; ctx.lineWidth=1;
+    for (let i=0; i<=4; i++) {
+      const y = pad + (h/4)*i;
+      ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(canvas.offsetWidth-pad,y); ctx.stroke();
+    }
+    ctx.beginPath(); ctx.strokeStyle='var(--fire)'; ctx.lineWidth=3;
+    data.forEach((d,i) => {
+      const x = pad + (w/(data.length-1))*i;
+      const y = pad + h - ((d.score-minS)/(maxS-minS||1))*h;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    data.forEach((d,i) => {
+      const x = pad + (w/(data.length-1))*i;
+      const y = pad + h - ((d.score-minS)/(maxS-minS||1))*h;
+      ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2);
+      ctx.fillStyle='#ff3b3b'; ctx.fill();
+      ctx.fillStyle='#fff'; ctx.font='7px Inter'; ctx.textAlign='center';
+      ctx.fillText(d.score, x, y-8);
+      ctx.fillStyle='#5a5d6e'; ctx.fillText(d.date, x, pad+h+12);
+    });
+    return data;
+  }
+
+  function renderTab() {
+    const container = document.getElementById('tab-content');
+    if (!lastData && currentTab !== 'history') {
+      container.innerHTML = '<div class="loading">Realiza una comparación primero</div>';
+      return;
+    }
+    if (currentTab === 'comparison' && lastData) renderComparison(container);
+    if (currentTab === 'history') renderHistoryTab(container);
+    if (currentTab === 'tracks' && lastData) renderTracksTab(container);
+  }
+
+  function renderComparison(container) {
+    const d = lastData;
+    container.innerHTML = `
+      <div class="battle-result">
+        <div class="winner-crown"><span class="crown-emoji">👑</span><div class="winner-text">${d.winner}</div><div class="winner-subtext">Mayor cantidad de oyentes mensuales</div></div>
+        <div class="cards-row">
+          <div class="player-card p1">
+            ${d.img1 ? `<img class="avatar" src="${d.img1}" onerror="this.style.display='none'">` : '<div class="avatar-placeholder">🎤</div>'}
+            <div class="player-name" style="color:var(--fire)">${d.name1}</div>
+            <div class="player-listeners">${fmtNum(d.listeners1)} oyentes</div>
+            <div class="player-score" style="color:var(--fire)">${d.total1}</div>
+            <div class="player-score-label">Puntuación total</div>
+            <div class="tags">${d.tags1.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+          </div>
+          <div class="player-card p2">
+            ${d.img2 ? `<img class="avatar" src="${d.img2}" onerror="this.style.display='none'">` : '<div class="avatar-placeholder">🎤</div>'}
+            <div class="player-name" style="color:var(--blue)">${d.name2}</div>
+            <div class="player-listeners">${fmtNum(d.listeners2)} oyentes</div>
+            <div class="player-score" style="color:var(--blue)">${d.total2}</div>
+            <div class="player-score-label">Puntuación total</div>
+            <div class="tags">${d.tags2.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+          </div>
+        </div>
+        <div class="section-card"><div class="section-title">📊 Radar Comparativo</div><canvas id="radarChart"></canvas></div>
+        <div class="section-card">
+          <div class="section-title">📈 Estadísticas</div>
+          ${d.bars.map(b=>`
+            <div class="bar-row">
+              <div class="bar-label"><span style="color:var(--muted)">${b.label}</span><span><span style="color:var(--fire)">${b.v1}</span> · <span style="color:var(--blue)">${b.v2}</span></span></div>
+              <div class="bar-outer"><div class="bar-inner bar-red" style="width:${b.p1}%"></div><div class="bar-inner bar-blue" style="width:${b.p2}%"></div></div>
+            </div>`).join('')}
+        </div>
+        <div class="section-card"><div class="section-title">💡 Insight</div><div style="font-size:12px;color:var(--muted);line-height:1.6">${d.insight}</div></div>
+      </div>`;
+    setTimeout(() => drawRadar(document.getElementById('radarChart'), d.dims1, d.dims2), 50);
+  }
+
+  function renderHistoryTab(container) {
+    const history = JSON.parse(localStorage.getItem('artistHistory') || '{}');
+    const names = Object.keys(history);
+    if (names.length === 0) {
+      container.innerHTML = '<div class="loading">⚠️ No hay historial. Realiza una comparación primero.</div>';
+      return;
+    }
+    container.innerHTML = `
+      <div class="section-card">
+        <div class="section-title">📈 Historial de Crecimiento</div>
+        <select class="history-select" id="hist-select">${names.map(n=>`<option value="${n}">${n}</option>`).join('')}</select>
+        <canvas id="historyCanvas"></canvas>
+        <div class="prediction" id="pred-text"></div>
+      </div>`;
+    const select = document.getElementById('hist-select');
+    const updateHist = () => {
+      const name = select.value;
+      const data = history[name] || [];
+      const canvas = document.getElementById('historyCanvas');
+      if (!canvas || data.length < 2) {
+        document.getElementById('pred-text').textContent = 'Se necesitan al menos 2 puntos.';
+        return;
+      }
+      drawHistoryChart(canvas, data);
+      const n = data.length;
+      let sx=0,sy=0,sxy=0,sx2=0;
+      data.forEach((d,i)=>{ sx+=i; sy+=d.score; sxy+=i*d.score; sx2+=i*i; });
+      const slope = (n*sxy - sx*sy) / (n*sx2 - sx*sx);
+      const pred = Math.round(slope * 30 + data[data.length-1].score);
+      document.getElementById('pred-text').textContent = `📈 Tendencia: ${slope>0?'+'+slope.toFixed(1):slope.toFixed(1)} pts/día · Proyección 30 días: ${pred} pts`;
+    };
+    select.addEventListener('change', updateHist);
+    setTimeout(updateHist, 100);
+  }
+
+  function renderTracksTab(container) {
+    const d = lastData;
+    container.innerHTML = `
+      <div class="section-card"><div class="section-title">🎵 Top Canciones de ${d.name1}</div>
+        ${d.tracks1.map((t,i)=>`<div class="track-item"><span class="track-pos">${i+1}</span><div class="track-info"><div class="track-title">${t.name}</div><div class="track-plays">${fmtNum(t.playcount)} plays</div></div></div>`).join('')||'<div style="color:var(--muted);font-size:12px">No se encontraron canciones</div>'}
+      </div>
+      <div class="section-card"><div class="section-title">🎵 Top Canciones de ${d.name2}</div>
+        ${d.tracks2.map((t,i)=>`<div class="track-item"><span class="track-pos">${i+1}</span><div class="track-info"><div class="track-title">${t.name}</div><div class="track-plays">${fmtNum(t.playcount)} plays</div></div></div>`).join('')||'<div style="color:var(--muted);font-size:12px">No se encontraron canciones</div>'}
+      </div>`;
+  }
+
+  async function compare() {
+    const n1 = document.getElementById('artist1').value.trim();
+    const n2 = document.getElementById('artist2').value.trim();
+    if (!n1 || !n2) return showToast('Escribe ambos artistas');
+
+    document.getElementById('tab-content').innerHTML = '<div class="loading"><div class="spinner"></div>Analizando artistas...</div>';
+    document.getElementById('btn-compare').disabled = true;
+    document.getElementById('share-btn').style.display = 'none';
+    currentTab = 'comparison';
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    document.querySelector('.tab[data-tab="comparison"]').classList.add('active');
+
+    try {
+      const [a1, a2] = await Promise.all([fetchArtist(n1), fetchArtist(n2)]);
+      const dims1 = calcDims(a1), dims2 = calcDims(a2);
+      const l1 = parseInt(a1.stats?.listeners||0), l2 = parseInt(a2.stats?.listeners||0);
+      const p1 = parseInt(a1.stats?.playcount||0), p2 = parseInt(a2.stats?.playcount||0);
+      const t1 = Object.values(dims1).reduce((a,b)=>a+b,0), t2 = Object.values(dims2).reduce((a,b)=>a+b,0);
+      const winner = l1 > l2 ? a1.name : l2 > l1 ? a2.name : 'Empate';
+      const img1 = a1.image?.find(i=>i.size==="large")?.["#text"]||"";
+      const img2 = a2.image?.find(i=>i.size==="large")?.["#text"]||"";
+      const tags1 = (a1.tags?.tag||[]).slice(0,4).map(t=>t.name);
+      const tags2 = (a2.tags?.tag||[]).slice(0,4).map(t=>t.name);
+      const maxL = Math.max(l1,l2)||1, maxP = Math.max(p1,p2)||1;
+      const bars = [
+        {label:'👥 Oyentes', v1:fmtNum(l1), v2:fmtNum(l2), p1:(l1/maxL*100).toFixed(0), p2:(l2/maxL*100).toFixed(0)},
+        {label:'🔄 Plays', v1:fmtNum(p1), v2:fmtNum(p2), p1:(p1/maxP*100).toFixed(0), p2:(p2/maxP*100).toFixed(0)},
+        {label:'🎯 Popularidad', v1:dims1.popularity, v2:dims2.popularity, p1:dims1.popularity, p2:dims2.popularity},
+        {label:'💎 Engagement', v1:dims1.engagement, v2:dims2.engagement, p1:dims1.engagement, p2:dims2.engagement},
+        {label:'🌈 Versatilidad', v1:dims1.versatility, v2:dims2.versatility, p1:dims1.versatility, p2:dims2.versatility}
+      ];
+      const insight = t1>t2 ? `🔴 <b>${a1.name}</b> lidera con ${t1} puntos frente a ${t2} de ${a2.name}.` : t2>t1 ? `🔵 <b>${a2.name}</b> lidera con ${t2} puntos frente a ${t1} de ${a1.name}.` : '⚖️ Empate técnico.';
+
+      lastData = { name1:n1, name2:n2, listeners1:l1, listeners2:l2, plays1:p1, plays2:p2, winner, img1, img2, tags1, tags2, total1:t1, total2:t2, dims1, dims2, bars, insight, tracks1:[], tracks2:[] };
+
+      saveHistory(n1, {listeners:l1, plays:p1, score:t1});
+      saveHistory(n2, {listeners:l2, plays:p2, score:t2});
+
+      renderTab();
+      document.getElementById('share-btn').style.display = 'block';
+      document.getElementById('tab-content').scrollIntoView({behavior:'smooth'});
+      if(tg) tg.HapticFeedback?.notificationOccurred('success');
+
+      // Cargar canciones en segundo plano
+      const [tr1, tr2] = await Promise.all([fetchTopTracks(n1), fetchTopTracks(n2)]);
+      lastData.tracks1 = tr1; lastData.tracks2 = tr2;
+      if (currentTab === 'tracks') renderTab();
+
+    } catch(e) {
+      document.getElementById('tab-content').innerHTML = '<div class="loading" style="color:var(--fire)">❌ Artista no encontrado. Verifica los nombres.</div>';
+    }
+    document.getElementById('btn-compare').disabled = false;
+  }
+
+  function shareComparison() {
+    if (!lastData) return;
+    const d = lastData;
+    const text = `📊 Comparación\n🔴 ${d.name1}: ${fmtNum(d.listeners1)} oyentes · ${d.total1} pts\n🔵 ${d.name2}: ${fmtNum(d.listeners2)} oyentes · ${d.total2} pts\n🏆 ${d.winner}\n🤖 Mkeyz Studio`;
+    if (navigator.share) navigator.share({title:'Comparador', text});
+    else { navigator.clipboard?.writeText(text).then(()=>showToast('📋 Copiado')); }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
 </script>
 </body>
 </html>
