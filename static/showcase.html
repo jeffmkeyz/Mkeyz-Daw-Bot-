@@ -1,397 +1,964 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Mkeyz Studio — Showcase</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@600;700;800&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;background:#060810;overflow:hidden;font-family:'Space Grotesk',sans-serif;color:#fff;}
-canvas#bg{position:fixed;inset:0;z-index:0;}
-.scan{position:fixed;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(245,197,24,0.25),transparent);z-index:4;pointer-events:none;animation:scan 5s linear infinite;}
-@keyframes scan{from{top:-1px}to{top:100%}}
-#prog{position:fixed;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#b06afc,#f5c518,#ff4d4d);z-index:100;box-shadow:0 0 10px #f5c518;transition:width .1s linear;}
-#skip{position:fixed;top:14px;right:14px;z-index:200;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:100px;padding:7px 16px;color:rgba(255,255,255,0.35);font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(8px);}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mkeyz Studio — Showcase</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;600;700;800&display=swap');
 
-/* SCENES */
-.sc{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
-.sc.on{opacity:1;pointer-events:all;}
+        :root {
+            --gold: #f5c518;
+            --fire: #ff4d4d;
+            --cyan: #00e5ff;
+            --purple: #b06afc;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+            color: #fff;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            cursor: default;
+        }
+        canvas#bg3d {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .overlay-flash {
+            position: fixed;
+            inset: 0;
+            z-index: 15;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, rgba(245, 197, 24, 0.15) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .overlay-flash.pulse {
+            opacity: 1;
+            transition: opacity 0.15s ease;
+        }
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            z-index: 8;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0.04) 4px);
+            opacity: 0.5;
+        }
+        .vignette {
+            position: fixed;
+            inset: 0;
+            z-index: 7;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+        }
+        #prog {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #b06afc, #f5c518, #ff4d4d);
+            z-index: 100;
+            box-shadow: 0 0 16px #f5c518, 0 0 32px rgba(245, 197, 24, 0.5);
+            transition: width 0.2s linear;
+        }
+        #skip {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 100px;
+            padding: 8px 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            letter-spacing: 1.5px;
+            transition: all 0.3s;
+        }
+        #skip:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.35);
+            background: rgba(0, 0, 0, 0.7);
+        }
 
-/* INTRO */
-.logo{font-family:'Orbitron',monospace;font-size:54px;font-weight:900;text-align:center;line-height:.9;letter-spacing:-2px;background:linear-gradient(135deg,#fff 0%,#f5c518 55%,#ff9f1c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;opacity:0;transform:scale(.55);transition:all .8s cubic-bezier(.34,1.56,.64,1);}
-.logo.in{opacity:1;transform:scale(1);}
-.sub{font-size:12px;color:rgba(255,255,255,.35);margin-top:14px;letter-spacing:4px;text-transform:uppercase;opacity:0;transition:all .5s ease .4s;}
-.sub.in{opacity:1;}
-.line{width:0;height:1px;background:linear-gradient(90deg,transparent,#f5c518,transparent);margin-top:20px;transition:width 1s ease .7s;}
-.line.in{width:160px;}
+        /* Escenas flotantes */
+        .sc {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.9) translateY(30px);
+            filter: blur(8px);
+            transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .sc.on {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1) translateY(0);
+            filter: blur(0px);
+        }
+        .sc.off {
+            opacity: 0;
+            transform: scale(1.08) translateY(-20px);
+            filter: blur(6px);
+            transition: all 0.45s ease-in;
+        }
 
-/* TAGLINE */
-.tl-wrap{text-align:center;}
-.tl{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;display:block;letter-spacing:-1px;opacity:0;transform:translateY(32px);transition:all .55s cubic-bezier(.34,1.56,.64,1);}
-.tl.in{opacity:1;transform:translateY(0);}
-.tl .g{background:linear-gradient(135deg,#f5c518,#ff9f1c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.tl .p{background:linear-gradient(135deg,#b06afc,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .fw {
+            width: 100%;
+            max-width: 380px;
+            position: relative;
+            z-index: 12;
+        }
 
-/* FEATURE WRAPPER */
-.fw{width:100%;max-width:340px;}
-.flabel{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:100px;padding:5px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px;opacity:0;transform:translateY(-8px);transition:all .4s ease;}
-.flabel.in{opacity:1;transform:translateY(0);}
-.ftitle{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;margin-bottom:8px;line-height:1.1;opacity:0;transform:translateX(-28px);transition:all .5s ease .1s;}
-.ftitle.in{opacity:1;transform:translateX(0);}
-.fdesc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:14px;opacity:0;transition:all .4s ease .25s;}
-.fdesc.in{opacity:1;}
+        /* Paneles de vidrio */
+        .glass-panel {
+            background: rgba(10, 12, 28, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 20px;
+            right: 20px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+        }
 
-/* TOOLS GRID */
-.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;opacity:0;transition:opacity .4s ease .3s;}
-.tgrid.in{opacity:1;}
-.tc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(14px);transition:all .4s cubic-bezier(.34,1.56,.64,1);}
-.tc.in{opacity:1;transform:translateY(0);}
-.tc-e{font-size:22px;flex-shrink:0;}
-.tc-n{font-size:12px;font-weight:700;}
-.tc-d{font-size:10px;color:rgba(255,255,255,.35);margin-top:2px;}
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 52px;
+            font-weight: 900;
+            text-align: center;
+            line-height: 0.9;
+            letter-spacing: -3px;
+            background: linear-gradient(135deg, #fff 0%, #f5c518 50%, #ff9f1c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 30px rgba(245, 197, 24, 0.5));
+            opacity: 0;
+            transform: scale(0.4) rotateX(25deg);
+            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .logo.in {
+            opacity: 1;
+            transform: scale(1) rotateX(0deg);
+        }
+        .sub {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 16px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            opacity: 0;
+            transition: all 0.7s ease 0.6s;
+        }
+        .sub.in {
+            opacity: 1;
+        }
+        .line-h {
+            width: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #f5c518, transparent);
+            margin: 20px auto 0;
+            transition: width 1.4s ease 0.9s;
+        }
+        .line-h.in {
+            width: 200px;
+        }
 
-/* EQ */
-.eq-box{width:100%;height:76px;background:rgba(0,0,0,.35);border-radius:14px;overflow:hidden;border:1px solid rgba(245,197,24,.1);margin-bottom:12px;opacity:0;transition:opacity .4s ease .2s;box-shadow:0 0 20px rgba(245,197,24,.06);}
-.eq-box.in{opacity:1;}
-canvas.eq{width:100%;height:100%;}
+        .tl {
+            font-family: 'Orbitron', monospace;
+            font-size: 30px;
+            font-weight: 900;
+            display: block;
+            letter-spacing: -1px;
+            margin: 6px 0;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-align: center;
+        }
+        .tl.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .tl .gr {
+            background: linear-gradient(135deg, #f5c518, #ff9f1c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tl .pu {
+            background: linear-gradient(135deg, #b06afc, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-/* CHORD */
-.chord-row{display:flex;gap:8px;margin-bottom:12px;opacity:0;transition:opacity .4s ease .2s;}
-.chord-row.in{opacity:1;}
-.chc{flex:1;background:rgba(176,106,252,.1);border:1px solid rgba(176,106,252,.22);border-radius:14px;padding:14px 6px;text-align:center;transform:translateY(18px);transition:all .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 14px rgba(176,106,252,.08);}
-.chc.in{transform:translateY(0);}
-.ch-n{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#b06afc;}
-.ch-r{font-size:9px;color:rgba(255,255,255,.25);margin-top:2px;}
+        .flabel {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 14px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.5s ease;
+        }
+        .flabel.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .ftitle {
+            font-family: 'Orbitron', monospace;
+            font-size: 26px;
+            font-weight: 900;
+            line-height: 1.15;
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateX(-32px);
+            transition: all 0.55s ease 0.12s;
+        }
+        .ftitle.in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .fdesc {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            line-height: 1.7;
+            margin-bottom: 14px;
+            opacity: 0;
+            transition: all 0.45s ease 0.28s;
+        }
+        .fdesc.in {
+            opacity: 1;
+        }
 
-/* VIEWS PANEL */
-.vp{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(0,230,118,.12);border-radius:14px;padding:14px;margin-bottom:12px;opacity:0;transition:opacity .4s ease .2s;box-shadow:0 0 20px rgba(0,230,118,.05);}
-.vp.in{opacity:1;}
-.vp-row{display:flex;justify-content:space-between;margin-bottom:10px;}
-.vp-s .vp-n{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;}
-.vp-s .vp-l{font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
-canvas.vc{width:100%;height:46px;border-radius:8px;display:block;}
+        .tgrid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .tc {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(16px);
+            transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(8px);
+            animation-delay: var(--d);
+        }
+        .tc.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .tc-e {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .tc-n {
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .tc-d {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 2px;
+        }
 
-/* PAGOS PANEL */
-.pago-panel{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(79,195,247,.15);border-radius:14px;padding:14px;margin-bottom:12px;opacity:0;transition:opacity .4s ease .2s;box-shadow:0 0 20px rgba(79,195,247,.05);}
-.pago-panel.in{opacity:1;}
-.pago-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);}
-.pago-row:last-child{border-bottom:none;}
-.pr-left{display:flex;align-items:center;gap:8px;}
-.pr-plat{font-size:14px;}
-.pr-name{font-size:12px;font-weight:700;}
-.pr-date{font-size:10px;color:rgba(255,255,255,.3);}
-.pr-earn{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;}
-.pr-badge{font-size:9px;padding:3px 8px;border-radius:100px;font-weight:700;margin-left:6px;}
-.pr-badge.paid{background:rgba(0,230,118,.12);color:#00e676;}
-.pr-badge.soon{background:rgba(245,197,24,.12);color:#f5c518;}
+        .chord-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .chc {
+            flex: 1;
+            background: rgba(176, 106, 252, 0.1);
+            border: 1px solid rgba(176, 106, 252, 0.2);
+            border-radius: 16px;
+            padding: 18px 6px;
+            text-align: center;
+            transform: translateY(24px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 20px rgba(176, 106, 252, 0.1);
+        }
+        .chc.in {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .ch-n {
+            font-family: 'Orbitron', monospace;
+            font-size: 24px;
+            font-weight: 900;
+            color: #b06afc;
+        }
+        .ch-r {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.25);
+            margin-top: 3px;
+        }
 
-/* BATTLE */
-.bc{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(255,77,77,.12);border-radius:14px;padding:14px;margin-bottom:12px;opacity:0;transition:opacity .4s ease .2s;box-shadow:0 0 20px rgba(255,77,77,.05);}
-.bc.in{opacity:1;}
-.bc-t{font-size:13px;font-weight:700;margin-bottom:10px;}
-.bc-bar-bg{background:rgba(255,255,255,.06);border-radius:100px;height:8px;margin-bottom:6px;overflow:hidden;}
-.bc-bar{height:100%;border-radius:100px;background:linear-gradient(90deg,#ff4d4d,#ff9f1c);transition:width 1.6s cubic-bezier(.34,1.56,.64,1);}
-.bc-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
-.bcb{padding:12px;border-radius:12px;text-align:center;font-size:13px;font-weight:800;}
-.bcb.f{background:linear-gradient(135deg,#ff4d4d,#ff9f1c);color:#000;}
-.bcb.s{background:rgba(255,255,255,.05);color:rgba(255,255,255,.3);}
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 12px;
+        }
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+        .stat-val {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 13px;
+        }
 
-/* PLANS */
-.plans{display:flex;gap:8px;width:100%;max-width:340px;}
-.plan{flex:1;border-radius:18px;padding:16px 8px;text-align:center;opacity:0;transform:translateY(28px);transition:all .5s cubic-bezier(.34,1.56,.64,1);}
-.plan.in{opacity:1;transform:translateY(0);}
-.plan-e{font-size:26px;margin-bottom:8px;}
-.plan-n{font-size:12px;font-weight:800;margin-bottom:3px;}
-.plan-p{font-size:9px;opacity:.45;}
+        .bar-outer {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .bar-inner {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--fire), #ff9f1c);
+            box-shadow: 0 0 12px rgba(255, 77, 77, 0.5);
+            transition: width 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
-/* FINALE */
-.fin-t{font-family:'Orbitron',monospace;font-size:32px;font-weight:900;text-align:center;line-height:1.15;letter-spacing:-1px;opacity:0;transform:scale(.85);transition:all .8s cubic-bezier(.34,1.56,.64,1);}
-.fin-t.in{opacity:1;transform:scale(1);}
-.fin-t span{background:linear-gradient(135deg,#f5c518,#ff9f1c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.fin-u{font-size:17px;font-weight:700;color:#f5c518;margin-top:14px;opacity:0;transition:all .5s ease .5s;text-shadow:0 0 20px rgba(245,197,24,.4);}
-.fin-u.in{opacity:1;}
-.fin-btn{margin-top:26px;padding:17px 38px;border-radius:100px;border:none;background:linear-gradient(135deg,#f5c518,#ff9f1c);font-family:'Orbitron',monospace;font-size:14px;font-weight:900;color:#000;cursor:pointer;opacity:0;transform:translateY(18px);transition:all .5s ease .9s;box-shadow:0 8px 32px rgba(245,197,24,.28);}
-.fin-btn.in{opacity:1;transform:translateY(0);}
-.fin-btn:active{transform:scale(.96);}
-</style>
+        .bcb-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .bcb {
+            padding: 14px;
+            border-radius: 14px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .bcb.f {
+            background: linear-gradient(135deg, #ff4d4d, #ff9f1c);
+            color: #000;
+        }
+        .bcb.s {
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .bcb:active {
+            transform: scale(0.95);
+        }
+
+        .plans {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 380px;
+        }
+        .plan {
+            flex: 1;
+            border-radius: 22px;
+            padding: 20px 8px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(36px);
+            transition: all 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(8px);
+        }
+        .plan.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .plan-e {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .plan-n {
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .plan-p {
+            font-size: 10px;
+            opacity: 0.45;
+        }
+
+        .fin-t {
+            font-family: 'Orbitron', monospace;
+            font-size: 36px;
+            font-weight: 900;
+            text-align: center;
+            line-height: 1.15;
+            letter-spacing: -1px;
+            opacity: 0;
+            transform: scale(0.7);
+            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .fin-t.in {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .fin-t span {
+            background: linear-gradient(135deg, #f5c518, #ff9f1c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .fin-u {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f5c518;
+            margin-top: 18px;
+            opacity: 0;
+            transition: all 0.55s ease 0.6s;
+            text-shadow: 0 0 30px rgba(245, 197, 24, 0.6);
+        }
+        .fin-u.in {
+            opacity: 1;
+        }
+        .fin-btn {
+            margin-top: 30px;
+            padding: 18px 44px;
+            border-radius: 100px;
+            border: none;
+            background: linear-gradient(135deg, #f5c518, #ff9f1c);
+            font-family: 'Orbitron', monospace;
+            font-size: 15px;
+            font-weight: 900;
+            color: #000;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.55s ease 1s;
+            box-shadow: 0 12px 40px rgba(245, 197, 24, 0.4);
+        }
+        .fin-btn.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .fin-btn:active {
+            transform: scale(0.95);
+        }
+
+        .badge {
+            font-size: 9px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+        .badge.green {
+            background: rgba(0, 230, 118, 0.12);
+            color: #00e676;
+        }
+        .badge.gold {
+            background: rgba(245, 197, 24, 0.12);
+            color: #f5c518;
+        }
+    </style>
 </head>
 <body>
-<canvas id="bg"></canvas>
-<div class="scan"></div>
-<div id="prog" style="width:0%"></div>
-<button id="skip" onclick="goFin()">Skip →</button>
+    <canvas id="bg3d"></canvas>
+    <div class="overlay-flash" id="overlayFlash"></div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div id="prog" style="width:0%"></div>
+    <button id="skip" onclick="goFin()">Saltar →</button>
 
-<!-- S0 INTRO -->
-<div class="sc on" id="s0">
-  <div class="logo" id="logo">MKEYZ<br>STUDIO</div>
-  <div class="sub" id="sub">La plataforma musical dentro de Telegram</div>
-  <div class="line" id="line"></div>
-</div>
-
-<!-- S1 TAGLINE -->
-<div class="sc" id="s1">
-  <div class="tl-wrap">
-    <span class="tl" id="tl0">Tu estudio.</span>
-    <span class="tl" id="tl1">Tus <span class="g">herramientas.</span></span>
-    <span class="tl" id="tl2">Tu <span class="p">plataforma.</span></span>
-  </div>
-</div>
-
-<!-- S2 TOOLS GRID -->
-<div class="sc" id="s2">
-  <div class="fw">
-    <div class="flabel" id="fl2">🎛️ Herramientas Pro</div>
-    <div class="ftitle" id="ft2" style="color:#f5c518">8 herramientas.<br>Un solo chat.</div>
-    <div class="fdesc" id="fd2">Procesa, crea y analiza sin salir de Telegram.</div>
-    <div class="tgrid" id="tg2">
-      <div class="tc" style="border-color:rgba(245,197,24,.18)"><div class="tc-e">🎛️</div><div><div class="tc-n">Mini DAW</div><div class="tc-d">Pitch · Reverb · EQ · Delay</div></div></div>
-      <div class="tc" style="border-color:rgba(176,106,252,.18)"><div class="tc-e">🎹</div><div><div class="tc-n">Chord Generator</div><div class="tc-d">MIDI Export para FL Studio</div></div></div>
-      <div class="tc" style="border-color:rgba(0,230,118,.18)"><div class="tc-e">🎤</div><div><div class="tc-n">Voice Studio</div><div class="tc-d">Graba · Efectos en vivo</div></div></div>
-      <div class="tc" style="border-color:rgba(79,195,247,.18)"><div class="tc-e">🎚️</div><div><div class="tc-n">Visualizador</div><div class="tc-d">Notas · Frecuencias</div></div></div>
+    <!-- S0 INTRO -->
+    <div class="sc on" id="s0">
+        <div class="logo" id="logo">MKEYZ<br>STUDIO</div>
+        <div class="sub" id="sub">La plataforma musical dentro de Telegram</div>
+        <div class="line-h" id="line"></div>
     </div>
-  </div>
-</div>
 
-<!-- S3 CHORD GEN -->
-<div class="sc" id="s3">
-  <div class="fw">
-    <div class="flabel" id="fl3">🎹 Chord Generator + MIDI</div>
-    <div class="ftitle" id="ft3" style="color:#b06afc">Acordes que<br>se quedan.</div>
-    <div class="chord-row" id="cr3">
-      <div class="chc" id="c0"><div class="ch-n">Am</div><div class="ch-r">i</div></div>
-      <div class="chc" id="c1"><div class="ch-n">F</div><div class="ch-r">VI</div></div>
-      <div class="chc" id="c2"><div class="ch-n">C</div><div class="ch-r">III</div></div>
-      <div class="chc" id="c3"><div class="ch-n">E</div><div class="ch-r">V</div></div>
+    <!-- S1 TAGLINE -->
+    <div class="sc" id="s1">
+        <div>
+            <span class="tl" id="tl0">Tu estudio.</span>
+            <span class="tl" id="tl1">Tus <span class="gr">herramientas.</span></span>
+            <span class="tl" id="tl2">Tu <span class="pu">plataforma.</span></span>
+        </div>
     </div>
-    <div class="fdesc" id="fd3">Trap · R&B · Lo-Fi · Pop Latino · Afrobeats · Dembow · y más géneros</div>
-  </div>
-</div>
 
-<!-- S4 DAW EQ -->
-<div class="sc" id="s4">
-  <div class="fw">
-    <div class="flabel" id="fl4">🎛️ Mini DAW</div>
-    <div class="ftitle" id="ft4" style="color:#f5c518">Procesa audio<br>directo en el chat.</div>
-    <div class="eq-box" id="eq4"><canvas class="eq" id="eqc"></canvas></div>
-    <div class="tgrid" id="tg4" style="grid-template-columns:repeat(4,1fr)">
-      <div class="tc" style="flex-direction:column;text-align:center;padding:10px 4px;gap:4px"><div class="tc-e" style="font-size:18px">🎵</div><div class="tc-n" style="font-size:10px">Pitch</div></div>
-      <div class="tc" style="flex-direction:column;text-align:center;padding:10px 4px;gap:4px"><div class="tc-e" style="font-size:18px">🌊</div><div class="tc-n" style="font-size:10px">Reverb</div></div>
-      <div class="tc" style="flex-direction:column;text-align:center;padding:10px 4px;gap:4px"><div class="tc-e" style="font-size:18px">🎚️</div><div class="tc-n" style="font-size:10px">EQ</div></div>
-      <div class="tc" style="flex-direction:column;text-align:center;padding:10px 4px;gap:4px"><div class="tc-e" style="font-size:18px">⏱️</div><div class="tc-n" style="font-size:10px">Delay</div></div>
+    <!-- S2 TOOLS -->
+    <div class="sc" id="s2">
+        <div class="fw glass-panel">
+            <div class="flabel" id="fl2">🎛️ Herramientas Pro</div>
+            <div class="ftitle" id="ft2" style="color:#f5c518">8 herramientas.<br>Un solo chat.</div>
+            <div class="fdesc" id="fd2">Procesa, crea y analiza sin salir de Telegram.</div>
+            <div class="tgrid" id="tg2">
+                <div class="tc" style="--d:0s;border-color:rgba(245,197,24,.16)"><div class="tc-e">🎛️</div><div><div class="tc-n">Mini DAW</div><div class="tc-d">Pitch · Reverb · EQ</div></div></div>
+                <div class="tc" style="--d:0.1s;border-color:rgba(176,106,252,.16)"><div class="tc-e">🎹</div><div><div class="tc-n">Chord Generator</div><div class="tc-d">MIDI Export FL Studio</div></div></div>
+                <div class="tc" style="--d:0.2s;border-color:rgba(0,230,118,.16)"><div class="tc-e">🎤</div><div><div class="tc-n">Voice Studio</div><div class="tc-d">Graba · FX en vivo</div></div></div>
+                <div class="tc" style="--d:0.3s;border-color:rgba(79,195,247,.16)"><div class="tc-e">🎚️</div><div><div class="tc-n">Visualizador</div><div class="tc-d">Notas · Frecuencias</div></div></div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<!-- S5 VIEWS TRACKER + PAGOS -->
-<div class="sc" id="s5">
-  <div class="fw">
-    <div class="flabel" id="fl5">📊 Studio — Análisis & Pagos</div>
-    <div class="ftitle" id="ft5" style="color:#00e676">Controla tus<br>números reales.</div>
-    <div class="vp" id="vp5">
-      <div class="vp-row">
-        <div class="vp-s"><div class="vp-n" id="vps" style="color:#00e676">0</div><div class="vp-l">Streams</div></div>
-        <div class="vp-s" style="text-align:center"><div class="vp-n" id="vpe" style="color:#f5c518">$0.00</div><div class="vp-l">Estimado/día</div></div>
-        <div class="vp-s" style="text-align:right"><div class="vp-n" id="vpg" style="color:#4fc3f7">+0%</div><div class="vp-l">Crecimiento</div></div>
-      </div>
-      <canvas class="vc" id="vc5"></canvas>
+    <!-- S3 CHORD -->
+    <div class="sc" id="s3">
+        <div class="fw glass-panel">
+            <div class="flabel" id="fl3">🎹 Chord Generator + MIDI</div>
+            <div class="ftitle" id="ft3" style="color:#b06afc">Acordes que<br>se quedan.</div>
+            <div class="chord-row" id="cr3">
+                <div class="chc" id="c0"><div class="ch-n">Am</div><div class="ch-r">i</div></div>
+                <div class="chc" id="c1"><div class="ch-n">F</div><div class="ch-r">VI</div></div>
+                <div class="chc" id="c2"><div class="ch-n">C</div><div class="ch-r">III</div></div>
+                <div class="chc" id="c3"><div class="ch-n">E</div><div class="ch-r">V</div></div>
+            </div>
+            <div class="fdesc" id="fd3">Trap · R&B · Lo-Fi · Pop Latino · Afrobeats · Dembow</div>
+        </div>
     </div>
-    <div class="pago-panel" id="pp5">
-      <div class="pago-row">
-        <div class="pr-left"><span class="pr-plat">🎵</span><div><div class="pr-name">Spotify</div><div class="pr-date">Pago abril 2026</div></div></div>
-        <div style="display:flex;align-items:center"><span class="pr-earn" style="color:#00e676">$12.47</span><span class="pr-badge paid">✓ Pagado</span></div>
-      </div>
-      <div class="pago-row">
-        <div class="pr-left"><span class="pr-plat">📦</span><div><div class="pr-name">Amazon</div><div class="pr-date">Pago mayo 2026</div></div></div>
-        <div style="display:flex;align-items:center"><span class="pr-earn" style="color:#f5c518">$8.93</span><span class="pr-badge soon">Próximo</span></div>
-      </div>
-      <div class="pago-row">
-        <div class="pr-left"><span class="pr-plat">🍎</span><div><div class="pr-name">Apple Music</div><div class="pr-date">Pago junio 2026</div></div></div>
-        <div style="display:flex;align-items:center"><span class="pr-earn" style="color:#4fc3f7">~$5.20</span><span class="pr-badge soon" style="color:#4fc3f7;background:rgba(79,195,247,.12)">Estimado</span></div>
-      </div>
+
+    <!-- S4 DAW -->
+    <div class="sc" id="s4">
+        <div class="fw glass-panel">
+            <div class="flabel" id="fl4">🎛️ Mini DAW</div>
+            <div class="ftitle" id="ft4" style="color:#f5c518">Procesa audio<br>directo en el chat.</div>
+            <div class="tgrid" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
+                <div class="tc" style="--d:0s;flex-direction:column;text-align:center;padding:12px 4px;gap:4px"><div class="tc-e" style="font-size:20px">🎵</div><div class="tc-n" style="font-size:10px">Pitch</div></div>
+                <div class="tc" style="--d:0.1s;flex-direction:column;text-align:center;padding:12px 4px;gap:4px"><div class="tc-e" style="font-size:20px">🌊</div><div class="tc-n" style="font-size:10px">Reverb</div></div>
+                <div class="tc" style="--d:0.2s;flex-direction:column;text-align:center;padding:12px 4px;gap:4px"><div class="tc-e" style="font-size:20px">🎚️</div><div class="tc-n" style="font-size:10px">EQ</div></div>
+                <div class="tc" style="--d:0.3s;flex-direction:column;text-align:center;padding:12px 4px;gap:4px"><div class="tc-e" style="font-size:20px">⏱️</div><div class="tc-n" style="font-size:10px">Delay</div></div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<!-- S6 BEAT BATTLE -->
-<div class="sc" id="s6">
-  <div class="fw">
-    <div class="flabel" id="fl6">🎮 Comunidad</div>
-    <div class="ftitle" id="ft6" style="color:#ff4d4d">Beat Battle.<br>Que la gente vote.</div>
-    <div class="bc" id="bc6">
-      <div class="bc-t">🎵 Jeff Mkeyz — Dark Trap</div>
-      <div class="bc-bar-bg"><div class="bc-bar" id="bcb" style="width:0%"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.35);margin-bottom:4px">
-        <span id="bcv" style="color:#ff4d4d;font-weight:700">🔥 0 votos</span>
-        <span>⏱ 18h restantes</span>
-      </div>
-      <div class="bc-btns"><div class="bcb f">🔥 Fuego</div><div class="bcb s">💀 Skip</div></div>
+    <!-- S5 STUDIO -->
+    <div class="sc" id="s5">
+        <div class="fw glass-panel">
+            <div class="flabel" id="fl5">📊 Studio — Análisis & Pagos</div>
+            <div class="ftitle" id="ft5" style="color:#00e676">Controla tus<br>números reales.</div>
+            <div class="stat-row"><span style="color:rgba(255,255,255,0.5)">🎵 Streams</span><span class="stat-val" style="color:#00e676" id="vps">0</span></div>
+            <div class="stat-row"><span style="color:rgba(255,255,255,0.5)">💰 Est. diario</span><span class="stat-val" style="color:#f5c518" id="vpe">$0.00</span></div>
+            <div class="stat-row"><span style="color:rgba(255,255,255,0.5)">📈 Crecimiento</span><span class="stat-val" style="color:#4fc3f7" id="vpg">+0%</span></div>
+            <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)">
+                <div class="stat-row"><span>🎵 Spotify</span><span class="stat-val" style="color:#00e676">$12.47</span><span class="badge green">Pagado</span></div>
+                <div class="stat-row"><span>📦 Amazon</span><span class="stat-val" style="color:#f5c518">$8.93</span><span class="badge gold">Próximo</span></div>
+                <div class="stat-row"><span>🍎 Apple Music</span><span class="stat-val" style="color:#4fc3f7">~$5.20</span><span class="badge" style="color:#4fc3f7;background:rgba(79,195,247,.12)">Est.</span></div>
+            </div>
+        </div>
     </div>
-    <div class="fdesc" id="fd6">Beat Battle · Reto Semanal · Playlist Generator · Zona Artistas</div>
-  </div>
-</div>
 
-<!-- S7 PLANS -->
-<div class="sc" id="s7">
-  <div class="ftitle" id="ft7" style="text-align:center;font-size:20px;margin-bottom:20px">Elige tu plan</div>
-  <div class="plans">
-    <div class="plan" id="p0" style="background:#111;border:1px solid #1e2030"><div class="plan-e">🆓</div><div class="plan-n">Free</div><div class="plan-p">Gratis</div></div>
-    <div class="plan" id="p1" style="background:linear-gradient(135deg,#1a1500,#0f1120);border:1px solid rgba(245,197,24,.28);box-shadow:0 0 20px rgba(245,197,24,.08)"><div class="plan-e">⭐</div><div class="plan-n" style="color:#f5c518">Pro</div><div class="plan-p">300 Stars/mes</div></div>
-    <div class="plan" id="p2" style="background:linear-gradient(135deg,#1a0040,#0f1120);border:1px solid rgba(176,106,252,.28);box-shadow:0 0 20px rgba(176,106,252,.08)"><div class="plan-e">🎛️</div><div class="plan-n" style="color:#b06afc">Studio</div><div class="plan-p">750 Stars/mes</div></div>
-  </div>
-</div>
+    <!-- S6 BATTLE -->
+    <div class="sc" id="s6">
+        <div class="fw glass-panel">
+            <div class="flabel" id="fl6">🎮 Comunidad</div>
+            <div class="ftitle" id="ft6" style="color:#ff4d4d">Beat Battle.<br>Que la gente vote.</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:8px">🎵 Jeff Mkeyz — Dark Trap</div>
+            <div class="bar-outer"><div class="bar-inner" id="bcb" style="width:0%"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.35);margin:6px 0">
+                <span id="bcv" style="color:#ff4d4d;font-weight:700">🔥 0 votos</span><span>⏱ 18h</span>
+            </div>
+            <div class="bcb-row"><div class="bcb f">🔥 Fuego</div><div class="bcb s">💀 Skip</div></div>
+            <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:8px;text-align:center">Beat Battle · Reto Semanal · Playlist Generator</div>
+        </div>
+    </div>
 
-<!-- S8 FINALE -->
-<div class="sc" id="s8">
-  <div class="fin-t" id="ft8">Tu estudio.<br><span>En tu bolsillo.</span></div>
-  <div class="fin-u" id="fu">t.me/MkeyzDAWbot</div>
-  <button class="fin-btn" id="fb" onclick="openBot()">🚀 Entrar al Studio</button>
-</div>
+    <!-- S7 PLANS -->
+    <div class="sc" id="s7">
+        <div class="ftitle" id="ft7" style="text-align:center;font-size:22px;margin-bottom:22px;color:#fff">Elige tu plan</div>
+        <div class="plans">
+            <div class="plan" id="p0" style="background:rgba(17,17,17,0.7);border:1px solid #1e2030"><div class="plan-e">🆓</div><div class="plan-n">Free</div><div class="plan-p">Gratis</div></div>
+            <div class="plan" id="p1" style="background:rgba(26,21,0,0.7);border:1px solid rgba(245,197,24,.28);box-shadow:0 0 24px rgba(245,197,24,.08)"><div class="plan-e">⭐</div><div class="plan-n" style="color:#f5c518">Pro</div><div class="plan-p">300 Stars/mes</div></div>
+            <div class="plan" id="p2" style="background:rgba(26,0,64,0.7);border:1px solid rgba(176,106,252,.28);box-shadow:0 0 24px rgba(176,106,252,.08)"><div class="plan-e">🎛️</div><div class="plan-n" style="color:#b06afc">Studio</div><div class="plan-p">750 Stars/mes</div></div>
+        </div>
+    </div>
 
-<script>
-const tg=window.Telegram?.WebApp;
-if(tg){tg.ready();tg.expand();tg.setHeaderColor("#060810");tg.setBackgroundColor("#060810");}
+    <!-- S8 FINALE -->
+    <div class="sc" id="s8">
+        <div class="fin-t" id="ft8">Tu estudio.<br><span>En tu bolsillo.</span></div>
+        <div class="fin-u" id="fu">t.me/MkeyzDAWbot</div>
+        <button class="fin-btn" id="fb" onclick="openBot()">🚀 Entrar al Studio</button>
+    </div>
 
-// BG
-const bg=document.getElementById("bg"),bgCtx=bg.getContext("2d");
-let bgPts=[],bgP=0;
-function rBg(){bg.width=innerWidth;bg.height=innerHeight;}
-rBg();window.addEventListener("resize",rBg);
-function dBg(){
-  requestAnimationFrame(dBg);
-  bgCtx.fillStyle="rgba(6,8,16,.18)";bgCtx.fillRect(0,0,bg.width,bg.height);
-  bgCtx.strokeStyle="rgba(245,197,24,.02)";bgCtx.lineWidth=1;
-  for(let x=0;x<bg.width;x+=46){bgCtx.beginPath();bgCtx.moveTo(x,0);bgCtx.lineTo(x,bg.height);bgCtx.stroke();}
-  for(let y=0;y<bg.height;y+=46){bgCtx.beginPath();bgCtx.moveTo(0,y);bgCtx.lineTo(bg.width,y);bgCtx.stroke();}
-  if(Math.random()<.04&&bgPts.length<22)
-    bgPts.push({x:Math.random()*bg.width,y:bg.height+4,r:Math.random()*2+.4,sp:Math.random()*.7+.3,h:35+Math.random()*50});
-  bgPts=bgPts.filter(p=>p.y>-8);
-  bgPts.forEach(p=>{p.y-=p.sp;p.x+=Math.sin(bgP+p.y*.02)*.4;bgCtx.beginPath();bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);bgCtx.fillStyle=`hsla(${p.h},100%,70%,.3)`;bgCtx.fill();});
-  bgP+=.01;
-}
-dBg();
+    <script>
+        const tg = window.Telegram?.WebApp;
+        if (tg) { tg.ready();
+            tg.expand();
+            tg.setHeaderColor("#000");
+            tg.setBackgroundColor("#000"); }
 
-// AUDIO
-let ac;
-function A(){if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();return ac;}
-function tone(f,d,t="sine",v=.1){try{const c=A(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
-function kick(){tone(150,.2,"sine",.7);setTimeout(()=>tone(40,.1,"sine",.4),50);}
-function whoosh(){try{const c=A(),o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();o.connect(f);f.connect(g);g.connect(c.destination);f.type="bandpass";f.frequency.value=1200;o.type="sawtooth";o.frequency.setValueAtTime(800,c.currentTime);o.frequency.exponentialRampToValueAtTime(200,c.currentTime+.3);g.gain.setValueAtTime(.15,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.3);o.start();o.stop(c.currentTime+.3);}catch(e){}}
-function chime(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.5,"sine",.09),i*80));}
-function rise(){try{const c=A(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type="sine";o.frequency.setValueAtTime(200,c.currentTime);o.frequency.exponentialRampToValueAtTime(1000,c.currentTime+.9);g.gain.setValueAtTime(.07,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+1);o.start();o.stop(c.currentTime+1);}catch(e){}}
+        // ── THREE.JS VORTEX ──────────────────────────
+        let scene, camera, renderer, vortexParticles, ringParticles, glowRing;
+        let time = 0;
 
-// EQ
-let eqRaf,eqPh=0;
-function startEQ(){
-  const cv=document.getElementById("eqc");if(!cv)return;
-  const ctx=cv.getContext("2d"),dpr=devicePixelRatio||1;
-  cv.width=cv.offsetWidth*dpr;cv.height=cv.offsetHeight*dpr;
-  const W=cv.width,H=cv.height,N=30;
-  function draw(){eqRaf=requestAnimationFrame(draw);ctx.clearRect(0,0,W,H);
-    for(let i=0;i<N;i++){const v=.2+.8*Math.abs(Math.sin(eqPh+i*.45+Math.sin(i*.25)*2));const bh=v*(H-4),bw=W/N-2,x=i*(W/N);const hue=35+v*25;ctx.fillStyle=`hsla(${hue},100%,${50+v*20}%,${.45+v*.55})`;ctx.shadowColor=`hsla(${hue},100%,70%,.35)`;ctx.shadowBlur=6;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,H-bh,bw,bh,2);else ctx.rect(x,H-bh,bw,bh);ctx.fill();ctx.shadowBlur=0;}eqPh+=.09;}
-  draw();
-}
+        function initThree() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
+            camera.position.z = 8;
 
-// VIEWS CHART
-function drawVC(){
-  const cv=document.getElementById("vc5");if(!cv)return;
-  const ctx=cv.getContext("2d"),dpr=devicePixelRatio||1;
-  cv.width=cv.offsetWidth*dpr;cv.height=cv.offsetHeight*dpr;
-  const W=cv.width,H=cv.height;
-  const pts=[2,5,4,7,6,12,10,15,18,14,22,25,28,35,32,40,44,38,47,50,45,54,50,57];
-  const mx=Math.max(...pts)*1.2;
-  const tx=i=>i*(W/(pts.length-1)),ty=v=>H-(v/mx)*H*.92;
-  const gr=ctx.createLinearGradient(0,0,0,H);
-  gr.addColorStop(0,"rgba(0,230,118,.45)");gr.addColorStop(1,"rgba(0,230,118,.02)");
-  ctx.beginPath();ctx.moveTo(tx(0),H);
-  pts.forEach((_,i)=>ctx.lineTo(tx(i),ty(pts[i])));
-  ctx.lineTo(tx(pts.length-1),H);ctx.closePath();ctx.fillStyle=gr;ctx.fill();
-  ctx.beginPath();ctx.strokeStyle="#00e676";ctx.lineWidth=2*dpr;ctx.lineJoin="round";
-  ctx.shadowColor="#00e676";ctx.shadowBlur=8*dpr;
-  pts.forEach((_,i)=>i===0?ctx.moveTo(tx(i),ty(pts[i])):ctx.lineTo(tx(i),ty(pts[i])));
-  ctx.stroke();ctx.shadowBlur=0;
-}
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg3d'), alpha: true, antialias: true });
+            renderer.setSize(innerWidth, innerHeight);
+            renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
-// SCENES
-const SCENES=[
-  {id:"s0",dur:3000,fn:eS0},
-  {id:"s1",dur:3500,fn:eS1},
-  {id:"s2",dur:3500,fn:eS2},
-  {id:"s3",dur:3200,fn:eS3},
-  {id:"s4",dur:3000,fn:eS4},
-  {id:"s5",dur:3800,fn:eS5},
-  {id:"s6",dur:3200,fn:eS6},
-  {id:"s7",dur:3500,fn:eS7},
-  {id:"s8",dur:6000,fn:eS8},
-];
-const TOTAL=SCENES.reduce((s,x)=>s+x.dur,0);
-let cur=0,nxt,pgI;
+            // Vortex de partículas
+            const vortexGeo = new THREE.BufferGeometry();
+            const vortexCount = 1800;
+            const vortexPositions = new Float32Array(vortexCount * 3);
+            const vortexColors = new Float32Array(vortexCount * 3);
+            const vortexSizes = new Float32Array(vortexCount);
 
-function show(i){
-  document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
-  document.getElementById(SCENES[i].id).classList.add("on");
-  cur=i;SCENES[i].fn();
-}
-function run(i){if(i>=SCENES.length)return;show(i);nxt=setTimeout(()=>run(i+1),SCENES[i].dur);}
-function goFin(){clearTimeout(nxt);clearInterval(pgI);show(SCENES.length-1);document.getElementById("prog").style.width="100%";document.getElementById("skip").style.display="none";}
-function openBot(){if(tg)tg.close();else window.open("https://t.me/MkeyzDAWbot","_blank");}
+            for (let i = 0; i < vortexCount; i++) {
+                const t = Math.random() * Math.PI * 2;
+                const r = Math.random() * 5;
+                const y = (Math.random() - 0.5) * 8;
+                vortexPositions[i * 3] = Math.cos(t) * r;
+                vortexPositions[i * 3 + 1] = y;
+                vortexPositions[i * 3 + 2] = Math.sin(t) * r;
 
-function startProg(){let e=0;pgI=setInterval(()=>{e+=100;document.getElementById("prog").style.width=Math.min(100,e/TOTAL*100)+"%";if(e>=TOTAL)clearInterval(pgI);},100);}
+                const hue = 0.08 + Math.random() * 0.12;
+                const col = new THREE.Color().setHSL(hue, 0.9, 0.5 + Math.random() * 0.4);
+                vortexColors[i * 3] = col.r;
+                vortexColors[i * 3 + 1] = col.g;
+                vortexColors[i * 3 + 2] = col.b;
+                vortexSizes[i] = Math.random() * 0.06 + 0.02;
+            }
+            vortexGeo.setAttribute('position', new THREE.BufferAttribute(vortexPositions, 3));
+            vortexGeo.setAttribute('color', new THREE.BufferAttribute(vortexColors, 3));
+            vortexGeo.setAttribute('size', new THREE.BufferAttribute(vortexSizes, 1));
 
-// SCENE ENTER FNS
-function show$(id){document.getElementById(id)?.classList.add("in");}
-function eS0(){rise();setTimeout(()=>show$("logo"),100);setTimeout(()=>{show$("sub");show$("line");},500);}
-function eS1(){whoosh();["tl0","tl1","tl2"].forEach((id,i)=>setTimeout(()=>{show$(id);kick();},100+i*400));}
-function eS2(){
-  whoosh();
-  setTimeout(()=>show$("fl2"),80);setTimeout(()=>show$("ft2"),180);setTimeout(()=>show$("fd2"),320);
-  const g=document.getElementById("tg2");g.classList.add("in");
-  g.querySelectorAll(".tc").forEach((c,i)=>setTimeout(()=>{c.classList.add("in");kick();},420+i*110));
-}
-function eS3(){
-  whoosh();
-  setTimeout(()=>show$("fl3"),80);setTimeout(()=>show$("ft3"),180);
-  document.getElementById("cr3").classList.add("in");
-  ["c0","c1","c2","c3"].forEach((id,i)=>setTimeout(()=>{show$(id);tone(280+i*90,.3,"triangle",.08);},350+i*160));
-  setTimeout(()=>show$("fd3"),900);
-}
-function eS4(){
-  whoosh();
-  setTimeout(()=>show$("fl4"),80);setTimeout(()=>show$("ft4"),180);
-  setTimeout(()=>{show$("eq4");startEQ();},300);
-  const g=document.getElementById("tg4");g.classList.add("in");
-  g.querySelectorAll(".tc").forEach((c,i)=>setTimeout(()=>{c.classList.add("in");kick();},400+i*100));
-}
-function eS5(){
-  whoosh();
-  setTimeout(()=>show$("fl5"),80);setTimeout(()=>show$("ft5"),180);
-  setTimeout(()=>{show$("vp5");drawVC();},300);
-  setTimeout(()=>show$("pp5"),500);
-  // count up streams
-  let f=0;const cu=setInterval(()=>{f++;const p=f/20;
-    document.getElementById("vps").textContent=Math.round(1333*p).toLocaleString();
-    document.getElementById("vpe").textContent="$"+(1333*p*.001106).toFixed(3);
-    document.getElementById("vpg").textContent="+"+(Math.round(p*47))+"%";
-    if(f>=20)clearInterval(cu);},80);
-}
-function eS6(){
-  whoosh();
-  setTimeout(()=>show$("fl6"),80);setTimeout(()=>show$("ft6"),180);
-  setTimeout(()=>show$("bc6"),300);
-  setTimeout(()=>{document.getElementById("bcb").style.width="74%";},600);
-  let v=0;const cv=setInterval(()=>{v++;document.getElementById("bcv").textContent="🔥 "+v+" votos";kick();if(v>=47)clearInterval(cv);},45);
-  setTimeout(()=>show$("fd6"),700);
-}
-function eS7(){
-  if(eqRaf)cancelAnimationFrame(eqRaf);
-  chime();
-  setTimeout(()=>show$("ft7"),100);
-  ["p0","p1","p2"].forEach((id,i)=>setTimeout(()=>{show$(id);tone(280+i*110,.3,"sine",.09);},280+i*200));
-}
-function eS8(){rise();setTimeout(chime,600);setTimeout(()=>show$("ft8"),200);setTimeout(()=>show$("fu"),800);setTimeout(()=>{show$("fb");if(tg)tg.HapticFeedback?.notificationOccurred("success");},1200);}
+            const vortexMat = new THREE.PointsMaterial({
+                size: 0.06,
+                vertexColors: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                transparent: true,
+                opacity: 0.8,
+            });
+            vortexParticles = new THREE.Points(vortexGeo, vortexMat);
+            scene.add(vortexParticles);
 
-startProg();run(0);
-</script>
+            // Anillo de energía
+            const ringGeo = new THREE.TorusGeometry(3.5, 0.02, 32, 200);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: 0xf5c518,
+                transparent: true,
+                opacity: 0.3,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+            });
+            glowRing = new THREE.Mesh(ringGeo, ringMat);
+            glowRing.rotation.x = Math.PI / 2.5;
+            scene.add(glowRing);
+
+            // Anillo secundario
+            const ring2Geo = new THREE.TorusGeometry(3.8, 0.015, 16, 160);
+            const ring2Mat = new THREE.MeshBasicMaterial({
+                color: 0xb06afc,
+                transparent: true,
+                opacity: 0.2,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+            });
+            const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+            ring2.rotation.x = -Math.PI / 3;
+            ring2.rotation.y = Math.PI / 4;
+            scene.add(ring2);
+
+            // Estrellas lejanas
+            const starsGeo = new THREE.BufferGeometry();
+            const starsCount = 600;
+            const starsPos = new Float32Array(starsCount * 3);
+            for (let i = 0; i < starsCount; i++) {
+                starsPos[i * 3] = (Math.random() - 0.5) * 20;
+                starsPos[i * 3 + 1] = (Math.random() - 0.5) * 20;
+                starsPos[i * 3 + 2] = -5 - Math.random() * 10;
+            }
+            starsGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
+            const starsMat = new THREE.PointsMaterial({
+                size: 0.03,
+                color: 0xffffff,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                transparent: true,
+                opacity: 0.6,
+            });
+            scene.add(new THREE.Points(starsGeo, starsMat));
+
+            animateThree();
+        }
+
+        function animateThree() {
+            requestAnimationFrame(animateThree);
+            time += 0.005;
+
+            // Rotar vórtice
+            if (vortexParticles) {
+                vortexParticles.rotation.y += 0.002;
+                vortexParticles.rotation.x += 0.001;
+                vortexParticles.rotation.z += 0.0005;
+            }
+            // Anillo pulsante
+            if (glowRing) {
+                const scale = 1 + Math.sin(time * 0.7) * 0.08;
+                glowRing.scale.set(scale, scale, scale);
+                glowRing.rotation.z += 0.003;
+                glowRing.material.opacity = 0.25 + Math.sin(time * 1.3) * 0.1;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        initThree();
+        window.addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+
+        // ── AUDIO ──
+        let ac;
+
+        function A() { if (!ac) ac = new(window.AudioContext || window.webkitAudioContext)(); return ac; }
+
+        function tone(f, d, t = "sine", v = .1) { try { const c = A(),
+                o = c.createOscillator(),
+                g = c.createGain();
+                o.connect(g);
+                g.connect(c.destination);
+                o.type = t;
+                o.frequency.value = f;
+                g.gain.setValueAtTime(v, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(.001, c.currentTime + d);
+                o.start();
+                o.stop(c.currentTime + d); } catch (e) {} }
+
+        function kick() { tone(150, .22, "sine", .6);
+            setTimeout(() => tone(40, .12, "sine", .35), 40); }
+
+        function whoosh() { try { const c = A(),
+                o = c.createOscillator(),
+                g = c.createGain(),
+                f = c.createBiquadFilter();
+                o.connect(f);
+                f.connect(g);
+                g.connect(c.destination);
+                f.type = "bandpass";
+                f.frequency.value = 1200;
+                o.type = "sawtooth";
+                o.frequency.setValueAtTime(900, c.currentTime);
+                o.frequency.exponentialRampToValueAtTime(180, c.currentTime + .4);
+                g.gain.setValueAtTime(.12, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .4);
+                o.start();
+                o.stop(c.currentTime + .4); } catch (e) {} }
+
+        function chime() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, .5, "sine", .08), i *
+            85)); }
+
+        function rise() { try { const c = A(),
+                o = c.createOscillator(),
+                g = c.createGain();
+                o.connect(g);
+                g.connect(c.destination);
+                o.type = "sine";
+                o.frequency.setValueAtTime(180, c.currentTime);
+                o.frequency.exponentialRampToValueAtTime(1100, c.currentTime + 1.2);
+                g.gain.setValueAtTime(.05, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(.001, c.currentTime + 1.3);
+                o.start();
+                o.stop(c.currentTime + 1.3); } catch (e) {} }
+
+        // ── FLASH ──
+        function flash() {
+            const el = document.getElementById('overlayFlash');
+            el.classList.add('pulse');
+            setTimeout(() => el.classList.remove('pulse'), 200);
+        }
+
+        // ── TRANSICIONES ──
+        function transitionTo(id) {
+            document.querySelectorAll('.sc.on').forEach(s => { s.classList.add('off');
+                s.classList.remove('on'); });
+            setTimeout(() => {
+                document.querySelectorAll('.sc').forEach(s => s.classList.remove('off'));
+                document.getElementById(id).classList.add('on');
+                flash();
+                kick();
+            }, 400);
+        }
+
+        // ── ESCENAS ──
+        const SCENES = [
+            { id: "s0", dur: 3000, fn: eS0 },
+            { id: "s1", dur: 3400, fn: eS1 },
+            { id: "s2", dur: 3400, fn: eS2 },
+            { id: "s3", dur: 3200, fn: eS3 },
+            { id: "s4", dur: 3000, fn: eS4 },
+            { id: "s5", dur: 3800, fn: eS5 },
+            { id: "s6", dur: 3200, fn: eS6 },
+            { id: "s7", dur: 3500, fn: eS7 },
+            { id: "s8", dur: 6000, fn: eS8 },
+        ];
+        const TOTAL = SCENES.reduce((s, x) => s + x.dur, 0);
+        let cur = 0,
+            nxt, pgI;
+
+        function show(i) {
+            transitionTo(SCENES[i].id);
+            cur = i;
+            SCENES[i].fn();
+        }
+
+        function run(i) {
+            if (i >= SCENES.length) return;
+            show(i);
+            nxt = setTimeout(() => run(i + 1), SCENES[i].dur);
+        }
+
+        function goFin() {
+            clearTimeout(nxt);
+            clearInterval(pgI);
+            transitionTo(SCENES[SCENES.length - 1].id);
+            cur = SCENES.length - 1;
+            SCENES[SCENES.length - 1].fn();
+            document.getElementById("prog").style.width = "100%";
+            document.getElementById("skip").style.display = "none";
+        }
+
+        function openBot() { if (tg) tg.close(); else window.open("https://t.me/MkeyzDAWbot", "_blank"); }
+
+        function startProg() {
+            let e = 0;
+            pgI = setInterval(() => { e += 100;
+                document.getElementById("prog").style.width = Math.min(100, e / TOTAL * 100) + "%"; if (e >=
+                    TOTAL) clearInterval(pgI); }, 100);
+        }
+
+        function show$(id) { document.getElementById(id)?.classList.add("in"); }
+
+        function eS0() { rise();
+            setTimeout(() => show$("logo"), 150);
+            setTimeout(() => { show$("sub");
+                show$("line"); }, 550);
+            flash(); }
+
+        function eS1() { whoosh();
+            ["tl0", "tl1", "tl2"].forEach((id, i) => setTimeout(() => { show$(id);
+                kick(); }, 100 + i * 400)); }
+
+        function eS2() {
+            whoosh();
+            setTimeout(() => show$("fl2"), 100);
+            setTimeout(() => show$("ft2"), 200);
+            setTimeout(() => show$("fd2"), 320);
+            document.querySelectorAll("#tg2 .tc").forEach((c, i) => setTimeout(() => { c.classList.add("in");
+                kick(); }, 420 + i * 110));
+        }
+
+        function eS3() {
+            whoosh();
+            setTimeout(() => show$("fl3"), 100);
+            setTimeout(() => show$("ft3"), 200);
+            ["c0", "c1", "c2", "c3"].forEach((id, i) => setTimeout(() => { show$(id);
+                tone(280 + i * 90, .35, "triangle", .09); }, 350 + i * 160));
+            setTimeout(() => show$("fd3"), 900);
+        }
+
+        function eS4() {
+            whoosh();
+            setTimeout(() => show$("fl4"), 100);
+            setTimeout(() => show$("ft4"), 200);
+            document.querySelectorAll("#tg4 .tc")?.forEach((c, i) => setTimeout(() => { c?.classList.add(
+                "in");
+                kick(); }, 380 + i * 100));
+        }
+
+        function eS5() {
+            whoosh();
+            setTimeout(() => show$("fl5"), 100);
+            setTimeout(() => show$("ft5"), 200);
+            let f = 0;
+            const cu = setInterval(() => { f++;
+                const p = f / 20;
+                document.getElementById("vps").textContent = Math.round(1333 * p).toLocaleString();
+                document.getElementById("vpe").textContent = "$" + (1333 * p * .001106).toFixed(3);
+                document.getElementById("vpg").textContent = "+" + (Math.round(p * 47)) + "%"; if (f >= 20)
+                clearInterval(cu); }, 80);
+        }
+
+        function eS6() {
+            whoosh();
+            setTimeout(() => show$("fl6"), 100);
+            setTimeout(() => show$("ft6"), 200);
+            setTimeout(() => { document.getElementById("bcb").style.width = "74%"; }, 600);
+            let v = 0;
+            const cv = setInterval(() => { v++;
+                document.getElementById("bcv").textContent = "🔥 " + v + " votos";
+                kick(); if (v >= 47) clearInterval(cv); }, 45);
+        }
+
+        function eS7() { chime();
+            setTimeout(() => show$("ft7"), 120); ["p0", "p1", "p2"].forEach((id, i) => setTimeout(() => { show$(id);
+                tone(300 + i * 120, .35, "sine", .1); }, 280 + i * 210)); }
+
+        function eS8() {
+            rise();
+            setTimeout(chime, 700);
+            setTimeout(() => show$("ft8"), 250);
+            setTimeout(() => show$("fu"), 850);
+            setTimeout(() => { show$("fb"); if (tg) tg.HapticFeedback?.notificationOccurred("success"); }, 1300);
+        }
+
+        startProg();
+        run(0);
+    </script>
 </body>
 </html>
