@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Mkeyz Studio — Showcase</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
@@ -39,6 +39,46 @@
             z-index: 0;
             pointer-events: none;
         }
+
+        /* Capas de ambiente detrás de todo */
+        .cross-rays {
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+            background: linear-gradient(135deg, transparent 48%, rgba(245, 197, 24, 0.06) 49%, rgba(245, 197, 24, 0.06) 51%, transparent 52%),
+                        linear-gradient(45deg, transparent 48%, rgba(255, 77, 77, 0.04) 49%, rgba(255, 77, 77, 0.04) 51%, transparent 52%),
+                        linear-gradient(0deg, transparent 48%, rgba(79, 195, 247, 0.04) 49%, rgba(79, 195, 247, 0.04) 51%, transparent 52%),
+                        linear-gradient(90deg, transparent 48%, rgba(179, 136, 255, 0.04) 49%, rgba(179, 136, 255, 0.04) 51%, transparent 52%);
+            animation: crossRaysPulse 8s ease-in-out infinite alternate;
+        }
+        @keyframes crossRaysPulse {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            z-index: 8;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0.04) 4px);
+            opacity: 0.5;
+        }
+        .scan {
+            position: fixed;
+            left: 0;
+            right: 0;
+            height: 1.5px;
+            background: linear-gradient(90deg, transparent, rgba(245, 197, 24, 0.7), transparent);
+            z-index: 9;
+            pointer-events: none;
+            animation: scanMove 4s linear infinite;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.6);
+        }
+        @keyframes scanMove {
+            from { top: -1.5px; }
+            to { top: 100%; }
+        }
         .overlay-flash {
             position: fixed;
             inset: 0;
@@ -52,26 +92,18 @@
             opacity: 1;
             transition: opacity 0.15s ease;
         }
-        .scanlines {
-            position: fixed;
-            inset: 0;
-            z-index: 8;
-            pointer-events: none;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0.04) 4px);
-            opacity: 0.5;
-        }
         .vignette {
             position: fixed;
             inset: 0;
             z-index: 7;
             pointer-events: none;
-            background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.65) 100%);
         }
         #prog {
             position: fixed;
             bottom: 0;
             left: 0;
-            height: 2px;
+            height: 2.5px;
             background: linear-gradient(90deg, #b06afc, #f5c518, #ff4d4d);
             z-index: 100;
             box-shadow: 0 0 16px #f5c518, 0 0 32px rgba(245, 197, 24, 0.5);
@@ -82,11 +114,11 @@
             top: 16px;
             right: 16px;
             z-index: 200;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(10, 10, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 100px;
             padding: 8px 20px;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
@@ -96,11 +128,11 @@
         }
         #skip:hover {
             color: #fff;
-            border-color: rgba(255, 255, 255, 0.35);
-            background: rgba(0, 0, 0, 0.7);
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(10, 10, 20, 0.8);
         }
 
-        /* Escenas flotantes */
+        /* Escenas */
         .sc {
             position: fixed;
             inset: 0;
@@ -128,7 +160,6 @@
             filter: blur(6px);
             transition: all 0.45s ease-in;
         }
-
         .fw {
             width: 100%;
             max-width: 380px;
@@ -136,16 +167,16 @@
             z-index: 12;
         }
 
-        /* Paneles de vidrio */
+        /* Paneles con máxima legibilidad */
         .glass-panel {
-            background: rgba(10, 12, 28, 0.55);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(5, 5, 15, 0.85);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 24px;
             padding: 20px;
             margin-bottom: 14px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
             position: relative;
             overflow: hidden;
         }
@@ -156,20 +187,17 @@
             left: 20px;
             right: 20px;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
         }
-
         .logo {
             font-family: 'Orbitron', monospace;
-            font-size: 52px;
+            font-size: 56px;
             font-weight: 900;
             text-align: center;
             line-height: 0.9;
             letter-spacing: -3px;
-            background: linear-gradient(135deg, #fff 0%, #f5c518 50%, #ff9f1c 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 30px rgba(245, 197, 24, 0.5));
+            color: #fff;
+            text-shadow: 0 0 30px rgba(245, 197, 24, 0.8), 0 0 60px rgba(245, 197, 24, 0.5), 0 0 10px rgba(255, 255, 255, 0.5);
             opacity: 0;
             transform: scale(0.4) rotateX(25deg);
             transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -179,31 +207,29 @@
             transform: scale(1) rotateX(0deg);
         }
         .sub {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.4);
+            font-size: 15px;
+            color: #ffffff;
             margin-top: 16px;
-            letter-spacing: 5px;
+            letter-spacing: 6px;
             text-transform: uppercase;
+            font-weight: 700;
             opacity: 0;
             transition: all 0.7s ease 0.6s;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3), 0 0 30px rgba(245, 197, 24, 0.2);
         }
-        .sub.in {
-            opacity: 1;
-        }
+        .sub.in { opacity: 1; }
         .line-h {
             width: 0;
             height: 1px;
             background: linear-gradient(90deg, transparent, #f5c518, transparent);
             margin: 20px auto 0;
             transition: width 1.4s ease 0.9s;
+            box-shadow: 0 0 12px rgba(245, 197, 24, 0.7);
         }
-        .line-h.in {
-            width: 200px;
-        }
-
+        .line-h.in { width: 200px; }
         .tl {
             font-family: 'Orbitron', monospace;
-            font-size: 30px;
+            font-size: 32px;
             font-weight: 900;
             display: block;
             letter-spacing: -1px;
@@ -212,78 +238,65 @@
             transform: translateY(40px);
             transition: all 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
             text-align: center;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(245, 197, 24, 0.3);
         }
-        .tl.in {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .tl.in { opacity: 1; transform: translateY(0); }
         .tl .gr {
-            background: linear-gradient(135deg, #f5c518, #ff9f1c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #f5c518;
+            text-shadow: 0 0 25px rgba(245, 197, 24, 0.9), 0 0 50px rgba(245, 197, 24, 0.6);
         }
         .tl .pu {
-            background: linear-gradient(135deg, #b06afc, #e879f9);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #b06afc;
+            text-shadow: 0 0 25px rgba(176, 106, 252, 0.9), 0 0 50px rgba(176, 106, 252, 0.6);
         }
-
         .flabel {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 100px;
             padding: 6px 16px;
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.9);
             margin-bottom: 14px;
             opacity: 0;
             transform: translateY(-10px);
             transition: all 0.5s ease;
+            text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
         }
-        .flabel.in {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .flabel.in { opacity: 1; transform: translateY(0); }
         .ftitle {
             font-family: 'Orbitron', monospace;
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 900;
             line-height: 1.15;
             margin-bottom: 10px;
             opacity: 0;
             transform: translateX(-32px);
             transition: all 0.55s ease 0.12s;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px currentColor;
         }
-        .ftitle.in {
-            opacity: 1;
-            transform: translateX(0);
-        }
+        .ftitle.in { opacity: 1; transform: translateX(0); }
         .fdesc {
             font-size: 13px;
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.8);
             line-height: 1.7;
             margin-bottom: 14px;
             opacity: 0;
             transition: all 0.45s ease 0.28s;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
         }
-        .fdesc.in {
-            opacity: 1;
-        }
-
-        .tgrid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
+        .fdesc.in { opacity: 1; }
+        .tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .tc {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             padding: 14px;
             display: flex;
@@ -294,240 +307,109 @@
             transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
             backdrop-filter: blur(8px);
             animation-delay: var(--d);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
-        .tc.in {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .tc-e {
-            font-size: 24px;
-            flex-shrink: 0;
-        }
-        .tc-n {
-            font-size: 12px;
-            font-weight: 700;
-        }
-        .tc-d {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.3);
-            margin-top: 2px;
-        }
-
-        .chord-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 14px;
-        }
+        .tc.in { opacity: 1; transform: translateY(0); }
+        .tc-e { font-size: 24px; flex-shrink: 0; }
+        .tc-n { font-size: 12px; font-weight: 700; color: #fff; }
+        .tc-d { font-size: 10px; color: rgba(255, 255, 255, 0.5); margin-top: 2px; }
+        .chord-row { display: flex; gap: 8px; margin-bottom: 14px; }
         .chc {
             flex: 1;
-            background: rgba(176, 106, 252, 0.1);
-            border: 1px solid rgba(176, 106, 252, 0.2);
+            background: rgba(176, 106, 252, 0.15);
+            border: 1px solid rgba(176, 106, 252, 0.3);
             border-radius: 16px;
             padding: 18px 6px;
             text-align: center;
             transform: translateY(24px);
             opacity: 0;
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 0 20px rgba(176, 106, 252, 0.1);
+            box-shadow: 0 0 25px rgba(176, 106, 252, 0.2);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
-        .chc.in {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        .ch-n {
-            font-family: 'Orbitron', monospace;
-            font-size: 24px;
-            font-weight: 900;
-            color: #b06afc;
-        }
-        .ch-r {
-            font-size: 9px;
-            color: rgba(255, 255, 255, 0.25);
-            margin-top: 3px;
-        }
-
+        .chc.in { transform: translateY(0); opacity: 1; }
+        .ch-n { font-family: 'Orbitron', monospace; font-size: 24px; font-weight: 900; color: #c79dff; }
+        .ch-r { font-size: 9px; color: rgba(255, 255, 255, 0.5); margin-top: 3px; }
         .stat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            font-size: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 12px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.8);
         }
-        .stat-row:last-child {
-            border-bottom: none;
-        }
-        .stat-val {
-            font-family: 'Orbitron', monospace;
-            font-weight: 700;
-            font-size: 13px;
-        }
-
-        .bar-outer {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            height: 8px;
-            overflow: hidden;
-            margin-top: 4px;
-        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-val { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 13px; }
+        .bar-outer { background: rgba(255, 255, 255, 0.08); border-radius: 10px; height: 8px; overflow: hidden; margin-top: 4px; }
         .bar-inner {
-            height: 100%;
-            border-radius: 10px;
+            height: 100%; border-radius: 10px;
             background: linear-gradient(90deg, var(--fire), #ff9f1c);
-            box-shadow: 0 0 12px rgba(255, 77, 77, 0.5);
+            box-shadow: 0 0 15px rgba(255, 77, 77, 0.6);
             transition: width 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
-        .bcb-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 12px;
-        }
-        .bcb {
-            padding: 14px;
-            border-radius: 14px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .bcb.f {
-            background: linear-gradient(135deg, #ff4d4d, #ff9f1c);
-            color: #000;
-        }
-        .bcb.s {
-            background: rgba(255, 255, 255, 0.04);
-            color: rgba(255, 255, 255, 0.3);
-        }
-        .bcb:active {
-            transform: scale(0.95);
-        }
-
-        .plans {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            max-width: 380px;
-        }
+        .bcb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+        .bcb { padding: 14px; border-radius: 14px; text-align: center; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+        .bcb.f { background: linear-gradient(135deg, #ff4d4d, #ff9f1c); color: #000; }
+        .bcb.s { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.6); }
+        .bcb:active { transform: scale(0.95); }
+        .plans { display: flex; gap: 10px; width: 100%; max-width: 380px; }
         .plan {
-            flex: 1;
-            border-radius: 22px;
-            padding: 20px 8px;
-            text-align: center;
-            opacity: 0;
-            transform: translateY(36px);
+            flex: 1; border-radius: 22px; padding: 20px 8px; text-align: center;
+            opacity: 0; transform: translateY(36px);
             transition: all 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
             backdrop-filter: blur(8px);
         }
-        .plan.in {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .plan-e {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-        .plan-n {
-            font-size: 13px;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-        .plan-p {
-            font-size: 10px;
-            opacity: 0.45;
-        }
-
+        .plan.in { opacity: 1; transform: translateY(0); }
+        .plan-e { font-size: 32px; margin-bottom: 10px; }
+        .plan-n { font-size: 13px; font-weight: 800; margin-bottom: 4px; }
+        .plan-p { font-size: 10px; opacity: 0.6; }
         .fin-t {
-            font-family: 'Orbitron', monospace;
-            font-size: 36px;
-            font-weight: 900;
-            text-align: center;
-            line-height: 1.15;
-            letter-spacing: -1px;
-            opacity: 0;
-            transform: scale(0.7);
+            font-family: 'Orbitron', monospace; font-size: 38px; font-weight: 900;
+            text-align: center; line-height: 1.15; letter-spacing: -1px;
+            opacity: 0; transform: scale(0.7);
             transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: #fff;
+            text-shadow: 0 0 25px rgba(255, 255, 255, 0.5), 0 0 50px rgba(245, 197, 24, 0.4);
         }
-        .fin-t.in {
-            opacity: 1;
-            transform: scale(1);
-        }
+        .fin-t.in { opacity: 1; transform: scale(1); }
         .fin-t span {
-            background: linear-gradient(135deg, #f5c518, #ff9f1c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #f5c518;
+            text-shadow: 0 0 30px rgba(245, 197, 24, 0.9), 0 0 60px rgba(245, 197, 24, 0.6);
         }
         .fin-u {
-            font-size: 20px;
-            font-weight: 700;
-            color: #f5c518;
-            margin-top: 18px;
-            opacity: 0;
-            transition: all 0.55s ease 0.6s;
-            text-shadow: 0 0 30px rgba(245, 197, 24, 0.6);
+            font-size: 22px; font-weight: 700; color: #f5c518; margin-top: 18px;
+            opacity: 0; transition: all 0.55s ease 0.6s;
+            text-shadow: 0 0 30px rgba(245, 197, 24, 0.8), 0 0 60px rgba(245, 197, 24, 0.5);
         }
-        .fin-u.in {
-            opacity: 1;
-        }
+        .fin-u.in { opacity: 1; }
         .fin-btn {
-            margin-top: 30px;
-            padding: 18px 44px;
-            border-radius: 100px;
-            border: none;
+            margin-top: 30px; padding: 18px 44px; border-radius: 100px; border: none;
             background: linear-gradient(135deg, #f5c518, #ff9f1c);
-            font-family: 'Orbitron', monospace;
-            font-size: 15px;
-            font-weight: 900;
-            color: #000;
-            cursor: pointer;
-            opacity: 0;
-            transform: translateY(20px);
+            font-family: 'Orbitron', monospace; font-size: 15px; font-weight: 900;
+            color: #000; cursor: pointer; opacity: 0; transform: translateY(20px);
             transition: all 0.55s ease 1s;
-            box-shadow: 0 12px 40px rgba(245, 197, 24, 0.4);
+            box-shadow: 0 12px 40px rgba(245, 197, 24, 0.6);
         }
-        .fin-btn.in {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .fin-btn:active {
-            transform: scale(0.95);
-        }
-
-        .badge {
-            font-size: 9px;
-            padding: 4px 10px;
-            border-radius: 100px;
-            font-weight: 700;
-            margin-left: 8px;
-        }
-        .badge.green {
-            background: rgba(0, 230, 118, 0.12);
-            color: #00e676;
-        }
-        .badge.gold {
-            background: rgba(245, 197, 24, 0.12);
-            color: #f5c518;
-        }
+        .fin-btn.in { opacity: 1; transform: translateY(0); }
+        .fin-btn:active { transform: scale(0.95); }
+        .badge { font-size: 9px; padding: 4px 10px; border-radius: 100px; font-weight: 700; margin-left: 8px; }
+        .badge.green { background: rgba(0, 230, 118, 0.15); color: #00e676; }
+        .badge.gold { background: rgba(245, 197, 24, 0.15); color: #f5c518; }
     </style>
 </head>
 <body>
     <canvas id="bg3d"></canvas>
-    <div class="overlay-flash" id="overlayFlash"></div>
+    <div class="cross-rays"></div>
     <div class="scanlines"></div>
+    <div class="scan"></div>
+    <div class="overlay-flash" id="overlayFlash"></div>
     <div class="vignette"></div>
     <div id="prog" style="width:0%"></div>
     <button id="skip" onclick="goFin()">Saltar →</button>
 
-    <!-- S0 INTRO -->
     <div class="sc on" id="s0">
         <div class="logo" id="logo">MKEYZ<br>STUDIO</div>
         <div class="sub" id="sub">La plataforma musical dentro de Telegram</div>
         <div class="line-h" id="line"></div>
     </div>
-
-    <!-- S1 TAGLINE -->
     <div class="sc" id="s1">
         <div>
             <span class="tl" id="tl0">Tu estudio.</span>
@@ -535,23 +417,19 @@
             <span class="tl" id="tl2">Tu <span class="pu">plataforma.</span></span>
         </div>
     </div>
-
-    <!-- S2 TOOLS -->
     <div class="sc" id="s2">
         <div class="fw glass-panel">
             <div class="flabel" id="fl2">🎛️ Herramientas Pro</div>
             <div class="ftitle" id="ft2" style="color:#f5c518">8 herramientas.<br>Un solo chat.</div>
             <div class="fdesc" id="fd2">Procesa, crea y analiza sin salir de Telegram.</div>
             <div class="tgrid" id="tg2">
-                <div class="tc" style="--d:0s;border-color:rgba(245,197,24,.16)"><div class="tc-e">🎛️</div><div><div class="tc-n">Mini DAW</div><div class="tc-d">Pitch · Reverb · EQ</div></div></div>
-                <div class="tc" style="--d:0.1s;border-color:rgba(176,106,252,.16)"><div class="tc-e">🎹</div><div><div class="tc-n">Chord Generator</div><div class="tc-d">MIDI Export FL Studio</div></div></div>
-                <div class="tc" style="--d:0.2s;border-color:rgba(0,230,118,.16)"><div class="tc-e">🎤</div><div><div class="tc-n">Voice Studio</div><div class="tc-d">Graba · FX en vivo</div></div></div>
-                <div class="tc" style="--d:0.3s;border-color:rgba(79,195,247,.16)"><div class="tc-e">🎚️</div><div><div class="tc-n">Visualizador</div><div class="tc-d">Notas · Frecuencias</div></div></div>
+                <div class="tc" style="--d:0s;border-color:rgba(245,197,24,.2)"><div class="tc-e">🎛️</div><div><div class="tc-n">Mini DAW</div><div class="tc-d">Pitch · Reverb · EQ</div></div></div>
+                <div class="tc" style="--d:0.1s;border-color:rgba(176,106,252,.2)"><div class="tc-e">🎹</div><div><div class="tc-n">Chord Generator</div><div class="tc-d">MIDI Export FL Studio</div></div></div>
+                <div class="tc" style="--d:0.2s;border-color:rgba(0,230,118,.2)"><div class="tc-e">🎤</div><div><div class="tc-n">Voice Studio</div><div class="tc-d">Graba · FX en vivo</div></div></div>
+                <div class="tc" style="--d:0.3s;border-color:rgba(79,195,247,.2)"><div class="tc-e">🎚️</div><div><div class="tc-n">Visualizador</div><div class="tc-d">Notas · Frecuencias</div></div></div>
             </div>
         </div>
     </div>
-
-    <!-- S3 CHORD -->
     <div class="sc" id="s3">
         <div class="fw glass-panel">
             <div class="flabel" id="fl3">🎹 Chord Generator + MIDI</div>
@@ -565,8 +443,6 @@
             <div class="fdesc" id="fd3">Trap · R&B · Lo-Fi · Pop Latino · Afrobeats · Dembow</div>
         </div>
     </div>
-
-    <!-- S4 DAW -->
     <div class="sc" id="s4">
         <div class="fw glass-panel">
             <div class="flabel" id="fl4">🎛️ Mini DAW</div>
@@ -579,49 +455,41 @@
             </div>
         </div>
     </div>
-
-    <!-- S5 STUDIO -->
     <div class="sc" id="s5">
         <div class="fw glass-panel">
             <div class="flabel" id="fl5">📊 Studio — Análisis & Pagos</div>
             <div class="ftitle" id="ft5" style="color:#00e676">Controla tus<br>números reales.</div>
-            <div class="stat-row"><span style="color:rgba(255,255,255,0.5)">🎵 Streams</span><span class="stat-val" style="color:#00e676" id="vps">0</span></div>
-            <div class="stat-row"><span style="color:rgba(255,255,255,0.5)">💰 Est. diario</span><span class="stat-val" style="color:#f5c518" id="vpe">$0.00</span></div>
-            <div class="stat-row"><span style="color:rgba(255,255,255,0.5)">📈 Crecimiento</span><span class="stat-val" style="color:#4fc3f7" id="vpg">+0%</span></div>
-            <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)">
+            <div class="stat-row"><span>🎵 Streams</span><span class="stat-val" style="color:#00e676" id="vps">0</span></div>
+            <div class="stat-row"><span>💰 Est. diario</span><span class="stat-val" style="color:#f5c518" id="vpe">$0.00</span></div>
+            <div class="stat-row"><span>📈 Crecimiento</span><span class="stat-val" style="color:#4fc3f7" id="vpg">+0%</span></div>
+            <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1)">
                 <div class="stat-row"><span>🎵 Spotify</span><span class="stat-val" style="color:#00e676">$12.47</span><span class="badge green">Pagado</span></div>
                 <div class="stat-row"><span>📦 Amazon</span><span class="stat-val" style="color:#f5c518">$8.93</span><span class="badge gold">Próximo</span></div>
-                <div class="stat-row"><span>🍎 Apple Music</span><span class="stat-val" style="color:#4fc3f7">~$5.20</span><span class="badge" style="color:#4fc3f7;background:rgba(79,195,247,.12)">Est.</span></div>
+                <div class="stat-row"><span>🍎 Apple Music</span><span class="stat-val" style="color:#4fc3f7">~$5.20</span><span class="badge" style="color:#4fc3f7;background:rgba(79,195,247,.15)">Est.</span></div>
             </div>
         </div>
     </div>
-
-    <!-- S6 BATTLE -->
     <div class="sc" id="s6">
         <div class="fw glass-panel">
             <div class="flabel" id="fl6">🎮 Comunidad</div>
             <div class="ftitle" id="ft6" style="color:#ff4d4d">Beat Battle.<br>Que la gente vote.</div>
             <div style="font-size:13px;font-weight:700;margin-bottom:8px">🎵 Jeff Mkeyz — Dark Trap</div>
             <div class="bar-outer"><div class="bar-inner" id="bcb" style="width:0%"></div></div>
-            <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.35);margin:6px 0">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.55);margin:6px 0">
                 <span id="bcv" style="color:#ff4d4d;font-weight:700">🔥 0 votos</span><span>⏱ 18h</span>
             </div>
             <div class="bcb-row"><div class="bcb f">🔥 Fuego</div><div class="bcb s">💀 Skip</div></div>
-            <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:8px;text-align:center">Beat Battle · Reto Semanal · Playlist Generator</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:8px;text-align:center">Beat Battle · Reto Semanal · Playlist Generator</div>
         </div>
     </div>
-
-    <!-- S7 PLANS -->
     <div class="sc" id="s7">
         <div class="ftitle" id="ft7" style="text-align:center;font-size:22px;margin-bottom:22px;color:#fff">Elige tu plan</div>
         <div class="plans">
-            <div class="plan" id="p0" style="background:rgba(17,17,17,0.7);border:1px solid #1e2030"><div class="plan-e">🆓</div><div class="plan-n">Free</div><div class="plan-p">Gratis</div></div>
-            <div class="plan" id="p1" style="background:rgba(26,21,0,0.7);border:1px solid rgba(245,197,24,.28);box-shadow:0 0 24px rgba(245,197,24,.08)"><div class="plan-e">⭐</div><div class="plan-n" style="color:#f5c518">Pro</div><div class="plan-p">300 Stars/mes</div></div>
-            <div class="plan" id="p2" style="background:rgba(26,0,64,0.7);border:1px solid rgba(176,106,252,.28);box-shadow:0 0 24px rgba(176,106,252,.08)"><div class="plan-e">🎛️</div><div class="plan-n" style="color:#b06afc">Studio</div><div class="plan-p">750 Stars/mes</div></div>
+            <div class="plan" id="p0" style="background:rgba(17,17,17,0.8);border:1px solid #1e2030"><div class="plan-e">🆓</div><div class="plan-n">Free</div><div class="plan-p">Gratis</div></div>
+            <div class="plan" id="p1" style="background:rgba(26,21,0,0.8);border:1px solid rgba(245,197,24,.3);box-shadow:0 0 30px rgba(245,197,24,.1)"><div class="plan-e">⭐</div><div class="plan-n" style="color:#f5c518">Pro</div><div class="plan-p">300 Stars/mes</div></div>
+            <div class="plan" id="p2" style="background:rgba(26,0,64,0.8);border:1px solid rgba(176,106,252,.3);box-shadow:0 0 30px rgba(176,106,252,.1)"><div class="plan-e">🎛️</div><div class="plan-n" style="color:#b06afc">Studio</div><div class="plan-p">750 Stars/mes</div></div>
         </div>
     </div>
-
-    <!-- S8 FINALE -->
     <div class="sc" id="s8">
         <div class="fin-t" id="ft8">Tu estudio.<br><span>En tu bolsillo.</span></div>
         <div class="fin-u" id="fu">t.me/MkeyzDAWbot</div>
@@ -630,31 +498,22 @@
 
     <script>
         const tg = window.Telegram?.WebApp;
-        if (tg) { tg.ready();
-            tg.expand();
-            tg.setHeaderColor("#000");
-            tg.setBackgroundColor("#000"); }
+        if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#000"); tg.setBackgroundColor("#000"); }
 
-        // ── THREE.JS VORTEX ──────────────────────────
-        let scene, camera, renderer, vortexParticles, ringParticles, glowRing;
+        let scene, camera, renderer, vortexParticles, glowRing;
         let time = 0;
-
         function initThree() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
             camera.position.z = 8;
-
             renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg3d'), alpha: true, antialias: true });
             renderer.setSize(innerWidth, innerHeight);
             renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
-            // Vortex de partículas
             const vortexGeo = new THREE.BufferGeometry();
             const vortexCount = 1800;
             const vortexPositions = new Float32Array(vortexCount * 3);
             const vortexColors = new Float32Array(vortexCount * 3);
-            const vortexSizes = new Float32Array(vortexCount);
-
             for (let i = 0; i < vortexCount; i++) {
                 const t = Math.random() * Math.PI * 2;
                 const r = Math.random() * 5;
@@ -662,57 +521,31 @@
                 vortexPositions[i * 3] = Math.cos(t) * r;
                 vortexPositions[i * 3 + 1] = y;
                 vortexPositions[i * 3 + 2] = Math.sin(t) * r;
-
                 const hue = 0.08 + Math.random() * 0.12;
                 const col = new THREE.Color().setHSL(hue, 0.9, 0.5 + Math.random() * 0.4);
                 vortexColors[i * 3] = col.r;
                 vortexColors[i * 3 + 1] = col.g;
                 vortexColors[i * 3 + 2] = col.b;
-                vortexSizes[i] = Math.random() * 0.06 + 0.02;
             }
             vortexGeo.setAttribute('position', new THREE.BufferAttribute(vortexPositions, 3));
             vortexGeo.setAttribute('color', new THREE.BufferAttribute(vortexColors, 3));
-            vortexGeo.setAttribute('size', new THREE.BufferAttribute(vortexSizes, 1));
-
-            const vortexMat = new THREE.PointsMaterial({
-                size: 0.06,
-                vertexColors: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                transparent: true,
-                opacity: 0.8,
-            });
+            const vortexMat = new THREE.PointsMaterial({ size: 0.06, vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.5 });
             vortexParticles = new THREE.Points(vortexGeo, vortexMat);
             scene.add(vortexParticles);
 
-            // Anillo de energía
             const ringGeo = new THREE.TorusGeometry(3.5, 0.02, 32, 200);
-            const ringMat = new THREE.MeshBasicMaterial({
-                color: 0xf5c518,
-                transparent: true,
-                opacity: 0.3,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-            });
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0xf5c518, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false });
             glowRing = new THREE.Mesh(ringGeo, ringMat);
             glowRing.rotation.x = Math.PI / 2.5;
             scene.add(glowRing);
 
-            // Anillo secundario
             const ring2Geo = new THREE.TorusGeometry(3.8, 0.015, 16, 160);
-            const ring2Mat = new THREE.MeshBasicMaterial({
-                color: 0xb06afc,
-                transparent: true,
-                opacity: 0.2,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-            });
+            const ring2Mat = new THREE.MeshBasicMaterial({ color: 0xb06afc, transparent: true, opacity: 0.15, blending: THREE.AdditiveBlending, depthWrite: false });
             const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
             ring2.rotation.x = -Math.PI / 3;
             ring2.rotation.y = Math.PI / 4;
             scene.add(ring2);
 
-            // Estrellas lejanas
             const starsGeo = new THREE.BufferGeometry();
             const starsCount = 600;
             const starsPos = new Float32Array(starsCount * 3);
@@ -722,243 +555,54 @@
                 starsPos[i * 3 + 2] = -5 - Math.random() * 10;
             }
             starsGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
-            const starsMat = new THREE.PointsMaterial({
-                size: 0.03,
-                color: 0xffffff,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                transparent: true,
-                opacity: 0.6,
-            });
+            const starsMat = new THREE.PointsMaterial({ size: 0.03, color: 0xffffff, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.6 });
             scene.add(new THREE.Points(starsGeo, starsMat));
 
             animateThree();
         }
-
         function animateThree() {
             requestAnimationFrame(animateThree);
             time += 0.005;
-
-            // Rotar vórtice
-            if (vortexParticles) {
-                vortexParticles.rotation.y += 0.002;
-                vortexParticles.rotation.x += 0.001;
-                vortexParticles.rotation.z += 0.0005;
-            }
-            // Anillo pulsante
-            if (glowRing) {
-                const scale = 1 + Math.sin(time * 0.7) * 0.08;
-                glowRing.scale.set(scale, scale, scale);
-                glowRing.rotation.z += 0.003;
-                glowRing.material.opacity = 0.25 + Math.sin(time * 1.3) * 0.1;
-            }
-
+            if (vortexParticles) { vortexParticles.rotation.y += 0.002; vortexParticles.rotation.x += 0.001; vortexParticles.rotation.z += 0.0005; }
+            if (glowRing) { const scale = 1 + Math.sin(time * 0.7) * 0.08; glowRing.scale.set(scale, scale, scale); glowRing.rotation.z += 0.003; glowRing.material.opacity = 0.2 + Math.sin(time * 1.3) * 0.08; }
             renderer.render(scene, camera);
         }
-
         initThree();
-        window.addEventListener('resize', () => {
-            camera.aspect = innerWidth / innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(innerWidth, innerHeight);
-        });
+        window.addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
         // ── AUDIO ──
         let ac;
+        function A() { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); return ac; }
+        function tone(f, d, t = "sine", v = .1) { try { const c = A(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = t; o.frequency.value = f; g.gain.setValueAtTime(v, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + d); o.start(); o.stop(c.currentTime + d); } catch (e) {} }
+        function kick() { tone(150, .22, "sine", .6); setTimeout(() => tone(40, .12, "sine", .35), 40); }
+        function whoosh() { try { const c = A(), o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter(); o.connect(f); f.connect(g); g.connect(c.destination); f.type = "bandpass"; f.frequency.value = 1200; o.type = "sawtooth"; o.frequency.setValueAtTime(900, c.currentTime); o.frequency.exponentialRampToValueAtTime(180, c.currentTime + .4); g.gain.setValueAtTime(.12, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .4); o.start(); o.stop(c.currentTime + .4); } catch (e) {} }
+        function chime() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, .5, "sine", .08), i * 85)); }
+        function rise() { try { const c = A(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = "sine"; o.frequency.setValueAtTime(180, c.currentTime); o.frequency.exponentialRampToValueAtTime(1100, c.currentTime + 1.2); g.gain.setValueAtTime(.05, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + 1.3); o.start(); o.stop(c.currentTime + 1.3); } catch (e) {} }
+        function flash() { const el = document.getElementById('overlayFlash'); el.classList.add('pulse'); setTimeout(() => el.classList.remove('pulse'), 200); }
 
-        function A() { if (!ac) ac = new(window.AudioContext || window.webkitAudioContext)(); return ac; }
+        function transitionTo(id) { document.querySelectorAll('.sc.on').forEach(s => { s.classList.add('off'); s.classList.remove('on'); }); setTimeout(() => { document.querySelectorAll('.sc').forEach(s => s.classList.remove('off')); document.getElementById(id).classList.add('on'); flash(); kick(); }, 400); }
 
-        function tone(f, d, t = "sine", v = .1) { try { const c = A(),
-                o = c.createOscillator(),
-                g = c.createGain();
-                o.connect(g);
-                g.connect(c.destination);
-                o.type = t;
-                o.frequency.value = f;
-                g.gain.setValueAtTime(v, c.currentTime);
-                g.gain.exponentialRampToValueAtTime(.001, c.currentTime + d);
-                o.start();
-                o.stop(c.currentTime + d); } catch (e) {} }
-
-        function kick() { tone(150, .22, "sine", .6);
-            setTimeout(() => tone(40, .12, "sine", .35), 40); }
-
-        function whoosh() { try { const c = A(),
-                o = c.createOscillator(),
-                g = c.createGain(),
-                f = c.createBiquadFilter();
-                o.connect(f);
-                f.connect(g);
-                g.connect(c.destination);
-                f.type = "bandpass";
-                f.frequency.value = 1200;
-                o.type = "sawtooth";
-                o.frequency.setValueAtTime(900, c.currentTime);
-                o.frequency.exponentialRampToValueAtTime(180, c.currentTime + .4);
-                g.gain.setValueAtTime(.12, c.currentTime);
-                g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .4);
-                o.start();
-                o.stop(c.currentTime + .4); } catch (e) {} }
-
-        function chime() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, .5, "sine", .08), i *
-            85)); }
-
-        function rise() { try { const c = A(),
-                o = c.createOscillator(),
-                g = c.createGain();
-                o.connect(g);
-                g.connect(c.destination);
-                o.type = "sine";
-                o.frequency.setValueAtTime(180, c.currentTime);
-                o.frequency.exponentialRampToValueAtTime(1100, c.currentTime + 1.2);
-                g.gain.setValueAtTime(.05, c.currentTime);
-                g.gain.exponentialRampToValueAtTime(.001, c.currentTime + 1.3);
-                o.start();
-                o.stop(c.currentTime + 1.3); } catch (e) {} }
-
-        // ── FLASH ──
-        function flash() {
-            const el = document.getElementById('overlayFlash');
-            el.classList.add('pulse');
-            setTimeout(() => el.classList.remove('pulse'), 200);
-        }
-
-        // ── TRANSICIONES ──
-        function transitionTo(id) {
-            document.querySelectorAll('.sc.on').forEach(s => { s.classList.add('off');
-                s.classList.remove('on'); });
-            setTimeout(() => {
-                document.querySelectorAll('.sc').forEach(s => s.classList.remove('off'));
-                document.getElementById(id).classList.add('on');
-                flash();
-                kick();
-            }, 400);
-        }
-
-        // ── ESCENAS ──
-        const SCENES = [
-            { id: "s0", dur: 3000, fn: eS0 },
-            { id: "s1", dur: 3400, fn: eS1 },
-            { id: "s2", dur: 3400, fn: eS2 },
-            { id: "s3", dur: 3200, fn: eS3 },
-            { id: "s4", dur: 3000, fn: eS4 },
-            { id: "s5", dur: 3800, fn: eS5 },
-            { id: "s6", dur: 3200, fn: eS6 },
-            { id: "s7", dur: 3500, fn: eS7 },
-            { id: "s8", dur: 6000, fn: eS8 },
-        ];
+        const SCENES = [{ id: "s0", dur: 3000, fn: eS0 }, { id: "s1", dur: 3400, fn: eS1 }, { id: "s2", dur: 3400, fn: eS2 }, { id: "s3", dur: 3200, fn: eS3 }, { id: "s4", dur: 3000, fn: eS4 }, { id: "s5", dur: 3800, fn: eS5 }, { id: "s6", dur: 3200, fn: eS6 }, { id: "s7", dur: 3500, fn: eS7 }, { id: "s8", dur: 6000, fn: eS8 }];
         const TOTAL = SCENES.reduce((s, x) => s + x.dur, 0);
-        let cur = 0,
-            nxt, pgI;
-
-        function show(i) {
-            transitionTo(SCENES[i].id);
-            cur = i;
-            SCENES[i].fn();
-        }
-
-        function run(i) {
-            if (i >= SCENES.length) return;
-            show(i);
-            nxt = setTimeout(() => run(i + 1), SCENES[i].dur);
-        }
-
-        function goFin() {
-            clearTimeout(nxt);
-            clearInterval(pgI);
-            transitionTo(SCENES[SCENES.length - 1].id);
-            cur = SCENES.length - 1;
-            SCENES[SCENES.length - 1].fn();
-            document.getElementById("prog").style.width = "100%";
-            document.getElementById("skip").style.display = "none";
-        }
-
+        let cur = 0, nxt, pgI;
+        function show(i) { transitionTo(SCENES[i].id); cur = i; SCENES[i].fn(); }
+        function run(i) { if (i >= SCENES.length) return; show(i); nxt = setTimeout(() => run(i + 1), SCENES[i].dur); }
+        function goFin() { clearTimeout(nxt); clearInterval(pgI); transitionTo(SCENES[SCENES.length - 1].id); cur = SCENES.length - 1; SCENES[SCENES.length - 1].fn(); document.getElementById("prog").style.width = "100%"; document.getElementById("skip").style.display = "none"; }
         function openBot() { if (tg) tg.close(); else window.open("https://t.me/MkeyzDAWbot", "_blank"); }
-
-        function startProg() {
-            let e = 0;
-            pgI = setInterval(() => { e += 100;
-                document.getElementById("prog").style.width = Math.min(100, e / TOTAL * 100) + "%"; if (e >=
-                    TOTAL) clearInterval(pgI); }, 100);
-        }
-
+        function startProg() { let e = 0; pgI = setInterval(() => { e += 100; document.getElementById("prog").style.width = Math.min(100, e / TOTAL * 100) + "%"; if (e >= TOTAL) clearInterval(pgI); }, 100); }
         function show$(id) { document.getElementById(id)?.classList.add("in"); }
 
-        function eS0() { rise();
-            setTimeout(() => show$("logo"), 150);
-            setTimeout(() => { show$("sub");
-                show$("line"); }, 550);
-            flash(); }
+        function eS0() { rise(); setTimeout(() => show$("logo"), 150); setTimeout(() => { show$("sub"); show$("line"); }, 550); flash(); }
+        function eS1() { whoosh(); ["tl0", "tl1", "tl2"].forEach((id, i) => setTimeout(() => { show$(id); kick(); }, 100 + i * 400)); }
+        function eS2() { whoosh(); setTimeout(() => show$("fl2"), 100); setTimeout(() => show$("ft2"), 200); setTimeout(() => show$("fd2"), 320); document.querySelectorAll("#tg2 .tc").forEach((c, i) => setTimeout(() => { c.classList.add("in"); kick(); }, 420 + i * 110)); }
+        function eS3() { whoosh(); setTimeout(() => show$("fl3"), 100); setTimeout(() => show$("ft3"), 200); ["c0", "c1", "c2", "c3"].forEach((id, i) => setTimeout(() => { show$(id); tone(280 + i * 90, .35, "triangle", .09); }, 350 + i * 160)); setTimeout(() => show$("fd3"), 900); }
+        function eS4() { whoosh(); setTimeout(() => show$("fl4"), 100); setTimeout(() => show$("ft4"), 200); document.querySelectorAll("#tg4 .tc")?.forEach((c, i) => setTimeout(() => { c?.classList.add("in"); kick(); }, 380 + i * 100)); }
+        function eS5() { whoosh(); setTimeout(() => show$("fl5"), 100); setTimeout(() => show$("ft5"), 200); let f = 0; const cu = setInterval(() => { f++; const p = f / 20; document.getElementById("vps").textContent = Math.round(1333 * p).toLocaleString(); document.getElementById("vpe").textContent = "$" + (1333 * p * .001106).toFixed(3); document.getElementById("vpg").textContent = "+" + (Math.round(p * 47)) + "%"; if (f >= 20) clearInterval(cu); }, 80); }
+        function eS6() { whoosh(); setTimeout(() => show$("fl6"), 100); setTimeout(() => show$("ft6"), 200); setTimeout(() => { document.getElementById("bcb").style.width = "74%"; }, 600); let v = 0; const cv = setInterval(() => { v++; document.getElementById("bcv").textContent = "🔥 " + v + " votos"; kick(); if (v >= 47) clearInterval(cv); }, 45); }
+        function eS7() { chime(); setTimeout(() => show$("ft7"), 120); ["p0", "p1", "p2"].forEach((id, i) => setTimeout(() => { show$(id); tone(300 + i * 120, .35, "sine", .1); }, 280 + i * 210)); }
+        function eS8() { rise(); setTimeout(chime, 700); setTimeout(() => show$("ft8"), 250); setTimeout(() => show$("fu"), 850); setTimeout(() => { show$("fb"); if (tg) tg.HapticFeedback?.notificationOccurred("success"); }, 1300); }
 
-        function eS1() { whoosh();
-            ["tl0", "tl1", "tl2"].forEach((id, i) => setTimeout(() => { show$(id);
-                kick(); }, 100 + i * 400)); }
-
-        function eS2() {
-            whoosh();
-            setTimeout(() => show$("fl2"), 100);
-            setTimeout(() => show$("ft2"), 200);
-            setTimeout(() => show$("fd2"), 320);
-            document.querySelectorAll("#tg2 .tc").forEach((c, i) => setTimeout(() => { c.classList.add("in");
-                kick(); }, 420 + i * 110));
-        }
-
-        function eS3() {
-            whoosh();
-            setTimeout(() => show$("fl3"), 100);
-            setTimeout(() => show$("ft3"), 200);
-            ["c0", "c1", "c2", "c3"].forEach((id, i) => setTimeout(() => { show$(id);
-                tone(280 + i * 90, .35, "triangle", .09); }, 350 + i * 160));
-            setTimeout(() => show$("fd3"), 900);
-        }
-
-        function eS4() {
-            whoosh();
-            setTimeout(() => show$("fl4"), 100);
-            setTimeout(() => show$("ft4"), 200);
-            document.querySelectorAll("#tg4 .tc")?.forEach((c, i) => setTimeout(() => { c?.classList.add(
-                "in");
-                kick(); }, 380 + i * 100));
-        }
-
-        function eS5() {
-            whoosh();
-            setTimeout(() => show$("fl5"), 100);
-            setTimeout(() => show$("ft5"), 200);
-            let f = 0;
-            const cu = setInterval(() => { f++;
-                const p = f / 20;
-                document.getElementById("vps").textContent = Math.round(1333 * p).toLocaleString();
-                document.getElementById("vpe").textContent = "$" + (1333 * p * .001106).toFixed(3);
-                document.getElementById("vpg").textContent = "+" + (Math.round(p * 47)) + "%"; if (f >= 20)
-                clearInterval(cu); }, 80);
-        }
-
-        function eS6() {
-            whoosh();
-            setTimeout(() => show$("fl6"), 100);
-            setTimeout(() => show$("ft6"), 200);
-            setTimeout(() => { document.getElementById("bcb").style.width = "74%"; }, 600);
-            let v = 0;
-            const cv = setInterval(() => { v++;
-                document.getElementById("bcv").textContent = "🔥 " + v + " votos";
-                kick(); if (v >= 47) clearInterval(cv); }, 45);
-        }
-
-        function eS7() { chime();
-            setTimeout(() => show$("ft7"), 120); ["p0", "p1", "p2"].forEach((id, i) => setTimeout(() => { show$(id);
-                tone(300 + i * 120, .35, "sine", .1); }, 280 + i * 210)); }
-
-        function eS8() {
-            rise();
-            setTimeout(chime, 700);
-            setTimeout(() => show$("ft8"), 250);
-            setTimeout(() => show$("fu"), 850);
-            setTimeout(() => { show$("fb"); if (tg) tg.HapticFeedback?.notificationOccurred("success"); }, 1300);
-        }
-
-        startProg();
-        run(0);
+        startProg(); run(0);
     </script>
 </body>
 </html>
