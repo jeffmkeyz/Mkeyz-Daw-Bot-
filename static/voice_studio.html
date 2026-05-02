@@ -8,471 +8,1670 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #04040e;
-            --surface: #0a0c1a;
-            --border: #1a1d35;
+            --bg: #020212;
+            --surface: #0a0c20;
+            --border: #1a1d38;
             --gold: #f0b90b;
             --fire: #ff3b3b;
             --green: #00e676;
             --blue: #4fc3f7;
             --purple: #b388ff;
-            --text: #e8e8f0;
-            --muted: #5a5d6e;
-            --radius: 16px;
+            --orange: #ff9800;
+            --text: #f0f0ff;
+            --muted: #5a5d7a;
+            --radius: 18px;
             --neon-glow: 0 0 8px, 0 0 16px;
+            --active-track: var(--fire);
+            --reverb-color: #2979ff;
+            --delay-color: #ff9800;
+            --comp-color: #ff3b3b;
+            --eq-color: #00e676;
+            --chorus-color: #b388ff;
         }
-        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
         body {
-            background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
-            min-height: 100vh; padding: 12px 8px 80px; overflow-x: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 12px 8px 80px;
+            overflow-x: hidden;
         }
         body::before {
-            content: ''; position: fixed; inset:0; pointer-events:none; z-index:0;
-            background: radial-gradient(ellipse at 30% 20%, rgba(255,59,59,0.04) 0%, transparent 50%),
-                        radial-gradient(ellipse at 70% 60%, rgba(179,136,255,0.04) 0%, transparent 50%),
-                        radial-gradient(ellipse at 50% 80%, rgba(240,185,11,0.03) 0%, transparent 50%);
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(255, 59, 59, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 60%, rgba(179, 136, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(240, 185, 11, 0.05) 0%, transparent 50%);
             animation: bgShift 20s ease-in-out infinite alternate;
         }
-        @keyframes bgShift { 0%{opacity:0.6;transform:scale(1)} 100%{opacity:1;transform:scale(1.05)} }
-        .app-container { width:100%; max-width:600px; margin:0 auto; position:relative; z-index:1; }
-        .header { text-align:center; padding:20px 0 8px; }
-        .header h1 {
-            font-size:26px; font-weight:900; letter-spacing:-1.5px;
-            background: linear-gradient(135deg, #fff 0%, var(--fire) 40%, var(--blue) 60%, var(--gold) 100%);
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-            animation: titleGlow 3s ease-in-out infinite alternate;
+        @keyframes bgShift {
+            0% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
         }
-        @keyframes titleGlow { 0%{filter:brightness(1)} 100%{filter:brightness(1.3)} }
-        .header .subtitle { font-size:11px; color:var(--muted); letter-spacing:1px; }
-
+        .app-container {
+            width: 100%;
+            max-width: 620px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            border-radius: 24px;
+            background: rgba(10, 12, 32, 0.4);
+            backdrop-filter: blur(16px);
+            padding: 16px 12px 24px;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 20px 50px rgba(0, 0, 0, 0.5);
+            animation: containerGlow 3s ease-in-out infinite alternate;
+        }
+        @keyframes containerGlow {
+            0% {
+                box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 20px 50px rgba(0, 0, 0, 0.5);
+            }
+            100% {
+                box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 25px 60px rgba(255, 59, 59, 0.2);
+            }
+        }
+        .header {
+            text-align: center;
+            padding: 16px 0 8px;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            background: linear-gradient(135deg, #fff 0%, var(--fire) 30%, var(--blue) 60%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.2));
+        }
+        @keyframes titleGlow {
+            0% {
+                filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
+            }
+            100% {
+                filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.4));
+            }
+        }
+        .header .subtitle {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 1.5px;
+        }
         .transport-bar {
-            background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-            padding:12px 16px; margin:12px 0; display:flex; align-items:center; gap:12px;
-            flex-wrap:wrap; justify-content:center; box-shadow:0 4px 20px rgba(0,0,0,0.4);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
         .transport-btn {
-            width:44px; height:44px; border-radius:50%; border:2px solid transparent;
-            cursor:pointer; font-size:18px; transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);
-            display:flex; align-items:center; justify-content:center;
-            background:rgba(10,12,24,0.8); color:var(--text); backdrop-filter:blur(8px);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 12, 24, 0.8);
+            color: var(--text);
+            backdrop-filter: blur(8px);
         }
-        .transport-btn:active { transform:scale(0.9); }
-
-        .transport-btn.metro:hover,.transport-btn.metro.active { background:rgba(179,136,255,0.2); border-color:var(--purple); box-shadow:var(--neon-glow) rgba(179,136,255,0.6); }
-        .transport-btn.loop:hover,.transport-btn.loop.active { background:rgba(240,185,11,0.2); border-color:var(--gold); box-shadow:var(--neon-glow) rgba(240,185,11,0.6); }
-        .transport-btn.play:hover { background:rgba(0,230,118,0.15); border-color:var(--green); box-shadow:var(--neon-glow) rgba(0,230,118,0.5); }
-        .transport-btn.stop:hover { background:rgba(255,59,59,0.2); border-color:var(--fire); box-shadow:var(--neon-glow) rgba(255,59,59,0.6); }
-        .transport-btn.rec:hover { background:rgba(255,59,59,0.2); border-color:var(--fire); box-shadow:var(--neon-glow) rgba(255,59,59,0.6); }
-        .transport-btn.rec.recording { background:rgba(255,59,59,0.3); border-color:var(--fire); box-shadow:0 0 12px rgba(255,59,59,0.8); animation:recNeonPulse 1.5s infinite; }
-        @keyframes recNeonPulse { 0%,100%{box-shadow:0 0 12px rgba(255,59,59,0.8)} 50%{box-shadow:0 0 20px rgba(255,59,59,1)} }
-
+        .transport-btn:active {
+            transform: scale(0.9);
+        }
+        .transport-btn.metro:hover,
+        .transport-btn.metro.active {
+            background: rgba(179, 136, 255, 0.2);
+            border-color: var(--purple);
+            box-shadow: var(--neon-glow) rgba(179, 136, 255, 0.6);
+        }
+        .transport-btn.loop:hover,
+        .transport-btn.loop.active {
+            background: rgba(240, 185, 11, 0.2);
+            border-color: var(--gold);
+            box-shadow: var(--neon-glow) rgba(240, 185, 11, 0.6);
+        }
+        .transport-btn.play:hover {
+            background: rgba(0, 230, 118, 0.15);
+            border-color: var(--green);
+            box-shadow: var(--neon-glow) rgba(0, 230, 118, 0.5);
+        }
+        .transport-btn.stop:hover {
+            background: rgba(255, 59, 59, 0.2);
+            border-color: var(--fire);
+            box-shadow: var(--neon-glow) rgba(255, 59, 59, 0.6);
+        }
+        .transport-btn.rec:hover {
+            background: rgba(255, 59, 59, 0.2);
+            border-color: var(--fire);
+            box-shadow: var(--neon-glow) rgba(255, 59, 59, 0.6);
+        }
+        .transport-btn.rec.recording {
+            background: rgba(255, 59, 59, 0.3);
+            border-color: var(--fire);
+            box-shadow: 0 0 12px rgba(255, 59, 59, 0.8);
+            animation: recNeonPulse 1.5s infinite;
+        }
+        @keyframes recNeonPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 12px rgba(255, 59, 59, 0.8);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 59, 59, 1);
+            }
+        }
         .bpm-display {
-            font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; color:var(--gold);
-            min-width:50px; text-align:center; cursor:pointer; padding:6px 10px; border-radius:8px;
-            border:2px solid transparent; background:transparent; position:relative;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gold);
+            min-width: 50px;
+            text-align: center;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background: transparent;
+            position: relative;
         }
-        .bpm-display:hover { border-color:rgba(240,185,11,0.3); background:rgba(240,185,11,0.05); }
+        .bpm-display:hover {
+            border-color: rgba(240, 185, 11, 0.3);
+            background: rgba(240, 185, 11, 0.05);
+        }
         .bpm-display input {
-            width:50px; background:transparent; border:none; color:var(--gold);
-            font-family:inherit; font-size:inherit; font-weight:inherit;
-            text-align:center; outline:none; position:absolute; inset:0; opacity:0;
+            width: 50px;
+            background: transparent;
+            border: none;
+            color: var(--gold);
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            text-align: center;
+            outline: none;
+            position: absolute;
+            inset: 0;
+            opacity: 0;
         }
-        .bpm-display.editing input { opacity:1; }
-        .bpm-display.editing span { opacity:0; }
-        .time-display { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--muted); min-width:55px; text-align:center; }
-
-        .acapella-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin:8px 0; }
-        .acapella-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-        .acapella-upload,.acapella-play {
-            padding:10px 16px; border-radius:20px; font-weight:700; cursor:pointer; font-size:12px;
-            display:flex; align-items:center; gap:6px; transition:all 0.2s;
+        .bpm-display.editing input {
+            opacity: 1;
         }
-        .acapella-upload { border:2px dashed var(--border); background:transparent; color:var(--blue); }
-        .acapella-upload.loaded { border-style:solid; border-color:var(--green); color:var(--green); }
-        .acapella-play { border:2px solid var(--purple); background:transparent; color:var(--purple); }
-        .acapella-play:disabled { opacity:0.4; pointer-events:none; }
-        .acapella-name { font-size:11px; color:var(--muted); flex:1; min-width:100px; }
-
+        .bpm-display.editing span {
+            opacity: 0;
+        }
+        .time-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--muted);
+            min-width: 55px;
+            text-align: center;
+        }
+        .acapella-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            margin: 8px 0;
+        }
+        .acapella-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .acapella-upload,
+        .acapella-play {
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .acapella-upload {
+            border: 2px dashed var(--border);
+            background: transparent;
+            color: var(--blue);
+        }
+        .acapella-upload.loaded {
+            border-style: solid;
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .acapella-play {
+            border: 2px solid var(--purple);
+            background: transparent;
+            color: var(--purple);
+        }
+        .acapella-play:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .acapella-name {
+            font-size: 11px;
+            color: var(--muted);
+            flex: 1;
+            min-width: 100px;
+        }
         .mic-selector {
-            padding:8px 12px; border-radius:20px; border:2px solid var(--border); background:var(--surface);
-            color:var(--text); font-size:11px; font-weight:600; cursor:pointer; outline:none; margin:8px 0;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            margin: 8px 0;
         }
         .monitor-btn {
-            padding:8px 14px; border-radius:20px; border:2px solid var(--border);
-            background:transparent; color:var(--muted); font-weight:700; cursor:pointer;
-            font-size:11px; transition:all 0.2s; margin:8px 0;
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: 2px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+            margin: 8px 0;
         }
-        .monitor-btn.active { border-color:var(--green); color:var(--green); box-shadow:var(--neon-glow) rgba(0,230,118,0.4); }
-
-        .vu-meter { background:#020208; border:1px solid var(--border); border-radius:var(--radius); padding:10px; margin:8px 0; }
-        .vu-label { display:flex; justify-content:space-between; font-size:10px; color:var(--muted); margin-bottom:4px; }
-        .vu-bar-outer { height:8px; background:#1a1a2a; border-radius:4px; overflow:hidden; }
-        .vu-bar-inner { height:100%; border-radius:4px; transition:width 0.05s linear; background:linear-gradient(90deg,var(--green),var(--gold),var(--fire)); }
-
-        .section-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; margin:16px 0 8px; font-weight:700; }
-
+        .monitor-btn.active {
+            border-color: var(--green);
+            color: var(--green);
+            box-shadow: var(--neon-glow) rgba(0, 230, 118, 0.4);
+        }
+        .vu-meter {
+            background: #020208;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px;
+            margin: 8px 0;
+        }
+        .vu-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+        .vu-bar-outer {
+            height: 8px;
+            background: #1a1a2a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .vu-bar-inner {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.05s linear;
+            background: linear-gradient(90deg, var(--green), var(--gold), var(--fire));
+        }
+        .section-label {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 16px 0 8px;
+            font-weight: 700;
+        }
         .track {
-            background:var(--surface); border:2px solid var(--border); border-radius:var(--radius);
-            padding:12px; margin-bottom:10px; box-shadow:0 4px 12px rgba(0,0,0,0.3); transition:all 0.3s;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
         }
-        .track.armed { border-color:var(--fire); box-shadow:0 0 16px rgba(255,59,59,0.3); }
-        .track.recording-active { animation:trackPulse 1s ease-in-out infinite; }
-        @keyframes trackPulse { 0%,100%{border-color:var(--fire)} 50%{border-color:var(--gold)} }
-        .track-main { display:flex; align-items:center; gap:12px; }
-        .track-left { flex:1; min-width:0; }
-        .track-name { font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; }
-        .track-color { width:12px; height:12px; border-radius:4px; flex-shrink:0; }
-        .track-actions { display:flex; gap:4px; margin-left:auto; }
+        .track.armed {
+            border-color: var(--fire);
+            box-shadow: 0 0 16px rgba(255, 59, 59, 0.3);
+        }
+        .track.recording-active {
+            animation: trackPulse 1s ease-in-out infinite;
+        }
+        @keyframes trackPulse {
+            0%,
+            100% {
+                border-color: var(--fire);
+            }
+            50% {
+                border-color: var(--gold);
+            }
+        }
+        .track-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .track-left {
+            flex: 1;
+            min-width: 0;
+        }
+        .track-name {
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .track-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .track-actions {
+            display: flex;
+            gap: 4px;
+            margin-left: auto;
+        }
         .track-action-btn {
-            padding:4px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface);
-            color:var(--muted); font-size:10px; font-weight:600; cursor:pointer; transition:all 0.15s;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
         }
-        .track-action-btn:active { transform:scale(0.95); }
-        .track-action-btn.play-track { color:var(--green); border-color:rgba(0,230,118,0.3); }
-        .track-action-btn.play-track:hover { background:rgba(0,230,118,0.15); }
-        .track-action-btn.del-track { color:var(--fire); border-color:rgba(255,59,59,0.3); }
-        .track-action-btn.del-track:hover { background:rgba(255,59,59,0.15); }
-        .track-action-btn:disabled { opacity:0.3; pointer-events:none; }
+        .track-action-btn:active {
+            transform: scale(0.95);
+        }
+        .track-action-btn.play-track {
+            color: var(--green);
+            border-color: rgba(0, 230, 118, 0.3);
+        }
+        .track-action-btn.play-track:hover {
+            background: rgba(0, 230, 118, 0.15);
+        }
+        .track-action-btn.del-track {
+            color: var(--fire);
+            border-color: rgba(255, 59, 59, 0.3);
+        }
+        .track-action-btn.del-track:hover {
+            background: rgba(255, 59, 59, 0.15);
+        }
+        .track-action-btn:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
         .delete-track-btn {
-            background:transparent; border:1px solid var(--fire); color:var(--fire); padding:2px 8px;
-            border-radius:4px; font-size:10px; cursor:pointer; margin-left:8px;
+            background: transparent;
+            border: 1px solid var(--fire);
+            color: var(--fire);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            margin-left: 8px;
         }
-        .delete-track-btn:active { background:var(--fire); color:#fff; }
-        .track-right { display:flex; gap:6px; align-items:center; }
+        .delete-track-btn:active {
+            background: var(--fire);
+            color: #fff;
+        }
+        .track-right {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
         .track-btn {
-            width:30px; height:26px; border-radius:6px; border:1px solid var(--border);
-            background:var(--surface); color:var(--muted); font-size:10px; font-weight:700;
-            cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center;
+            width: 30px;
+            height: 26px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .track-btn.mute.active { background:var(--fire); color:#fff; border-color:var(--fire); }
-        .track-btn.solo.active { background:var(--gold); color:#000; border-color:var(--gold); }
-        .track-btn.rec.active { background:var(--fire); color:#fff; border-color:var(--fire); }
-        .track-waveform { width:100%; height:44px; background:#030308; border-radius:8px; overflow:hidden; margin:10px 0 6px; }
-        .track-waveform canvas { width:100%; height:100%; }
-        .track-controls { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
-        .track-fader,.track-panner { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted); }
-        input[type=range] { width:70px; -webkit-appearance:none; height:4px; background:var(--border); border-radius:2px; outline:none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--text); cursor:pointer; border:2px solid #000; }
-        .track-panner input[type=range] { background:linear-gradient(to right, var(--blue), var(--border), var(--fire)); }
-
+        .track-btn.mute.active {
+            background: var(--fire);
+            color: #fff;
+            border-color: var(--fire);
+        }
+        .track-btn.solo.active {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+        }
+        .track-btn.rec.active {
+            background: var(--fire);
+            color: #fff;
+            border-color: var(--fire);
+        }
+        .track-waveform {
+            width: 100%;
+            height: 44px;
+            background: #030308;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 10px 0 6px;
+        }
+        .track-waveform canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .track-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        .track-fader,
+        .track-panner {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            color: var(--muted);
+        }
+        .pan-buttons {
+            display: flex;
+            gap: 2px;
+            margin-left: 4px;
+        }
+        .pan-btn {
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .pan-btn:active {
+            transform: scale(0.9);
+            background: var(--border);
+        }
+        input[type=range] {
+            width: 70px;
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--text);
+            cursor: pointer;
+            border: 2px solid #000;
+        }
+        .track-panner input[type=range] {
+            background: linear-gradient(to right, var(--blue), var(--border), var(--fire));
+        }
         .add-track-btn {
-            width:100%; padding:12px; border-radius:20px; border:2px dashed var(--border);
-            background:transparent; color:var(--muted); font-weight:600; cursor:pointer; transition:all 0.2s; margin:8px 0;
+            width: 100%;
+            padding: 12px;
+            border-radius: 20px;
+            border: 2px dashed var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 8px 0;
         }
-        .add-track-btn:hover { border-color:var(--gold); color:var(--gold); }
-
-        .preset-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
-        .preset-chip {
-            padding:8px 14px; border-radius:20px; font-size:11px; font-weight:700;
-            background:var(--border); color:var(--muted); cursor:pointer; border:2px solid transparent; transition:all 0.2s;
+        .add-track-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
         }
-        .preset-chip.active { background:var(--gold); color:#000; border-color:var(--gold); box-shadow:0 0 12px rgba(240,185,11,0.4); }
 
-        .plugin-panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin:10px 0; overflow:hidden; }
-        .plugin-header { padding:12px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; border-bottom:1px solid var(--border); }
+        /* ── PRESETS COMO TARJETAS ELABORADAS ── */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .preset-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .preset-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: transparent;
+            transition: all 0.3s;
+        }
+        .preset-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--muted);
+        }
+        .preset-card.active {
+            border-color: var(--gold);
+            background: linear-gradient(135deg, #1a1500, #0f1120);
+            box-shadow: 0 0 20px rgba(240, 185, 11, 0.2), 0 0 40px rgba(240, 185, 11, 0.08);
+            transform: scale(1.03);
+        }
+        .preset-card.active::before {
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            animation: glowLine 2s ease-in-out infinite alternate;
+        }
+        @keyframes glowLine {
+            0% {
+                opacity: 0.6;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        .preset-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .preset-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+        .preset-desc {
+            font-size: 8px;
+            color: var(--muted);
+            line-height: 1.3;
+        }
+        .preset-card.active .preset-name {
+            color: var(--gold);
+        }
+
+        /* ── PLUGINS CON COLORES NEÓN ORIGINALES ── */
+        .plugin-panel {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            margin: 10px 0;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+        .plugin-panel.reverb-plugin {
+            border-color: rgba(41, 121, 255, 0.25);
+        }
+        .plugin-panel.delay-plugin {
+            border-color: rgba(255, 152, 0, 0.25);
+        }
+        .plugin-panel.comp-plugin {
+            border-color: rgba(255, 59, 59, 0.25);
+        }
+        .plugin-panel.eq-plugin {
+            border-color: rgba(0, 230, 118, 0.25);
+        }
+        .plugin-panel.chorus-plugin {
+            border-color: rgba(179, 136, 255, 0.25);
+        }
+        .plugin-header {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+            transition: background 0.3s;
+        }
         .plugin-toggle {
-            width:40px; height:22px; border-radius:20px; border:2px solid var(--border);
-            background:var(--border); position:relative; cursor:pointer; transition:all 0.3s;
+            width: 40px;
+            height: 22px;
+            border-radius: 20px;
+            border: 2px solid var(--border);
+            background: var(--border);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-        .plugin-toggle.on { background:var(--green); border-color:var(--green); box-shadow:var(--neon-glow) rgba(0,230,118,0.4); }
+        .plugin-toggle.on {
+            box-shadow: var(--neon-glow);
+        }
         .plugin-toggle::after {
-            content:''; position:absolute; top:2px; left:2px; width:16px; height:16px;
-            border-radius:50%; background:#fff; transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .plugin-toggle.on::after { left:20px; }
-        .plugin-body { padding:14px; display:none; }
-        .plugin-body.open { display:block; }
-        .param-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-        .param-label { font-size:10px; color:var(--muted); min-width:55px; font-weight:600; text-transform:uppercase; }
-        .param-slider { flex:1; -webkit-appearance:none; height:5px; background:linear-gradient(90deg,var(--border),#2a2a40); border-radius:4px; }
-        .param-slider::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--purple); cursor:pointer; border:2px solid #000; }
-        .param-val { font-size:10px; color:var(--text); min-width:40px; text-align:right; font-weight:700; }
+        .plugin-toggle.on::after {
+            left: 20px;
+        }
+        /* Colores de toggle por plugin */
+        .reverb-plugin .plugin-toggle.on {
+            background: #2979ff;
+            border-color: #2979ff;
+            box-shadow: 0 0 8px rgba(41, 121, 255, 0.6), 0 0 16px rgba(41, 121, 255, 0.4);
+        }
+        .delay-plugin .plugin-toggle.on {
+            background: #ff9800;
+            border-color: #ff9800;
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.6), 0 0 16px rgba(255, 152, 0, 0.4);
+        }
+        .comp-plugin .plugin-toggle.on {
+            background: #ff3b3b;
+            border-color: #ff3b3b;
+            box-shadow: 0 0 8px rgba(255, 59, 59, 0.6), 0 0 16px rgba(255, 59, 59, 0.4);
+        }
+        .eq-plugin .plugin-toggle.on {
+            background: #00e676;
+            border-color: #00e676;
+            box-shadow: 0 0 8px rgba(0, 230, 118, 0.6), 0 0 16px rgba(0, 230, 118, 0.4);
+        }
+        .chorus-plugin .plugin-toggle.on {
+            background: #b388ff;
+            border-color: #b388ff;
+            box-shadow: 0 0 8px rgba(179, 136, 255, 0.6), 0 0 16px rgba(179, 136, 255, 0.4);
+        }
+        .plugin-body {
+            padding: 14px;
+            display: none;
+        }
+        .plugin-body.open {
+            display: block;
+        }
+        .param-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .param-label {
+            font-size: 10px;
+            color: var(--muted);
+            min-width: 55px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .param-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 5px;
+            border-radius: 4px;
+            outline: none;
+        }
+        /* Barras neón por plugin */
+        .reverb-plugin .param-slider {
+            background: linear-gradient(90deg, #0d1b3e, #1a3a6e);
+        }
+        .reverb-plugin .param-slider::-webkit-slider-thumb {
+            background: #2979ff;
+            box-shadow: 0 0 10px rgba(41, 121, 255, 0.6);
+        }
+        .delay-plugin .param-slider {
+            background: linear-gradient(90deg, #3e2a00, #6e4a00);
+        }
+        .delay-plugin .param-slider::-webkit-slider-thumb {
+            background: #ff9800;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.6);
+        }
+        .comp-plugin .param-slider {
+            background: linear-gradient(90deg, #3e0000, #6e0000);
+        }
+        .comp-plugin .param-slider::-webkit-slider-thumb {
+            background: #ff3b3b;
+            box-shadow: 0 0 10px rgba(255, 59, 59, 0.6);
+        }
+        .eq-plugin .param-slider {
+            background: linear-gradient(90deg, #003a1a, #006e2a);
+        }
+        .eq-plugin .param-slider::-webkit-slider-thumb {
+            background: #00e676;
+            box-shadow: 0 0 10px rgba(0, 230, 118, 0.6);
+        }
+        .chorus-plugin .param-slider {
+            background: linear-gradient(90deg, #1a0040, #3a0070);
+        }
+        .chorus-plugin .param-slider::-webkit-slider-thumb {
+            background: #b388ff;
+            box-shadow: 0 0 10px rgba(179, 136, 255, 0.6);
+        }
+        .param-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #000;
+        }
+        .param-val {
+            font-size: 10px;
+            color: var(--text);
+            min-width: 40px;
+            text-align: right;
+            font-weight: 700;
+        }
 
         .recording-item {
-            background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-            padding:12px; margin-bottom:8px; display:flex; align-items:center; gap:10px; font-size:13px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
         }
-        .btn-sm { padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:11px; font-weight:600; cursor:pointer; }
-        .btn-sm.green { color:var(--green); border-color:var(--green); }
-        .btn-sm.red { color:var(--fire); border-color:var(--fire); }
-        .btn-sm.gold { color:var(--gold); border-color:var(--gold); }
-
+        .btn-sm {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-sm.green {
+            color: var(--green);
+            border-color: var(--green);
+        }
+        .btn-sm.red {
+            color: var(--fire);
+            border-color: var(--fire);
+        }
+        .btn-sm.gold {
+            color: var(--gold);
+            border-color: var(--gold);
+        }
         .export-btn {
-            width:100%; padding:14px; border-radius:20px; border:2px solid var(--gold);
-            background:transparent; color:var(--gold); font-weight:700; font-size:14px;
-            cursor:pointer; margin-top:16px; transition:all 0.2s;
+            width: 100%;
+            padding: 14px;
+            border-radius: 20px;
+            border: 2px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.2s;
         }
-        .export-btn:hover { background:rgba(240,185,11,0.1); box-shadow:var(--neon-glow) rgba(240,185,11,0.4); }
-
+        .export-btn:hover {
+            background: rgba(240, 185, 11, 0.1);
+            box-shadow: var(--neon-glow) rgba(240, 185, 11, 0.4);
+        }
         .toast {
-            position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px);
-            background:#fff; color:#000; padding:14px 24px; border-radius:100px; font-weight:700;
-            z-index:9999; transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
-            box-shadow:0 12px 40px rgba(0,0,0,0.6); pointer-events:none;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #fff;
+            color: #000;
+            padding: 14px 24px;
+            border-radius: 100px;
+            font-weight: 700;
+            z-index: 9999;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            pointer-events: none;
         }
-        .toast.show { transform:translateX(-50%) translateY(0); }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
     </style>
 </head>
 <body>
-<div class="app-container">
-    <div class="header">
-        <h1>Voice Studio Pro DAW</h1>
-        <div class="subtitle">Grabación multipista · Mezclador · Plugins</div>
-    </div>
-    <div class="transport-bar">
-        <button class="transport-btn metro" id="btn-metro" onclick="toggleMetronome()">◉</button>
-        <div class="bpm-display" id="bpm-display" onclick="activateBPMEdit()"><span id="bpm-text">120</span><input type="number" id="bpm-input" value="120" min="40" max="220" step="1" onblur="commitBPM()" onkeydown="if(event.key==='Enter') commitBPM()"></div>
-        <button class="transport-btn loop" id="btn-loop" onclick="toggleLoop()">↻</button>
-        <button class="transport-btn stop" onclick="stopAll()">■</button>
-        <button class="transport-btn play" onclick="playAll()">▶</button>
-        <button class="transport-btn rec" id="btn-rec" onclick="toggleMasterRec()">●</button>
-        <div class="time-display" id="time-display">00:00</div>
-    </div>
-
-    <div class="acapella-section">
-        <div class="section-label" style="margin:0 0 10px">🎤 Cargar Acapella / Beat</div>
-        <div class="acapella-row">
-            <input type="file" id="acapella-input" accept="audio/*" onchange="handleAcapellaUpload(event)" style="display:none">
-            <button class="acapella-upload" id="acapella-upload-btn" onclick="document.getElementById('acapella-input').click()">📁 Subir audio</button>
-            <span class="acapella-name" id="acapella-name">Sin archivo</span>
-            <button class="acapella-play" id="acapella-play-btn" onclick="toggleAcapellaPreview()" disabled>▶ Previsualizar</button>
+    <div class="app-container">
+        <div class="header">
+            <h1>Voice Studio Pro DAW</h1>
+            <div class="subtitle">Grabación multipista · Mezclador · Plugins</div>
         </div>
+        <div class="transport-bar">
+            <button class="transport-btn metro" id="btn-metro" onclick="toggleMetronome()">◉</button>
+            <div class="bpm-display" id="bpm-display" onclick="activateBPMEdit()"><span id="bpm-text">120</span><input
+                    type="number" id="bpm-input" value="120" min="40" max="220" step="1" onblur="commitBPM()"
+                    onkeydown="if(event.key==='Enter') commitBPM()"></div>
+            <button class="transport-btn loop" id="btn-loop" onclick="toggleLoop()">↻</button>
+            <button class="transport-btn stop" onclick="stopAll()">■</button>
+            <button class="transport-btn play" onclick="playAll()">▶</button>
+            <button class="transport-btn rec" id="btn-rec" onclick="toggleMasterRec()">●</button>
+            <div class="time-display" id="time-display">00:00</div>
+        </div>
+        <div class="acapella-section">
+            <div class="section-label" style="margin:0 0 10px">🎤 Cargar Acapella / Beat</div>
+            <div class="acapella-row">
+                <input type="file" id="acapella-input" accept="audio/*" onchange="handleAcapellaUpload(event)"
+                style="display:none">
+                <button class="acapella-upload" id="acapella-upload-btn"
+                onclick="document.getElementById('acapella-input').click()">📁 Subir audio</button>
+                <span class="acapella-name" id="acapella-name">Sin archivo</span>
+                <button class="acapella-play" id="acapella-play-btn" onclick="toggleAcapellaPreview()"
+                disabled>▶ Previsualizar</button>
+            </div>
+        </div>
+        <div class="vu-meter">
+            <div class="vu-label"><span>ENTRADA</span><span id="vu-peak-val" style="color:var(--fire)">-∞ dB</span></div>
+            <div class="vu-bar-outer">
+                <div class="vu-bar-inner" id="vu-bar" style="width:0%"></div>
+            </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0;">
+            <button class="monitor-btn" id="monitor-btn" onclick="toggleMonitor()">🔊 Monitor</button>
+            <select class="mic-selector" id="mic-selector" onchange="changeMicDevice(this.value)">
+                <option value="">🎙 Micrófono por defecto</option>
+            </select>
+        </div>
+        <div class="section-label">🎧 Pistas</div>
+        <div id="tracks-container"></div>
+        <button class="add-track-btn" onclick="addTrack()">+ Añadir pista personalizada</button>
+
+        <div class="section-label">🎛️ Presets de Mezcla</div>
+        <div class="preset-grid" id="master-preset-grid"></div>
+
+        <div class="section-label">⚙️ Plugins Maestros</div>
+        <div id="plugins-container"></div>
+
+        <div class="section-label">💾 Grabaciones</div>
+        <div id="recordings-list">
+            <div style="color:var(--muted);font-size:13px;text-align:center;padding:16px;">Aún no hay grabaciones</div>
+        </div>
+        <button class="export-btn" onclick="exportMix()">📤 Exportar mezcla final</button>
     </div>
+    <div class="toast" id="toast"></div>
+    <script>
+        (function() {
+            const tg = window.Telegram?.WebApp;
+            if (tg) { tg.ready();
+                tg.expand();
+                tg.setHeaderColor("#020212");
+                tg.setBackgroundColor("#020212"); }
 
-    <div class="vu-meter">
-        <div class="vu-label"><span>ENTRADA</span><span id="vu-peak-val" style="color:var(--fire)">-∞ dB</span></div>
-        <div class="vu-bar-outer"><div class="vu-bar-inner" id="vu-bar" style="width:0%"></div></div>
-    </div>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0;">
-        <button class="monitor-btn" id="monitor-btn" onclick="toggleMonitor()">🔊 Monitor</button>
-        <select class="mic-selector" id="mic-selector" onchange="changeMicDevice(this.value)"><option value="">🎙 Micrófono por defecto</option></select>
-    </div>
+            const TRACK_COLORS = ['#ff4d4d', '#4dd0e1', '#ffb74d', '#ba68c8', '#4db6ac', '#ff8a65', '#7986cb'];
+            const PLUGIN_DEFS = [
+                { id: 'reverb', cls: 'reverb-plugin', name: '🌊 Reverb Studio', params: [
+                        { id: 'rev-decay', label: 'Decay', min: 0.5, max: 6, step: 0.1, val: 2.5,
+                            suffix: 's' },
+                        { id: 'rev-predelay', label: 'Pre-Delay', min: 0, max: 200, step: 5, val: 20,
+                            suffix: 'ms' },
+                        { id: 'rev-wet', label: 'Wet/Dry', min: 0, max: 100, step: 1, val: 30,
+                        suffix: '%' },
+                        { id: 'rev-size', label: 'Room Size', min: 0.2, max: 3, step: 0.1, val: 1.5,
+                        suffix: '' }
+                    ] },
+                { id: 'delay', cls: 'delay-plugin', name: '🕐 Delay Pro', params: [
+                        { id: 'dly-time', label: 'Time', min: 0.05, max: 1, step: 0.01, val: 0.35,
+                            suffix: 'ms', fmt: v => Math.round(v * 1000) + 'ms' },
+                        { id: 'dly-feedback', label: 'Feedback', min: 0, max: 90, step: 1, val: 40,
+                            suffix: '%' },
+                        { id: 'dly-wet', label: 'Wet/Dry', min: 0, max: 100, step: 1, val: 35,
+                        suffix: '%' },
+                        { id: 'dly-filter', label: 'Filter', min: 500, max: 15000, step: 100, val: 5000,
+                            suffix: 'kHz', fmt: v => (v / 1000).toFixed(1) + 'kHz' }
+                    ] },
+                { id: 'comp', cls: 'comp-plugin', name: '📉 Compresor', params: [
+                        { id: 'comp-thresh', label: 'Threshold', min: -50, max: 0, step: 1, val: -20,
+                            suffix: 'dB' },
+                        { id: 'comp-ratio', label: 'Ratio', min: 1, max: 20, step: 0.5, val: 4,
+                        suffix: ':1' },
+                        { id: 'comp-attack', label: 'Attack', min: 0.5, max: 50, step: 0.5, val: 5,
+                            suffix: 'ms' },
+                        { id: 'comp-release', label: 'Release', min: 10, max: 500, step: 10, val: 100,
+                            suffix: 'ms' }
+                    ] },
+                { id: 'eq', cls: 'eq-plugin', name: '🎚️ EQ Maestro', params: [
+                        { id: 'eq-low', label: 'Low Gain', min: -12, max: 12, step: 0.5, val: 0,
+                        suffix: 'dB' },
+                        { id: 'eq-mid', label: 'Mid Gain', min: -12, max: 12, step: 0.5, val: 0,
+                        suffix: 'dB' },
+                        { id: 'eq-midfreq', label: 'Mid Freq', min: 200, max: 8000, step: 100, val: 2000,
+                            suffix: 'kHz', fmt: v => (v / 1000).toFixed(1) + 'kHz' },
+                        { id: 'eq-high', label: 'High Gain', min: -12, max: 12, step: 0.5, val: 3,
+                        suffix: 'dB' }
+                    ] },
+                { id: 'chorus', cls: 'chorus-plugin', name: '✨ Chorus', params: [
+                        { id: 'chor-depth', label: 'Depth', min: 0, max: 100, step: 1, val: 25,
+                        suffix: '%' },
+                        { id: 'chor-rate', label: 'Rate', min: 0.1, max: 5, step: 0.1, val: 1.5,
+                        suffix: 'Hz' },
+                        { id: 'chor-wet', label: 'Wet/Dry', min: 0, max: 100, step: 1, val: 25,
+                        suffix: '%' }
+                    ] }
+            ];
+            const PRESET_CARDS = [
+                { id: 'default', name: 'Default', icon: '🎛️', desc: 'Mezcla base equilibrada' },
+                { id: 'vozPop', name: 'Voz Pop', icon: '🎤', desc: 'Brillo y presencia vocal' },
+                { id: 'trapVocal', name: 'Trap Vocal', icon: '🔥', desc: 'Agresivo y comprimido' },
+                { id: 'lofiDream', name: 'Lo-Fi Dream', icon: '☁️', desc: 'Cálido y etéreo' },
+                { id: 'radioVintage', name: 'Radio Vintage', icon: '📻', desc: 'Efecto retro y EQ' },
+                { id: 'clubMaster', name: 'Club Master', icon: '💣', desc: 'Para sonar en la pista' }
+            ];
+            const MASTER_PRESETS = {
+                default: { reverb: { active: true, decay: 2.5, predelay: 20, wet: 30, size: 1.5 }, delay: {
+                        active: false, time: 0.35, feedback: 40, wet: 35, filter: 5000 }, comp: { active: false,
+                        thresh: -20, ratio: 4, attack: 5, release: 100 }, eq: { active: false, low: 0, mid: 0,
+                        midfreq: 2000, high: 3 }, chorus: { active: false, depth: 25, rate: 1.5, wet: 25 } },
+                vozPop: { reverb: { active: true, decay: 2, predelay: 30, wet: 35, size: 1.2 }, delay: {
+                        active: true, time: 0.25, feedback: 30, wet: 20, filter: 8000 }, comp: { active: true,
+                        thresh: -18, ratio: 3, attack: 2, release: 80 }, eq: { active: true, low: 1, mid: 2,
+                        midfreq: 3000, high: 4 }, chorus: { active: false, depth: 20, rate: 1, wet: 15 } },
+                trapVocal: { reverb: { active: true, decay: 1.5, predelay: 10, wet: 25, size: 1 }, delay: {
+                        active: true, time: 0.35, feedback: 50, wet: 40, filter: 3000 }, comp: { active: true,
+                        thresh: -25, ratio: 6, attack: 1, release: 50 }, eq: { active: true, low: -2, mid: -1,
+                        midfreq: 1500, high: 5 }, chorus: { active: false, depth: 15, rate: 0.8, wet: 10 } },
+                lofiDream: { reverb: { active: true, decay: 5, predelay: 50, wet: 60, size: 2.5 }, delay: {
+                        active: true, time: 0.5, feedback: 60, wet: 45, filter: 2000 }, comp: { active: true,
+                        thresh: -30, ratio: 8, attack: 10, release: 200 }, eq: { active: true, low: 3, mid: -3,
+                        midfreq: 1000, high: -4 }, chorus: { active: true, depth: 50, rate: 2, wet: 40 } },
+                radioVintage: { reverb: { active: true, decay: 0.8, predelay: 0, wet: 20, size: 0.5 }, delay: {
+                        active: false, time: 0.2, feedback: 20, wet: 10, filter: 6000 }, comp: { active: true,
+                        thresh: -15, ratio: 5, attack: 0.5, release: 30 }, eq: { active: true, low: -6, mid: 4,
+                        midfreq: 2500, high: -6 }, chorus: { active: false, depth: 10, rate: 0.5, wet: 10 } },
+                clubMaster: { reverb: { active: true, decay: 3, predelay: 15, wet: 40, size: 2 }, delay: {
+                        active: true, time: 0.3, feedback: 45, wet: 30, filter: 10000 }, comp: { active: true,
+                        thresh: -22, ratio: 4, attack: 3, release: 120 }, eq: { active: true, low: 4, mid: 0,
+                        midfreq: 1500, high: 6 }, chorus: { active: false, depth: 30, rate: 1.2, wet: 20 } }
+            };
 
-    <div class="section-label">🎧 Pistas</div>
-    <div id="tracks-container"></div>
-    <button class="add-track-btn" onclick="addTrack()">+ Añadir pista personalizada</button>
+            let audioCtx = null;
+            let masterGain, masterAnalyser, masterComp, masterEq, dryGain;
+            let masterFxNodes = {};
+            let masterFxState = { reverb: true, delay: false, comp: false, eq: false, chorus: false };
+            let mediaStream = null,
+                mediaRecorder = null,
+                isMasterRecording = false,
+                chunks = [];
+            let bpm = 120,
+                metronomeInterval = null,
+                metronomeActive = false,
+                loopActive = false;
+            let timerInterval = null,
+                elapsed = 0,
+                recordings = [],
+                recCount = 1,
+                activeSources = [];
+            let acapellaBuffer = null,
+                acapellaSource = null,
+                acapellaGain = null,
+                isAcapellaPlaying = false;
+            let micGainNode = null,
+                monitorActive = false;
+            let micAnalyser = null,
+                liveWaveAnimFrame = null;
+            let uiLocked = false;
+            let audioDevices = [];
+            let selectedDeviceId = '';
+            let tracks = [
+                { id: 1, name: 'Voz Principal', color: TRACK_COLORS[0], audioBuffer: null, isArmed: true,
+                    isMuted: false, isSolo: false, volume: 0.8, pan: 0 },
+                { id: 2, name: 'Armonía', color: TRACK_COLORS[1], audioBuffer: null, isArmed: false,
+                    isMuted: false, isSolo: false, volume: 0.7, pan: -0.5 },
+                { id: 3, name: 'Adorno', color: TRACK_COLORS[2], audioBuffer: null, isArmed: false,
+                    isMuted: false, isSolo: false, volume: 0.6, pan: 0.5 },
+                { id: 4, name: 'Ambiente', color: TRACK_COLORS[3], audioBuffer: null, isArmed: false,
+                    isMuted: false, isSolo: false, volume: 0.5, pan: 0 }
+            ];
+            let nextTrackId = 5;
 
-    <div class="section-label">🎛️ Presets de Mezcla</div>
-    <div class="preset-row" id="master-preset-row"></div>
+            function fmt(n) { if (!n) return 'N/D';
+                n = parseInt(n); if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3)
+                    .toFixed(0) + 'K'; return n.toLocaleString(); }
 
-    <div class="section-label">⚙️ Plugins Maestros</div>
-    <div id="plugins-container"></div>
+            function showToast(msg) { const t = document.getElementById('toast');
+                t.textContent = msg;
+                t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 2000); }
 
-    <div class="section-label">💾 Grabaciones</div>
-    <div id="recordings-list"><div style="color:var(--muted);font-size:13px;text-align:center;padding:16px;">Aún no hay grabaciones</div></div>
+            function safeStopNode(node) { try { node?.stop?.(); } catch (e) {} }
 
-    <button class="export-btn" onclick="exportMix()">📤 Exportar mezcla final</button>
-</div>
-<div class="toast" id="toast"></div>
+            async function enumerateAudioDevices() { try { const devices = await navigator.mediaDevices
+                        .enumerateDevices();
+                    audioDevices = devices.filter(d => d.kind === 'audioinput'); const select = document.getElementById(
+                        'mic-selector'); if (!select) return;
+                    select.innerHTML = '<option value="">🎙 Micrófono por defecto</option>';
+                    audioDevices.forEach((d, i) => { const label = d.label || `Micrófono ${i+1}`; const selected = d
+                            .deviceId === selectedDeviceId ? ' selected' : '';
+                        select.innerHTML +=
+                            `<option value="${d.deviceId}"${selected}>🎙 ${label}</option>`; }); } catch (e) {} }
 
-<script>
-(function() {
-    const tg = window.Telegram?.WebApp;
-    if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#04040e"); tg.setBackgroundColor("#04040e"); }
+            async function changeMicDevice(deviceId) { selectedDeviceId = deviceId; if (mediaStream) { mediaStream
+                        .getTracks().forEach(t => t.stop());
+                    mediaStream = null; } if (monitorActive || isMasterRecording) { await requestMic(); }
+                showToast(deviceId ? '✅ Micrófono cambiado' : '✅ Micrófono por defecto'); }
 
-    const TRACK_COLORS = ['#ff6b6b','#4ecdc4','#ffe66d','#a37cff','#ff9f43','#54a0ff','#5f27cd'];
-    const PLUGIN_DEFS = [
-        { id:'reverb', name:'🌊 Reverb Studio', params:[
-            {id:'rev-decay',label:'Decay',min:0.5,max:6,step:0.1,val:2.5,suffix:'s'},
-            {id:'rev-predelay',label:'Pre-Delay',min:0,max:200,step:5,val:20,suffix:'ms'},
-            {id:'rev-wet',label:'Wet/Dry',min:0,max:100,step:1,val:30,suffix:'%'},
-            {id:'rev-size',label:'Room Size',min:0.2,max:3,step:0.1,val:1.5,suffix:''}
-        ]},
-        { id:'delay', name:'🕐 Delay Pro', params:[
-            {id:'dly-time',label:'Time',min:0.05,max:1,step:0.01,val:0.35,suffix:'ms',fmt:v=>Math.round(v*1000)+'ms'},
-            {id:'dly-feedback',label:'Feedback',min:0,max:90,step:1,val:40,suffix:'%'},
-            {id:'dly-wet',label:'Wet/Dry',min:0,max:100,step:1,val:35,suffix:'%'},
-            {id:'dly-filter',label:'Filter',min:500,max:15000,step:100,val:5000,suffix:'kHz',fmt:v=>(v/1000).toFixed(1)+'kHz'}
-        ]},
-        { id:'comp', name:'📉 Compresor', params:[
-            {id:'comp-thresh',label:'Threshold',min:-50,max:0,step:1,val:-20,suffix:'dB'},
-            {id:'comp-ratio',label:'Ratio',min:1,max:20,step:0.5,val:4,suffix:':1'},
-            {id:'comp-attack',label:'Attack',min:0.5,max:50,step:0.5,val:5,suffix:'ms'},
-            {id:'comp-release',label:'Release',min:10,max:500,step:10,val:100,suffix:'ms'}
-        ]},
-        { id:'eq', name:'🎚️ EQ Maestro', params:[
-            {id:'eq-low',label:'Low Gain',min:-12,max:12,step:0.5,val:0,suffix:'dB'},
-            {id:'eq-mid',label:'Mid Gain',min:-12,max:12,step:0.5,val:0,suffix:'dB'},
-            {id:'eq-midfreq',label:'Mid Freq',min:200,max:8000,step:100,val:2000,suffix:'kHz',fmt:v=>(v/1000).toFixed(1)+'kHz'},
-            {id:'eq-high',label:'High Gain',min:-12,max:12,step:0.5,val:3,suffix:'dB'}
-        ]},
-        { id:'chorus', name:'✨ Chorus', params:[
-            {id:'chor-depth',label:'Depth',min:0,max:100,step:1,val:25,suffix:'%'},
-            {id:'chor-rate',label:'Rate',min:0.1,max:5,step:0.1,val:1.5,suffix:'Hz'},
-            {id:'chor-wet',label:'Wet/Dry',min:0,max:100,step:1,val:25,suffix:'%'}
-        ]}
-    ];
-    const MASTER_PRESETS = {
-        default: { reverb:{active:true,decay:2.5,predelay:20,wet:30,size:1.5}, delay:{active:false,time:0.35,feedback:40,wet:35,filter:5000}, comp:{active:false,thresh:-20,ratio:4,attack:5,release:100}, eq:{active:false,low:0,mid:0,midfreq:2000,high:3}, chorus:{active:false,depth:25,rate:1.5,wet:25} },
-        vozPop: { reverb:{active:true,decay:2,predelay:30,wet:35,size:1.2}, delay:{active:true,time:0.25,feedback:30,wet:20,filter:8000}, comp:{active:true,thresh:-18,ratio:3,attack:2,release:80}, eq:{active:true,low:1,mid:2,midfreq:3000,high:4}, chorus:{active:false,depth:20,rate:1,wet:15} },
-        trapVocal: { reverb:{active:true,decay:1.5,predelay:10,wet:25,size:1}, delay:{active:true,time:0.35,feedback:50,wet:40,filter:3000}, comp:{active:true,thresh:-25,ratio:6,attack:1,release:50}, eq:{active:true,low:-2,mid:-1,midfreq:1500,high:5}, chorus:{active:false,depth:15,rate:0.8,wet:10} },
-        lofiDream: { reverb:{active:true,decay:5,predelay:50,wet:60,size:2.5}, delay:{active:true,time:0.5,feedback:60,wet:45,filter:2000}, comp:{active:true,thresh:-30,ratio:8,attack:10,release:200}, eq:{active:true,low:3,mid:-3,midfreq:1000,high:-4}, chorus:{active:true,depth:50,rate:2,wet:40} },
-        radioVintage: { reverb:{active:true,decay:0.8,predelay:0,wet:20,size:0.5}, delay:{active:false,time:0.2,feedback:20,wet:10,filter:6000}, comp:{active:true,thresh:-15,ratio:5,attack:0.5,release:30}, eq:{active:true,low:-6,mid:4,midfreq:2500,high:-6}, chorus:{active:false,depth:10,rate:0.5,wet:10} },
-        clubMaster: { reverb:{active:true,decay:3,predelay:15,wet:40,size:2}, delay:{active:true,time:0.3,feedback:45,wet:30,filter:10000}, comp:{active:true,thresh:-22,ratio:4,attack:3,release:120}, eq:{active:true,low:4,mid:0,midfreq:1500,high:6}, chorus:{active:false,depth:30,rate:1.2,wet:20} }
-    };
+            function buildPresetCards() { const grid = document.getElementById('master-preset-grid'); if (!grid)
+                return;
+                grid.innerHTML = PRESET_CARDS.map(p => `
+            <div class="preset-card ${p.id==='default'?'active':''}" data-preset="${p.id}" onclick="window._applyPreset('${p.id}')">
+              <span class="preset-icon">${p.icon}</span>
+              <div class="preset-name">${p.name}</div>
+              <div class="preset-desc">${p.desc}</div>
+            </div>`).join(''); }
 
-    // ── ESTADO GLOBAL ───────────────────────────
-    let audioCtx = null;
-    let masterGain, masterAnalyser, masterComp, masterEq, dryGain;
-    let masterFxNodes = {};
-    let masterFxState = { reverb:true, delay:false, comp:false, eq:false, chorus:false };
-    let mediaStream = null, mediaRecorder = null, isMasterRecording = false, chunks = [];
-    let bpm = 120, metronomeInterval = null, metronomeActive = false, loopActive = false;
-    let timerInterval = null, elapsed = 0, recordings = [], recCount = 1, activeSources = [];
-    let acapellaBuffer = null, acapellaSource = null, acapellaGain = null, isAcapellaPlaying = false;
-    let micGainNode = null, monitorActive = false;
-    let micAnalyser = null, liveWaveAnimFrame = null;
-    let uiLocked = false;
-    let audioDevices = [];
-    let selectedDeviceId = '';
-    let tracks = [
-        { id:1, name:'Voz Principal', color:TRACK_COLORS[0], audioBuffer:null, isArmed:true, isMuted:false, isSolo:false, volume:0.8, pan:0 },
-        { id:2, name:'Armonía',     color:TRACK_COLORS[1], audioBuffer:null, isArmed:false, isMuted:false, isSolo:false, volume:0.7, pan:-0.5 },
-        { id:3, name:'Adorno',      color:TRACK_COLORS[2], audioBuffer:null, isArmed:false, isMuted:false, isSolo:false, volume:0.6, pan:0.5 },
-        { id:4, name:'Ambiente',    color:TRACK_COLORS[3], audioBuffer:null, isArmed:false, isMuted:false, isSolo:false, volume:0.5, pan:0 },
-    ];
-    let nextTrackId = 5;
+            function buildPluginsUI() { const container = document.getElementById('plugins-container'); if (!container)
+                return;
+                container.innerHTML = PLUGIN_DEFS.map(p => `
+            <div class="plugin-panel ${p.cls}">
+              <div class="plugin-header" onclick="window._togglePluginBody('${p.id}-body')"><div class="plugin-title">${p.name}</div><div class="plugin-toggle ${masterFxState[p.id]?'on':''}" id="${p.id}-toggle" onclick="event.stopPropagation();window._toggleMasterFx('${p.id}', this)"></div></div>
+              <div class="plugin-body ${p.id==='reverb'?'open':''}" id="${p.id}-body">${p.params.map(pr => `
+                <div class="param-row"><span class="param-label">${pr.label}</span><input type="range" class="param-slider" id="${pr.id}" min="${pr.min}" max="${pr.max}" step="${pr.step}" value="${pr.val}" oninput="window._updatePluginParams('${p.id}')"><span class="param-val" id="${pr.id}-val">${pr.fmt?pr.fmt(pr.val):pr.val+pr.suffix}</span></div>
+              `).join('')}</div>
+            </div>`).join(''); }
 
-    function fmt(n) { if (!n) return 'N/D'; n = parseInt(n); if (n >= 1e6) return (n/1e6).toFixed(1)+'M'; if (n >= 1e3) return (n/1e3).toFixed(0)+'K'; return n.toLocaleString(); }
-    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
-    function safeStopNode(node) { try { node?.stop?.(); } catch(e) {} }
+            function buildTracksUI() { if (uiLocked) return; const container = document.getElementById('tracks-container'); if (
+                    !container) return;
+                container.innerHTML = tracks.map(t => `
+            <div class="track ${t.isArmed?'armed':''}" id="track-${t.id}">
+              <div class="track-main"><div class="track-left"><div class="track-name"><span class="track-color" style="background:${t.color}"></span>${t.name}<button class="delete-track-btn" onclick="window._deleteTrack(${t.id})">✕</button><span class="track-actions"><button class="track-action-btn play-track" onclick="window._playTrackAudio(${t.id})" ${!t.audioBuffer?'disabled':''}>▶</button><button class="track-action-btn del-track" onclick="window._clearTrackAudio(${t.id})" ${!t.audioBuffer?'disabled':''}>🗑</button></span></div></div><div class="track-right"><button class="track-btn mute ${t.isMuted?'active':''}" onclick="window._toggleTrackMute(${t.id})">M</button><button class="track-btn solo ${t.isSolo?'active':''}" onclick="window._toggleTrackSolo(${t.id})">S</button><button class="track-btn rec ${t.isArmed?'active':''}" onclick="window._armTrack(${t.id})">R</button></div></div>
+              <div class="track-waveform"><canvas id="canvas-${t.id}"></canvas></div>
+              <div class="track-controls"><div class="track-fader"><span>Vol</span><input type="range" min="0" max="100" value="${Math.round(t.volume*100)}" oninput="window._setTrackVolume(${t.id},this.value)"><span>${Math.round(t.volume*100)}%</span></div><div class="track-panner"><span>Pan</span><input type="range" id="pan-slider-${t.id}" min="-100" max="100" value="${Math.round(t.pan*100)}" oninput="window._setTrackPanSlider(${t.id},this.value)" step="5"><span id="pan-val-${t.id}">${t.pan===0?'C':(t.pan<0?'L'+Math.abs(Math.round(t.pan*100)):'R'+Math.round(t.pan*100))}</span><span class="pan-buttons"><button class="pan-btn" onclick="window._setTrackPanBtn(${t.id},-100)">L</button><button class="pan-btn" onclick="window._setTrackPanBtn(${t.id},0)">C</button><button class="pan-btn" onclick="window._setTrackPanBtn(${t.id},100)">R</button></span></div></div>
+            </div>`).join('');
+                tracks.forEach(t => { if (t.audioBuffer) drawWaveform(t.id, t.audioBuffer); }); }
 
-    async function enumerateAudioDevices() {
-        try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            audioDevices = devices.filter(d => d.kind === 'audioinput');
-            const select = document.getElementById('mic-selector');
-            if (!select) return;
-            select.innerHTML = '<option value="">🎙 Micrófono por defecto</option>';
-            audioDevices.forEach((d, i) => {
-                const label = d.label || `Micrófono ${i+1}`;
-                const selected = d.deviceId === selectedDeviceId ? ' selected' : '';
-                select.innerHTML += `<option value="${d.deviceId}"${selected}>🎙 ${label}</option>`;
-            });
-        } catch(e) { console.log('No se pudieron enumerar dispositivos:', e); }
-    }
+            function drawWaveform(trackId, buffer) { const canvas = document.getElementById(`canvas-${trackId}`); if (!
+                    canvas || !buffer) return; const w = canvas.parentElement.offsetWidth || 300; const h =
+                44;
+                canvas.width = w * devicePixelRatio;
+                canvas.height = h * devicePixelRatio;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px'; const ctx = canvas.getContext('2d');
+                ctx.scale(devicePixelRatio, devicePixelRatio); const data = buffer.getChannelData(0); const step = Math
+                    .ceil(data.length / w);
+                ctx.clearRect(0, 0, w, h);
+                ctx.strokeStyle = tracks.find(t => t.id === trackId)?.color || '#fff';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath(); for (let i = 0; i < w; i++) { let min = 1,
+                        max = -1; for (let j = 0; j < step; j++) { const val = data[i * step + j] || 0; if (val <
+                            min) min = val; if (val > max) max = val; }
+                    ctx.moveTo(i, (min * 0.5 + 0.5) * h);
+                    ctx.lineTo(i, (max * 0.5 + 0.5) * h); }
+                ctx.stroke(); }
 
-    async function changeMicDevice(deviceId) {
-        selectedDeviceId = deviceId;
-        if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
-        if (monitorActive || isMasterRecording) { await requestMic(); }
-        showToast(deviceId ? '✅ Micrófono cambiado' : '✅ Micrófono por defecto');
-    }
+            function startLiveWaveform(trackId) { stopLiveWaveform(); const canvas = document.getElementById(
+                    `canvas-${trackId}`); if (!canvas || !micAnalyser) return; const w = canvas.parentElement
+                    .offsetWidth || 300; const h = 44;
+                canvas.width = w * devicePixelRatio;
+                canvas.height = h * devicePixelRatio;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px'; const ctx = canvas.getContext('2d');
+                ctx.scale(devicePixelRatio, devicePixelRatio); const bufferLength = micAnalyser.frequencyBinCount; const
+                    dataArray = new Uint8Array(bufferLength);
 
-    function buildPresetChips() { const row = document.getElementById('master-preset-row'); if (!row) return; row.innerHTML = Object.keys(MASTER_PRESETS).map(name => `<button class="preset-chip ${name==='default'?'active':''}" data-preset="${name}">${name}</button>`).join(''); }
-    function buildPluginsUI() { const container = document.getElementById('plugins-container'); if (!container) return; container.innerHTML = PLUGIN_DEFS.map(p => `<div class="plugin-panel"><div class="plugin-header" onclick="window._togglePluginBody('${p.id}-body')"><div class="plugin-title">${p.name}</div><div class="plugin-toggle ${masterFxState[p.id]?'on':''}" id="${p.id}-toggle" onclick="event.stopPropagation();window._toggleMasterFx('${p.id}', this)"></div></div><div class="plugin-body ${p.id==='reverb'?'open':''}" id="${p.id}-body">${p.params.map(pr => `<div class="param-row"><span class="param-label">${pr.label}</span><input type="range" class="param-slider" id="${pr.id}" min="${pr.min}" max="${pr.max}" step="${pr.step}" value="${pr.val}" oninput="window._updatePluginParams('${p.id}')"><span class="param-val" id="${pr.id}-val">${pr.fmt?pr.fmt(pr.val):pr.val+pr.suffix}</span></div>`).join('')}</div></div>`).join(''); }
-    function buildTracksUI() { if (uiLocked) return; const container = document.getElementById('tracks-container'); if (!container) return; container.innerHTML = tracks.map(t => `<div class="track ${t.isArmed?'armed':''}" id="track-${t.id}"><div class="track-main"><div class="track-left"><div class="track-name"><span class="track-color" style="background:${t.color}"></span>${t.name}<button class="delete-track-btn" onclick="window._deleteTrack(${t.id})">✕</button><span class="track-actions" style="margin-left:auto;display:flex;gap:4px;"><button class="track-action-btn play-track" id="play-track-${t.id}" onclick="window._playTrackAudio(${t.id})" ${!t.audioBuffer?'disabled':''}>▶</button><button class="track-action-btn del-track" onclick="window._clearTrackAudio(${t.id})" ${!t.audioBuffer?'disabled':''}>🗑</button></span></div></div><div class="track-right"><button class="track-btn mute ${t.isMuted?'active':''}" onclick="window._toggleTrackMute(${t.id})">M</button><button class="track-btn solo ${t.isSolo?'active':''}" onclick="window._toggleTrackSolo(${t.id})">S</button><button class="track-btn rec ${t.isArmed?'active':''}" onclick="window._armTrack(${t.id})">R</button></div></div><div class="track-waveform"><canvas id="canvas-${t.id}"></canvas></div><div class="track-controls"><div class="track-fader"><span>Vol</span><input type="range" min="0" max="100" value="${Math.round(t.volume*100)}" oninput="window._setTrackVolume(${t.id},this.value)"><span>${Math.round(t.volume*100)}%</span></div><div class="track-panner"><span>Pan</span><input type="range" min="-100" max="100" value="${Math.round(t.pan*100)}" oninput="window._setTrackPan(${t.id},this.value)"><span>${t.pan===0?'C':(t.pan<0?'L'+Math.abs(Math.round(t.pan*100)):'R'+Math.round(t.pan*100))}</span></div></div></div>`).join(''); tracks.forEach(t => { if (t.audioBuffer) drawWaveform(t.id, t.audioBuffer); }); }
-    function drawWaveform(trackId, buffer) { const canvas = document.getElementById(`canvas-${trackId}`); if (!canvas || !buffer) return; const w = canvas.parentElement.offsetWidth || 300; const h = 44; canvas.width = w * devicePixelRatio; canvas.height = h * devicePixelRatio; canvas.style.width = w + 'px'; canvas.style.height = h + 'px'; const ctx = canvas.getContext('2d'); ctx.scale(devicePixelRatio, devicePixelRatio); const data = buffer.getChannelData(0); const step = Math.ceil(data.length / w); ctx.clearRect(0, 0, w, h); ctx.strokeStyle = tracks.find(t => t.id === trackId)?.color || '#fff'; ctx.lineWidth = 1.2; ctx.beginPath(); for (let i = 0; i < w; i++) { let min = 1, max = -1; for (let j = 0; j < step; j++) { const val = data[i*step+j] || 0; if (val < min) min = val; if (val > max) max = val; } ctx.moveTo(i, (min*0.5+0.5)*h); ctx.lineTo(i, (max*0.5+0.5)*h); } ctx.stroke(); }
+                function draw() {
+                    liveWaveAnimFrame = requestAnimationFrame(draw);
+                    micAnalyser.getByteTimeDomainData(dataArray);
+                    ctx.clearRect(0, 0, w, h);
+                    ctx.strokeStyle = tracks.find(t => t.id === trackId)?.color || '#ff3b3b';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath(); const sliceWidth = w / bufferLength; let x = 0; for (let i = 0; i <
+                        bufferLength; i++) { const v = dataArray[i] / 128.0 - 1.0; const y = (v * 0.5 + 0.5) *
+                        h; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                        x += sliceWidth; }
+                    ctx.stroke(); }
+                draw(); }
 
-    function startLiveWaveform(trackId) { stopLiveWaveform(); const canvas = document.getElementById(`canvas-${trackId}`); if (!canvas || !micAnalyser) return; const w = canvas.parentElement.offsetWidth || 300; const h = 44; canvas.width = w * devicePixelRatio; canvas.height = h * devicePixelRatio; canvas.style.width = w + 'px'; canvas.style.height = h + 'px'; const ctx = canvas.getContext('2d'); ctx.scale(devicePixelRatio, devicePixelRatio); const bufferLength = micAnalyser.frequencyBinCount; const dataArray = new Uint8Array(bufferLength); function draw() { liveWaveAnimFrame = requestAnimationFrame(draw); micAnalyser.getByteTimeDomainData(dataArray); ctx.clearRect(0, 0, w, h); ctx.strokeStyle = tracks.find(t => t.id === trackId)?.color || '#ff3b3b'; ctx.lineWidth = 1.5; ctx.beginPath(); const sliceWidth = w / bufferLength; let x = 0; for (let i = 0; i < bufferLength; i++) { const v = dataArray[i] / 128.0 - 1.0; const y = (v * 0.5 + 0.5) * h; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); x += sliceWidth; } ctx.stroke(); } draw(); }
-    function stopLiveWaveform() { if (liveWaveAnimFrame) { cancelAnimationFrame(liveWaveAnimFrame); liveWaveAnimFrame = null; } }
+            function stopLiveWaveform() { if (liveWaveAnimFrame) { cancelAnimationFrame(liveWaveAnimFrame);
+                    liveWaveAnimFrame = null; } }
 
-    function createReverbImpulse(duration, decay) { const sr = audioCtx.sampleRate; const len = Math.max(1, Math.floor(sr * duration)); const buf = audioCtx.createBuffer(2, len, sr); for (let c = 0; c < 2; c++) { const d = buf.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.exp(-i/(sr*(decay||0.8))); } return buf; }
-    function setupAudioGraph() { if (!audioCtx) return; masterGain = audioCtx.createGain(); masterGain.gain.value = 0.9; masterAnalyser = audioCtx.createAnalyser(); masterAnalyser.fftSize = 256; masterComp = audioCtx.createDynamicsCompressor(); masterComp.threshold.value = -20; masterComp.ratio.value = 4; masterComp.attack.value = 0.005; masterComp.release.value = 0.1; masterEq = audioCtx.createBiquadFilter(); masterEq.type = "highshelf"; masterEq.frequency.value = 6000; masterEq.gain.value = 3; dryGain = audioCtx.createGain(); dryGain.gain.value = 0.9; dryGain.connect(audioCtx.destination); const revConvolver = audioCtx.createConvolver(); revConvolver.buffer = createReverbImpulse(2.5,0.8); const revGain = audioCtx.createGain(); revGain.gain.value = 0.3; masterFxNodes.reverb = { convolver:revConvolver, gain:revGain, active:true, params:{decay:2.5,predelay:20,wet:30,size:1.5} }; const delayNode = audioCtx.createDelay(1); delayNode.delayTime.value = 0.35; const delayFeedback = audioCtx.createGain(); delayFeedback.gain.value = 0.4; const delayGain = audioCtx.createGain(); delayGain.gain.value = 0; const delayFilter = audioCtx.createBiquadFilter(); delayFilter.type = "lowpass"; delayFilter.frequency.value = 5000; delayNode.connect(delayFeedback); delayFeedback.connect(delayFilter); delayFilter.connect(delayNode); delayNode.connect(delayGain); masterFxNodes.delay = { node:delayNode, gain:delayGain, filter:delayFilter, active:false, params:{time:0.35,feedback:40,wet:35,filter:5000} }; const chorusDelay = audioCtx.createDelay(0.03); chorusDelay.delayTime.value = 0.015; const chorusGain = audioCtx.createGain(); chorusGain.gain.value = 0; chorusDelay.connect(chorusGain); masterFxNodes.chorus = { node:chorusDelay, gain:chorusGain, active:false, params:{depth:25,rate:1.5,wet:25} }; masterGain.connect(masterAnalyser); masterGain.connect(masterComp); masterComp.connect(masterEq); masterEq.connect(audioCtx.destination); revGain.connect(audioCtx.destination); delayGain.connect(audioCtx.destination); chorusGain.connect(audioCtx.destination); masterGain.connect(revConvolver); revConvolver.connect(revGain); masterGain.connect(delayNode); masterGain.connect(chorusDelay); micGainNode = audioCtx.createGain(); micGainNode.gain.value = 0; micGainNode.connect(masterGain); micAnalyser = audioCtx.createAnalyser(); micAnalyser.fftSize = 256; acapellaGain = audioCtx.createGain(); acapellaGain.gain.value = 0.75; acapellaGain.connect(masterGain); }
-    async function initAudio() { if (audioCtx) return; try { audioCtx = new (window.AudioContext||window.webkitAudioContext)({ latencyHint: 'interactive' }); setupAudioGraph(); startVUMeter(); buildTracksUI(); buildPluginsUI(); buildPresetChips(); applyMasterPreset('default'); await enumerateAudioDevices(); } catch(e) { console.error(e); showToast('❌ Error al iniciar audio'); } }
-    async function requestMic() { if (mediaStream) return true; try { if (!audioCtx) await initAudio(); const constraints = { audio: true, video: false }; if (selectedDeviceId) constraints.audio = { deviceId: { exact: selectedDeviceId } }; mediaStream = await navigator.mediaDevices.getUserMedia(constraints); const micSource = audioCtx.createMediaStreamSource(mediaStream); micSource.connect(micGainNode); micSource.connect(micAnalyser); return true; } catch(e) { showToast('❌ Permiso de micrófono denegado'); return false; } }
+            function createReverbImpulse(duration, decay) { const sr = audioCtx.sampleRate; const len = Math.max(1, Math
+                    .floor(sr * duration)); const buf = audioCtx.createBuffer(2, len, sr); for (let c = 0; c < 2; c++) { const
+                        d = buf.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math
+                        .exp(-i / (sr * (decay || 0.8))); } return buf; }
 
-    function toggleMasterFx(type, btn) { masterFxState[type] = !masterFxState[type]; if (btn) btn.classList.toggle('on', masterFxState[type]); const node = masterFxNodes[type]; if (!node) return; node.active = masterFxState[type]; if (type==='reverb') node.gain.gain.value = masterFxState[type] ? (node.params.wet/100*0.7) : 0; if (type==='delay') node.gain.gain.value = masterFxState[type] ? (node.params.wet/100*0.5) : 0; if (type==='chorus') node.gain.gain.value = masterFxState[type] ? (node.params.wet/100*0.5) : 0; if (type==='comp' && masterComp) masterComp.threshold.value = masterFxState.comp ? parseInt(document.getElementById('comp-thresh')?.value||-20) : 0; if (type==='eq' && masterEq) masterEq.gain.value = masterFxState.eq ? parseFloat(document.getElementById('eq-high')?.value||3) : 0; }
-    function togglePluginBody(id) { document.getElementById(id)?.classList.toggle('open'); }
-    function updateAllPluginParams() { updateReverbParams(); updateDelayParams(); updateCompParams(); updateEQParams(); updateChorusParams(); }
-    function updateReverbParams() { const el=id=>document.getElementById(id); const decay=parseFloat(el('rev-decay')?.value||2.5), predelay=parseInt(el('rev-predelay')?.value||20), wet=parseInt(el('rev-wet')?.value||30), size=parseFloat(el('rev-size')?.value||1.5); if(el('rev-decay-val'))el('rev-decay-val').textContent=decay+'s'; if(el('rev-predelay-val'))el('rev-predelay-val').textContent=predelay+'ms'; if(el('rev-wet-val'))el('rev-wet-val').textContent=wet+'%'; if(el('rev-size-val'))el('rev-size-val').textContent=size; if(masterFxNodes.reverb){masterFxNodes.reverb.params={decay,predelay,wet,size};masterFxNodes.reverb.convolver.buffer=createReverbImpulse(decay,size*0.5);if(masterFxState.reverb)masterFxNodes.reverb.gain.gain.value=wet/100*0.7;} }
-    function updateDelayParams() { const el=id=>document.getElementById(id); const time=parseFloat(el('dly-time')?.value||0.35), feedback=parseInt(el('dly-feedback')?.value||40), wet=parseInt(el('dly-wet')?.value||35), filter=parseInt(el('dly-filter')?.value||5000); if(el('dly-time-val'))el('dly-time-val').textContent=Math.round(time*1000)+'ms'; if(el('dly-feedback-val'))el('dly-feedback-val').textContent=feedback+'%'; if(el('dly-wet-val'))el('dly-wet-val').textContent=wet+'%'; if(el('dly-filter-val'))el('dly-filter-val').textContent=(filter/1000).toFixed(1)+'kHz'; if(masterFxNodes.delay){masterFxNodes.delay.params={time,feedback,wet,filter};masterFxNodes.delay.node.delayTime.value=time;masterFxNodes.delay.filter.frequency.value=filter;if(masterFxState.delay)masterFxNodes.delay.gain.gain.value=wet/100*0.5;} }
-    function updateCompParams() { const el=id=>document.getElementById(id); const thresh=parseInt(el('comp-thresh')?.value||-20), ratio=parseFloat(el('comp-ratio')?.value||4), attack=parseFloat(el('comp-attack')?.value||5), release=parseInt(el('comp-release')?.value||100); if(el('comp-thresh-val'))el('comp-thresh-val').textContent=thresh+'dB'; if(el('comp-ratio-val'))el('comp-ratio-val').textContent=ratio+':1'; if(el('comp-attack-val'))el('comp-attack-val').textContent=attack+'ms'; if(el('comp-release-val'))el('comp-release-val').textContent=release+'ms'; if(masterComp){masterComp.threshold.value=thresh;masterComp.ratio.value=ratio;masterComp.attack.value=attack/1000;masterComp.release.value=release/1000;} }
-    function updateEQParams() { const el=id=>document.getElementById(id); const low=parseFloat(el('eq-low')?.value||0), mid=parseFloat(el('eq-mid')?.value||0), midfreq=parseInt(el('eq-midfreq')?.value||2000), high=parseFloat(el('eq-high')?.value||3); if(el('eq-low-val'))el('eq-low-val').textContent=(low>=0?'+':'')+low+'dB'; if(el('eq-mid-val'))el('eq-mid-val').textContent=(mid>=0?'+':'')+mid+'dB'; if(el('eq-midfreq-val'))el('eq-midfreq-val').textContent=(midfreq/1000).toFixed(1)+'kHz'; if(el('eq-high-val'))el('eq-high-val').textContent=(high>=0?'+':'')+high+'dB'; if(masterEq)masterEq.gain.value=high; }
-    function updateChorusParams() { const el=id=>document.getElementById(id); const depth=parseInt(el('chor-depth')?.value||25), rate=parseFloat(el('chor-rate')?.value||1.5), wet=parseInt(el('chor-wet')?.value||25); if(el('chor-depth-val'))el('chor-depth-val').textContent=depth+'%'; if(el('chor-rate-val'))el('chor-rate-val').textContent=rate+'Hz'; if(el('chor-wet-val'))el('chor-wet-val').textContent=wet+'%'; if(masterFxNodes.chorus){masterFxNodes.chorus.params={depth,rate,wet};masterFxNodes.chorus.node.delayTime.value=depth/100*0.03;if(masterFxState.chorus)masterFxNodes.chorus.gain.gain.value=wet/100*0.5;} }
-    function applyMasterPreset(presetName) { const preset = MASTER_PRESETS[presetName]; if (!preset) return; document.querySelectorAll('.preset-chip').forEach(c=>c.classList.remove('active')); document.querySelector(`.preset-chip[data-preset="${presetName}"]`)?.classList.add('active'); for (const [key,p] of Object.entries(preset)) { masterFxState[key] = p.active; document.getElementById(`${key}-toggle`)?.classList.toggle('on', p.active); const mapping = { reverb:{decay:'rev-decay',predelay:'rev-predelay',wet:'rev-wet',size:'rev-size'}, delay:{time:'dly-time',feedback:'dly-feedback',wet:'dly-wet',filter:'dly-filter'}, comp:{thresh:'comp-thresh',ratio:'comp-ratio',attack:'comp-attack',release:'comp-release'}, eq:{low:'eq-low',mid:'eq-mid',midfreq:'eq-midfreq',high:'eq-high'}, chorus:{depth:'chor-depth',rate:'chor-rate',wet:'chor-wet'} }; const map = mapping[key]; if (map) for (const [pk,sliderId] of Object.entries(map)) { const slider = document.getElementById(sliderId); if (slider && p[pk] !== undefined) { slider.value = p[pk]; slider.dispatchEvent(new Event('input',{bubbles:true})); } } } if(masterFxNodes.reverb) masterFxNodes.reverb.gain.gain.value = masterFxState.reverb ? ((preset.reverb?.wet||30)/100*0.7) : 0; if(masterFxNodes.delay) masterFxNodes.delay.gain.gain.value = masterFxState.delay ? ((preset.delay?.wet||35)/100*0.5) : 0; if(masterComp) masterComp.threshold.value = masterFxState.comp ? (preset.comp?.thresh||-20) : 0; if(masterEq) masterEq.gain.value = masterFxState.eq ? (preset.eq?.high||3) : 0; if(masterFxNodes.chorus) masterFxNodes.chorus.gain.gain.value = masterFxState.chorus ? ((preset.chorus?.wet||25)/100*0.5) : 0; showToast(`✅ Preset "${presetName}" aplicado`); }
+            function setupAudioGraph() { if (!audioCtx) return;
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = 0.9;
+                masterAnalyser = audioCtx.createAnalyser();
+                masterAnalyser.fftSize = 256;
+                masterComp = audioCtx.createDynamicsCompressor();
+                masterComp.threshold.value = -20;
+                masterComp.ratio.value = 4;
+                masterComp.attack.value = 0.005;
+                masterComp.release.value = 0.1;
+                masterEq = audioCtx.createBiquadFilter();
+                masterEq.type = "highshelf";
+                masterEq.frequency.value = 6000;
+                masterEq.gain.value = 3;
+                dryGain = audioCtx.createGain();
+                dryGain.gain.value = 0.9;
+                dryGain.connect(audioCtx.destination); const revConvolver = audioCtx.createConvolver();
+                revConvolver.buffer = createReverbImpulse(2.5, 0.8); const revGain = audioCtx.createGain();
+                revGain.gain.value = 0.3;
+                masterFxNodes.reverb = { convolver: revConvolver, gain: revGain, active: true, params: { decay: 2.5,
+                        predelay: 20, wet: 30, size: 1.5 } }; const delayNode = audioCtx.createDelay(1);
+                delayNode.delayTime.value = 0.35; const delayFeedback = audioCtx.createGain();
+                delayFeedback.gain.value = 0.4; const delayGain = audioCtx.createGain();
+                delayGain.gain.value = 0; const delayFilter = audioCtx.createBiquadFilter();
+                delayFilter.type = "lowpass";
+                delayFilter.frequency.value = 5000;
+                delayNode.connect(delayFeedback);
+                delayFeedback.connect(delayFilter);
+                delayFilter.connect(delayNode);
+                delayNode.connect(delayGain);
+                masterFxNodes.delay = { node: delayNode, gain: delayGain, filter: delayFilter, active: false,
+                    params: { time: 0.35, feedback: 40, wet: 35, filter: 5000 } }; const chorusDelay = audioCtx
+                    .createDelay(0.03);
+                chorusDelay.delayTime.value = 0.015; const chorusGain = audioCtx.createGain();
+                chorusGain.gain.value = 0;
+                chorusDelay.connect(chorusGain);
+                masterFxNodes.chorus = { node: chorusDelay, gain: chorusGain, active: false, params: { depth: 25,
+                        rate: 1.5, wet: 25 } };
+                masterGain.connect(masterAnalyser);
+                masterGain.connect(masterComp);
+                masterComp.connect(masterEq);
+                masterEq.connect(audioCtx.destination);
+                revGain.connect(audioCtx.destination);
+                delayGain.connect(audioCtx.destination);
+                chorusGain.connect(audioCtx.destination);
+                masterGain.connect(revConvolver);
+                revConvolver.connect(revGain);
+                masterGain.connect(delayNode);
+                masterGain.connect(chorusDelay);
+                micGainNode = audioCtx.createGain();
+                micGainNode.gain.value = 0;
+                micGainNode.connect(masterGain);
+                micAnalyser = audioCtx.createAnalyser();
+                micAnalyser.fftSize = 256;
+                acapellaGain = audioCtx.createGain();
+                acapellaGain.gain.value = 0.75;
+                acapellaGain.connect(masterGain); }
 
-    // ── TRANSPORTE ──────────────────────────────
-    function activateBPMEdit() { document.getElementById('bpm-display')?.classList.add('editing'); document.getElementById('bpm-input')?.focus(); }
-    function commitBPM() { const input = document.getElementById('bpm-input'); if (!input) return; let v = parseInt(input.value); if(isNaN(v)||v<40)v=40; if(v>220)v=220; bpm = v; document.getElementById('bpm-text').textContent = v; input.value = v; document.getElementById('bpm-display')?.classList.remove('editing'); if (metronomeActive) { clearInterval(metronomeInterval); startMetronome(); } }
-    function toggleMetronome() { metronomeActive = !metronomeActive; document.getElementById('btn-metro')?.classList.toggle('active', metronomeActive); metronomeActive ? startMetronome() : clearInterval(metronomeInterval); }
-    function startMetronome() { clearInterval(metronomeInterval); if (!audioCtx || !dryGain) return; const interval = 60000 / bpm; let beat = 0; metronomeInterval = setInterval(() => { if (!audioCtx || !dryGain) return; try { const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(dryGain); osc.frequency.value = beat%4===0?1200:800; osc.type = 'square'; gain.gain.setValueAtTime(beat%4===0?.15:.08, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime+.05); osc.start(); osc.stop(audioCtx.currentTime+.05); beat++; } catch(e) {} }, interval); }
-    function toggleLoop() { loopActive = !loopActive; document.getElementById('btn-loop')?.classList.toggle('active', loopActive); }
+            async function initAudio() { if (audioCtx) return; try { audioCtx = new(window.AudioContext || window
+                        .webkitAudioContext)({ latencyHint: 'interactive' });
+                    setupAudioGraph();
+                    startVUMeter();
+                    buildTracksUI();
+                    buildPluginsUI();
+                    buildPresetCards();
+                    applyMasterPreset('default'); await enumerateAudioDevices(); } catch (e) { console.error(e);
+                    showToast('❌ Error al iniciar audio'); } }
 
-    function stopAll() {
-        activeSources.forEach(s => safeStopNode(s)); activeSources = [];
-        if (isMasterRecording) stopMasterRecording();
-        if (metronomeActive) { clearInterval(metronomeInterval); metronomeActive = false; document.getElementById('btn-metro')?.classList.remove('active'); }
-        if (acapellaSource) { safeStopNode(acapellaSource); acapellaSource = null; isAcapellaPlaying = false; updateAcapellaPlayButton(); }
-        stopLiveWaveform();
-        elapsed = 0; document.getElementById('time-display').textContent = '00:00'; clearInterval(timerInterval);
-        if (micGainNode && !monitorActive) micGainNode.gain.value = 0;
-        document.querySelectorAll('.track').forEach(t => t.classList.remove('recording-active'));
-        showToast('⏹ Todo detenido');
-    }
+            async function requestMic() { if (mediaStream) return true; try { if (!audioCtx) await initAudio(); const
+                    constraints = { audio: true, video: false }; if (selectedDeviceId) constraints.audio = {
+                        deviceId: { exact: selectedDeviceId } };
+                mediaStream = await navigator.mediaDevices.getUserMedia(constraints); const micSource = audioCtx
+                    .createMediaStreamSource(mediaStream);
+                micSource.connect(micGainNode);
+                micSource.connect(micAnalyser); return true; } catch (e) { showToast(
+                    '❌ Permiso de micrófono denegado'); return false; } }
 
-    function playAll() { if (!audioCtx) { initAudio().then(() => playAll()); return; } stopAll(); const anySolo = tracks.some(t => t.isSolo); tracks.forEach(t => { if (!t.audioBuffer || t.isMuted || (anySolo && !t.isSolo)) return; try { const source = audioCtx.createBufferSource(); source.buffer = t.audioBuffer; const gain = audioCtx.createGain(); gain.gain.value = t.volume; const panner = audioCtx.createStereoPanner(); panner.pan.value = t.pan || 0; source.connect(gain); gain.connect(panner); panner.connect(masterGain); source.start(0); activeSources.push(source); source.onended = () => { activeSources = activeSources.filter(s => s !== source); }; } catch(e) {} }); showToast('▶ Reproduciendo'); }
+            function toggleMasterFx(type, btn) { masterFxState[type] = !masterFxState[type]; if (btn) btn.classList
+                    .toggle('on', masterFxState[type]); const node = masterFxNodes[type]; if (!node)
+                return;
+                node.active = masterFxState[type]; if (type === 'reverb') node.gain.gain.value = masterFxState[
+                    type] ? (node.params.wet / 100 * 0.7) : 0; if (type === 'delay') node.gain.gain.value =
+                    masterFxState[type] ? (node.params.wet / 100 * 0.5) : 0; if (type === 'chorus') node.gain.gain
+                    .value = masterFxState[type] ? (node.params.wet / 100 * 0.5) : 0; if (type === 'comp' &&
+                    masterComp) masterComp.threshold.value = masterFxState.comp ? parseInt(document.getElementById(
+                        'comp-thresh')?.value || -20) : 0; if (type === 'eq' && masterEq) masterEq.gain.value =
+                    masterFxState.eq ? parseFloat(document.getElementById('eq-high')?.value || 3) : 0; }
 
-    function playTrackAudio(trackId) { const t = tracks.find(tr => tr.id === trackId); if (!t || !t.audioBuffer || !audioCtx) return; try { const source = audioCtx.createBufferSource(); source.buffer = t.audioBuffer; const gain = audioCtx.createGain(); gain.gain.value = t.volume; const panner = audioCtx.createStereoPanner(); panner.pan.value = t.pan || 0; source.connect(gain); gain.connect(panner); panner.connect(masterGain); source.start(0); activeSources.push(source); source.onended = () => { activeSources = activeSources.filter(s => s !== source); }; showToast(`▶ ${t.name}`); } catch(e) { showToast('❌ Error al reproducir'); } }
-    function clearTrackAudio(trackId) { const t = tracks.find(tr => tr.id === trackId); if (!t) return; t.audioBuffer = null; buildTracksUI(); showToast(`🗑 Audio borrado de "${t.name}"`); }
+            function togglePluginBody(id) { document.getElementById(id)?.classList.toggle('open'); }
 
-    async function handleAcapellaUpload(event) { const file = event.target.files?.[0]; if (!file) return; try { if (!audioCtx) await initAudio(); const buf = await audioCtx.decodeAudioData(await file.arrayBuffer()); acapellaBuffer = buf; document.getElementById('acapella-name').textContent = file.name; document.getElementById('acapella-upload-btn')?.classList.add('loaded'); document.getElementById('acapella-play-btn').disabled = false; showToast(`✅ "${file.name}" cargada`); } catch(e) { showToast('❌ Error al cargar'); } }
-    function toggleAcapellaPreview() { if (!acapellaBuffer) return; isAcapellaPlaying ? stopAcapellaPreview() : startAcapellaPreview(); }
-    function startAcapellaPreview() { if (!audioCtx || !acapellaBuffer || !acapellaGain) return; stopAcapellaPreview(); try { acapellaSource = audioCtx.createBufferSource(); acapellaSource.buffer = acapellaBuffer; acapellaSource.connect(acapellaGain); acapellaSource.start(0); isAcapellaPlaying = true; updateAcapellaPlayButton(); acapellaSource.onended = () => { isAcapellaPlaying = false; acapellaSource = null; updateAcapellaPlayButton(); }; } catch(e) {} }
-    function stopAcapellaPreview() { safeStopNode(acapellaSource); acapellaSource = null; isAcapellaPlaying = false; updateAcapellaPlayButton(); }
-    function updateAcapellaPlayButton() { const btn = document.getElementById('acapella-play-btn'); if (btn) btn.innerHTML = isAcapellaPlaying ? '■ Detener' : '▶ Previsualizar'; }
+            function updateAllPluginParams() { updateReverbParams();
+                updateDelayParams();
+                updateCompParams();
+                updateEQParams();
+                updateChorusParams(); }
 
-    let vuAnimFrame = null;
-    function startVUMeter() { if (vuAnimFrame) cancelAnimationFrame(vuAnimFrame); const vuBar = document.getElementById('vu-bar'), vuPeak = document.getElementById('vu-peak-val'); if (!vuBar || !vuPeak) return; function update() { vuAnimFrame = requestAnimationFrame(update); if (!masterAnalyser) return; try { const data = new Uint8Array(masterAnalyser.frequencyBinCount); masterAnalyser.getByteFrequencyData(data); const avg = data.reduce((a,b)=>a+b,0)/data.length; vuBar.style.width = Math.min(100,(avg/200)*100)+'%'; const db = avg>0 ? Math.round(20*Math.log10(avg/255)) : -Infinity; vuPeak.textContent = db===-Infinity ? '-∞ dB' : db+' dB'; } catch(e) {} } update(); }
+            function updateReverbParams() { const el = id => document.getElementById(id); const decay = parseFloat(el(
+                    'rev-decay')?.value || 2.5),
+                    predelay = parseInt(el('rev-predelay')?.value || 20),
+                    wet = parseInt(el('rev-wet')?.value || 30),
+                    size = parseFloat(el('rev-size')?.value || 1.5); if (el('rev-decay-val')) el('rev-decay-val')
+                    .textContent = decay + 's'; if (el('rev-predelay-val')) el('rev-predelay-val').textContent =
+                    predelay + 'ms'; if (el('rev-wet-val')) el('rev-wet-val').textContent = wet + '%'; if (el(
+                        'rev-size-val')) el('rev-size-val').textContent = size; if (masterFxNodes.reverb) {
+                    masterFxNodes.reverb.params = { decay, predelay, wet, size };
+                    masterFxNodes.reverb.convolver.buffer = createReverbImpulse(decay, size * 0.5); if (masterFxState
+                        .reverb) masterFxNodes.reverb.gain.gain.value = wet / 100 * 0.7; } }
 
-    function toggleMonitor() { monitorActive = !monitorActive; document.getElementById('monitor-btn')?.classList.toggle('active', monitorActive); if (micGainNode) micGainNode.gain.value = monitorActive ? 0.8 : 0; showToast(monitorActive ? '🔊 Monitor activado' : '🔇 Monitor silenciado'); }
+            function updateDelayParams() { const el = id => document.getElementById(id); const time = parseFloat(el(
+                    'dly-time')?.value || 0.35),
+                    feedback = parseInt(el('dly-feedback')?.value || 40),
+                    wet = parseInt(el('dly-wet')?.value || 35),
+                    filter = parseInt(el('dly-filter')?.value || 5000); if (el('dly-time-val')) el('dly-time-val')
+                    .textContent = Math.round(time * 1000) + 'ms'; if (el('dly-feedback-val')) el('dly-feedback-val')
+                    .textContent = feedback + '%'; if (el('dly-wet-val')) el('dly-wet-val').textContent = wet + '%'; if (
+                    el('dly-filter-val')) el('dly-filter-val').textContent = (filter / 1000).toFixed(1) + 'kHz'; if (
+                    masterFxNodes.delay) { masterFxNodes.delay.params = { time, feedback, wet, filter };
+                    masterFxNodes.delay.node.delayTime.value = time;
+                    masterFxNodes.delay.filter.frequency.value = filter; if (masterFxState.delay) masterFxNodes.delay
+                        .gain.gain.value = wet / 100 * 0.5; } }
 
-    function addTrack() { const name = prompt('Nombre:', `Pista ${nextTrackId}`); if (!name) return; tracks.push({ id:nextTrackId, name, color:TRACK_COLORS[(nextTrackId-1)%TRACK_COLORS.length], audioBuffer:null, isArmed:false, isMuted:false, isSolo:false, volume:0.7, pan:0 }); nextTrackId++; buildTracksUI(); showToast(`Pista "${name}" añadida`); }
-    function deleteTrack(id) { if (tracks.length <= 1) { showToast('Mínimo una pista'); return; } tracks = tracks.filter(t => t.id !== id); if (!tracks.some(t => t.isArmed)) tracks[0].isArmed = true; buildTracksUI(); }
-    function toggleTrackMute(id) { const t = tracks.find(tr=>tr.id===id); if (t) { t.isMuted = !t.isMuted; buildTracksUI(); } }
-    function toggleTrackSolo(id) { const t = tracks.find(tr=>tr.id===id); if (t) { t.isSolo = !t.isSolo; buildTracksUI(); } }
-    function armTrack(id) { tracks.forEach(tr => tr.isArmed = (tr.id===id)); buildTracksUI(); showToast(`🎤 Pista "${tracks.find(t=>t.id===id)?.name}" armada`); }
-    function setTrackVolume(id, val) { const t = tracks.find(tr=>tr.id===id); if (t) t.volume = parseInt(val)/100; }
-    function setTrackPan(id, val) { const t = tracks.find(tr=>tr.id===id); if (t) t.pan = parseInt(val)/100; }
+            function updateCompParams() { const el = id => document.getElementById(id); const thresh = parseInt(el(
+                    'comp-thresh')?.value || -20),
+                    ratio = parseFloat(el('comp-ratio')?.value || 4),
+                    attack = parseFloat(el('comp-attack')?.value || 5),
+                    release = parseInt(el('comp-release')?.value || 100); if (el('comp-thresh-val')) el(
+                    'comp-thresh-val').textContent = thresh + 'dB'; if (el('comp-ratio-val')) el('comp-ratio-val')
+                    .textContent = ratio + ':1'; if (el('comp-attack-val')) el('comp-attack-val').textContent =
+                    attack + 'ms'; if (el('comp-release-val')) el('comp-release-val').textContent = release + 'ms'; if (
+                    masterComp) { masterComp.threshold.value = thresh;
+                    masterComp.ratio.value = ratio;
+                    masterComp.attack.value = attack / 1000;
+                    masterComp.release.value = release / 1000; } }
 
-    async function toggleMasterRec() { isMasterRecording ? stopMasterRecording() : await startMasterRecording(); }
-    async function startMasterRecording() { try { if (!audioCtx) await initAudio(); if (!mediaStream) { const granted = await requestMic(); if (!granted) return; } if (!monitorActive) { monitorActive = true; document.getElementById('monitor-btn')?.classList.add('active'); } if (micGainNode) micGainNode.gain.value = 0.8; chunks = []; const dest = audioCtx.createMediaStreamDestination(); masterGain.connect(dest); mediaRecorder = new MediaRecorder(dest.stream); mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); }; mediaRecorder.onstop = () => saveMasterRecording(); mediaRecorder.start(100); isMasterRecording = true; elapsed = 0; document.getElementById('btn-rec')?.classList.add('recording'); const armedTrack = tracks.find(t => t.isArmed); if (armedTrack) { document.getElementById(`track-${armedTrack.id}`)?.classList.add('recording-active'); startLiveWaveform(armedTrack.id); } timerInterval = setInterval(() => { elapsed++; const m = String(Math.floor(elapsed/60)).padStart(2,'0'), s = String(elapsed%60).padStart(2,'0'); document.getElementById('time-display').textContent = `${m}:${s}`; if (elapsed >= 180) stopMasterRecording(); }, 1000); showToast('⏺ Grabando...'); if (tg) tg.HapticFeedback?.impactOccurred('medium'); } catch(e) { showToast('❌ Sin acceso al micrófono'); } }
-    function stopMasterRecording() { if (!mediaRecorder || mediaRecorder.state === 'inactive') return; mediaRecorder.stop(); isMasterRecording = false; clearInterval(timerInterval); document.getElementById('btn-rec')?.classList.remove('recording'); document.querySelectorAll('.track').forEach(t => t.classList.remove('recording-active')); stopLiveWaveform(); if (micGainNode && !monitorActive) micGainNode.gain.value = 0; }
-    async function saveMasterRecording() { const blob = new Blob(chunks, { type:'audio/webm' }); if (blob.size === 0) { showToast('❌ Grabación vacía'); return; } try { const arrayBuffer = await blob.arrayBuffer(); const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer); const armedTrack = tracks.find(t => t.isArmed); if (armedTrack) { armedTrack.audioBuffer = audioBuffer; buildTracksUI(); drawWaveform(armedTrack.id, audioBuffer); } const url = URL.createObjectURL(blob); const id = recCount++; recordings.push({ id, url, blob, dur:elapsed, name:`Toma ${id}`, trackId:armedTrack?.id }); renderRecordings(); showToast('✅ Grabación guardada'); } catch(e) { showToast('❌ Error al guardar'); } }
+            function updateEQParams() { const el = id => document.getElementById(id); const low = parseFloat(el('eq-low')
+                    ?.value || 0),
+                    mid = parseFloat(el('eq-mid')?.value || 0),
+                    midfreq = parseInt(el('eq-midfreq')?.value || 2000),
+                    high = parseFloat(el('eq-high')?.value || 3); if (el('eq-low-val')) el('eq-low-val').textContent = (
+                    low >= 0 ? '+' : '') + low + 'dB'; if (el('eq-mid-val')) el('eq-mid-val').textContent = (mid >= 0 ?
+                    '+' : '') + mid + 'dB'; if (el('eq-midfreq-val')) el('eq-midfreq-val').textContent = (midfreq /
+                    1000).toFixed(1) + 'kHz'; if (el('eq-high-val')) el('eq-high-val').textContent = (high >= 0 ? '+' :
+                    '') + high + 'dB'; if (masterEq) masterEq.gain.value = high; }
 
-    function renderRecordings() { const list = document.getElementById('recordings-list'); if (!list) return; if (!recordings.length) { list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:16px;">Aún no hay grabaciones</div>'; return; } list.innerHTML = recordings.slice().reverse().map(r => `<div class="recording-item"><span>🎤</span><span>${r.name}</span><span style="font-size:11px;color:var(--muted);">${String(Math.floor(r.dur/60)).padStart(2,'0')}:${String(r.dur%60).padStart(2,'0')}</span><button class="btn-sm green" onclick="window._playRecording('${r.url}')">▶</button><button class="btn-sm gold" onclick="window._downloadRecording('${r.url}','${r.name}')">⬇</button><button class="btn-sm red" onclick="window._deleteRecording(${r.id})">🗑</button></div>`).join(''); }
-    function playRecording(url) { try { new Audio(url).play(); } catch(e) {} }
-    function downloadRecording(url, name) { const a = document.createElement('a'); a.href = url; a.download = name.replace(/\s+/g,'_')+'.webm'; a.click(); }
-    function deleteRecording(id) { recordings = recordings.filter(r => r.id !== id); renderRecordings(); }
+            function updateChorusParams() { const el = id => document.getElementById(id); const depth = parseInt(el(
+                    'chor-depth')?.value || 25),
+                    rate = parseFloat(el('chor-rate')?.value || 1.5),
+                    wet = parseInt(el('chor-wet')?.value || 25); if (el('chor-depth-val')) el('chor-depth-val')
+                    .textContent = depth + '%'; if (el('chor-rate-val')) el('chor-rate-val').textContent = rate + 'Hz'; if (
+                    el('chor-wet-val')) el('chor-wet-val').textContent = wet + '%'; if (masterFxNodes.chorus) {
+                    masterFxNodes.chorus.params = { depth, rate, wet };
+                    masterFxNodes.chorus.node.delayTime.value = depth / 100 * 0.03; if (masterFxState.chorus)
+                        masterFxNodes.chorus.gain.gain.value = wet / 100 * 0.5; } }
 
-    async function exportMix() { if (!audioCtx) { showToast('Inicia el audio primero'); return; } const totalDuration = Math.max(elapsed, tracks.reduce((max,t)=>t.audioBuffer?Math.max(max,t.audioBuffer.duration):max,0), 5); const offlineCtx = new OfflineAudioContext(2, Math.ceil(audioCtx.sampleRate*totalDuration), audioCtx.sampleRate); tracks.forEach(t => { if (t.audioBuffer && !t.isMuted) { const s=offlineCtx.createBufferSource();s.buffer=t.audioBuffer;const g=offlineCtx.createGain();g.gain.value=t.volume;const p=offlineCtx.createStereoPanner();p.pan.value=t.pan||0;s.connect(g);g.connect(p);p.connect(offlineCtx.destination);s.start(0);} }); const renderedBuffer = await offlineCtx.startRendering(); const wavBlob = bufferToWav(renderedBuffer); const url = URL.createObjectURL(wavBlob); const a = document.createElement('a'); a.href = url; a.download = 'mezcla_final.wav'; a.click(); showToast('✅ Mezcla exportada como WAV'); }
-    function bufferToWav(buffer) { const nc=buffer.numberOfChannels,sr=buffer.sampleRate,bd=16,bps=bd/8,ba=nc*bps;const data=[];for(let ch=0;ch<nc;ch++)data.push(buffer.getChannelData(ch));const l=data[0].length,bs=44+l*nc*bps;const ab=new ArrayBuffer(bs),v=new DataView(ab);const ws=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};ws(0,'RIFF');v.setUint32(4,bs-8,true);ws(8,'WAVE');ws(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,nc,true);v.setUint32(24,sr,true);v.setUint32(28,sr*ba,true);v.setUint16(32,ba,true);v.setUint16(34,bd,true);ws(36,'data');v.setUint32(40,l*ba,true);let off=44;for(let i=0;i<l;i++){for(let ch=0;ch<nc;ch++){const s=Math.max(-1,Math.min(1,data[ch][i]));v.setInt16(off,s<0?s*0x8000:s*0x7FFF,true);off+=2;}}return new Blob([ab],{type:'audio/wav'}); }
+            function applyMasterPreset(presetName) { const preset = MASTER_PRESETS[presetName]; if (!preset)
+            return;
+                document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+                document.querySelector(`.preset-card[data-preset="${presetName}"]`)?.classList.add('active'); for (
+                    const [key, p] of Object.entries(preset)) { masterFxState[key] = p.active;
+                    document.getElementById(`${key}-toggle`)?.classList.toggle('on', p.active); const mapping = {
+                        reverb: { decay: 'rev-decay', predelay: 'rev-predelay', wet: 'rev-wet',
+                            size: 'rev-size' },
+                        delay: { time: 'dly-time', feedback: 'dly-feedback', wet: 'dly-wet',
+                            filter: 'dly-filter' },
+                        comp: { thresh: 'comp-thresh', ratio: 'comp-ratio', attack: 'comp-attack',
+                            release: 'comp-release' },
+                        eq: { low: 'eq-low', mid: 'eq-mid', midfreq: 'eq-midfreq', high: 'eq-high' },
+                        chorus: { depth: 'chor-depth', rate: 'chor-rate', wet: 'chor-wet' } }; const map = mapping[
+                        key]; if (map) for (const [pk, sliderId] of Object.entries(map)) { const slider = document
+                            .getElementById(sliderId); if (slider && p[pk] !== undefined) { slider.value = p[pk];
+                            slider.dispatchEvent(new Event('input', { bubbles: true })); } } } if (masterFxNodes
+                    .reverb) masterFxNodes.reverb.gain.gain.value = masterFxState.reverb ? ((preset.reverb?.wet ||
+                        30) / 100 * 0.7) : 0; if (masterFxNodes.delay) masterFxNodes.delay.gain.gain.value =
+                    masterFxState.delay ? ((preset.delay?.wet || 35) / 100 * 0.5) : 0; if (masterComp) masterComp
+                    .threshold.value = masterFxState.comp ? (preset.comp?.thresh || -20) : 0; if (masterEq) masterEq
+                    .gain.value = masterFxState.eq ? (preset.eq?.high || 3) : 0; if (masterFxNodes.chorus)
+                    masterFxNodes.chorus.gain.gain.value = masterFxState.chorus ? ((preset.chorus?.wet || 25) / 100 *
+                        0.5) : 0;
+                showToast(`✅ Preset "${presetName}" aplicado`); }
 
-    // ── EXPORTAR FUNCIONES ──────────────────────
-    window.toggleMetronome = toggleMetronome;
-    window.activateBPMEdit = activateBPMEdit;
-    window.commitBPM = commitBPM;
-    window.toggleLoop = toggleLoop;
-    window.stopAll = stopAll;
-    window.playAll = playAll;
-    window.toggleMasterRec = toggleMasterRec;
-    window.handleAcapellaUpload = handleAcapellaUpload;
-    window.toggleAcapellaPreview = toggleAcapellaPreview;
-    window.toggleMonitor = toggleMonitor;
-    window.addTrack = addTrack;
-    window.exportMix = exportMix;
-    window.changeMicDevice = changeMicDevice;
-    window._togglePluginBody = togglePluginBody;
-    window._toggleMasterFx = toggleMasterFx;
-    window._updatePluginParams = updateAllPluginParams;
-    window._deleteTrack = deleteTrack;
-    window._toggleTrackMute = toggleTrackMute;
-    window._toggleTrackSolo = toggleTrackSolo;
-    window._armTrack = armTrack;
-    window._setTrackVolume = setTrackVolume;
-    window._setTrackPan = setTrackPan;
-    window._playRecording = playRecording;
-    window._downloadRecording = downloadRecording;
-    window._deleteRecording = deleteRecording;
-    window._playTrackAudio = playTrackAudio;
-    window._clearTrackAudio = clearTrackAudio;
+            function activateBPMEdit() { document.getElementById('bpm-display')?.classList.add('editing');
+                document.getElementById('bpm-input')?.focus(); }
 
-    document.addEventListener('visibilitychange', () => { if (document.hidden) { uiLocked = true; } else { setTimeout(() => { uiLocked = false; if(audioCtx?.state==='suspended') audioCtx.resume().catch(()=>{}); buildTracksUI(); buildPluginsUI(); buildPresetChips(); }, 400); } });
-    document.getElementById('master-preset-row')?.addEventListener('click', e => { const chip = e.target.closest('.preset-chip'); if (chip) applyMasterPreset(chip.dataset.preset); });
+            function commitBPM() { const input = document.getElementById('bpm-input'); if (!input) return; let v = parseInt(
+                    input.value); if (isNaN(v) || v < 40) v = 40; if (v > 220) v = 220;
+                bpm = v;
+                document.getElementById('bpm-text').textContent = v;
+                input.value = v;
+                document.getElementById('bpm-display')?.classList.remove('editing'); if (metronomeActive) {
+                    clearInterval(metronomeInterval);
+                    startMetronome(); } }
 
-    buildTracksUI(); buildPluginsUI(); buildPresetChips();
-    initAudio();
-})();
-</script>
+            function toggleMetronome() { metronomeActive = !metronomeActive;
+                document.getElementById('btn-metro')?.classList.toggle('active', metronomeActive);
+                metronomeActive ? startMetronome() : clearInterval(metronomeInterval); }
+
+            function startMetronome() { clearInterval(metronomeInterval); if (!audioCtx || !dryGain) return; const interval =
+                60000 / bpm; let beat = 0;
+                metronomeInterval = setInterval(() => { if (!audioCtx || !dryGain) return; try { const osc = audioCtx
+                            .createOscillator(),
+                            gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(dryGain);
+                        osc.frequency.value = beat % 4 === 0 ? 1200 : 800;
+                        osc.type = 'square';
+                        gain.gain.setValueAtTime(beat % 4 === 0 ? .15 : .08, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + .05);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + .05);
+                        beat++; } catch (e) {} }, interval); }
+
+            function toggleLoop() { loopActive = !loopActive;
+                document.getElementById('btn-loop')?.classList.toggle('active', loopActive); }
+
+            function stopAll() { activeSources.forEach(s => safeStopNode(s));
+                activeSources = []; if (isMasterRecording) stopMasterRecording(); if (metronomeActive) {
+                    clearInterval(metronomeInterval);
+                    metronomeActive = false;
+                    document.getElementById('btn-metro')?.classList.remove('active'); } if (acapellaSource) {
+                    safeStopNode(acapellaSource);
+                    acapellaSource = null;
+                    isAcapellaPlaying = false;
+                    updateAcapellaPlayButton(); }
+                stopLiveWaveform();
+                elapsed = 0;
+                document.getElementById('time-display').textContent = '00:00';
+                clearInterval(timerInterval); if (micGainNode && !monitorActive) micGainNode.gain.value = 0;
+                document.querySelectorAll('.track').forEach(t => t.classList.remove('recording-active'));
+                showToast('⏹ Todo detenido'); }
+
+            function playAll() { if (!audioCtx) { initAudio().then(() => playAll()); return; }
+                stopAll(); const anySolo = tracks.some(t => t.isSolo);
+                tracks.forEach(t => { if (!t.audioBuffer || t.isMuted || (anySolo && !t.isSolo)) return; try { const
+                            source = audioCtx.createBufferSource();
+                        source.buffer = t.audioBuffer; const gain = audioCtx.createGain();
+                        gain.gain.value = t.volume; const panner = audioCtx.createStereoPanner();
+                        panner.pan.value = t.pan || 0;
+                        source.connect(gain);
+                        gain.connect(panner);
+                        panner.connect(masterGain);
+                        source.start(0);
+                        activeSources.push(source);
+                        source.onended = () => { activeSources = activeSources.filter(s => s !==
+                            source); }; } catch (e) {} });
+                showToast('▶ Reproduciendo'); }
+
+            function playTrackAudio(trackId) { const t = tracks.find(tr => tr.id === trackId); if (!t || !t.audioBuffer || !
+                    audioCtx) return; try { const source = audioCtx.createBufferSource();
+                source.buffer = t.audioBuffer; const gain = audioCtx.createGain();
+                gain.gain.value = t.volume; const panner = audioCtx.createStereoPanner();
+                panner.pan.value = t.pan || 0;
+                source.connect(gain);
+                gain.connect(panner);
+                panner.connect(masterGain);
+                source.start(0);
+                activeSources.push(source);
+                source.onended = () => { activeSources = activeSources.filter(s => s !== source); };
+                showToast(`▶ ${t.name}`); } catch (e) { showToast('❌ Error al reproducir'); } }
+
+            function clearTrackAudio(trackId) { const t = tracks.find(tr => tr.id === trackId); if (!t) return;
+            t.audioBuffer = null;
+                buildTracksUI();
+                showToast(`🗑 Audio borrado de "${t.name}"`); }
+
+            async function handleAcapellaUpload(event) { const file = event.target.files?.[0]; if (!file)
+            return; try { if (!audioCtx) await initAudio(); const buf = await audioCtx.decodeAudioData(await file
+                        .arrayBuffer());
+                    acapellaBuffer = buf;
+                    document.getElementById('acapella-name').textContent = file.name;
+                    document.getElementById('acapella-upload-btn')?.classList.add('loaded');
+                    document.getElementById('acapella-play-btn').disabled = false;
+                    showToast(`✅ "${file.name}" cargada`); } catch (e) { showToast('❌ Error al cargar'); } }
+
+            function toggleAcapellaPreview() { if (!acapellaBuffer) return;
+                isAcapellaPlaying ? stopAcapellaPreview() : startAcapellaPreview(); }
+
+            function startAcapellaPreview() { if (!audioCtx || !acapellaBuffer || !acapellaGain) return;
+                stopAcapellaPreview(); try { acapellaSource = audioCtx.createBufferSource();
+                acapellaSource.buffer = acapellaBuffer;
+                acapellaSource.connect(acapellaGain);
+                acapellaSource.start(0);
+                isAcapellaPlaying = true;
+                updateAcapellaPlayButton();
+                acapellaSource.onended = () => { isAcapellaPlaying = false;
+                    acapellaSource = null;
+                    updateAcapellaPlayButton(); }; } catch (e) {} }
+
+            function stopAcapellaPreview() { safeStopNode(acapellaSource);
+                acapellaSource = null;
+                isAcapellaPlaying = false;
+                updateAcapellaPlayButton(); }
+
+            function updateAcapellaPlayButton() { const btn = document.getElementById('acapella-play-btn'); if (btn) btn
+                    .innerHTML = isAcapellaPlaying ? '■ Detener' : '▶ Previsualizar'; } let vuAnimFrame = null;
+
+            function startVUMeter() { if (vuAnimFrame) cancelAnimationFrame(vuAnimFrame); const vuBar = document
+                    .getElementById('vu-bar'),
+                    vuPeak = document.getElementById('vu-peak-val'); if (!vuBar || !vuPeak) return;
+
+                function update() {
+                    vuAnimFrame = requestAnimationFrame(update); if (!masterAnalyser) return; try { const data =
+                            new Uint8Array(masterAnalyser.frequencyBinCount);
+                        masterAnalyser.getByteFrequencyData(data); const avg = data.reduce((a, b) => a + b,
+                            0) / data.length;
+                        vuBar.style.width = Math.min(100, (avg / 200) * 100) + '%'; const db = avg > 0 ? Math
+                            .round(20 * Math.log10(avg / 255)) : -Infinity;
+                        vuPeak.textContent = db === -Infinity ? '-∞ dB' : db + ' dB'; } catch (e) {} }
+                update(); }
+
+            function toggleMonitor() { monitorActive = !monitorActive;
+                document.getElementById('monitor-btn')?.classList.toggle('active', monitorActive); if (micGainNode)
+                    micGainNode.gain.value = monitorActive ? 0.8 : 0;
+                showToast(monitorActive ? '🔊 Monitor activado' : '🔇 Monitor silenciado'); }
+
+            function addTrack() { const name = prompt('Nombre:', `Pista ${nextTrackId}`); if (!name)
+            return;
+                tracks.push({ id: nextTrackId, name, color: TRACK_COLORS[(nextTrackId - 1) % TRACK_COLORS.length],
+                    audioBuffer: null, isArmed: false, isMuted: false, isSolo: false, volume: 0.7, pan: 0 });
+                nextTrackId++;
+                buildTracksUI();
+                showToast(`Pista "${name}" añadida`); }
+
+            function deleteTrack(id) { if (tracks.length <= 1) { showToast('Mínimo una pista'); return; }
+                tracks = tracks.filter(t => t.id !== id); if (!tracks.some(t => t.isArmed)) tracks[0].isArmed =
+                    true;
+                buildTracksUI(); }
+
+            function toggleTrackMute(id) { const t = tracks.find(tr => tr.id === id); if (t) { t.isMuted = !t
+                    .isMuted;
+                    buildTracksUI(); } }
+
+            function toggleTrackSolo(id) { const t = tracks.find(tr => tr.id === id); if (t) { t.isSolo = !t
+                    .isSolo;
+                    buildTracksUI(); } }
+
+            function armTrack(id) { tracks.forEach(tr => tr.isArmed = (tr.id === id));
+                buildTracksUI();
+                showToast(`🎤 Pista "${tracks.find(t => t.id === id)?.name}" armada`); }
+
+            function setTrackVolume(id, val) { const t = tracks.find(tr => tr.id === id); if (t) t.volume = parseInt(
+                    val) / 100; }
+
+            function setTrackPanSlider(id, val) { const t = tracks.find(tr => tr.id === id); if (!t) return;
+            t.pan = parseInt(val) / 100; const panVal = document.getElementById(`pan-val-${id}`); if (panVal) panVal
+                    .textContent = t.pan === 0 ? 'C' : (t.pan < 0 ? 'L' + Math.abs(Math.round(t.pan * 100)) : 'R' +
+                        Math.round(t.pan * 100)); const slider = document.getElementById(`pan-slider-${id}`); if (
+                    slider) slider.value = Math.round(t.pan * 100); }
+
+            function setTrackPanBtn(id, val) { const t = tracks.find(tr => tr.id === id); if (!t) return;
+            t.pan = val / 100; const panVal = document.getElementById(`pan-val-${id}`); if (panVal) panVal.textContent =
+                    t.pan === 0 ? 'C' : (t.pan < 0 ? 'L' + Math.abs(Math.round(t.pan * 100)) : 'R' + Math.round(t.pan *
+                        100)); const slider = document.getElementById(`pan-slider-${id}`); if (slider) slider.value =
+                    val; }
+
+            async function toggleMasterRec() { isMasterRecording ? stopMasterRecording() : await
+            startMasterRecording(); }
+
+            async function startMasterRecording() { try { if (!audioCtx) await initAudio(); if (!
+                        mediaStream) { const granted = await requestMic(); if (!granted) return; } if (!
+                        monitorActive) { monitorActive = true;
+                        document.getElementById('monitor-btn')?.classList.add('active'); } if (
+                    micGainNode) micGainNode.gain.value = 0.8;
+                    chunks = []; const dest = audioCtx.createMediaStreamDestination();
+                    masterGain.connect(dest);
+                    mediaRecorder = new MediaRecorder(dest.stream);
+                    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+                    mediaRecorder.onstop = () => saveMasterRecording();
+                    mediaRecorder.start(100);
+                    isMasterRecording = true;
+                    elapsed = 0;
+                    document.getElementById('btn-rec')?.classList.add('recording'); const armedTrack = tracks.find(t =>
+                        t.isArmed); if (armedTrack) { document.getElementById(`track-${armedTrack.id}`)?.classList
+                            .add('recording-active');
+                        startLiveWaveform(armedTrack.id); }
+                    timerInterval = setInterval(() => { elapsed++; const m = String(Math.floor(elapsed / 60))
+                            .padStart(2, '0'),
+                            s = String(elapsed % 60).padStart(2, '0');
+                        document.getElementById('time-display').textContent = `${m}:${s}`; if (elapsed >=
+                            180) stopMasterRecording(); }, 1000);
+                    showToast('⏺ Grabando...'); if (tg) tg.HapticFeedback?.impactOccurred('medium'); } catch (
+                    e) { showToast('❌ Sin acceso al micrófono'); } }
+
+            function stopMasterRecording() { if (!mediaRecorder || mediaRecorder.state === 'inactive')
+                return;
+                mediaRecorder.stop();
+                isMasterRecording = false;
+                clearInterval(timerInterval);
+                document.getElementById('btn-rec')?.classList.remove('recording');
+                document.querySelectorAll('.track').forEach(t => t.classList.remove('recording-active'));
+                stopLiveWaveform(); if (micGainNode && !monitorActive) micGainNode.gain.value = 0; }
+
+            async function saveMasterRecording() { const blob = new Blob(chunks, { type: 'audio/webm' }); if (blob
+                    .size === 0) { showToast('❌ Grabación vacía'); return; } try { const arrayBuffer = await blob
+                        .arrayBuffer(); const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer); const
+                        armedTrack = tracks.find(t => t.isArmed); if (armedTrack) { armedTrack.audioBuffer =
+                            audioBuffer;
+                        buildTracksUI();
+                        drawWaveform(armedTrack.id, audioBuffer); } const url = URL.createObjectURL(blob); const
+                        id = recCount++;
+                    recordings.push({ id, url, blob, dur: elapsed, name: `Toma ${id}`, trackId: armedTrack
+                            ?.id });
+                    renderRecordings();
+                    showToast('✅ Grabación guardada'); } catch (e) { showToast('❌ Error al guardar'); } }
+
+            function renderRecordings() { const list = document.getElementById('recordings-list'); if (!list)
+                return; if (!recordings.length) { list.innerHTML =
+                    '<div style="color:var(--muted);text-align:center;padding:16px;">Aún no hay grabaciones</div>'; return; }
+                list.innerHTML = recordings.slice().reverse().map(r =>
+                    `<div class="recording-item"><span>🎤</span><span>${r.name}</span><span style="font-size:11px;color:var(--muted);">${String(Math.floor(r.dur/60)).padStart(2,'0')}:${String(r.dur%60).padStart(2,'0')}</span><button class="btn-sm green" onclick="window._playRecording('${r.url}')">▶</button><button class="btn-sm gold" onclick="window._downloadRecording('${r.url}','${r.name}')">⬇</button><button class="btn-sm red" onclick="window._deleteRecording(${r.id})">🗑</button></div>`
+                    ).join(''); }
+
+            function playRecording(url) { try { new Audio(url).play(); } catch (e) {} }
+
+            function downloadRecording(url, name) { const a = document.createElement('a');
+                a.href = url;
+                a.download = name.replace(/\s+/g, '_') + '.webm';
+                a.click(); }
+
+            function deleteRecording(id) { recordings = recordings.filter(r => r.id !== id);
+                renderRecordings(); }
+
+            async function exportMix() { if (!audioCtx) { showToast('Inicia el audio primero'); return; } const
+                    customName = prompt('Nombre del archivo de exportación:', 'mezcla_final'); if (!customName)
+                return; const totalDuration = Math.max(elapsed, tracks.reduce((max, t) => t.audioBuffer ? Math.max(
+                        max, t.audioBuffer.duration) : max, 0), 5); const offlineCtx = new OfflineAudioContext(2, Math
+                        .ceil(audioCtx.sampleRate * totalDuration), audioCtx.sampleRate);
+                tracks.forEach(t => { if (t.audioBuffer && !t.isMuted) { const s = offlineCtx
+                            .createBufferSource();
+                        s.buffer = t.audioBuffer; const g = offlineCtx.createGain();
+                        g.gain.value = t.volume; const p = offlineCtx.createStereoPanner();
+                        p.pan.value = t.pan || 0;
+                        s.connect(g);
+                        g.connect(p);
+                        p.connect(offlineCtx.destination);
+                        s.start(0); } }); const renderedBuffer = await offlineCtx.startRendering(); const wavBlob =
+                    bufferToWav(renderedBuffer); const url = URL.createObjectURL(wavBlob); const a = document
+                    .createElement('a');
+                a.href = url;
+                a.download = customName + '.wav';
+                a.click();
+                showToast('✅ Mezcla exportada como WAV'); }
+
+            function bufferToWav(buffer) { const nc = buffer.numberOfChannels,
+                    sr = buffer.sampleRate,
+                    bd = 16,
+                    bps = bd / 8,
+                    ba = nc * bps; const data = []; for (let ch = 0; ch < nc; ch++) data.push(buffer
+                    .getChannelData(ch)); const l = data[0].length,
+                    bs = 44 + l * nc * bps; const ab = new ArrayBuffer(bs),
+                    v = new DataView(ab); const ws = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i,
+                        s.charCodeAt(i)); };
+                ws(0, 'RIFF');
+                v.setUint32(4, bs - 8, true);
+                ws(8, 'WAVE');
+                ws(12, 'fmt ');
+                v.setUint32(16, 16, true);
+                v.setUint16(20, 1, true);
+                v.setUint16(22, nc, true);
+                v.setUint32(24, sr, true);
+                v.setUint32(28, sr * ba, true);
+                v.setUint16(32, ba, true);
+                v.setUint16(34, bd, true);
+                ws(36, 'data');
+                v.setUint32(40, l * ba, true); let off = 44; for (let i = 0; i < l; i++) { for (let ch = 0; ch < nc; ch++) { const
+                        s = Math.max(-1, Math.min(1, data[ch][i]));
+                        v.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                        off += 2; } } return new Blob([ab], { type: 'audio/wav' }); }
+
+            window.toggleMetronome = toggleMetronome;
+            window.activateBPMEdit = activateBPMEdit;
+            window.commitBPM = commitBPM;
+            window.toggleLoop = toggleLoop;
+            window.stopAll = stopAll;
+            window.playAll = playAll;
+            window.toggleMasterRec = toggleMasterRec;
+            window.handleAcapellaUpload = handleAcapellaUpload;
+            window.toggleAcapellaPreview = toggleAcapellaPreview;
+            window.toggleMonitor = toggleMonitor;
+            window.addTrack = addTrack;
+            window.exportMix = exportMix;
+            window.changeMicDevice = changeMicDevice;
+            window._togglePluginBody = togglePluginBody;
+            window._toggleMasterFx = toggleMasterFx;
+            window._updatePluginParams = updateAllPluginParams;
+            window._deleteTrack = deleteTrack;
+            window._toggleTrackMute = toggleTrackMute;
+            window._toggleTrackSolo = toggleTrackSolo;
+            window._armTrack = armTrack;
+            window._setTrackVolume = setTrackVolume;
+            window._setTrackPanSlider = setTrackPanSlider;
+            window._setTrackPanBtn = setTrackPanBtn;
+            window._playRecording = playRecording;
+            window._downloadRecording = downloadRecording;
+            window._deleteRecording = deleteRecording;
+            window._playTrackAudio = playTrackAudio;
+            window._clearTrackAudio = clearTrackAudio;
+            window._applyPreset = applyMasterPreset;
+
+            document.addEventListener('visibilitychange', () => { if (document.hidden) { uiLocked = true; } else { setTimeout(
+                    () => { uiLocked = false; if (audioCtx?.state === 'suspended') audioCtx.resume().catch(
+                        () => {});
+                        buildTracksUI();
+                        buildPluginsUI();
+                        buildPresetCards(); }, 400); } });
+
+            buildTracksUI();
+            buildPluginsUI();
+            buildPresetCards();
+            initAudio();
+        })();
+    </script>
 </body>
 </html>
