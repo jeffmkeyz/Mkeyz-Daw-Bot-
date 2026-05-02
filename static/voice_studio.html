@@ -296,7 +296,7 @@
     let mediaStream = null, mediaRecorder = null, isMasterRecording = false, chunks = [];
     let bpm = 120, metronomeInterval = null, metronomeActive = false, loopActive = false;
     let timerInterval = null, elapsed = 0, recordings = [], recCount = 1, activeSources = [];
-    let acapellaBuffer = null, acapellaSource = null, isAcapellaPlaying = false;
+    let acapellaBuffer = null, acapellaSource = null, acapellaGain = null, isAcapellaPlaying = false;
     let micGainNode = null, monitorActive = false;
     let micAnalyser = null, liveWaveAnimFrame = null;
     let uiLocked = false;
@@ -435,6 +435,8 @@
 
         micGainNode = audioCtx.createGain(); micGainNode.gain.value = 0; micGainNode.connect(masterGain);
         micAnalyser = audioCtx.createAnalyser(); micAnalyser.fftSize = 256;
+
+        acapellaGain = audioCtx.createGain(); acapellaGain.gain.value = 0.75; acapellaGain.connect(masterGain);
     }
     async function initAudio() {
         if (audioCtx) return;
@@ -525,10 +527,19 @@
         showToast('▶ Reproduciendo');
     }
 
-    // ── ACAPELLA ────────────────────────────────
+    // ── ACAPELLA CON EFECTOS ────────────────────
     async function handleAcapellaUpload(event) { const file = event.target.files?.[0]; if (!file) return; try { if (!audioCtx) await initAudio(); const buf = await audioCtx.decodeAudioData(await file.arrayBuffer()); acapellaBuffer = buf; document.getElementById('acapella-name').textContent = file.name; document.getElementById('acapella-upload-btn')?.classList.add('loaded'); document.getElementById('acapella-play-btn').disabled = false; showToast(`✅ "${file.name}" cargada`); } catch(e) { showToast('❌ Error al cargar'); } }
     function toggleAcapellaPreview() { if (!acapellaBuffer) return; isAcapellaPlaying ? stopAcapellaPreview() : startAcapellaPreview(); }
-    function startAcapellaPreview() { if (!audioCtx || !acapellaBuffer || !dryGain) return; stopAcapellaPreview(); try { acapellaSource = audioCtx.createBufferSource(); acapellaSource.buffer = acapellaBuffer; acapellaSource.connect(dryGain); acapellaSource.start(0); isAcapellaPlaying = true; updateAcapellaPlayButton(); acapellaSource.onended = () => { isAcapellaPlaying = false; acapellaSource = null; updateAcapellaPlayButton(); }; } catch(e) {} }
+    function startAcapellaPreview() {
+        if (!audioCtx || !acapellaBuffer || !acapellaGain) return;
+        stopAcapellaPreview();
+        try {
+            acapellaSource = audioCtx.createBufferSource(); acapellaSource.buffer = acapellaBuffer;
+            acapellaSource.connect(acapellaGain); // Ahora pasa por los efectos maestros
+            acapellaSource.start(0); isAcapellaPlaying = true; updateAcapellaPlayButton();
+            acapellaSource.onended = () => { isAcapellaPlaying = false; acapellaSource = null; updateAcapellaPlayButton(); };
+        } catch(e) {}
+    }
     function stopAcapellaPreview() { safeStopNode(acapellaSource); acapellaSource = null; isAcapellaPlaying = false; updateAcapellaPlayButton(); }
     function updateAcapellaPlayButton() { const btn = document.getElementById('acapella-play-btn'); if (btn) btn.innerHTML = isAcapellaPlaying ? '■ Detener' : '▶ Previsualizar'; }
 
