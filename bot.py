@@ -58,7 +58,7 @@ PLAN_PERMS = {
     "sec_spotify":   PLAN_FREE,
     "sec_artists":   PLAN_STUDIO,
     "sec_simulator": PLAN_STUDIO,
-    "sec_listeners": PLAN_PRO,
+    "sec_scale":     PLAN_PRO,
     "sec_freq":      PLAN_PRO,
     "sec_compare":   PLAN_STUDIO,
     "sec_card":      PLAN_PRO,
@@ -129,7 +129,7 @@ MKEYZ_REWARDS = {
     "calc_royalties":10,   # Usar calculadora
     "cotizador":     10,   # Usar cotizador
     "playlist_gen":  15,   # Generar playlist
-    "listeners_panel": 20,   # Abrir Panel de Oyentes
+    "scale_detect":  20,   # Usar detector de escala
 }
 
 async def award_mkeyz(tg_id: int, action: str):
@@ -729,7 +729,7 @@ def kb_upgrade(required_plan):
         ])
 
 async def ask_upgrade(query, required_plan):
-    PRO_TOOLS    = "🎛️ Mini DAW · 📊 Analizador · 🎹 Chord Generator + MIDI\n🎤 Voice Studio · 🎚️ Visualizador · 👥 Panel de Oyentes\n🃏 Tarjeta de Artista · 🎧 Playlist Generator"
+    PRO_TOOLS    = "🎛️ Mini DAW · 📊 Analizador · 🎹 Chord Generator + MIDI\n🎤 Voice Studio · 🎚️ Visualizador · 🔍 Detector Escala\n🃏 Tarjeta de Artista · 🎧 Playlist Generator"
     STUDIO_TOOLS = "🧮 Calculadora · 📊 Simulador de Streams · 📈 Mis Views\n📈 Comparador de Artistas · 🎤 Zona Artistas · 🤝 Colabs"
 
     if required_plan == PLAN_PRO:
@@ -791,7 +791,7 @@ def kb_sub_tools():
         [InlineKeyboardButton("🎛️  Mini DAW",           callback_data="sec_daw")],
         [InlineKeyboardButton("📊  Analizador",         callback_data="sec_analyze")],
         [InlineKeyboardButton("📊  Simulador Streams",  callback_data="sec_simulator")],
-        [InlineKeyboardButton("👥  Panel de Oyentes",  callback_data="sec_listeners")],
+        [InlineKeyboardButton("🎹  Detector de Escala", callback_data="sec_scale")],
         [InlineKeyboardButton("🎚️  Visualizador Freq.", callback_data="sec_freq")],
         [InlineKeyboardButton("📈  Comparar Artistas",  callback_data="sec_compare")],
         [InlineKeyboardButton("🎵  Chord Generator",   callback_data="sec_chords")],
@@ -1095,19 +1095,6 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     except Exception:
         await update.message.reply_text(text, parse_mode="Markdown", reply_markup=kb_main())
 
-async def cmd_oyentes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    web_url = (GAME_URL.rstrip("/") + "/listeners") if GAME_URL else None
-    if web_url:
-        await update.message.reply_text(
-            "👥 *Panel de Oyentes*\n\n"
-            "👉 Abre la herramienta en tu navegador:",
-            parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("👥 Abrir Panel de Oyentes", url=web_url)],
-            ]))
-    else:
-        await update.message.reply_text("👥 No disponible por ahora.")
-
 async def cmd_planes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     plan = db_get_plan(update.effective_user.id)
     await update.message.reply_text(
@@ -1264,19 +1251,23 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await edit(q, "🎤 No disponible.", kb_back())
         return
 
-    # ── Panel de Oyentes ───────────────────────────────────
-    if d == "sec_listeners":
-        web_url = (GAME_URL.rstrip("/") + "/listeners") if GAME_URL else None
-        if web_url:
+    # ── Detector de Escala ─────────────────────────────────
+    if d == "sec_scale":
+        game_url = (GAME_URL.rstrip("/") + "/scale") if GAME_URL else None
+        if game_url:
             await edit(q,
-                "👥 *Panel de Oyentes*\n\n"
-                "👉 Abre la herramienta en tu navegador:",
+                "🎹 *Detector de Escala Musical*\n\n"
+                "Toca notas en el piano virtual y detecta automáticamente:\n\n"
+                "🎼 La escala musical\n"
+                "🎸 Los acordes que funcionan\n"
+                "🎵 El mood y géneros ideales\n"
+                "✨ Las notas resaltadas en el piano",
                 InlineKeyboardMarkup([
-                    [InlineKeyboardButton("👥 Abrir Panel de Oyentes", url=web_url)],
+                    [InlineKeyboardButton("🎹 Abrir Piano", web_app=WebAppInfo(url=game_url))],
                     [InlineKeyboardButton("← Herramientas", callback_data="sub_tools")],
                 ]))
         else:
-            await edit(q, "👥 No disponible.", kb_back())
+            await edit(q, "🎹 No disponible.", kb_back())
         return
 
     # ── Visualizador de Frecuencias ─────────────────────────
@@ -2847,10 +2838,9 @@ def main():
            .write_timeout(60)
            .build())
 
-    app.add_handler(CommandHandler("start",   cmd_start))
-    app.add_handler(CommandHandler("menu",    cmd_start))
-    app.add_handler(CommandHandler("oyentes", cmd_oyentes))
-    app.add_handler(CommandHandler("planes",  cmd_planes))
+    app.add_handler(CommandHandler("start",  cmd_start))
+    app.add_handler(CommandHandler("menu",   cmd_start))
+    app.add_handler(CommandHandler("planes", cmd_planes))
     app.add_handler(CommandHandler("mipan",  cmd_mipan))
     app.add_handler(CommandHandler("admin",  cmd_admin))
     app.add_handler(PreCheckoutQueryHandler(on_pre_checkout))
