@@ -195,28 +195,41 @@
             padding-left: 4px;
         }
 
-        /* Theme dots - CORREGIDO sin recorte cuadrado */
+        /* Theme colors - flotantes y distribuidas */
         .theme-row {
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
+            gap: 4px;
             margin-bottom: 16px;
-            flex-wrap: wrap;
         }
         .theme-dot {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             cursor: pointer;
             border: none;
             transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
             position: relative;
-            background-clip: padding-box;
-            /* Eliminamos box-shadow global y usamos uno interno para que no se vea cuadrado */
             box-shadow: inset 0 0 0 2px rgba(255,255,255,0.1);
+            animation: float 3s ease-in-out infinite;
         }
+        /* Asignar retrasos distintos a cada punto para flotación escalonada */
+        .theme-dot:nth-child(1) { animation-delay: 0s; }
+        .theme-dot:nth-child(2) { animation-delay: 0.3s; }
+        .theme-dot:nth-child(3) { animation-delay: 0.6s; }
+        .theme-dot:nth-child(4) { animation-delay: 0.9s; }
+        .theme-dot:nth-child(5) { animation-delay: 1.2s; }
+        .theme-dot:nth-child(6) { animation-delay: 1.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
         .theme-dot.active {
             transform: scale(1.2);
             box-shadow: 0 0 0 3px #ffffff, 0 0 20px rgba(255,255,255,0.5);
+            animation: none; /* Se desactiva la flotación al estar activo para que no se solape con el escalado */
         }
         .theme-dot:active {
             transform: scale(0.9);
@@ -461,9 +474,8 @@
         let currentColor = "#f5b81b";
         let qrInstance = null;
 
-        // Precargar logo
         const logoImg = new Image();
-        logoImg.src = "logo.png"; // Asegúrate de que el archivo se llame logo.png
+        logoImg.src = "logo.png";
 
         const THEMES = [
             { qr: "#f5b81b", label: "Gold", dot: "linear-gradient(135deg, #000, #f5b81b)" },
@@ -529,16 +541,13 @@
             const x = (size - logoSize) / 2;
             const y = (size - logoSize) / 2;
 
-            // Fondo blanco circular detrás del logo
             ctx.fillStyle = "#ffffff";
             ctx.beginPath();
             ctx.arc(size/2, size/2, logoSize/2 + 3, 0, Math.PI * 2);
             ctx.fill();
 
-            // Dibujar logo
             ctx.drawImage(logoImg, x, y, logoSize, logoSize);
 
-            // Sombra ligera
             ctx.strokeStyle = "rgba(0,0,0,0.15)";
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -605,7 +614,6 @@
             t._timeout = setTimeout(() => t.classList.remove("show"), 2500);
         }
 
-        // Inicialización cuando el logo esté listo
         logoImg.onload = () => generateQR();
         if (logoImg.complete) generateQR();
     </script>
