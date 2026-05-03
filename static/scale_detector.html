@@ -303,7 +303,12 @@
             <div class="scrubber-tooltip">0</div>
         </div>
         <select id="profileSelect" style="background:var(--card);color:var(--text);border:1px solid var(--violet);border-radius:6px;padding:4px;font-size:0.7rem;">
-            <option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option>
+            <option value="aleatorio">🎲 Aleatorio</option>
+            <option value="fiel">🔒 Fiel</option>
+            <option value="explorador">🔍 Explorador</option>
+            <option value="ocasional">🎲 Ocasional</option>
+            <option value="binge">🔥 Binge</option>
+            <option value="realista">🧠 Realista</option>
         </select>
         <button class="btn" onclick="addListeners()">➕ Sumar</button>
         <button class="btn gold float" onclick="addListener()">
@@ -317,6 +322,10 @@
         <button class="btn reset-btn" onclick="resetAll()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Reset
+        </button>
+        <button class="btn" onclick="monthlyRecycle()" style="background:#4fc3f7;color:#000;border:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><circle cx="12" cy="12" r="9"/></svg>
+            🔄 Reciclaje Mensual
         </button>
     </div>
 
@@ -386,7 +395,8 @@
         fiel:{name:"Fiel",icon:"🔒",color:"#00e676",act:0.8,myRadio:0.7,change:0.15,idle:0.1,max:15,sess:5},
         explorador:{name:"Explorador",icon:"🔍",color:"#4fc3f7",act:0.6,myRadio:0.3,change:0.5,idle:0.2,max:8,sess:3},
         ocasional:{name:"Ocasional",icon:"🎲",color:"#b388ff",act:0.3,myRadio:0.4,change:0.3,idle:0.4,max:5,sess:2},
-        binge:{name:"Binge",icon:"🔥",color:"#ff4d4d",act:0.9,myRadio:0.9,change:0.05,idle:0.05,max:30,sess:8}
+        binge:{name:"Binge",icon:"🔥",color:"#ff4d4d",act:0.9,myRadio:0.9,change:0.05,idle:0.05,max:30,sess:8},
+        realista:{name:"Realista",icon:"🧠",color:"#4fc3f7",act:0.5,myRadio:0.35,change:0.4,idle:0.3,max:8,sess:4}
     };
     const countryCities = {
         "Rep. Dominicana":[{name:"Santo Domingo",lat:18.48,lng:-69.93}],
@@ -814,12 +824,13 @@
     }
 
     function updateProfileStats() {
-        const counts={fiel:0,explorador:0,ocasional:0,binge:0}; listeners.forEach(l=>counts[l.profile]++);
+        const counts={fiel:0,explorador:0,ocasional:0,binge:0,realista:0}; listeners.forEach(l=>counts[l.profile]++);
         document.getElementById('profilesStats').innerHTML=`
             <div class="profile-stat" style="border-color:#00e676">🔒 Fieles: ${counts.fiel}</div>
             <div class="profile-stat" style="border-color:#4fc3f7">🔍 Exp: ${counts.explorador}</div>
             <div class="profile-stat" style="border-color:#b388ff">🎲 Ocas: ${counts.ocasional}</div>
-            <div class="profile-stat" style="border-color:#ff4d4d">🔥 Binge: ${counts.binge}</div>`;
+            <div class="profile-stat" style="border-color:#ff4d4d">🔥 Binge: ${counts.binge}</div>
+            <div class="profile-stat" style="border-color:#4fc3f7">🧠 Realistas: ${counts.realista}</div>`;
     }
 
     // ---------- GROWTH PLAN ----------
@@ -943,7 +954,7 @@
     function addHistoryRecord(days, plays, other) {
         const record = {
             timestamp: new Date().toLocaleString(),
-            duration: days === 1 ? '1 Día' : days === 7 ? '7 Días' : '28 Días',
+            duration: days === 1 ? '1 Día' : days === 7 ? '7 Días' : (days === 28 ? '28 Días' : 'Reciclaje'),
             plays,
             other,
             listeners: listeners.length,
@@ -1004,7 +1015,7 @@
     }
     function closeMagicModal() { document.getElementById('magicModal').style.display = 'none'; }
 
-    // ---------- BUTTONS (con confirmación para reset y regenerar) ----------
+    // ---------- BUTTONS ----------
     function addListeners() {
         const count=parseInt(document.getElementById('scrubberValue').textContent)||0;
         if (count <= 0) { showToast('Cantidad debe ser > 0'); return; }
@@ -1044,6 +1055,66 @@
         updateStats(); updateProfileStats(); updateIndicators();
         updateBubbleParticles();
         showToast('Reset completo');
+    }
+
+    // 🔄 RECICLAJE MENSUAL
+    async function monthlyRecycle() {
+        if (simulationRunning) {
+            showToast('Ya hay una simulación en curso');
+            return;
+        }
+        if (!confirm('Esto generará 30 oyentes realistas, simulará 28 días y los reemplazará por otros 30. ¿Continuar?')) return;
+
+        // Generar 30 oyentes realistas
+        listeners = []; state = []; totalMyPlays = 0; totalOtherPlays = 0;
+        data1D = data7D = data28D = null; artistCountEstimate = 0;
+        for (let i = 0; i < 30; i++) {
+            addListenerWithProfile('realista');
+        }
+        updateStats(); updateProfileStats(); updateIndicators();
+        updateBubbleParticles();
+        showToast('30 oyentes realistas generados. Simulando 28 días...');
+
+        // Simular 28 días
+        simulationRunning = true;
+        document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+        document.getElementById('progressWrapper').style.display = 'block';
+        await new Promise(resolve => {
+            runSimulation(28, () => {
+                resolve();
+            });
+        });
+        simulationRunning = false;
+        document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+        document.getElementById('progressWrapper').style.display = 'none';
+
+        // Actualizar estadísticas tras la simulación
+        updateStats(); updateProfileStats(); updateIndicators();
+        setView('1D');
+
+        // Guardar en historial
+        const plays = data1D ? data1D.plays.reduce((a,b)=>a+b,0) : totalMyPlays;
+        const other = data1D ? data1D.otherPlays.reduce((a,b)=>a+b,0) : totalOtherPlays;
+        addHistoryRecord(28, plays, other);
+        showMagicModal('Reciclaje Mensual (primer mes)',
+            `<div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div>
+             <div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div>
+             <div class="magic-stat"><span>👥 Oyentes:</span><strong>${listeners.length}</strong></div>
+             <div class="magic-stat"><span>🎼 Artistas:</span><strong>${artistCountEstimate}</strong></div>
+             <div class="magic-stat"><span>📊 Gini:</span><strong>${document.getElementById('giniValue').textContent}</strong></div>
+             <div class="magic-stat"><span>🔁 Ratio:</span><strong>${document.getElementById('ratioPlays').textContent}</strong></div>
+             <div class="magic-stat"><span>⚠️ Picos:</span><strong>${document.getElementById('suspiciousPeaks').textContent}</strong></div>
+             <div class="magic-stat"><span>🔥 Binge:</span><strong>${document.getElementById('bingePct').textContent}</strong></div>`);
+
+        // Reemplazar por otros 30 oyentes (mes siguiente)
+        listeners = []; state = []; totalMyPlays = 0; totalOtherPlays = 0;
+        data1D = data7D = data28D = null; artistCountEstimate = 0;
+        for (let i = 0; i < 30; i++) {
+            addListenerWithProfile('realista');
+        }
+        updateStats(); updateProfileStats(); updateIndicators();
+        updateBubbleParticles();
+        showToast('30 nuevos oyentes realistas generados para el siguiente mes.');
     }
 
     function updateStats() {
@@ -1113,6 +1184,7 @@
     window.handleCSVUpload = handleCSVUpload;
     window.generatePlan = generatePlan; window.executePlan = executePlan;
     window.closeMagicModal = closeMagicModal;
+    window.monthlyRecycle = monthlyRecycle;
 
     // Init
     loadHistory();
