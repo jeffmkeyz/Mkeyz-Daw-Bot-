@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Mkeyz Studio — Oyentes en Vivo</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -15,7 +15,8 @@
         body {
             background: radial-gradient(circle at 30% 20%, #0a0e1a, #020408);
             color: var(--text); font-family: 'Inter', sans-serif;
-            min-height: 100vh; padding: 8px 8px 20px; overflow-x: hidden;
+            min-height: 100vh; padding: 8px 8px calc(20px + env(safe-area-inset-bottom)); overflow-x: hidden;
+            overscroll-behavior-y: contain;
         }
         .floating-spheres, .shooting-stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
         .sphere {
@@ -75,6 +76,13 @@
         .view-btn { padding:5px 12px; font-size:0.65rem; font-weight:700; border:2px solid rgba(179,136,255,0.5); border-radius:14px; background:rgba(20,15,35,0.7); color:var(--text); cursor:pointer; }
         .view-btn.active { background:var(--violet); color:#000; border-color:var(--violet); }
         canvas#activityChart { width:100%; height:180px; display:block; background:rgba(0,0,0,0.2); border-radius:10px; }
+        .chart-tooltip {
+            position: absolute; background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
+            border-radius: 10px; padding: 6px 10px; pointer-events: none; z-index: 50;
+            opacity: 0; transition: opacity 0.15s; font-size: 0.65rem; color: var(--text);
+            white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 8px var(--violet);
+        }
+        .chart-tooltip.visible { opacity: 1; }
         .btn-group { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
         .btn { background:var(--card); border:2px solid rgba(179,136,255,0.4); padding:8px 16px; border-radius:20px; font-weight:700; font-size:0.7rem; color:var(--text); cursor:pointer; transition:0.2s; }
         .btn:hover { border-color:var(--violet); box-shadow:0 0 12px var(--violet); }
@@ -84,10 +92,18 @@
         .controls-bar { display:flex; align-items:center; gap:6px; margin:8px 0; background:var(--card); padding:8px 14px; border-radius:20px; border:1px solid rgba(179,136,255,0.4); justify-content:center; }
         .controls-label { font-size:0.7rem; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:4px; }
         .controls-label svg { width:16px; height:16px; fill:var(--violet); }
-        .controls-input { width:50px; background:rgba(0,0,0,0.4); border:1px solid var(--violet); border-radius:6px; color:var(--violet2); font-family:'Orbitron',monospace; font-size:0.8rem; text-align:center; padding:2px; }
+        .scrubber-wrapper {
+            position: relative; width: 60px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.4); border: 1px solid var(--violet);
+            border-radius: 8px; overflow: hidden;
+            touch-action: none; user-select: none;
+        }
+        .scrubber-value { font-family: 'Orbitron', monospace; font-size: 0.9rem; color: var(--violet2); pointer-events: none; }
+        .scrubber-indicator { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: rgba(179,136,255,0.2); pointer-events: none; transition: width 0.1s; }
         .controls-select { background:rgba(0,0,0,0.4); color:var(--text); border:1px solid var(--violet); border-radius:8px; padding:4px; font-size:0.7rem; }
         .controls-btn { background:var(--violet); border:none; padding:6px 14px; border-radius:14px; font-weight:700; font-size:0.7rem; cursor:pointer; color:#000; display:flex; align-items:center; gap:4px; }
-        .persist-bar { display: flex; gap:6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+        .persist-bar { display: flex; gap:6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; margin-bottom: 12px; }
         .persist-bar .btn { font-size: 0.65rem; padding: 6px 10px; }
         .scene-list { background: var(--card); border-radius: 10px; padding: 8px; margin: 6px 0; display: none; border: 1px solid var(--violet); max-height: 150px; overflow-y: auto; }
         .scene-list.show { display: block; }
@@ -147,7 +163,10 @@
     <div class="map-area"><div id="mapid"></div></div>
     <div class="controls-bar">
         <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Cantidad:</span>
-        <input type="number" id="listenerCount" value="10" min="1" max="100" class="controls-input">
+        <div class="scrubber-wrapper" id="scrubberWrapper">
+            <div class="scrubber-indicator" id="scrubberIndicator"></div>
+            <span class="scrubber-value" id="scrubberValue">10</span>
+        </div>
         <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Perfil:</span>
         <select id="profileSelect" class="controls-select"><option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option></select>
         <button onclick="generateListeners()" class="controls-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Generar</button>
@@ -165,6 +184,7 @@
             </div>
         </div>
         <canvas id="activityChart"></canvas>
+        <div class="chart-tooltip" id="chartTooltip"></div>
         <div id="progressWrapper" style="display:none;text-align:center;margin:6px 0;"><span id="progressLabel">0%</span><div style="width:80%;height:4px;background:rgba(255,255,255,0.1);border-radius:3px;margin:4px auto;"><div id="progressBarFill" style="height:100%;width:0%;background:var(--violet);border-radius:3px;"></div></div></div>
     </div>
     <div class="btn-group">
@@ -202,6 +222,7 @@
     <script>
     (function() {
         const STORAGE_CURRENT = 'mkeyz_oyentes_current', STORAGE_SCENES = 'mkeyz_oyentes_scenes';
+        // Esferas
         const spheresContainer = document.getElementById('spheres');
         for (let i = 0; i < 16; i++) {
             const sphere = document.createElement('div');
@@ -210,8 +231,8 @@
             sphere.style.animationDuration = (Math.random() * 20 + 15) + 's';
             spheresContainer.appendChild(sphere);
         }
-        const starsCanvas = document.getElementById('starsCanvas');
-        const starsCtx = starsCanvas.getContext('2d');
+        // Estrellas fugaces
+        const starsCanvas = document.getElementById('starsCanvas'), starsCtx = starsCanvas.getContext('2d');
         function resizeStars() { starsCanvas.width = window.innerWidth; starsCanvas.height = window.innerHeight; }
         window.addEventListener('resize', resizeStars); resizeStars();
         let stars = [];
@@ -223,6 +244,7 @@
         }
         drawStars();
 
+        // Perfiles
         const PROFILES = {
             fiel:{name:"Fiel",icon:"🔒",color:"#00e676",activity:0.8,myRadio:0.7,change:0.15,idle:0.1,max:15,session:5},
             explorador:{name:"Explorador",icon:"🔍",color:"#4fc3f7",activity:0.6,myRadio:0.3,change:0.5,idle:0.2,max:8,session:3},
@@ -249,19 +271,67 @@
         const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael","Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria"];
         const userAgents = ["Mozilla/5.0 (Windows NT 10.0)","Mozilla/5.0 (iPhone)","Mozilla/5.0 (Android)"];
 
+        // Estado
         let listeners = [], state = [], totalMyPlays = 0, totalOtherPlays = 0;
         let data1D = null, data7D = null, data28D = null, currentView = '1D', simulationRunning = false, normalizedMode = false;
 
+        // Scrubber
+        const scrubberWrapper = document.getElementById('scrubberWrapper'), scrubberValue = document.getElementById('scrubberValue'), scrubberIndicator = document.getElementById('scrubberIndicator');
+        let scrubberCurrent = 10, scrubberDragging = false, scrubberStartY = 0, scrubberStartVal = 10;
+        function setScrubberVal(val) { val = Math.min(100, Math.max(1, Math.round(val))); scrubberCurrent = val; scrubberValue.textContent = val; scrubberIndicator.style.width = ((val-1)/99*100) + '%'; }
+        scrubberWrapper.addEventListener('pointerdown', e => { scrubberDragging = true; scrubberStartY = e.clientY; scrubberStartVal = scrubberCurrent; scrubberWrapper.setPointerCapture(e.pointerId); e.preventDefault(); });
+        window.addEventListener('pointermove', e => { if (!scrubberDragging) return; const dy = scrubberStartY - e.clientY; setScrubberVal(scrubberStartVal + Math.round(dy/10)); });
+        window.addEventListener('pointerup', e => { if (scrubberDragging) { scrubberDragging = false; scrubberWrapper.releasePointerCapture(e.pointerId); } });
+        setScrubberVal(10);
+
+        // Mapa
         const map = L.map('mapid', { center:[20,0], zoom:2, zoomControl:false, attributionControl:false, minZoom:2, maxZoom:8 });
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(map);
         let markersLayer = L.layerGroup().addTo(map), heatLayer = null, heatmapActive = false;
         const canvas = document.getElementById('activityChart'), ctx = canvas.getContext('2d');
         const contextMenu = document.getElementById('contextMenu'); let contextMenuTarget = null;
         const magicModal = document.getElementById('magicModal'), magicContent = document.getElementById('magicContent'), magicSparkles = document.getElementById('magicSparkles');
+        const chartTooltip = document.getElementById('chartTooltip');
+        let mouseChartX = -1;
 
         function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 180; }
         window.addEventListener('resize', () => { resizeCanvas(); drawChart(); });
         function getActivityFactor(h) { if(h>=7&&h<=9)return 1.4; if(h>=12&&h<=14)return 1.2; if(h>=19&&h<=22)return 1.5; if(h>=0&&h<=5)return 0.3; return 0.8; }
+
+        // --- Gráfico con tooltip interactivo ---
+        canvas.addEventListener('mousemove', function(e) {
+            if (simulationRunning) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const data = currentView === '1D' ? data1D : (currentView === '7D' ? data7D : data28D);
+            if (!data || data.labels.length === 0) return;
+            const n = data.labels.length;
+            const cw = canvas.width - 60;
+            const stepX = cw / (n - 1);
+            const idx = Math.round((x - 40) / stepX);
+            if (idx >= 0 && idx < n && Math.abs((x - 40) - idx * stepX) < stepX * 0.6) {
+                mouseChartX = idx;
+                const act = data.activity[idx];
+                const my = data.plays[idx];
+                const other = data.otherPlays[idx];
+                chartTooltip.innerHTML = `<div style="color:#b388ff;">👥 Oyentes: ${act}</div><div style="color:#00e676;">🎵 Mis plays: ${my}</div><div style="color:#4fc3f7;">🎧 Otros plays: ${other}</div>`;
+                chartTooltip.classList.add('visible');
+                chartTooltip.style.left = (e.clientX - rect.left + 20) + 'px';
+                chartTooltip.style.top = (e.clientY - rect.top - 70) + 'px';
+            } else {
+                mouseChartX = -1;
+                chartTooltip.classList.remove('visible');
+            }
+            drawChart();
+        });
+        canvas.addEventListener('mouseleave', function() {
+            mouseChartX = -1;
+            chartTooltip.classList.remove('visible');
+            if (!simulationRunning) drawChart();
+        });
+        // También touch para móviles
+        canvas.addEventListener('touchmove', function(e) { e.preventDefault(); const touch = e.touches[0]; const me = new MouseEvent('mousemove', {clientX: touch.clientX, clientY: touch.clientY}); canvas.dispatchEvent(me); }, {passive: false});
+        canvas.addEventListener('touchend', function() { canvas.dispatchEvent(new MouseEvent('mouseleave')); });
 
         function drawChart() {
             const w=canvas.width,h=canvas.height; ctx.clearRect(0,0,w,h);
@@ -281,6 +351,12 @@
             for(let i=0;i<n;i+=step) ctx.fillText(labels[i],pad.left+i*stepX,h-pad.bottom+12);
             function line(arr,color,dash){ ctx.strokeStyle=color; ctx.lineWidth=2; ctx.setLineDash(dash||[]); ctx.beginPath(); for(let i=0;i<n;i++){const x=pad.left+i*stepX,y=h-pad.bottom-(arr[i]/maxVal)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke(); ctx.setLineDash([]); }
             line(activity,'#b388ff'); line(plays,'#00e676',[4,4]); line(otherPlays,'#4fc3f7',[2,4]);
+            // Línea vertical del cursor
+            if (mouseChartX >= 0 && mouseChartX < n) {
+                const x = pad.left + mouseChartX * stepX;
+                ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.setLineDash([2,4]);
+                ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, h-pad.bottom); ctx.stroke(); ctx.setLineDash([]);
+            }
         }
         function toggleNormalize() { normalizedMode = !normalizedMode; document.getElementById('normalizeBtn').textContent = normalizedMode ? '📊 Normalizado' : '📊 Normalizar'; drawChart(); }
 
@@ -344,7 +420,7 @@
         setInterval(moveMarkers,4000);
 
         function generateListeners() {
-            const count=parseInt(document.getElementById('listenerCount').value)||10;
+            const count = scrubberCurrent;
             const profileKey=document.getElementById('profileSelect').value;
             listeners=[]; state=[];
             for(let i=0;i<count;i++){
@@ -431,21 +507,24 @@
 
         // Persistencia
         function getCurrentData() { return { listeners: listeners.map(l => ({...l, _marker: undefined})), state: state.map(s => ({...s})), totalMyPlays, totalOtherPlays, data1D, data7D, data28D, timestamp: Date.now() }; }
-        function restoreData(data) { if (!data) return false; listeners = data.listeners.map(l => ({...l})); state = data.state.map(s => ({...s})); totalMyPlays = data.totalMyPlays || 0; totalOtherPlays = data.totalOtherPlays || 0; data1D = data.data1D || null; data7D = data.data7D || null; data28D = data.data28D || null; updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters(); if (data7D) document.getElementById('view7D').disabled = false; if (data28D) document.getElementById('view28D').disabled = false; return true; }
+        function restoreData(data) { if (!data) return false; listeners = data.listeners.map(l => ({...l})); state = data.state.map(s => ({...s})); totalMyPlays = data.totalMyPlays || 0; totalOtherPlays = data.totalOtherPlays || 0; data1D = data.data1D || null; data7D = data.data7D || null; data28D = data.data28D || null; updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters(); if (data7D) document.getElementById('view7D').disabled = false; if (data28D) document.getElementById('view28D').disabled = false; document.getElementById('chartTitle').innerHTML='<span class="icon">📊</span> Actividad (1D)'; return true; }
         function autoSaveCurrentState() { try { const data = getCurrentData(); localStorage.setItem(STORAGE_CURRENT, JSON.stringify(data)); } catch (e) {} }
         function loadSavedState() { try { const raw = localStorage.getItem(STORAGE_CURRENT); if (raw) { const data = JSON.parse(raw); if (data.listeners && data.listeners.length > 0) { restoreData(data); return true; } } } catch (e) {} return false; }
         function saveScene() { const name = prompt('Nombre de la escena:'); if (!name) return; const data = getCurrentData(); data.name = name; data.savedAt = new Date().toLocaleString(); try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); scenes.push(data); localStorage.setItem(STORAGE_SCENES, JSON.stringify(scenes)); showToast('Escena guardada: ' + name); } catch (e) { showToast('Error al guardar'); } }
         function loadScene() { const listDiv = document.getElementById('sceneList'); try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); if (scenes.length === 0) { showToast('No hay escenas guardadas'); return; } listDiv.innerHTML = scenes.map((s, i) => `<div class="scene-item"><span onclick="loadSceneByIndex(${i})" style="flex:1">${s.name} (${s.listeners.length} oyentes, ${s.savedAt || ''})</span><span class="delete-scene" onclick="deleteScene(${i})">🗑️</span></div>`).join(''); listDiv.classList.add('show'); } catch (e) { showToast('Error al cargar escenas'); } }
         function loadSceneByIndex(index) { try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); if (scenes[index]) { restoreData(scenes[index]); autoSaveCurrentState(); document.getElementById('sceneList').classList.remove('show'); showToast('Escena cargada'); } } catch (e) {} }
         function deleteScene(index) { try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); scenes.splice(index, 1); localStorage.setItem(STORAGE_SCENES, JSON.stringify(scenes)); loadScene(); } catch (e) {} }
-        function exportJSON() { const data = getCurrentData(); const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'oyentes_mkeyz.json'; a.click(); URL.revokeObjectURL(url); showToast('Exportado como JSON'); }
+        async function exportJSON() {
+            const data = getCurrentData(); const jsonStr = JSON.stringify(data, null, 2);
+            try { const blob = new Blob([jsonStr], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'oyentes_mkeyz.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showToast('Archivo exportado'); }
+            catch (e) { try { await navigator.clipboard.writeText(jsonStr); showToast('JSON copiado al portapapeles'); } catch (err) { showToast('Error al exportar'); } }
+        }
         function importJSON() { document.getElementById('importFile').click(); }
         function handleImport(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.listeners && data.listeners.length > 0) { restoreData(data); autoSaveCurrentState(); showToast('Importado correctamente'); } else { showToast('Archivo no válido'); } } catch (ex) { showToast('Error al leer el archivo'); } }; reader.readAsText(file); event.target.value = ''; }
 
         window.addListener=addListener; window.generateListeners=generateListeners; window.startSimulation=startSimulation; window.setView=setView; window.resetAll=resetAll; window.closeMagicModal=closeMagicModal;
         window.saveScene=saveScene; window.loadScene=loadScene; window.exportJSON=exportJSON; window.importJSON=importJSON; window.handleImport=handleImport; window.loadSceneByIndex=loadSceneByIndex; window.deleteScene=deleteScene; window.toggleNormalize=toggleNormalize;
 
-        document.getElementById('listenerCount').value=8;
         resizeCanvas();
         if (!loadSavedState()) { generateListeners(); } else { resizeCanvas(); drawChart(); }
         setInterval(()=>{if(!simulationRunning)updateStats();},5000);
