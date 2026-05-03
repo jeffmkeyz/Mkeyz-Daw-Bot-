@@ -73,6 +73,7 @@
             letter-spacing: 0.2px;
         }
 
+        /* ── QR Card con levitación ── */
         .qr-card {
             background: radial-gradient(circle at 30% 0%, #1e1a30 0%, #0c0c14 100%);
             border: 1px solid var(--border);
@@ -83,7 +84,18 @@
             box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);
             position: relative;
             overflow: hidden;
+            /* Animación de flotación suave */
+            animation: cardFloat 5s ease-in-out infinite;
         }
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        /* Se desactiva momentáneamente al interactuar para que no se sienta raro */
+        .qr-card:active {
+            animation: none;
+        }
+
         .qr-card::before, .qr-card::after {
             content: '';
             position: absolute;
@@ -213,7 +225,6 @@
             box-shadow: inset 0 0 0 2px rgba(255,255,255,0.1);
             animation: float 3s ease-in-out infinite;
         }
-        /* Asignar retrasos distintos a cada punto para flotación escalonada */
         .theme-dot:nth-child(1) { animation-delay: 0s; }
         .theme-dot:nth-child(2) { animation-delay: 0.3s; }
         .theme-dot:nth-child(3) { animation-delay: 0.6s; }
@@ -229,7 +240,7 @@
         .theme-dot.active {
             transform: scale(1.2);
             box-shadow: 0 0 0 3px #ffffff, 0 0 20px rgba(255,255,255,0.5);
-            animation: none; /* Se desactiva la flotación al estar activo para que no se solape con el escalado */
+            animation: none;
         }
         .theme-dot:active {
             transform: scale(0.9);
@@ -429,9 +440,9 @@
 
         <div class="section-title fade-in">📐 Tamaño</div>
         <div class="size-row fade-in">
-            <div class="size-btn active" onclick="setSize(180, this)">Pequeño<br><span style="font-size:10px;opacity:0.5">180×180</span></div>
+            <div class="size-btn" onclick="setSize(180, this)">Pequeño<br><span style="font-size:10px;opacity:0.5">180×180</span></div>
             <div class="size-btn" onclick="setSize(220, this)">Mediano<br><span style="font-size:10px;opacity:0.5">220×220</span></div>
-            <div class="size-btn" onclick="setSize(280, this)">Grande<br><span style="font-size:10px;opacity:0.5">280×280</span></div>
+            <div class="size-btn active" onclick="setSize(280, this)">Grande<br><span style="font-size:10px;opacity:0.5">280×280</span></div>
         </div>
 
         <div class="section-title fade-in">🚀 Compartir</div>
@@ -470,7 +481,7 @@
         }
 
         const BOT_URL = "https://t.me/MkeyzDAWbot";
-        let currentSize = 180;
+        let currentSize = 280;  // Tamaño grande por defecto
         let currentColor = "#f5b81b";
         let qrInstance = null;
 
@@ -526,15 +537,25 @@
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H,
             });
-            setTimeout(() => overlayLogo(), 50);
+            // Intentar superponer el logo inmediatamente (si está listo)
+            tryOverlayLogo();
         }
 
-        function overlayLogo() {
+        function tryOverlayLogo() {
             const canvas = document.querySelector("#qr-box canvas");
-            if (!canvas || !logoImg.complete || logoImg.naturalWidth === 0) {
-                setTimeout(overlayLogo, 100);
-                return;
+            if (!canvas) return;
+            if (logoImg.complete && logoImg.naturalWidth !== 0) {
+                drawLogoOnCanvas(canvas);
+            } else {
+                // Esperar a que la imagen cargue y luego dibujar
+                logoImg.addEventListener('load', function onLoad() {
+                    drawLogoOnCanvas(canvas);
+                    logoImg.removeEventListener('load', onLoad);
+                }, { once: true });
             }
+        }
+
+        function drawLogoOnCanvas(canvas) {
             const ctx = canvas.getContext("2d");
             const size = currentSize;
             const logoSize = size * 0.22;
@@ -614,8 +635,8 @@
             t._timeout = setTimeout(() => t.classList.remove("show"), 2500);
         }
 
-        logoImg.onload = () => generateQR();
-        if (logoImg.complete) generateQR();
+        // Generar QR inicial (logo se superpondrá en cuanto esté listo)
+        generateQR();
     </script>
 </body>
 </html>
