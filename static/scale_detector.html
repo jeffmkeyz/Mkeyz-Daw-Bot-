@@ -44,14 +44,46 @@
         .risk-score { font-family:'Orbitron',monospace; font-size:1.6rem; font-weight:800; }
         .risk-status { padding:3px 12px; border-radius:14px; font-size:0.65rem; font-weight:700; }
 
+        .risk-tooltip-wrap { position: relative; cursor: help; }
+        .risk-tooltip {
+            position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+            background: rgba(10, 8, 20, 0.95); border: 1px solid var(--violet);
+            padding: 6px 10px; border-radius: 10px; font-size: 0.6rem; color: var(--text);
+            white-space: normal; width: 200px; text-align: left;
+            pointer-events: none; opacity: 0;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            z-index: 50; line-height: 1.3;
+            box-shadow: 0 6px 16px rgba(179,136,255,0.3);
+        }
+        .risk-tooltip-wrap:hover .risk-tooltip {
+            opacity: 1; transform: translateX(-50%) translateY(-2px);
+        }
+
         .profiles-stats { display:flex; flex-wrap:wrap; gap:3px; margin:4px 0; justify-content:center; font-size:0.6rem; }
         .profile-stat { background:var(--card); padding:3px 8px; border-radius:10px; border:1px solid; display:flex; align-items:center; gap:3px; }
 
         .antidetect-panel { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.3); }
         .antidetect-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
-        .antidetect-item { background:rgba(0,0,0,0.3); border-radius:8px; padding:6px 4px; border:1px solid rgba(255,255,255,0.1); text-align:center; }
+        .antidetect-item {
+            background:rgba(0,0,0,0.3); border-radius:8px; padding:6px 4px;
+            border:1px solid rgba(255,255,255,0.1); text-align:center;
+            position: relative; cursor: help;
+        }
         .antidetect-label { font-size:0.55rem; color:var(--muted); }
         .antidetect-value { font-size:0.7rem; font-weight:700; }
+        .metric-tooltip {
+            position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+            background: rgba(10, 8, 20, 0.95); border: 1px solid var(--violet);
+            padding: 6px 10px; border-radius: 10px; font-size: 0.6rem; color: var(--text);
+            white-space: normal; width: 180px; text-align: left;
+            pointer-events: none; opacity: 0;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            z-index: 50; line-height: 1.3;
+            box-shadow: 0 6px 16px rgba(179,136,255,0.3);
+        }
+        .antidetect-item:hover .metric-tooltip {
+            opacity: 1; transform: translateX(-50%) translateY(-2px);
+        }
 
         .recommendations-panel { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid var(--violet); display:none; text-align:center; font-size:0.6rem; }
 
@@ -69,7 +101,6 @@
         .filter-bar { display:flex; gap:4px; align-items:center; justify-content:center; margin-bottom:4px; }
         .filter-bar select { background:var(--card); color:var(--text); border:1px solid var(--violet); border-radius:6px; padding:4px 6px; font-size:0.6rem; }
 
-        /* Canvas de burbujas */
         .bubbles-area {
             margin:4px 0; border-radius:14px; overflow:hidden;
             border:1px solid rgba(179,136,255,0.2); background:rgba(0,0,0,0.2);
@@ -80,7 +111,6 @@
         .chart-area { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.2); }
         canvas#activityChart { width:100%; height:140px; display:block; background:rgba(0,0,0,0.2); border-radius:8px; }
 
-        /* Estilos flotantes y SVG */
         .btn {
             background:var(--card); border:1px solid rgba(179,136,255,0.4);
             padding:6px 12px; border-radius:14px; font-weight:700; font-size:0.6rem;
@@ -88,24 +118,10 @@
             transition: all 0.25s ease;
             display: inline-flex; align-items:center; justify-content:center; gap:4px;
         }
-        .btn.float {
-            box-shadow: 0 4px 8px rgba(179,136,255,0.3);
-        }
-        .btn.float:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(179,136,255,0.6);
-            filter: brightness(1.2);
-            border-color: var(--violet2);
-        }
-        .btn.gold {
-            background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000;
-            box-shadow: 0 4px 10px rgba(179,136,255,0.5);
-        }
-        .btn.gold:hover {
-            box-shadow: 0 8px 20px rgba(179,136,255,0.8);
-            transform: translateY(-3px);
-            filter: brightness(1.1);
-        }
+        .btn.float { box-shadow: 0 4px 8px rgba(179,136,255,0.3); }
+        .btn.float:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(179,136,255,0.6); filter: brightness(1.2); border-color: var(--violet2); }
+        .btn.gold { background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000; box-shadow: 0 4px 10px rgba(179,136,255,0.5); }
+        .btn.gold:hover { box-shadow: 0 8px 20px rgba(179,136,255,0.8); transform: translateY(-3px); filter: brightness(1.1); }
         .btn.regenerate, .btn.reset-btn {
             border: none; color:#000; padding:8px 16px; font-weight:800;
             letter-spacing:0.5px; border-radius:20px;
@@ -122,10 +138,7 @@
             box-shadow: 0 0 12px rgba(179,136,255,0.6);
             animation: glowPulseViolet 2s infinite alternate;
         }
-        .btn.regenerate:hover, .btn.reset-btn:hover {
-            transform: translateY(-4px) scale(1.05);
-            filter: brightness(1.15);
-        }
+        .btn.regenerate:hover, .btn.reset-btn:hover { transform: translateY(-4px) scale(1.05); filter: brightness(1.15); }
         @keyframes glowPulseOrange {
             0% { box-shadow: 0 0 8px rgba(255,152,0,0.5); }
             100% { box-shadow: 0 0 20px rgba(255,152,0,0.9); }
@@ -205,7 +218,11 @@
         </div>
 
         <div class="audit-panel">
-            <div><div class="risk-score" id="riskScore">0%</div><div class="risk-status" id="riskStatus">—</div></div>
+            <div class="risk-tooltip-wrap">
+                <div class="risk-score" id="riskScore">0%</div>
+                <div class="risk-status" id="riskStatus">—</div>
+                <div class="risk-tooltip" id="riskTooltip">Mide el riesgo global de detección. <br>✅ 0-24% Desapercibido <br>⚠️ 25-54% Precaución <br>🚫 55-100% Riesgo de baneo</div>
+            </div>
             <div style="font-size:0.6rem;" id="riskDetails">Sin datos</div>
         </div>
 
@@ -213,10 +230,26 @@
 
         <div class="antidetect-panel">
             <div class="antidetect-grid">
-                <div class="antidetect-item"><span class="antidetect-label">Gini</span><div class="antidetect-value" id="giniValue">—</div></div>
-                <div class="antidetect-item"><span class="antidetect-label">Ratio</span><div class="antidetect-value" id="ratioPlays">—</div></div>
-                <div class="antidetect-item"><span class="antidetect-label">Picos</span><div class="antidetect-value" id="suspiciousPeaks">0</div></div>
-                <div class="antidetect-item"><span class="antidetect-label">Binge%</span><div class="antidetect-value" id="bingePct">0%</div></div>
+                <div class="antidetect-item">
+                    <span class="antidetect-label">Gini</span>
+                    <div class="antidetect-value" id="giniValue">—</div>
+                    <div class="metric-tooltip" id="giniTooltip">Coeficiente de desigualdad en la distribución de plays. <br>🔹 0 = igualdad total <br>🔸 >0.6 = concentración alta</div>
+                </div>
+                <div class="antidetect-item">
+                    <span class="antidetect-label">Ratio</span>
+                    <div class="antidetect-value" id="ratioPlays">—</div>
+                    <div class="metric-tooltip" id="ratioTooltip">Plays promedio por oyente. <br>🔹 <15 natural <br>🔸 15-20 sospechoso <br>🔴 >20 muy alto</div>
+                </div>
+                <div class="antidetect-item">
+                    <span class="antidetect-label">Picos</span>
+                    <div class="antidetect-value" id="suspiciousPeaks">0</div>
+                    <div class="metric-tooltip" id="peaksTooltip">Picos de actividad fuera del ritmo normal. <br>🔹 <3 aceptable <br>🔸 3-4 revisar <br>🔴 ≥4 sospechoso</div>
+                </div>
+                <div class="antidetect-item">
+                    <span class="antidetect-label">Binge%</span>
+                    <div class="antidetect-value" id="bingePct">0%</div>
+                    <div class="metric-tooltip" id="bingeTooltip">Porcentaje de oyentes compulsivos. <br>🔹 <30% variado <br>🔸 30-50% alto <br>🔴 >50% excesivo</div>
+                </div>
             </div>
         </div>
 
@@ -253,7 +286,6 @@
             <div class="bubble-tooltip" id="bubbleTooltip"></div>
         </div>
 
-        <!-- BARRA DE CONTROLES -->
         <div class="controls-bar">
             <span style="font-size:0.7rem;">Cantidad:</span>
             <div class="scrubber-wrapper" id="scrubberWrapper">
@@ -292,7 +324,6 @@
             <div id="progressWrapper" style="display:none;"><span id="progressLabel">0%</span><div style="height:3px;background:var(--violet);width:0%" id="progressBarFill"></div></div>
         </div>
 
-        <!-- BOTONES DE SIMULACIÓN -->
         <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:6px 0;">
             <button class="btn float" onclick="startSimulation('1D')">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -312,7 +343,6 @@
             </button>
         </div>
 
-        <!-- BOTONES DE ARCHIVOS -->
         <div style="display:flex; gap:4px; justify-content:center; flex-wrap:wrap; margin:4px 0;">
             <button class="btn" onclick="saveScene()">💾 Guardar</button>
             <button class="btn" onclick="loadScene()">📂 Cargar</button>
@@ -375,7 +405,7 @@
         const bubblesCtx = bubblesCanvas.getContext('2d');
         const bubblesArea = document.getElementById('bubblesArea');
         const bubbleTooltip = document.getElementById('bubbleTooltip');
-        let bubbleParticles = []; // {x, y, vx, vy, radius, color, listenerIndex, baseX, baseY, phase}
+        let bubbleParticles = [];
 
         function resizeBubblesCanvas() {
             bubblesCanvas.width = bubblesArea.clientWidth;
@@ -424,16 +454,13 @@
                 const color = p.color;
                 const r = p.radius;
 
-                // Movimiento flotante
                 p.x += p.vx;
                 p.y += Math.sin(Date.now() * 0.002 + p.phase) * p.amplitude * 0.3;
-                // Mantener dentro de bordes
                 if (p.x < r) { p.x = r; p.vx *= -1; }
                 if (p.x > bubblesCanvas.width - r) { p.x = bubblesCanvas.width - r; p.vx *= -1; }
                 if (p.y < r) p.y = r;
                 if (p.y > bubblesCanvas.height - r) p.y = bubblesCanvas.height - r;
 
-                // Dibujar burbuja
                 bubblesCtx.beginPath();
                 bubblesCtx.arc(p.x, p.y, r, 0, Math.PI * 2);
                 bubblesCtx.fillStyle = color;
@@ -452,7 +479,6 @@
         }
 
         function updateBubbleParticles() {
-            // Sincronizar partículas con listeners
             const currentCount = bubbleParticles.length;
             const targetCount = listeners.length;
             if (targetCount > currentCount) {
@@ -475,12 +501,10 @@
                 }
             } else if (targetCount < currentCount) {
                 bubbleParticles = bubbleParticles.filter(p => p.listenerIndex < targetCount);
-                // Reindexar
                 bubbleParticles.forEach((p, idx) => { p.listenerIndex = idx; });
             }
         }
 
-        // Tooltip al pasar el ratón
         bubblesCanvas.addEventListener('mousemove', (e) => {
             const rect = bubblesCanvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
@@ -506,7 +530,6 @@
         });
         bubblesCanvas.addEventListener('mouseleave', () => { bubbleTooltip.style.display = 'none'; });
 
-        // Botón destello
         document.getElementById('glowToggle').addEventListener('click', () => {
             glowActive = !glowActive;
             document.getElementById('glowToggle').style.background = glowActive ? 'var(--violet)' : '';
@@ -536,7 +559,6 @@
         }
         function toggleNormalize() { normalizedMode=!normalizedMode; drawChart(); }
 
-        // ---------- SIMULATION LOGIC (sin cambios) ----------
         function gaussianRandom(mean=0, stdev=1) { let u=1-Math.random(), v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)*stdev+mean; }
         function getBiorythm(h) { if(h>=6&&h<9)return 0.7; if(h>=9&&h<12)return 1.1; if(h>=12&&h<14)return 1.2; if(h>=14&&h<17)return 1.4; if(h>=17&&h<20)return 1.6; if(h>=20&&h<23)return 1.8; return 0.5; }
         function getActFactor(h) { if(h>=7&&h<=9)return 1.4; if(h>=12&&h<=14)return 1.2; if(h>=19&&h<=22)return 1.5; if(h>=0&&h<=5)return 0.3; return 0.8; }
@@ -650,7 +672,7 @@
         function startSimulation(mode) { if(simulationRunning) return; if(!listeners.length){ showToast('Añade oyentes primero'); return; } runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
         function setView(v) { currentView=v; document.getElementById('chartTitle').textContent='📊 Actividad ('+v+')'; document.getElementById('view7D').disabled=!data7D; document.getElementById('view28D').disabled=!data28D; drawChart(); }
 
-        // ---------- INDICATORS & AUDIT (sin cambios) ----------
+        // ---------- INDICATORS & AUDIT ----------
         function updateIndicators() {
             if(!listeners.length) {
                 document.getElementById('giniValue').textContent='—';
@@ -662,16 +684,21 @@
                 document.getElementById('riskDetails').textContent='Sin datos';
                 document.getElementById('verdictBox').innerHTML='';
                 document.getElementById('ruleList').innerHTML='';
+                resetTooltips();
                 return;
             }
             const arr=state.map(s=>s.dailyPlays), total=arr.reduce((a,b)=>a+b,0);
             let sum=0; for(let i=0;i<arr.length;i++) for(let j=0;j<arr.length;j++) sum+=Math.abs(arr[i]-arr[j]);
-            const gini=total?sum/(2*arr.length*total):0; document.getElementById('giniValue').textContent=gini.toFixed(2);
-            const ratio=total/listeners.length; document.getElementById('ratioPlays').textContent=ratio.toFixed(1);
+            const gini=total?sum/(2*arr.length*total):0; 
+            document.getElementById('giniValue').textContent=gini.toFixed(2);
+            const ratio=total/listeners.length; 
+            document.getElementById('ratioPlays').textContent=ratio.toFixed(1);
             let peaks=0; if(data1D){ const avg=data1D.activity.reduce((a,b)=>a+b,0)/24; data1D.activity.forEach(v=>{ if(v>avg*3&&v>2) peaks++; }); }
             document.getElementById('suspiciousPeaks').textContent=peaks;
             const bingePct=Math.round(listeners.filter(l=>l.profile==='binge').length/listeners.length*100);
             document.getElementById('bingePct').textContent=bingePct+'%';
+
+            updateMetricTooltips(gini, ratio, peaks, bingePct);
 
             let riskScore=0;
             if(gini>0.7) riskScore+=40; else if(gini>0.5) riskScore+=20;
@@ -686,6 +713,39 @@
             document.getElementById('riskDetails').textContent = riskScore<25?'Sin flags':(riskScore<55?'Precaución':'Posible baneo');
             analyzeRecommendations(gini,ratio,peaks,bingePct);
             runPlatformAudit(gini,ratio,peaks,bingePct);
+        }
+
+        function resetTooltips() {
+            document.getElementById('giniTooltip').innerHTML = 'Coeficiente de desigualdad en la distribución de plays. <br>🔹 0 = igualdad total <br>🔸 >0.6 = concentración alta';
+            document.getElementById('ratioTooltip').innerHTML = 'Plays promedio por oyente. <br>🔹 <15 natural <br>🔸 15-20 sospechoso <br>🔴 >20 muy alto';
+            document.getElementById('peaksTooltip').innerHTML = 'Picos de actividad fuera del ritmo normal. <br>🔹 <3 aceptable <br>🔸 3-4 revisar <br>🔴 ≥4 sospechoso';
+            document.getElementById('bingeTooltip').innerHTML = 'Porcentaje de oyentes compulsivos. <br>🔹 <30% variado <br>🔸 30-50% alto <br>🔴 >50% excesivo';
+        }
+
+        function updateMetricTooltips(gini, ratio, peaks, bingePct) {
+            let giniMsg = `Gini = ${gini.toFixed(2)}. `;
+            if (gini > 0.7) giniMsg += '🔴 Riesgo alto: concentración extrema de plays.';
+            else if (gini > 0.5) giniMsg += '🔸 Moderado: algo de concentración.';
+            else giniMsg += '🔹 Saludable: plays bien distribuidos.';
+            document.getElementById('giniTooltip').innerHTML = giniMsg;
+
+            let ratioMsg = `Ratio = ${ratio.toFixed(1)} plays/oyente. `;
+            if (ratio > 20) ratioMsg += '🔴 Muy alto: posible bot o abuso.';
+            else if (ratio > 15) ratioMsg += '🔸 Sospechoso: revisa la distribución.';
+            else ratioMsg += '🔹 Natural: parece audiencia real.';
+            document.getElementById('ratioTooltip').innerHTML = ratioMsg;
+
+            let peaksMsg = `${peaks} picos detectados. `;
+            if (peaks >= 4) peaksMsg += '🔴 Excesivos: actividad muy irregular.';
+            else if (peaks >= 3) peaksMsg += '🔸 Algo irregular: revisa horarios.';
+            else peaksMsg += '🔹 Actividad horaria normal.';
+            document.getElementById('peaksTooltip').innerHTML = peaksMsg;
+
+            let bingeMsg = `${bingePct}% de oyentes binge. `;
+            if (bingePct > 50) bingeMsg += '🔴 Excesivo: poco variado.';
+            else if (bingePct > 30) bingeMsg += '🔸 Alto: mezcla más perfiles.';
+            else bingeMsg += '🔹 Buen equilibrio de perfiles.';
+            document.getElementById('bingeTooltip').innerHTML = bingeMsg;
         }
 
         function runPlatformAudit(gini,ratio,peaks,bingePct) {
@@ -736,18 +796,135 @@
                 <div class="profile-stat" style="border-color:#ff4d4d">🔥 Binge: ${counts.binge}</div>`;
         }
 
-        // ---------- PLAN, PERSISTENCE, CSV (sin cambios) ----------
-        function generatePlan() { /* ... igual que antes ... */ }
-        async function executePlan() { /* ... igual ... */ }
-        function saveScene() { /* ... */ }
-        function loadScene() { /* ... */ }
-        function exportJSON() { /* ... */ }
+        // ---------- GROWTH PLAN ----------
+        function generatePlan() {
+            const target = parseInt(document.getElementById('planTarget').value) || 1000;
+            const days = parseInt(document.getElementById('planDays').value) || 30;
+            const current = listeners.length;
+            if (target <= current) { showToast('El objetivo ya está alcanzado'); return; }
+            const totalToAdd = target - current;
+            const dailyAdd = Math.ceil(totalToAdd / days);
+            planData = [];
+            let remaining = totalToAdd;
+            for (let d = 0; d < days; d++) {
+                const addToday = Math.min(dailyAdd, remaining);
+                const oc = Math.floor(addToday * 0.5);
+                const fi = Math.floor(addToday * 0.3);
+                const ex = Math.floor(addToday * 0.15);
+                const bi = addToday - oc - fi - ex;
+                planData.push({ day: d+1, listenersToAdd: { ocasional: oc, fiel: fi, explorador: ex, binge: bi } });
+                remaining -= addToday;
+                if (remaining <= 0) break;
+            }
+            let html = '<table class="plan-table"><tr><th>Día</th><th>Ocas.</th><th>Fiel</th><th>Exp.</th><th>Binge</th><th>Total</th></tr>';
+            planData.forEach(p => {
+                const t = p.listenersToAdd;
+                html += `<tr><td>${p.day}</td><td>+${t.ocasional}</td><td>+${t.fiel}</td><td>+${t.explorador}</td><td>+${t.binge}</td><td>+${t.ocasional+t.fiel+t.explorador+t.binge}</td></tr>`;
+            });
+            html += '</table>';
+            document.getElementById('planTableContainer').innerHTML = html;
+            showToast(`Plan generado: ${totalToAdd} oyentes en ${planData.length} días`);
+        }
+
+        async function executePlan() {
+            if (!planData.length) { showToast('Genera un plan primero'); return; }
+            simulationRunning = true;
+            document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+            document.getElementById('planProgress').textContent = `Ejecutando día 0/${planData.length}...`;
+
+            for (let i = 0; i < planData.length; i++) {
+                const dayPlan = planData[i];
+                for (const [profile, count] of Object.entries(dayPlan.listenersToAdd)) {
+                    for (let j = 0; j < count; j++) addListenerWithProfile(profile);
+                }
+                updateStats(); updateProfileStats(); updateIndicators();
+                document.getElementById('planProgress').textContent = `Ejecutando día ${i+1}/${planData.length}...`;
+                await new Promise(resolve => { runSimulation(1, () => resolve()); });
+            }
+            simulationRunning = false;
+            document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+            document.getElementById('planProgress').textContent = 'Plan completado ✅';
+            showToast('Plan ejecutado con éxito');
+        }
+
+        // ---------- PERSISTENCE ----------
+        function saveScene() {
+            const name=prompt('Nombre:'); if(!name) return;
+            const scenes=JSON.parse(localStorage.getItem('oyentes_scenes')||'[]');
+            scenes.push({name, data:{listeners,state,totalMyPlays,totalOtherPlays,data1D,data7D,data28D}});
+            localStorage.setItem('oyentes_scenes',JSON.stringify(scenes)); showToast('Escena guardada');
+        }
+        function loadScene() {
+            const scenes=JSON.parse(localStorage.getItem('oyentes_scenes')||'[]');
+            if(!scenes.length){ showToast('No hay escenas'); return; }
+            const last=scenes[scenes.length-1];
+            listeners=last.data.listeners; state=last.data.state; totalMyPlays=last.data.totalMyPlays||0; totalOtherPlays=last.data.totalOtherPlays||0;
+            data1D=last.data.data1D; data7D=last.data.data7D; data28D=last.data.data28D;
+            updateStats(); updateProfileStats(); updateIndicators(); showToast('Escena cargada');
+            updateBubbleParticles();
+        }
+        async function exportJSON() {
+            const data={listeners,state,totalMyPlays,totalOtherPlays,data1D,data7D,data28D};
+            const json=JSON.stringify(data,null,2);
+            try{ await navigator.clipboard.writeText(json); showToast('Copiado al portapapeles'); }
+            catch{ const b=new Blob([json],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='oyentes_mkeyz.json'; a.click(); URL.revokeObjectURL(u); showToast('Descargado'); }
+        }
         function importJSON() { document.getElementById('importFile').click(); }
-        function handleImport(event) { /* ... */ }
+        function handleImport(event) {
+            const file=event.target.files[0]; if(!file) return;
+            const reader=new FileReader();
+            reader.onload=function(e){
+                try{
+                    const data=JSON.parse(e.target.result);
+                    listeners=data.listeners; state=data.state; totalMyPlays=data.totalMyPlays||0; totalOtherPlays=data.totalOtherPlays||0;
+                    data1D=data.data1D; data7D=data.data7D; data28D=data.data28D;
+                    updateStats(); updateProfileStats(); updateIndicators(); showToast('Importado');
+                    updateBubbleParticles();
+                }catch(ex){ showToast('Archivo no válido'); }
+            }; reader.readAsText(file);
+        }
+
         function loadCSV() { document.getElementById('csvFile').click(); }
-        function handleCSVUpload(event) { /* ... */ }
-        // (Mantengo el código completo de estas funciones en el script, pero por brevedad no lo duplico aquí;
-        //  en la versión final están todas presentes e idénticas a la anterior respuesta.)
+        function handleCSVUpload(event) {
+            const file=event.target.files[0]; if(!file) return;
+            const reader=new FileReader();
+            reader.onload=function(e){
+                const rows=e.target.result.split('\n').filter(r=>r.trim());
+                if(rows.length<2){ showToast('CSV inválido'); return; }
+                const idx=rows[0].split(',').map(h=>h.trim().toLowerCase()).indexOf('listeners');
+                if(idx===-1){ showToast('Falta columna listeners'); return; }
+                const last=parseInt(rows[rows.length-1].split(',')[idx])||10;
+                listeners=[]; state=[];
+                const counts={ocasional:0,fiel:0,explorador:0,binge:0};
+                for(let i=0;i<last;i++){ const p=i<last*0.4?'ocasional':i<last*0.7?'fiel':i<last*0.9?'explorador':'binge'; addListenerWithProfile(p); counts[p]++; }
+                updateStats(); updateProfileStats(); updateIndicators();
+                document.getElementById('planTarget').value = last * 2;
+                showToast(`CSV cargado: ${last} oyentes`);
+            };
+            reader.readAsText(file);
+        }
+
+        function showToast(msg) {
+            const t=document.createElement('div'); t.textContent=msg;
+            t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1530;padding:8px 16px;border-radius:20px;z-index:9999;font-size:0.7rem;';
+            document.body.appendChild(t); setTimeout(()=>t.remove(),2000);
+        }
+
+        function showMagicModal(title, msg) {
+            document.getElementById('magicContent').innerHTML = msg;
+            const sparklesContainer = document.getElementById('magicSparkles');
+            sparklesContainer.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const s = document.createElement('div');
+                s.className = 'magic-sparkle';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 100 + '%';
+                s.style.animationDelay = Math.random() * 1.5 + 's';
+                sparklesContainer.appendChild(s);
+            }
+            document.getElementById('magicModal').style.display = 'flex';
+        }
+        function closeMagicModal() { document.getElementById('magicModal').style.display = 'none'; }
 
         // ---------- BUTTONS ----------
         function addListeners() {
@@ -844,9 +1021,17 @@
         document.getElementById('filterCountry').addEventListener('change', () => {});
         document.getElementById('filterPlatform').addEventListener('change', () => {});
 
-        function showToast(msg) { /* ... */ }
-        function showMagicModal(title, msg) { /* ... */ }
-        function closeMagicModal() { document.getElementById('magicModal').style.display = 'none'; }
+        // Exports
+        window.addListener = addListener; window.addListeners = addListeners;
+        window.generateListeners = generateListeners; window.startSimulation = startSimulation;
+        window.setView = setView; window.toggleNormalize = toggleNormalize;
+        window.safeMode = safeMode; window.resetAll = resetAll;
+        window.saveScene = saveScene; window.loadScene = loadScene;
+        window.exportJSON = exportJSON; window.importJSON = importJSON;
+        window.handleImport = handleImport; window.loadCSV = loadCSV;
+        window.handleCSVUpload = handleCSVUpload;
+        window.generatePlan = generatePlan; window.executePlan = executePlan;
+        window.closeMagicModal = closeMagicModal;
 
         // Init
         resizeChartCanvas();
@@ -857,13 +1042,6 @@
         initBubbleParticles();
         drawBubbles();
         setInterval(() => { if (!simulationRunning) updateStats(); }, 5000);
-
-        // Exports
-        window.addListener = addListener; window.addListeners = addListeners;
-        window.generateListeners = generateListeners; window.startSimulation = startSimulation;
-        window.setView = setView; window.toggleNormalize = toggleNormalize;
-        window.safeMode = safeMode; window.resetAll = resetAll;
-        // ... resto de exports
     })();
     </script>
 </body>
