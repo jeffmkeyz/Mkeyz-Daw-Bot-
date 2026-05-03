@@ -172,10 +172,6 @@ def serve_bpm():
 def serve_simulator():
     return send_from_directory("static", "stream_sim.html")
 
-@app.route("/scale")
-def serve_scale():
-    return send_from_directory("static", "scale_detector.html")
-
 @app.route("/freq")
 def serve_freq():
     return send_from_directory("static", "freq_visualizer.html")
