@@ -110,7 +110,29 @@
         .controls-bar { display:flex; align-items:center; gap:6px; margin:8px 0; background:var(--card); padding:8px 14px; border-radius:20px; border:1px solid rgba(179,136,255,0.4); justify-content:center; }
         .controls-label { font-size:0.7rem; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:4px; }
         .controls-label svg { width:16px; height:16px; fill:var(--violet); }
-        .controls-input { width:50px; background:rgba(0,0,0,0.4); border:1px solid var(--violet); border-radius:6px; color:var(--violet2); font-family:'Orbitron',monospace; font-size:0.8rem; text-align:center; padding:2px; }
+        /* Selector iOS flotante */
+        .ios-picker {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 40px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--violet);
+            border-radius: 8px;
+            color: var(--violet2);
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            overflow: hidden;
+            text-shadow: 0 0 12px var(--violet);
+        }
+        .ios-picker .number {
+            transition: transform 0.15s ease-out;
+        }
         .controls-select { background:rgba(0,0,0,0.4); color:var(--text); border:1px solid var(--violet); border-radius:8px; padding:4px; font-size:0.7rem; }
         .controls-btn { background:var(--violet); border:none; padding:6px 14px; border-radius:14px; font-weight:700; font-size:0.7rem; cursor:pointer; color:#000; display:flex; align-items:center; gap:4px; }
         .magic-modal {
@@ -219,7 +241,9 @@
 
     <div class="controls-bar">
         <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Cantidad:</span>
-        <input type="number" id="listenerCount" value="10" min="1" max="100" class="controls-input">
+        <div class="ios-picker" id="listenerPicker" tabindex="0">
+            <span class="number" id="pickerValue">10</span>
+        </div>
         <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Perfil:</span>
         <select id="profileSelect" class="controls-select"><option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option></select>
         <button onclick="generateListeners()" class="controls-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Generar</button>
@@ -334,6 +358,50 @@
         let totalMyPlays = 0, totalOtherPlays = 0;
         let data1D = null, data7D = null, data28D = null;
         let currentView = '1D', simulationRunning = false;
+
+        // Selector iOS flotante
+        const picker = document.getElementById('listenerPicker');
+        const pickerValue = document.getElementById('pickerValue');
+        let pickerCurrent = parseInt(pickerValue.textContent) || 10;
+        const MIN_LISTENERS = 1, MAX_LISTENERS = 100;
+
+        function updatePickerDisplay(value) {
+            pickerValue.textContent = value;
+            // Animación flotante
+            pickerValue.style.transform = 'translateY(-10px)';
+            pickerValue.style.opacity = '0';
+            setTimeout(() => {
+                pickerValue.style.transform = 'translateY(0)';
+                pickerValue.style.opacity = '1';
+            }, 150);
+        }
+
+        picker.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -1 : 1;
+            pickerCurrent = Math.min(MAX_LISTENERS, Math.max(MIN_LISTENERS, pickerCurrent + delta));
+            updatePickerDisplay(pickerCurrent);
+        });
+
+        // Para móviles: gesto táctil
+        let touchStartY = 0;
+        picker.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        });
+        picker.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const delta = e.touches[0].clientY - touchStartY;
+            if (Math.abs(delta) > 10) {
+                const change = delta > 0 ? -1 : 1;
+                pickerCurrent = Math.min(MAX_LISTENERS, Math.max(MIN_LISTENERS, pickerCurrent + change));
+                updatePickerDisplay(pickerCurrent);
+                touchStartY = e.touches[0].clientY;
+            }
+        });
+
+        function getListenerCount() {
+            return pickerCurrent;
+        }
 
         const map = L.map('mapid', { center:[20,0], zoom:2, zoomControl:false, attributionControl:false, minZoom:2, maxZoom:8 });
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(map);
@@ -460,7 +528,7 @@
         setInterval(moveMarkers,4000);
 
         function generateListeners() {
-            const count=parseInt(document.getElementById('listenerCount').value)||10;
+            const count = getListenerCount();
             const profileKey=document.getElementById('profileSelect').value;
             listeners=[]; state=[];
             for(let i=0;i<count;i++){
@@ -615,7 +683,6 @@
 
         window.addListener=addListener; window.generateListeners=generateListeners; window.startSimulation=startSimulation; window.setView=setView; window.resetAll=resetAll; window.closeMagicModal=closeMagicModal;
 
-        document.getElementById('listenerCount').value=8;
         generateListeners();
         resizeCanvas();
         setInterval(()=>{if(!simulationRunning)updateStats();},5000);
