@@ -6,14 +6,9 @@
     <title>Mkeyz Studio — Oyentes en Vivo</title>
     <style>
         :root {
-            --violet: #b388ff;
-            --violet2: #d1b8ff;
-            --green: #00e676;
-            --red: #ff4d4d;
-            --blue: #4fc3f7;
-            --text: #f0f3ff;
-            --muted: #9a8fb8;
-            --card: rgba(20, 15, 35, 0.85);
+            --violet: #b388ff; --violet2: #d1b8ff; --green: #00e676;
+            --red: #ff4d4d; --blue: #4fc3f7; --orange: #ff9800;
+            --text: #f0f3ff; --muted: #9a8fb8; --card: rgba(20, 15, 35, 0.85);
             --neon: 0 0 10px var(--violet), 0 0 20px var(--violet), 0 0 40px rgba(179,136,255,0.5);
         }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -25,7 +20,6 @@
             padding: 14px 14px 30px;
             overflow-x: hidden;
         }
-        /* Esferas flotantes */
         .floating-spheres { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
         .sphere {
             position:absolute; border-radius:50%;
@@ -40,11 +34,8 @@
             75% { transform: translateY(-80px) translateX(-50px) scale(1.05); opacity:0.7; }
             100% { transform: translateY(0) translateX(0) scale(1); opacity:0.5; }
         }
-        /* Estrellas fugaces */
-        .shooting-stars {
-            position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden;
-        }
-        .player, .stats-grid, .map-container, .chart-area, .btn-group { position:relative; z-index:1; }
+        .shooting-stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
+        .player, .stats-grid, .map-container, .chart-area, .btn-group, .custom-listeners, .profiles-stats, .antidetect-panel { position:relative; z-index:1; }
         .player {
             background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:30px; padding:18px 20px 12px; margin-bottom:20px;
             border:1px solid rgba(179,136,255,0.3); box-shadow:var(--neon); display:flex; flex-direction:column; gap:12px;
@@ -62,6 +53,7 @@
         .vbar:nth-child(3) { height:16px; } .vbar:nth-child(4) { height:28px; }
         .vbar:nth-child(5) { height:14px; }
         @keyframes eqAnim { 0% { transform:scaleY(0.5); } 100% { transform:scaleY(1.3); } }
+        .track-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
         .track-name { font-weight:700; }
         .live-badge {
             display:inline-flex; align-items:center; gap:6px;
@@ -74,6 +66,23 @@
             border:1px solid rgba(179,136,255,0.2); text-align:center; box-shadow:0 0 12px rgba(179,136,255,0.15);
         }
         .mini-stat .value { font-family:'Orbitron',monospace; font-size:1.3rem; color:var(--violet2); text-shadow:0 0 10px var(--violet); }
+        .profiles-stats { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; justify-content:center; }
+        .profile-stat {
+            background:var(--card); padding:8px 16px; border-radius:20px; font-size:0.75rem;
+            border:1px solid; display:flex; align-items:center; gap:6px;
+        }
+        .antidetect-panel {
+            background: var(--card); border-radius: 20px; padding: 16px;
+            border: 1px solid rgba(179,136,255,0.3); margin: 16px 0;
+        }
+        .antidetect-title { font-size:0.8rem; color:var(--violet2); margin-bottom:12px; }
+        .antidetect-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 8px; }
+        .antidetect-item {
+            background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .antidetect-label { font-size:0.65rem; color:var(--muted); }
+        .antidetect-value { font-size:1rem; font-weight:700; color:var(--text); margin-top:4px; }
         .map-container {
             height:450px; margin:20px 0; background:#0a0a1e; border-radius:30px;
             border:1px solid rgba(179,136,255,0.2); overflow:hidden; position:relative;
@@ -83,29 +92,24 @@
         .listener-dot {
             position:absolute; width:18px; height:18px; border-radius:50%;
             background:#4a4f70; box-shadow:0 0 8px currentColor; cursor:pointer; z-index:2;
+            border:2px solid transparent;
         }
-        .listener-dot::after {
-            content: ''; position: absolute; top: 50%; left: 50%; width: 100%; height: 100%;
-            border-radius: 50%; background: currentColor; opacity: 0.3;
-            transform: translate(-50%, -50%) scale(1); animation: waveExpand 2s ease-out infinite; z-index: -1;
-        }
-        @keyframes waveExpand {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
-            100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
-        }
+        .listener-dot[data-profile="fiel"]:not(.inactive) { border-color: #00e676; box-shadow: 0 0 15px #00e676; }
+        .listener-dot[data-profile="explorador"]:not(.inactive) { border-color: #4fc3f7; box-shadow: 0 0 15px #4fc3f7; }
+        .listener-dot[data-profile="ocasional"]:not(.inactive) { border-color: #b388ff; box-shadow: 0 0 15px #b388ff; }
+        .listener-dot[data-profile="binge"]:not(.inactive) { border-color: #ff4d4d; box-shadow: 0 0 15px #ff4d4d; }
+
         .listener-dot.active { box-shadow:0 0 20px currentColor, 0 0 35px currentColor; animation:dotPulse 2s infinite alternate; }
         @keyframes dotPulse { 0% { transform:scale(1); } 100% { transform:scale(1.25); } }
-        .listener-dot.inactive::after { animation:none; display:none; }
+        .listener-dot.inactive { opacity: 0.7; }
         .chart-area {
             background:var(--card); backdrop-filter:blur(10px); border-radius:24px; padding:16px;
             margin:20px 0; border:1px solid rgba(179,136,255,0.2); box-shadow:0 0 20px rgba(179,136,255,0.15);
         }
-        .chart-header {
-            display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;
-        }
+        .chart-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
         .chart-title {
             font-size: 1rem; font-weight:800; text-transform: uppercase; letter-spacing:2px;
-            color: #fff; text-shadow: 0 0 10px var(--violet), 0 0 25px var(--violet), 0 0 40px var(--violet2);
+            color: #fff; text-shadow: 0 0 10px var(--violet), 0 0 25px var(--violet);
             background: linear-gradient(135deg, var(--violet2), #ffffff);
             -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
@@ -134,21 +138,35 @@
         .progress-wrapper { display:none; text-align:center; margin:10px 0; }
         .progress-bar-bg { width:80%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin:0 auto; }
         .progress-bar-fill { height:100%; width:0%; background:var(--violet); border-radius:3px; }
-        /* Input personalizado */
         .custom-listeners {
-            display: flex; align-items: center; gap: 10px; margin-top: 10px;
+            display: flex; align-items: center; gap: 10px; margin: 10px 0;
             background: var(--card); padding: 12px 20px; border-radius: 50px;
             border: 1px solid rgba(179,136,255,0.3);
         }
         .custom-listeners input {
             width: 70px; background: transparent; border: none; color: var(--violet2);
-            font-family: 'Orbitron', monospace; font-size: 1rem; text-align: center;
-            outline: none;
+            font-family: 'Orbitron', monospace; font-size: 1rem; text-align: center; outline: none;
+        }
+        .custom-listeners select {
+            background: var(--card); color: var(--text); border: 1px solid var(--violet); border-radius: 10px; padding: 5px;
         }
         .custom-listeners button {
             background: var(--violet); border: none; padding: 8px 16px; border-radius: 20px;
             font-weight: 700; cursor: pointer;
         }
+        .context-menu {
+            position: absolute; z-index: 300;
+            background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
+            border-radius: 16px; padding: 8px 0; min-width: 180px;
+            box-shadow: 0 0 20px var(--violet); backdrop-filter: blur(12px);
+            display: none;
+        }
+        .context-menu.show { display: block; }
+        .context-menu-item {
+            padding: 10px 16px; cursor: pointer; font-size: 0.8rem; color: var(--text);
+            transition: background 0.2s;
+        }
+        .context-menu-item:hover { background: rgba(179,136,255,0.2); }
     </style>
 </head>
 <body>
@@ -178,14 +196,58 @@
         <div class="mini-stat"><div class="value" id="activePlatform">0</div><div class="label">🟢 Activos</div></div>
     </div>
 
+    <div class="profiles-stats" id="profilesStats">
+        <div class="profile-stat" id="stat-fiel" style="border-color:#00e676"><span>🔒</span> Fieles: 0</div>
+        <div class="profile-stat" id="stat-explorador" style="border-color:#4fc3f7"><span>🔍</span> Exploradores: 0</div>
+        <div class="profile-stat" id="stat-ocasional" style="border-color:#b388ff"><span>🎲</span> Ocasionales: 0</div>
+        <div class="profile-stat" id="stat-binge" style="border-color:#ff4d4d"><span>🔥</span> Binge: 0</div>
+    </div>
+
+    <!-- Panel de indicadores antidetect -->
+    <div class="antidetect-panel">
+        <div class="antidetect-title">🛡️ Indicadores Antidetect</div>
+        <div class="antidetect-grid">
+            <div class="antidetect-item">
+                <div class="antidetect-label">Coeficiente Gini (plays)</div>
+                <div class="antidetect-value" id="giniValue">—</div>
+            </div>
+            <div class="antidetect-item">
+                <div class="antidetect-label">Ratio plays/oyente</div>
+                <div class="antidetect-value" id="ratioPlays">—</div>
+            </div>
+            <div class="antidetect-item">
+                <div class="antidetect-label">Picos sospechosos</div>
+                <div class="antidetect-value" id="suspiciousPeaks">0</div>
+            </div>
+            <div class="antidetect-item">
+                <div class="antidetect-label">Binge listeners (%)</div>
+                <div class="antidetect-value" id="bingePct">0%</div>
+            </div>
+        </div>
+    </div>
+
     <div class="custom-listeners">
-        <span>Cantidad de oyentes:</span>
+        <span>Cantidad:</span>
         <input type="number" id="listenerCount" value="10" min="1" max="100">
+        <span>Perfil:</span>
+        <select id="profileSelect">
+            <option value="aleatorio">Aleatorio</option>
+            <option value="fiel">Fiel</option>
+            <option value="explorador">Explorador</option>
+            <option value="ocasional">Ocasional</option>
+            <option value="binge">Binge</option>
+        </select>
         <button onclick="generateListeners()">Generar</button>
     </div>
 
     <div class="map-container" id="mapContainer">
         <svg class="world-map" viewBox="0 0 1000 500"><rect width="1000" height="500" fill="#0d0a1e"/></svg>
+        <div class="context-menu" id="contextMenu">
+            <div class="context-menu-item" data-profile="fiel">🔒 Fiel</div>
+            <div class="context-menu-item" data-profile="explorador">🔍 Explorador</div>
+            <div class="context-menu-item" data-profile="ocasional">🎲 Ocasional</div>
+            <div class="context-menu-item" data-profile="binge">🔥 Binge</div>
+        </div>
     </div>
 
     <div class="chart-area">
@@ -214,374 +276,532 @@
 
     <div class="toast" id="toast"></div>
 
-    <script>
-        (function() {
-            // Esferas flotantes
-            const spheresContainer = document.getElementById('spheres');
-            for (let i = 0; i < 20; i++) {
-                const sphere = document.createElement('div');
-                sphere.className = 'sphere';
-                sphere.style.width = (Math.random() * 80 + 40) + 'px';
-                sphere.style.height = sphere.style.width;
-                sphere.style.left = Math.random() * 100 + '%';
-                sphere.style.top = Math.random() * 100 + '%';
-                sphere.style.animationDuration = (Math.random() * 20 + 15) + 's';
-                sphere.style.animationDelay = (Math.random() * 15) + 's';
-                spheresContainer.appendChild(sphere);
+<script>
+(function() {
+    // Esferas
+    const spheresContainer = document.getElementById('spheres');
+    for (let i = 0; i < 20; i++) {
+        const sphere = document.createElement('div');
+        sphere.className = 'sphere';
+        sphere.style.width = (Math.random() * 80 + 40) + 'px';
+        sphere.style.height = sphere.style.width;
+        sphere.style.left = Math.random() * 100 + '%';
+        sphere.style.top = Math.random() * 100 + '%';
+        sphere.style.animationDuration = (Math.random() * 20 + 15) + 's';
+        sphere.style.animationDelay = (Math.random() * 15) + 's';
+        spheresContainer.appendChild(sphere);
+    }
+
+    // Estrellas fugaces
+    const starsCanvas = document.getElementById('starsCanvas');
+    const starsCtx = starsCanvas.getContext('2d');
+    function resizeStarsCanvas() {
+        starsCanvas.width = window.innerWidth;
+        starsCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeStarsCanvas);
+    resizeStarsCanvas();
+    let stars = [];
+    for (let i = 0; i < 12; i++) {
+        stars.push({
+            x: Math.random() * starsCanvas.width,
+            y: Math.random() * starsCanvas.height * 0.5,
+            length: Math.random() * 80 + 40,
+            speed: Math.random() * 10 + 5,
+            opacity: Math.random() * 0.5 + 0.5,
+            reset() { this.x = Math.random() * starsCanvas.width; this.y = Math.random() * starsCanvas.height * 0.3; }
+        });
+    }
+    function drawStars() {
+        starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+        stars.forEach(star => {
+            star.x += star.speed;
+            star.y -= star.speed * 0.5;
+            if (star.x > starsCanvas.width + 100 || star.y < -100) star.reset();
+            starsCtx.beginPath();
+            starsCtx.moveTo(star.x, star.y);
+            starsCtx.lineTo(star.x - star.length, star.y + star.length * 0.5);
+            starsCtx.strokeStyle = `rgba(179,136,255,${star.opacity})`;
+            starsCtx.lineWidth = 2;
+            starsCtx.shadowColor = '#b388ff';
+            starsCtx.shadowBlur = 10;
+            starsCtx.stroke();
+        });
+        requestAnimationFrame(drawStars);
+    }
+    drawStars();
+
+    // Perfiles
+    const PROFILES = {
+        fiel: {
+            name: "Fiel", icon: "🔒", color: "#00e676",
+            activityProb: 0.8, myRadioProb: 0.7,
+            trackChangeProb: 0.15, idleProb: 0.1,
+            maxDailyPlays: 15, sessionLength: 5,
+        },
+        explorador: {
+            name: "Explorador", icon: "🔍", color: "#4fc3f7",
+            activityProb: 0.6, myRadioProb: 0.3,
+            trackChangeProb: 0.5, idleProb: 0.2,
+            maxDailyPlays: 8, sessionLength: 3,
+        },
+        ocasional: {
+            name: "Ocasional", icon: "🎲", color: "#b388ff",
+            activityProb: 0.3, myRadioProb: 0.4,
+            trackChangeProb: 0.3, idleProb: 0.4,
+            maxDailyPlays: 5, sessionLength: 2,
+        },
+        binge: {
+            name: "Binge", icon: "🔥", color: "#ff4d4d",
+            activityProb: 0.9, myRadioProb: 0.9,
+            trackChangeProb: 0.05, idleProb: 0.05,
+            maxDailyPlays: 30, sessionLength: 8,
+        }
+    };
+
+    const countryCoords = {
+        "Rep. Dominicana":{x:28,y:45}, "España":{x:45,y:32}, "Brasil":{x:32,y:62},
+        "México":{x:15,y:40}, "Francia":{x:48,y:30}, "Colombia":{x:25,y:55},
+        "Argentina":{x:28,y:80}, "Venezuela":{x:26,y:50}, "EE.UU.":{x:18,y:32},
+        "Perú":{x:22,y:62}, "Chile":{x:26,y:78}, "Ecuador":{x:22,y:58},
+        "Panamá":{x:26,y:48}, "Costa Rica":{x:24,y:46}, "Uruguay":{x:30,y:78},
+        "Paraguay":{x:30,y:70}, "Bolivia":{x:27,y:66}, "Nicaragua":{x:24,y:44},
+        "Guatemala":{x:22,y:42}, "Cuba":{x:24,y:38}, "Puerto Rico":{x:30,y:40},
+        "Honduras":{x:23,y:44}, "El Salvador":{x:21,y:44}, "Canadá":{x:22,y:22},
+        "Italia":{x:50,y:34}, "Japón":{x:85,y:36}, "Nigeria":{x:48,y:57},
+        "Alemania":{x:51,y:27}, "Reino Unido":{x:47,y:25}, "Corea del Sur":{x:83,y:38},
+        "Australia":{x:80,y:72}, "Sudáfrica":{x:53,y:75}, "India":{x:68,y:50}
+    };
+    const platforms = [
+        {name:"Spotify",color:"#b388ff"},{name:"Apple Music",color:"#e040fb"},
+        {name:"YouTube",color:"#ff4081"},{name:"Amazon Music",color:"#7c4dff"},
+        {name:"Deezer",color:"#aa66cc"},{name:"SoundCloud",color:"#ff8800"}
+    ];
+    const tracks = ["Dímelo tú","Bla Bla Bla","Fuego Fuego","Pla Pla Pla","Todo Pa' Ti",
+        "Ronca'íto","No Ta' En Na'","Tú Eres Mía","Vem Comigo","Yo Soy La Que Manda"];
+    const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael",
+        "Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria","Gabriel","Natalia",
+        "Mateo","Luciana","Samuel","Martina","Nicolás","Andrea","Hiroshi","Amara","Klaus","Oliver"];
+
+    // Huellas digitales simuladas
+    const userAgents = [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
+        "Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
+    ];
+    const resolutions = ["1920x1080","1366x768","390x844","412x915","1440x900"];
+    const languages = ["es-ES","es-MX","en-US","pt-BR","fr-FR","de-DE"];
+
+    let listeners = [], state = [];
+    let totalMyPlays = 0, totalOtherPlays = 0;
+    let data1D = null, data7D = null, data28D = null;
+    let currentView = '1D';
+    let simulationRunning = false;
+
+    const canvas = document.getElementById('activityChart');
+    const ctx = canvas.getContext('2d');
+    const contextMenu = document.getElementById('contextMenu');
+    let contextMenuTarget = null;
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = 240;
+    }
+    window.addEventListener('resize', () => { resizeCanvas(); drawChart(); });
+
+    function getActivityFactor(h) {
+        if (h>=7 && h<=9) return 1.4;
+        if (h>=12 && h<=14) return 1.2;
+        if (h>=19 && h<=22) return 1.5;
+        if (h>=0 && h<=5) return 0.3;
+        return 0.8;
+    }
+
+    function drawChart() {
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        const data = currentView === '1D' ? data1D : (currentView === '7D' ? data7D : data28D);
+        if (!data) {
+            ctx.fillStyle = '#7a7e90';
+            ctx.font = '14px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Sin datos para esta vista', w/2, h/2);
+            return;
+        }
+        const { labels, activity, plays, otherPlays } = data;
+        const maxVal = Math.max(...activity, ...plays, ...otherPlays, 1);
+        const pad = { top:20, right:20, bottom:30, left:40 };
+        const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
+        const n = labels.length, stepX = cw / (n - 1);
+
+        ctx.strokeStyle = '#2a1f4a';
+        ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, h-pad.bottom); ctx.lineTo(w-pad.right, h-pad.bottom); ctx.stroke();
+        ctx.fillStyle = '#9a8fb8'; ctx.font = '9px Inter'; ctx.textAlign = 'center';
+        const step = n <= 7 ? 1 : (n <= 28 ? 7 : 5);
+        for (let i = 0; i < n; i += step) ctx.fillText(labels[i], pad.left + i*stepX, h-pad.bottom+15);
+
+        function line(arr, color, dash) {
+            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash || []);
+            ctx.beginPath();
+            for (let i = 0; i < n; i++) {
+                const x = pad.left + i*stepX, y = h-pad.bottom - (arr[i]/maxVal)*ch;
+                i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
             }
+            ctx.stroke(); ctx.setLineDash([]);
+        }
+        line(activity, '#b388ff');
+        line(plays, '#00e676', [4,4]);
+        line(otherPlays, '#4fc3f7', [2,4]);
+        ctx.fillStyle = '#9a8fb8'; ctx.font = '8px Inter'; ctx.textAlign = 'right';
+        ctx.fillText(maxVal, pad.left-5, pad.top+10);
+    }
 
-            // Estrellas fugaces
-            const starsCanvas = document.getElementById('starsCanvas');
-            const starsCtx = starsCanvas.getContext('2d');
-            function resizeStarsCanvas() {
-                starsCanvas.width = window.innerWidth;
-                starsCanvas.height = window.innerHeight;
+    function updateAntidetectIndicators() {
+        if (listeners.length === 0) {
+            document.getElementById('giniValue').textContent = '—';
+            document.getElementById('ratioPlays').textContent = '—';
+            document.getElementById('suspiciousPeaks').textContent = '0';
+            document.getElementById('bingePct').textContent = '0%';
+            return;
+        }
+        // Gini
+        const playsArray = state.map(s => s.dailyPlays || 0);
+        const total = playsArray.reduce((a,b)=>a+b,0);
+        let sum = 0;
+        for (let i = 0; i < playsArray.length; i++) {
+            for (let j = 0; j < playsArray.length; j++) {
+                sum += Math.abs(playsArray[i] - playsArray[j]);
             }
-            window.addEventListener('resize', resizeStarsCanvas);
-            resizeStarsCanvas();
-            let stars = [];
-            function createStar() {
-                return {
-                    x: Math.random() * starsCanvas.width,
-                    y: Math.random() * starsCanvas.height * 0.5,
-                    length: Math.random() * 80 + 40,
-                    speed: Math.random() * 10 + 5,
-                    opacity: Math.random() * 0.5 + 0.5,
-                    reset() { this.x = Math.random() * starsCanvas.width; this.y = Math.random() * starsCanvas.height * 0.3; }
-                };
+        }
+        const gini = total ? sum / (2 * playsArray.length * total) : 0;
+        document.getElementById('giniValue').textContent = gini.toFixed(2);
+
+        // Ratio plays/oyente
+        const ratio = total / listeners.length;
+        document.getElementById('ratioPlays').textContent = ratio.toFixed(1);
+
+        // Picos sospechosos (usando datos de la última simulación si existen)
+        let peaks = 0;
+        if (data1D && data1D.activity.length > 0) {
+            const avg = data1D.activity.reduce((a,b)=>a+b,0) / 24;
+            data1D.activity.forEach(v => { if (v > avg * 3 && v > 2) peaks++; });
+        }
+        document.getElementById('suspiciousPeaks').textContent = peaks;
+
+        // Binge listeners porcentaje
+        const bingeCount = listeners.filter(l => l.profile === 'binge').length;
+        const bingePct = ((bingeCount / listeners.length) * 100).toFixed(0);
+        document.getElementById('bingePct').textContent = bingePct + '%';
+    }
+
+    function updateProfileStats() {
+        const counts = { fiel: 0, explorador: 0, ocasional: 0, binge: 0 };
+        listeners.forEach(l => counts[l.profile]++);
+        document.getElementById('stat-fiel').innerHTML = `<span>🔒</span> Fieles: ${counts.fiel}`;
+        document.getElementById('stat-explorador').innerHTML = `<span>🔍</span> Exploradores: ${counts.explorador}`;
+        document.getElementById('stat-ocasional').innerHTML = `<span>🎲</span> Ocasionales: ${counts.ocasional}`;
+        document.getElementById('stat-binge').innerHTML = `<span>🔥</span> Binge: ${counts.binge}`;
+    }
+
+    function generateListeners() {
+        const count = parseInt(document.getElementById('listenerCount').value) || 10;
+        const profileKey = document.getElementById('profileSelect').value;
+        listeners = []; state = [];
+        for (let i = 0; i < count; i++) {
+            const c = Object.keys(countryCoords)[Math.floor(Math.random()*Object.keys(countryCoords).length)];
+            const coords = countryCoords[c];
+            const plat = platforms[Math.floor(Math.random()*platforms.length)];
+            const name = namePool[Math.floor(Math.random()*namePool.length)];
+            const device = ["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
+            const profile = profileKey === 'aleatorio' ? Object.keys(PROFILES)[Math.floor(Math.random()*4)] : profileKey;
+            const ua = userAgents[Math.floor(Math.random()*userAgents.length)];
+            const res = resolutions[Math.floor(Math.random()*resolutions.length)];
+            const lang = languages[Math.floor(Math.random()*languages.length)];
+            listeners.push({
+                name, country: c, device, platform: plat.name, color: plat.color,
+                x: Math.min(95, Math.max(5, coords.x + Math.random()*4 - 2)),
+                y: Math.min(95, Math.max(5, coords.y + Math.random()*4 - 2)),
+                profile, ua, res, lang
+            });
+            const p = PROFILES[profile];
+            state.push({
+                active: true, inMyRadio: false, trackTimeLeft: 0, otherTrackTimeLeft: 0,
+                dailyPlays: 0, maxDailyPlays: p.maxDailyPlays,
+                sessionRemaining: 0,
+                profile: profile
+            });
+        }
+        updateStats(); renderDots(); updateProfileStats(); updateAntidetectIndicators();
+    }
+
+    function addListener() {
+        const c = Object.keys(countryCoords)[Math.floor(Math.random()*Object.keys(countryCoords).length)];
+        const coords = countryCoords[c];
+        const plat = platforms[Math.floor(Math.random()*platforms.length)];
+        const name = namePool[Math.floor(Math.random()*namePool.length)];
+        const device = ["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
+        const profile = Object.keys(PROFILES)[Math.floor(Math.random()*4)];
+        const ua = userAgents[Math.floor(Math.random()*userAgents.length)];
+        const res = resolutions[Math.floor(Math.random()*resolutions.length)];
+        const lang = languages[Math.floor(Math.random()*languages.length)];
+        listeners.push({
+            name, country: c, device, platform: plat.name, color: plat.color,
+            x: Math.min(95, Math.max(5, coords.x + Math.random()*4 - 2)),
+            y: Math.min(95, Math.max(5, coords.y + Math.random()*4 - 2)),
+            profile, ua, res, lang
+        });
+        const p = PROFILES[profile];
+        state.push({
+            active: true, inMyRadio: false, trackTimeLeft: 0, otherTrackTimeLeft: 0,
+            dailyPlays: 0, maxDailyPlays: p.maxDailyPlays,
+            sessionRemaining: 0,
+            profile: profile
+        });
+        updateStats(); renderDots(); updateProfileStats(); updateAntidetectIndicators();
+    }
+
+    function changeProfile(index, newProfile) {
+        listeners[index].profile = newProfile;
+        state[index].profile = newProfile;
+        const p = PROFILES[newProfile];
+        state[index].maxDailyPlays = p.maxDailyPlays;
+        state[index].dailyPlays = 0;
+        renderDots(); updateProfileStats(); updateAntidetectIndicators();
+        showToast(`Perfil cambiado a ${PROFILES[newProfile].name}`);
+    }
+
+    function renderDots() {
+        const map = document.getElementById('mapContainer');
+        map.querySelectorAll('.listener-dot').forEach(d => d.remove());
+        state.forEach((s, i) => {
+            const dot = document.createElement('div');
+            dot.className = `listener-dot ${s.active ? 'active' : 'inactive'}`;
+            dot.dataset.profile = listeners[i].profile;
+            dot.style.left = listeners[i].x + '%';
+            dot.style.top = listeners[i].y + '%';
+            dot.style.background = s.active ? listeners[i].color : '#555';
+            dot.style.color = s.active ? listeners[i].color : '#555';
+            dot.addEventListener('click', () => {
+                if (s.active) s.inMyRadio ? leaveRadio(i) : enterRadio(i);
+                else { s.active = true; updateStats(); renderDots(); }
+            });
+            dot.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                contextMenuTarget = i;
+                const rect = map.getBoundingClientRect();
+                contextMenu.style.left = (e.clientX - rect.left) + 'px';
+                contextMenu.style.top = (e.clientY - rect.top) + 'px';
+                contextMenu.classList.add('show');
+            });
+            map.appendChild(dot);
+        });
+    }
+
+    document.getElementById('contextMenu').addEventListener('click', (e) => {
+        const item = e.target.closest('.context-menu-item');
+        if (item && contextMenuTarget !== null) {
+            changeProfile(contextMenuTarget, item.dataset.profile);
+        }
+        contextMenu.classList.remove('show');
+        contextMenuTarget = null;
+    });
+    document.addEventListener('click', () => {
+        contextMenu.classList.remove('show');
+        contextMenuTarget = null;
+    });
+
+    function removeListener(index) {
+        if (listeners.length <= 1) return;
+        listeners.splice(index,1);
+        state.splice(index,1);
+        updateStats(); renderDots(); updateProfileStats(); updateAntidetectIndicators();
+    }
+
+    function enterRadio(i) {
+        const s = state[i];
+        const p = PROFILES[s.profile];
+        if (!s.active || s.dailyPlays >= s.maxDailyPlays) return;
+        s.inMyRadio = true;
+        s.trackTimeLeft = 200 + Math.floor(Math.random()*50);
+        s.dailyPlays++;
+        s.sessionRemaining = p.sessionLength - 1;
+        totalMyPlays++;
+        updateStats(); renderDots(); updateAntidetectIndicators();
+    }
+    function leaveRadio(i) {
+        const s = state[i];
+        if (!s.inMyRadio) return;
+        s.inMyRadio = false;
+        s.otherTrackTimeLeft = 200 + Math.floor(Math.random()*80);
+        updateStats(); renderDots();
+    }
+
+    function updateStats() {
+        document.getElementById('totalPlays').textContent = totalMyPlays;
+        document.getElementById('totalOtherPlays').textContent = totalOtherPlays;
+        document.getElementById('uniqueListeners').textContent = listeners.length;
+        document.getElementById('activePlatform').textContent = state.filter(s => s.active).length;
+        document.getElementById('liveCount').textContent = state.filter(s => s.inMyRadio).length;
+        drawChart();
+    }
+
+    function simulateTick(factor, simA, simP, simO, index) {
+        state.forEach((s, i) => {
+            const p = PROFILES[s.profile];
+            if (!s.active) {
+                if (Math.random() < p.activityProb * 0.1 * factor) s.active = true;
+                return;
             }
-            for (let i = 0; i < 12; i++) stars.push(createStar());
-            function drawStars() {
-                starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
-                stars.forEach(star => {
-                    star.x += star.speed;
-                    star.y -= star.speed * 0.5;
-                    if (star.x > starsCanvas.width + 100 || star.y < -100) star.reset();
-                    starsCtx.beginPath();
-                    starsCtx.moveTo(star.x, star.y);
-                    starsCtx.lineTo(star.x - star.length, star.y + star.length * 0.5);
-                    starsCtx.strokeStyle = `rgba(179,136,255,${star.opacity})`;
-                    starsCtx.lineWidth = 2;
-                    starsCtx.shadowColor = '#b388ff';
-                    starsCtx.shadowBlur = 10;
-                    starsCtx.stroke();
-                });
-                requestAnimationFrame(drawStars);
-            }
-            drawStars();
-
-            // Datos de países y plataformas
-            const countryCoords = {
-                "Rep. Dominicana":{x:28,y:45}, "España":{x:45,y:32}, "Brasil":{x:32,y:62},
-                "México":{x:15,y:40}, "Francia":{x:48,y:30}, "Colombia":{x:25,y:55},
-                "Argentina":{x:28,y:80}, "Venezuela":{x:26,y:50}, "EE.UU.":{x:18,y:32},
-                "Perú":{x:22,y:62}, "Chile":{x:26,y:78}, "Ecuador":{x:22,y:58},
-                "Panamá":{x:26,y:48}, "Costa Rica":{x:24,y:46}, "Uruguay":{x:30,y:78},
-                "Paraguay":{x:30,y:70}, "Bolivia":{x:27,y:66}, "Nicaragua":{x:24,y:44},
-                "Guatemala":{x:22,y:42}, "Cuba":{x:24,y:38}, "Puerto Rico":{x:30,y:40},
-                "Honduras":{x:23,y:44}, "El Salvador":{x:21,y:44}, "Canadá":{x:22,y:22},
-                "Italia":{x:50,y:34}, "Japón":{x:85,y:36}, "Nigeria":{x:48,y:57},
-                "Alemania":{x:51,y:27}, "Reino Unido":{x:47,y:25}, "Corea del Sur":{x:83,y:38},
-                "Australia":{x:80,y:72}, "Sudáfrica":{x:53,y:75}, "India":{x:68,y:50}
-            };
-            const platforms = [
-                {name:"Spotify",color:"#b388ff"},{name:"Apple Music",color:"#e040fb"},
-                {name:"YouTube",color:"#ff4081"},{name:"Amazon Music",color:"#7c4dff"},
-                {name:"Deezer",color:"#aa66cc"},{name:"SoundCloud",color:"#ff8800"}
-            ];
-            const tracks = ["Dímelo tú","Bla Bla Bla","Fuego Fuego","Pla Pla Pla","Todo Pa' Ti",
-                "Ronca'íto","No Ta' En Na'","Tú Eres Mía","Vem Comigo","Yo Soy La Que Manda"];
-            const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael",
-                "Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria","Gabriel","Natalia",
-                "Mateo","Luciana","Samuel","Martina","Nicolás","Andrea","Hiroshi","Amara","Klaus","Oliver"];
-
-            let listeners = [], state = [];
-            let totalMyPlays = 0, totalOtherPlays = 0;
-            let data1D = null, data7D = null, data28D = null;
-            let currentView = '1D';
-            let simulationRunning = false;
-
-            const canvas = document.getElementById('activityChart');
-            const ctx = canvas.getContext('2d');
-
-            function resizeCanvas() {
-                canvas.width = canvas.parentElement.clientWidth;
-                canvas.height = 240;
-            }
-            window.addEventListener('resize', () => { resizeCanvas(); drawChart(); });
-
-            function getActivityFactor(h) {
-                if (h>=7 && h<=9) return 1.4;
-                if (h>=12 && h<=14) return 1.2;
-                if (h>=19 && h<=22) return 1.5;
-                if (h>=0 && h<=5) return 0.3;
-                return 0.8;
-            }
-
-            function drawChart() {
-                const w = canvas.width, h = canvas.height;
-                ctx.clearRect(0, 0, w, h);
-                const data = currentView === '1D' ? data1D : (currentView === '7D' ? data7D : data28D);
-                if (!data) {
-                    ctx.fillStyle = '#7a7e90';
-                    ctx.font = '14px Inter';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Sin datos para esta vista', w/2, h/2);
-                    return;
-                }
-                const { labels, activity, plays, otherPlays } = data;
-                const maxVal = Math.max(...activity, ...plays, ...otherPlays, 1);
-                const pad = { top:20, right:20, bottom:30, left:40 };
-                const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
-                const n = labels.length, stepX = cw / (n - 1);
-
-                ctx.strokeStyle = '#2a1f4a';
-                ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, h-pad.bottom); ctx.lineTo(w-pad.right, h-pad.bottom); ctx.stroke();
-                ctx.fillStyle = '#9a8fb8'; ctx.font = '9px Inter'; ctx.textAlign = 'center';
-                const step = n <= 7 ? 1 : (n <= 28 ? 7 : 5);
-                for (let i = 0; i < n; i += step) ctx.fillText(labels[i], pad.left + i*stepX, h-pad.bottom+15);
-
-                function line(arr, color, dash) {
-                    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash || []);
-                    ctx.beginPath();
-                    for (let i = 0; i < n; i++) {
-                        const x = pad.left + i*stepX, y = h-pad.bottom - (arr[i]/maxVal)*ch;
-                        i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-                    }
-                    ctx.stroke(); ctx.setLineDash([]);
-                }
-                line(activity, '#b388ff');
-                line(plays, '#00e676', [4,4]);
-                line(otherPlays, '#4fc3f7', [2,4]);
-                ctx.fillStyle = '#9a8fb8'; ctx.font = '8px Inter'; ctx.textAlign = 'right';
-                ctx.fillText(maxVal, pad.left-5, pad.top+10);
-            }
-
-            // Generar oyentes personalizados
-            function generateListeners() {
-                const count = parseInt(document.getElementById('listenerCount').value) || 10;
-                listeners = []; state = [];
-                for (let i = 0; i < count; i++) {
-                    const c = Object.keys(countryCoords)[Math.floor(Math.random()*Object.keys(countryCoords).length)];
-                    const coords = countryCoords[c];
-                    const plat = platforms[Math.floor(Math.random()*platforms.length)];
-                    const name = namePool[Math.floor(Math.random()*namePool.length)];
-                    const device = ["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
-                    listeners.push({
-                        name, country: c, device, platform: plat.name, color: plat.color,
-                        x: Math.min(95, Math.max(5, coords.x + Math.random()*4 - 2)),
-                        y: Math.min(95, Math.max(5, coords.y + Math.random()*4 - 2))
-                    });
-                    state.push({
-                        active: true, inMyRadio: false, trackTimeLeft: 0, otherTrackTimeLeft: 0,
-                        dailyPlays: 0, maxDailyPlays: 10 + Math.floor(Math.random()*11)
-                    });
-                }
-                updateStats(); renderDots();
-            }
-
-            function addListener() {
-                const c = Object.keys(countryCoords)[Math.floor(Math.random()*Object.keys(countryCoords).length)];
-                const coords = countryCoords[c];
-                const plat = platforms[Math.floor(Math.random()*platforms.length)];
-                const name = namePool[Math.floor(Math.random()*namePool.length)];
-                const device = ["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
-                listeners.push({
-                    name, country: c, device, platform: plat.name, color: plat.color,
-                    x: Math.min(95, Math.max(5, coords.x + Math.random()*4 - 2)),
-                    y: Math.min(95, Math.max(5, coords.y + Math.random()*4 - 2))
-                });
-                state.push({
-                    active: true, inMyRadio: false, trackTimeLeft: 0, otherTrackTimeLeft: 0,
-                    dailyPlays: 0, maxDailyPlays: 10 + Math.floor(Math.random()*11)
-                });
-                updateStats(); renderDots();
-            }
-
-            function renderDots() {
-                const map = document.getElementById('mapContainer');
-                map.querySelectorAll('.listener-dot').forEach(d => d.remove());
-                state.forEach((s, i) => {
-                    const dot = document.createElement('div');
-                    dot.className = `listener-dot ${s.active ? 'active' : 'inactive'}`;
-                    dot.style.left = listeners[i].x + '%';
-                    dot.style.top = listeners[i].y + '%';
-                    dot.style.background = s.active ? listeners[i].color : '#555';
-                    dot.style.color = s.active ? listeners[i].color : '#555';
-                    dot.addEventListener('click', () => {
-                        if (s.active) s.inMyRadio ? leaveRadio(i) : enterRadio(i);
-                        else { s.active = true; updateStats(); renderDots(); }
-                    });
-                    dot.addEventListener('contextmenu', (e) => { e.preventDefault(); removeListener(i); });
-                    map.appendChild(dot);
-                });
-            }
-
-            function removeListener(index) {
-                if (listeners.length <= 1) return;
-                listeners.splice(index,1);
-                state.splice(index,1);
-                updateStats(); renderDots();
-            }
-
-            function enterRadio(i) {
-                const s = state[i];
-                if (!s.active || s.dailyPlays >= s.maxDailyPlays) return;
-                s.inMyRadio = true;
-                s.trackTimeLeft = 200 + Math.floor(Math.random()*50);
-                s.dailyPlays++;
-                totalMyPlays++;
-                updateStats(); renderDots();
-            }
-            function leaveRadio(i) {
-                const s = state[i];
-                if (!s.inMyRadio) return;
-                s.inMyRadio = false;
-                s.otherTrackTimeLeft = 200 + Math.floor(Math.random()*80);
-                updateStats(); renderDots();
-            }
-            function updateStats() {
-                document.getElementById('totalPlays').textContent = totalMyPlays;
-                document.getElementById('totalOtherPlays').textContent = totalOtherPlays;
-                document.getElementById('uniqueListeners').textContent = listeners.length;
-                document.getElementById('activePlatform').textContent = state.filter(s => s.active).length;
-                document.getElementById('liveCount').textContent = state.filter(s => s.inMyRadio).length;
-                drawChart();
-            }
-
-            function simulateTick(factor, simA, simP, simO, index) {
-                state.forEach((s, i) => {
-                    if (!s.active) { if (Math.random() < 0.03*factor) s.active = true; return; }
-                    if (s.inMyRadio) {
-                        s.trackTimeLeft -= 30;
-                        if (s.trackTimeLeft <= 0) {
-                            if (s.dailyPlays < s.maxDailyPlays && Math.random() < 0.7) {
-                                s.trackTimeLeft = 200 + Math.floor(Math.random()*50);
-                                s.dailyPlays++; totalMyPlays++; simP[index]++;
-                            } else { leaveRadio(i); }
+            if (s.inMyRadio) {
+                s.trackTimeLeft -= 30;
+                if (s.trackTimeLeft <= 0) {
+                    if (s.sessionRemaining > 0 && s.dailyPlays < s.maxDailyPlays) {
+                        if (Math.random() < 1 - p.trackChangeProb) {
+                            s.trackTimeLeft = 200 + Math.floor(Math.random()*50);
+                            s.dailyPlays++; s.sessionRemaining--;
+                            totalMyPlays++; simP[index]++;
+                        } else {
+                            leaveRadio(i);
                         }
                     } else {
-                        s.otherTrackTimeLeft -= 30;
-                        if (s.otherTrackTimeLeft <= 0) {
-                            s.otherTrackTimeLeft = 200 + Math.floor(Math.random()*80);
-                            totalOtherPlays++; simO[index]++;
-                        }
-                        if (s.dailyPlays < s.maxDailyPlays && Math.random() < 0.05*factor) {
-                            enterRadio(i); simP[index]++;
-                        }
-                    }
-                    if (s.active && !s.inMyRadio && Math.random() < 0.02) s.active = false;
-                });
-                simA[index] = Math.max(simA[index], state.filter(s => s.inMyRadio).length);
-            }
-
-            function runSimulation(days, callback) {
-                const stepsPerDay = 2880, totalSteps = days * stepsPerDay;
-                const simA = [], simP = [], simO = [];
-                const daysCount = days === 1 ? 24 : days;
-                for (let i = 0; i < daysCount; i++) { simA.push(0); simP.push(0); simO.push(0); }
-                let step = 0;
-                simulationRunning = true;
-                document.querySelectorAll('.btn').forEach(b => b.disabled = true);
-                document.getElementById('progressWrapper').style.display = 'block';
-
-                function batch() {
-                    const batchSize = 500;
-                    const end = Math.min(step + batchSize, totalSteps);
-                    for (let s = step; s < end; s++) {
-                        const day = Math.floor(s / stepsPerDay);
-                        const hour = Math.floor(((s % stepsPerDay) * 30) / 3600);
-                        const index = days === 1 ? hour : day;
-                        if (day > 0 && s % stepsPerDay === 0) {
-                            state.forEach(s => { s.dailyPlays = 0; s.maxDailyPlays = 10 + Math.floor(Math.random()*11); if (s.inMyRadio) leaveRadio(state.indexOf(s)); });
-                        }
-                        simulateTick(getActivityFactor(hour), simA, simP, simO, index);
-                    }
-                    step = end;
-                    document.getElementById('progressLabel').textContent = Math.round((step/totalSteps)*100) + '%';
-                    document.getElementById('progressBarFill').style.width = (step/totalSteps)*100 + '%';
-                    if (step < totalSteps) {
-                        setTimeout(batch, 0);
-                    } else {
-                        if (days === 1) {
-                            data1D = { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: simA, plays: simP, otherPlays: simO };
-                        } else if (days === 7) {
-                            data1D = generate1DFromDaily(simA, simP, simO);
-                            data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA, plays: simP, otherPlays: simO };
-                        } else if (days === 28) {
-                            data1D = generate1DFromDaily(simA.slice(0,7), simP.slice(0,7), simO.slice(0,7));
-                            data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA.slice(0,7), plays: simP.slice(0,7), otherPlays: simO.slice(0,7) };
-                            data28D = { labels: Array.from({length:28}, (_,i)=>'D'+(i+1)), activity: simA, plays: simP, otherPlays: simO };
-                        }
-                        finishSimulation();
+                        leaveRadio(i);
                     }
                 }
-                batch();
-            }
-
-            function generate1DFromDaily(dailyA, dailyP, dailyO) {
-                const hourlyA = new Array(24).fill(0), hourlyP = new Array(24).fill(0), hourlyO = new Array(24).fill(0);
-                const totalA = dailyA.reduce((a,b)=>a+b,0), totalP = dailyP.reduce((a,b)=>a+b,0), totalO = dailyO.reduce((a,b)=>a+b,0);
-                for (let h=0; h<24; h++) {
-                    const f = getActivityFactor(h);
-                    hourlyA[h] = Math.round(totalA * f / 10);
-                    hourlyP[h] = Math.round(totalP * f / 10);
-                    hourlyO[h] = Math.round(totalO * f / 10);
+            } else {
+                s.otherTrackTimeLeft -= 30;
+                if (s.otherTrackTimeLeft <= 0) {
+                    s.otherTrackTimeLeft = 200 + Math.floor(Math.random()*80);
+                    totalOtherPlays++; simO[index]++;
                 }
-                return { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: hourlyA, plays: hourlyP, otherPlays: hourlyO };
+                if (s.dailyPlays < s.maxDailyPlays && Math.random() < p.myRadioProb * 0.1 * factor) {
+                    enterRadio(i); simP[index]++;
+                }
             }
+            if (s.active && !s.inMyRadio && Math.random() < p.idleProb * 0.1) s.active = false;
+        });
+        simA[index] = Math.max(simA[index], state.filter(s => s.inMyRadio).length);
+    }
 
-            function finishSimulation() {
-                simulationRunning = false;
-                document.querySelectorAll('.btn').forEach(b => b.disabled = false);
-                document.getElementById('progressWrapper').style.display = 'none';
-                document.getElementById('view1D').disabled = false;
-                if (data7D) document.getElementById('view7D').disabled = false;
-                if (data28D) document.getElementById('view28D').disabled = false;
-                updateStats();
-                setView('1D');
+    function runSimulation(days) {
+        const stepsPerDay = 2880, totalSteps = days * stepsPerDay;
+        const simA = [], simP = [], simO = [];
+        const daysCount = days === 1 ? 24 : days;
+        for (let i = 0; i < daysCount; i++) { simA.push(0); simP.push(0); simO.push(0); }
+        let step = 0;
+        simulationRunning = true;
+        document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+        document.getElementById('progressWrapper').style.display = 'block';
+
+        function batch() {
+            const batchSize = 500;
+            const end = Math.min(step + batchSize, totalSteps);
+            for (let s = step; s < end; s++) {
+                const day = Math.floor(s / stepsPerDay);
+                const hour = Math.floor(((s % stepsPerDay) * 30) / 3600);
+                const index = days === 1 ? hour : day;
+                if (day > 0 && s % stepsPerDay === 0) {
+                    state.forEach(s => {
+                        s.dailyPlays = 0;
+                        const p = PROFILES[s.profile];
+                        s.maxDailyPlays = p.maxDailyPlays;
+                        s.sessionRemaining = 0;  // reinicio corregido
+                        if (s.inMyRadio) leaveRadio(state.indexOf(s));
+                    });
+                }
+                simulateTick(getActivityFactor(hour), simA, simP, simO, index);
             }
-
-            function startSimulation(mode) {
-                if (simulationRunning) return;
-                if (listeners.length === 0) { alert('Añade oyentes primero'); return; }
-                if (mode === '1D') runSimulation(1);
-                else if (mode === '7D') runSimulation(7);
-                else if (mode === '28D') runSimulation(28);
+            step = end;
+            document.getElementById('progressLabel').textContent = Math.round((step/totalSteps)*100) + '%';
+            document.getElementById('progressBarFill').style.width = (step/totalSteps)*100 + '%';
+            if (step < totalSteps) {
+                setTimeout(batch, 0);
+            } else {
+                if (days === 1) {
+                    data1D = { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: simA, plays: simP, otherPlays: simO };
+                } else if (days === 7) {
+                    data1D = generate1DFromDaily(simA, simP, simO);
+                    data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA, plays: simP, otherPlays: simO };
+                } else if (days === 28) {
+                    data1D = generate1DFromDaily(simA.slice(0,7), simP.slice(0,7), simO.slice(0,7));
+                    data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA.slice(0,7), plays: simP.slice(0,7), otherPlays: simO.slice(0,7) };
+                    data28D = { labels: Array.from({length:28}, (_,i)=>'D'+(i+1)), activity: simA, plays: simP, otherPlays: simO };
+                }
+                finishSimulation();
             }
+        }
+        batch();
+    }
 
-            function setView(view) {
-                currentView = view;
-                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById('view'+view).classList.add('active');
-                document.getElementById('chartTitle').textContent = '📊 Actividad (' + view + ')';
-                drawChart();
-            }
+    function generate1DFromDaily(dailyA, dailyP, dailyO) {
+        const hourlyA = new Array(24).fill(0), hourlyP = new Array(24).fill(0), hourlyO = new Array(24).fill(0);
+        const totalA = dailyA.reduce((a,b)=>a+b,0), totalP = dailyP.reduce((a,b)=>a+b,0), totalO = dailyO.reduce((a,b)=>a+b,0);
+        for (let h=0; h<24; h++) {
+            const f = getActivityFactor(h);
+            hourlyA[h] = Math.round(totalA * f / 10);
+            hourlyP[h] = Math.round(totalP * f / 10);
+            hourlyO[h] = Math.round(totalO * f / 10);
+        }
+        return { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: hourlyA, plays: hourlyP, otherPlays: hourlyO };
+    }
 
-            function resetAll() {
-                if (simulationRunning) return;
-                listeners = []; state = [];
-                totalMyPlays = 0; totalOtherPlays = 0;
-                data1D = data7D = data28D = null;
-                document.getElementById('view1D').classList.add('active');
-                document.getElementById('view7D').classList.remove('active'); document.getElementById('view28D').classList.remove('active');
-                ['1D','7D','28D'].forEach(v => document.getElementById('view'+v).disabled = true);
-                document.getElementById('view1D').disabled = false;
-                document.getElementById('chartTitle').textContent = '📊 Actividad (1D)';
-                updateStats(); renderDots(); drawChart();
-            }
+    function finishSimulation() {
+        simulationRunning = false;
+        document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+        document.getElementById('progressWrapper').style.display = 'none';
+        document.getElementById('view1D').disabled = false;
+        if (data7D) document.getElementById('view7D').disabled = false;
+        if (data28D) document.getElementById('view28D').disabled = false;
+        updateStats(); updateAntidetectIndicators();
+        setView('1D');
+    }
 
-            window.addListener = addListener;
-            window.generateListeners = generateListeners;
-            window.startSimulation = startSimulation;
-            window.setView = setView;
-            window.resetAll = resetAll;
+    function startSimulation(mode) {
+        if (simulationRunning) return;
+        if (listeners.length === 0) { alert('Añade oyentes primero'); return; }
+        if (mode === '1D') runSimulation(1);
+        else if (mode === '7D') runSimulation(7);
+        else if (mode === '28D') runSimulation(28);
+    }
 
-            // Iniciar con algunos oyentes por defecto
-            document.getElementById('listenerCount').value = 10;
-            generateListeners();
-            resizeCanvas();
-        })();
-    </script>
+    function setView(view) {
+        currentView = view;
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('view'+view).classList.add('active');
+        document.getElementById('chartTitle').textContent = '📊 Actividad (' + view + ')';
+        drawChart();
+    }
+
+    function resetAll() {
+        if (simulationRunning) return;
+        listeners = []; state = [];
+        totalMyPlays = 0; totalOtherPlays = 0;
+        data1D = data7D = data28D = null;
+        document.getElementById('view1D').classList.add('active');
+        document.getElementById('view7D').classList.remove('active'); document.getElementById('view28D').classList.remove('active');
+        ['1D','7D','28D'].forEach(v => document.getElementById('view'+v).disabled = true);
+        document.getElementById('view1D').disabled = false;
+        document.getElementById('chartTitle').textContent = '📊 Actividad (1D)';
+        updateStats(); renderDots(); drawChart(); updateProfileStats(); updateAntidetectIndicators();
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+        setTimeout(() => toast.style.transform = 'translateX(-50%) translateY(80px)', 2000);
+    }
+
+    window.addListener = addListener;
+    window.generateListeners = generateListeners;
+    window.startSimulation = startSimulation;
+    window.setView = setView;
+    window.resetAll = resetAll;
+
+    document.getElementById('listenerCount').value = 10;
+    generateListeners();
+    resizeCanvas();
+})();
+</script>
 </body>
 </html>
