@@ -20,6 +20,7 @@
             overscroll-behavior-y: contain;
         }
         .main-scroll { max-height: 100vh; overflow-y: auto; padding-bottom: 8px; }
+
         .player {
             background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:16px; padding:8px 12px; margin-bottom:6px;
             border:1px solid rgba(179,136,255,0.3); box-shadow:0 0 8px var(--violet); display:flex; align-items:center; justify-content:center;
@@ -31,43 +32,56 @@
             animation: bounce 2s infinite;
         }
         @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
-        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin:6px 0; }
+
+        .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin:6px 0; }
         .mini-stat { background:var(--card); border-radius:10px; padding:8px 4px; border:1px solid rgba(179,136,255,0.2); text-align:center; font-size:0.6rem; }
         .mini-stat .value { font-family:'Orbitron',monospace; font-size:0.85rem; color:var(--violet2); text-shadow:0 0 6px var(--violet); }
+
         .audit-panel { background:var(--card); border-radius:12px; padding:8px; margin:6px 0; border:1px solid rgba(179,136,255,0.3); display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
         .risk-score { font-family:'Orbitron',monospace; font-size:1.6rem; font-weight:800; }
         .risk-status { padding:3px 12px; border-radius:14px; font-size:0.65rem; font-weight:700; }
+
         .profiles-stats { display:flex; flex-wrap:wrap; gap:3px; margin:4px 0; justify-content:center; font-size:0.6rem; }
         .profile-stat { background:var(--card); padding:3px 8px; border-radius:10px; border:1px solid; display:flex; align-items:center; gap:3px; }
+
         .antidetect-panel { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.3); }
         .antidetect-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
         .antidetect-item { background:rgba(0,0,0,0.3); border-radius:8px; padding:6px 4px; border:1px solid rgba(255,255,255,0.1); text-align:center; }
         .antidetect-label { font-size:0.55rem; color:var(--muted); }
         .antidetect-value { font-size:0.7rem; font-weight:700; }
+
         .recommendations-panel { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid var(--violet); display:none; text-align:center; font-size:0.6rem; }
-        .platform-audit { background:var(--card); border-radius:12px; padding:10px; margin:6px 0; border:1px solid rgba(179,136,255,0.4); box-shadow:0 0 15px rgba(179,136,255,0.2); }
+
+        .platform-audit {
+            background: var(--card); border-radius:12px; padding:10px; margin:6px 0;
+            border:1px solid rgba(179,136,255,0.4); box-shadow:0 0 15px rgba(179,136,255,0.2);
+        }
         .platform-audit h4 { font-size:0.75rem; color:var(--violet2); text-align:center; margin-bottom:8px; }
         .verdict { text-align:center; font-size:1rem; font-weight:800; padding:6px; border-radius:10px; margin-bottom:8px; }
         .rule-list { font-size:0.6rem; }
         .rule-item { display:flex; justify-content:space-between; align-items:center; padding:4px 8px; border-radius:6px; margin:2px 0; background:rgba(0,0,0,0.2); }
         .rule-item.pass { border-left:3px solid var(--green); }
         .rule-item.fail { border-left:3px solid var(--red); }
+
         .filter-bar { display:flex; gap:4px; align-items:center; justify-content:center; margin-bottom:4px; }
         .filter-bar select { background:var(--card); color:var(--text); border:1px solid var(--violet); border-radius:6px; padding:4px 6px; font-size:0.6rem; }
+
         .map-area { margin:4px 0; border-radius:14px; overflow:hidden; border:1px solid rgba(179,136,255,0.2); }
         #mapid { height:200px; width:100%; }
+
         .chart-area { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.2); }
         canvas#activityChart { width:100%; height:140px; display:block; background:rgba(0,0,0,0.2); border-radius:8px; }
+
         .btn { background:var(--card); border:1px solid rgba(179,136,255,0.4); padding:6px 12px; border-radius:14px; font-weight:700; font-size:0.6rem; color:var(--text); cursor:pointer; }
         .btn.gold { background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000; }
+
         .controls-bar { display:flex; align-items:center; gap:4px; margin:4px 0; background:var(--card); padding:6px 10px; border-radius:14px; border:1px solid rgba(179,136,255,0.4); justify-content:center; }
         .scrubber-wrapper { position:relative; width:50px; height:26px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); border:1px solid var(--violet); border-radius:6px; touch-action:none; user-select:none; }
         .scrubber-value { font-family:'Orbitron',monospace; font-size:0.8rem; color:var(--violet2); pointer-events:none; }
+
         .scale-panel { background:var(--card); border-radius:12px; padding:8px; margin:6px 0; border:1px solid var(--violet); display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
         .scale-panel input { width:70px; background:transparent; border:1px solid var(--violet); border-radius:6px; color:var(--violet2); font-family:'Orbitron',monospace; text-align:center; padding:3px; }
-        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); display:none; align-items:center; justify-content:center; z-index:10000; }
-        .modal-content { background:linear-gradient(145deg,#1a1030,#0f0a22); border:2px solid var(--violet); border-radius:20px; padding:16px; max-width:320px; width:90%; text-align:center; animation:popIn 0.6s ease; box-shadow:0 0 60px var(--violet); }
-        @keyframes popIn { 0%{transform:scale(0.5) rotate(-5deg);opacity:0} 100%{transform:scale(1) rotate(0);opacity:1} }
+
         .plan-panel { background:var(--card); border-radius:12px; padding:8px; margin:6px 0; border:1px solid var(--violet); }
         .plan-panel h4 { font-size:0.7rem; color:var(--violet2); text-align:center; margin-bottom:6px; }
         .plan-inputs { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-bottom:6px; }
@@ -75,22 +89,48 @@
         .plan-table { width:100%; font-size:0.6rem; border-collapse:collapse; }
         .plan-table th, .plan-table td { padding:3px 6px; border:1px solid var(--violet); text-align:center; }
         .plan-table th { background:rgba(179,136,255,0.2); }
+
+        .modal-overlay {
+            position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px);
+            display:none; align-items:center; justify-content:center; z-index:10000;
+        }
+        .modal-content {
+            background:linear-gradient(145deg,#1a1030,#0f0a22); border:2px solid var(--violet);
+            border-radius:20px; padding:16px; max-width:320px; width:90%; text-align:center;
+            animation: popIn 0.6s ease; box-shadow:0 0 60px var(--violet);
+            position:relative;
+        }
+        @keyframes popIn { 0%{transform:scale(0.5) rotate(-5deg);opacity:0} 100%{transform:scale(1) rotate(0);opacity:1} }
+        .magic-sparkles {
+            position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none;
+        }
+        .magic-sparkle {
+            position: absolute; width: 6px; height: 6px;
+            background: var(--violet2); border-radius: 50%;
+            animation: sparkle 1.5s linear infinite;
+        }
+        @keyframes sparkle { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-200px) scale(0); opacity: 0; } }
     </style>
 </head>
 <body>
     <div class="main-scroll">
         <div class="player"><div class="track-name">🎛️ MKEYZ STUDIO</div></div>
+
         <div class="stats-grid">
             <div class="mini-stat"><div class="value" id="totalPlays">0</div><div class="label">🎵 Tus plays</div></div>
             <div class="mini-stat"><div class="value" id="totalOtherPlays">0</div><div class="label">🎧 Otros plays</div></div>
             <div class="mini-stat"><div class="value" id="uniqueListeners">0</div><div class="label">👥 Oyentes</div></div>
             <div class="mini-stat"><div class="value" id="activePlatform">0</div><div class="label">🟢 Activos</div></div>
+            <div class="mini-stat"><div class="value" id="artistCount">0</div><div class="label">🎼 Artistas</div></div>
         </div>
+
         <div class="audit-panel">
             <div><div class="risk-score" id="riskScore">0%</div><div class="risk-status" id="riskStatus">—</div></div>
             <div style="font-size:0.6rem;" id="riskDetails">Sin datos</div>
         </div>
+
         <div class="profiles-stats" id="profilesStats"></div>
+
         <div class="antidetect-panel">
             <div class="antidetect-grid">
                 <div class="antidetect-item"><span class="antidetect-label">Gini</span><div class="antidetect-value" id="giniValue">—</div></div>
@@ -99,12 +139,15 @@
                 <div class="antidetect-item"><span class="antidetect-label">Binge%</span><div class="antidetect-value" id="bingePct">0%</div></div>
             </div>
         </div>
+
         <div class="recommendations-panel" id="recommendationsPanel"><div id="recList"></div></div>
+
         <div class="platform-audit" id="platformAudit">
             <h4>🕵️ Auditoría de Plataforma</h4>
             <div id="verdictBox"></div>
             <div class="rule-list" id="ruleList"></div>
         </div>
+
         <div class="plan-panel">
             <h4>📈 Plan de Crecimiento Gradual</h4>
             <div class="plan-inputs">
@@ -118,12 +161,16 @@
             <div id="planProgress" style="text-align:center;font-size:0.7rem;margin-top:4px;"></div>
             <div style="max-height:150px;overflow-y:auto;margin-top:6px;" id="planTableContainer"></div>
         </div>
+
         <div class="filter-bar">
             <select id="filterCountry"><option value="">🌍 Todos</option></select>
             <select id="filterPlatform"><option value="">📱 Plataforma</option></select>
             <button class="btn" id="heatmapToggle">🔥 Heatmap</button>
         </div>
+
+        <!-- MAPA MOVIDO AQUÍ (DESPUÉS DE LOS CONTROLES) -->
         <div class="map-area"><div id="mapid"></div></div>
+
         <div class="controls-bar">
             <span style="font-size:0.7rem;">Cantidad:</span>
             <div class="scrubber-wrapper" id="scrubberWrapper"><span class="scrubber-value" id="scrubberValue">5</span></div>
@@ -133,6 +180,7 @@
             <button class="btn" onclick="addListeners()">➕ Sumar</button>
             <button class="btn" onclick="generateListeners()">🔄 Regenerar</button>
         </div>
+
         <div class="chart-area">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                 <span style="font-size:0.7rem; font-weight:800;" id="chartTitle">📊 Actividad (1D)</span>
@@ -146,6 +194,7 @@
             <canvas id="activityChart"></canvas>
             <div id="progressWrapper" style="display:none;"><span id="progressLabel">0%</span><div style="height:3px;background:var(--violet);width:0%" id="progressBarFill"></div></div>
         </div>
+
         <div style="display:flex; gap:4px; justify-content:center; flex-wrap:wrap; margin:4px 0;">
             <button class="btn gold" onclick="addListener()">➕ Añadir</button>
             <button class="btn" onclick="startSimulation('1D')">1 Día</button>
@@ -154,6 +203,7 @@
             <button class="btn" onclick="safeMode()" style="border-color:#00e676;color:#00e676;">🛡️ Modo Seguro</button>
             <button class="btn" onclick="resetAll()">🔄 Reset</button>
         </div>
+
         <div style="display:flex; gap:4px; justify-content:center; flex-wrap:wrap; margin:4px 0;">
             <button class="btn" onclick="saveScene()">💾 Guardar</button>
             <button class="btn" onclick="loadScene()">📂 Cargar</button>
@@ -165,11 +215,13 @@
         </div>
     </div>
 
+    <!-- MODAL MÁGICO (SIMULACIÓN COMPLETADA) -->
     <div class="modal-overlay" id="magicModal">
         <div class="modal-content">
-            <div style="font-weight:800; font-size:1rem; margin-bottom:8px;">✨ Informe</div>
-            <div id="magicContent"></div>
-            <button class="btn gold" style="width:100%; margin-top:8px;" onclick="closeMagicModal()">Cerrar</button>
+            <div class="magic-sparkles" id="magicSparkles"></div>
+            <div style="font-weight:800; font-size:1rem; margin-bottom:8px; z-index:1; position:relative;">✨ Simulación Completa ✨</div>
+            <div id="magicContent" style="z-index:1; position:relative;"></div>
+            <button class="btn gold" style="width:100%; margin-top:10px; z-index:1; position:relative;" onclick="closeMagicModal()">Cerrar</button>
         </div>
     </div>
 
@@ -208,7 +260,8 @@
         let listeners = [], state = [], totalMyPlays = 0, totalOtherPlays = 0;
         let data1D = null, data7D = null, data28D = null, currentView = '1D', simulationRunning = false;
         let recommendedScale = [], normalizedMode = false;
-        let planData = []; // { day, listenersToAdd: {ocasional, fiel, explorador, binge} }
+        let planData = [];
+        let artistCountEstimate = 0;
 
         // ---------- MAP ----------
         const map = L.map('mapid', {center:[20,0], zoom:2, zoomControl:false, attributionControl:false});
@@ -320,6 +373,7 @@
                 if(s.active && !s.inMyRadio && Math.random()<p.idle*0.1) s.active=false;
             });
             simA[index]=Math.max(simA[index], state.filter(s=>s.inMyRadio).length);
+            artistCountEstimate = Math.min(totalOtherPlays, Math.ceil(listeners.length * 1.5));
         }
 
         function runSimulation(days, callback) {
@@ -352,7 +406,15 @@
             updateStats(); updateIndicators(); setView('1D');
             const plays = data1D?data1D.plays.reduce((a,b)=>a+b,0):totalMyPlays;
             const other = data1D?data1D.otherPlays.reduce((a,b)=>a+b,0):totalOtherPlays;
-            showMagicModal(`Simulación ${days}D`, `<div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div><div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div><div class="magic-stat"><span>👥 Oyentes:</span><strong>${listeners.length}</strong></div>`);
+            showMagicModal(`Simulación ${days}D`,
+                `<div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div>
+                 <div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div>
+                 <div class="magic-stat"><span>👥 Oyentes:</span><strong>${listeners.length}</strong></div>
+                 <div class="magic-stat"><span>🎼 Artistas:</span><strong>${artistCountEstimate}</strong></div>
+                 <div class="magic-stat"><span>📊 Gini:</span><strong>${document.getElementById('giniValue').textContent}</strong></div>
+                 <div class="magic-stat"><span>🔁 Ratio:</span><strong>${document.getElementById('ratioPlays').textContent}</strong></div>
+                 <div class="magic-stat"><span>⚠️ Picos:</span><strong>${document.getElementById('suspiciousPeaks').textContent}</strong></div>
+                 <div class="magic-stat"><span>🔥 Binge:</span><strong>${document.getElementById('bingePct').textContent}</strong></div>`);
         }
         function startSimulation(mode) { if(simulationRunning) return; if(!listeners.length){ showToast('Añade oyentes primero'); return; } runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
         function setView(v) { currentView=v; document.getElementById('chartTitle').textContent='📊 Actividad ('+v+')'; document.getElementById('view7D').disabled=!data7D; document.getElementById('view28D').disabled=!data28D; drawChart(); }
@@ -433,6 +495,7 @@
             list.innerHTML=recs.map(r=>`<div>${r}</div>`).join('');
             panel.style.display='block';
         }
+
         function updateProfileStats() {
             const counts={fiel:0,explorador:0,ocasional:0,binge:0}; listeners.forEach(l=>counts[l.profile]++);
             document.getElementById('profilesStats').innerHTML=`
@@ -462,7 +525,6 @@
                 remaining -= addToday;
                 if (remaining <= 0) break;
             }
-            // Render table
             let html = '<table class="plan-table"><tr><th>Día</th><th>Ocas.</th><th>Fiel</th><th>Exp.</th><th>Binge</th><th>Total</th></tr>';
             planData.forEach(p => {
                 const t = p.listenersToAdd;
@@ -481,27 +543,17 @@
 
             for (let i = 0; i < planData.length; i++) {
                 const dayPlan = planData[i];
-                // Añadir oyentes del día
                 for (const [profile, count] of Object.entries(dayPlan.listenersToAdd)) {
                     for (let j = 0; j < count; j++) addListenerWithProfile(profile);
                 }
-                updateStats();
-                renderDots();
-                updateProfileStats();
-                updateIndicators();
+                updateStats(); renderDots(); updateProfileStats(); updateIndicators();
                 document.getElementById('planProgress').textContent = `Ejecutando día ${i+1}/${planData.length}...`;
-
-                // Simular un día completo para este nuevo conjunto
-                await new Promise(resolve => {
-                    runSimulation(1, () => {
-                        resolve();
-                    });
-                });
+                await new Promise(resolve => { runSimulation(1, () => resolve()); });
             }
             simulationRunning = false;
             document.querySelectorAll('.btn').forEach(b => b.disabled = false);
             document.getElementById('planProgress').textContent = 'Plan completado ✅';
-            showToast('Plan de crecimiento ejecutado con éxito');
+            showToast('Plan ejecutado con éxito');
         }
 
         // ---------- PERSISTENCE ----------
@@ -559,11 +611,28 @@
             };
             reader.readAsText(file);
         }
+
         function showToast(msg) {
             const t=document.createElement('div'); t.textContent=msg;
             t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1530;padding:8px 16px;border-radius:20px;z-index:9999;font-size:0.7rem;';
             document.body.appendChild(t); setTimeout(()=>t.remove(),2000);
         }
+
+        function showMagicModal(title, msg) {
+            document.getElementById('magicContent').innerHTML = msg;
+            const sparklesContainer = document.getElementById('magicSparkles');
+            sparklesContainer.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const s = document.createElement('div');
+                s.className = 'magic-sparkle';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 100 + '%';
+                s.style.animationDelay = Math.random() * 1.5 + 's';
+                sparklesContainer.appendChild(s);
+            }
+            document.getElementById('magicModal').style.display = 'flex';
+        }
+        function closeMagicModal() { document.getElementById('magicModal').style.display = 'none'; }
 
         // ---------- BUTTONS ----------
         function addListeners() {
@@ -580,13 +649,14 @@
             listeners.forEach((l,i)=>{ if(l.profile==='binge'){ listeners[i].profile='fiel'; state[i].profile='fiel'; changed++; } });
             updateStats(); renderDots(); updateProfileStats(); updateIndicators(); showToast(`🛡️ Modo Seguro (${changed} cambios)`);
         }
-        function resetAll() { listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; updateStats(); renderDots(); updateProfileStats(); updateIndicators(); }
+        function resetAll() { listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; artistCountEstimate=0; updateStats(); renderDots(); updateProfileStats(); updateIndicators(); }
 
         function updateStats() {
             document.getElementById('totalPlays').textContent=totalMyPlays;
             document.getElementById('totalOtherPlays').textContent=totalOtherPlays;
             document.getElementById('uniqueListeners').textContent=listeners.length;
             document.getElementById('activePlatform').textContent=state.filter(s=>s.active).length;
+            document.getElementById('artistCount').textContent = artistCountEstimate;
             drawChart();
         }
 
@@ -618,7 +688,7 @@
         window.saveScene=saveScene; window.loadScene=loadScene; window.exportJSON=exportJSON; window.importJSON=importJSON; window.handleImport=handleImport;
         window.loadCSV=loadCSV; window.handleCSVUpload=handleCSVUpload;
         window.generatePlan=generatePlan; window.executePlan=executePlan;
-        window.closeMagicModal=()=>document.getElementById('magicModal').style.display='none';
+        window.closeMagicModal=closeMagicModal;
 
         // Init
         resizeCanvas(); generateListeners(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
