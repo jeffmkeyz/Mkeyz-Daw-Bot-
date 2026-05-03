@@ -8,9 +8,8 @@
     <style>
         :root {
             --violet: #b388ff; --violet2: #d1b8ff; --green: #00e676;
-            --red: #ff4d4d; --blue: #4fc3f7; --orange: #ff9800; --fucsia: #e040fb;
-            --text: #f0f3ff; --muted: #9a8fb8; --card: rgba(20, 15, 35, 0.85);
-            --radius: 14px;
+            --red: #ff4d4d; --blue: #4fc3f7; --text: #f0f3ff; --muted: #9a8fb8;
+            --card: rgba(20, 15, 35, 0.85); --radius: 14px;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -30,7 +29,7 @@
         .player, .stats-grid, .map-area, .chart-area, .btn-group, .custom-listeners, .profiles-stats, .antidetect-panel, .recommendations-panel { position:relative; z-index:1; }
         .player {
             background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:20px; padding:10px 14px; margin-bottom:10px;
-            border:1px solid rgba(179,136,255,0.3); box-shadow:0 0 10px var(--violet); display:flex; align-items:center; gap:10px;
+            border:1px solid rgba(179,136,255,0.3); box-shadow:0 0 10px var(--violet); display:flex; align-items:center; justify-content:center; gap:10px;
         }
         .album-art {
             width:48px; height:48px; border-radius:16px; background:linear-gradient(145deg, #2a1f4a, #1a123a);
@@ -40,9 +39,16 @@
         .vbar { width:4px; border-radius:2px; background:var(--violet); animation:eqAnim 0.8s infinite alternate; }
         .vbar:nth-child(1){height:8px} .vbar:nth-child(2){height:14px} .vbar:nth-child(3){height:10px} .vbar:nth-child(4){height:16px} .vbar:nth-child(5){height:8px}
         @keyframes eqAnim { 0%{transform:scaleY(0.5)} 100%{transform:scaleY(1.3)} }
-        .track-info { flex:1; min-width:0; }
-        .track-name { font-weight:700; font-size:0.85rem; }
-        .track-artist { font-size:0.65rem; color:var(--muted); }
+        .track-info { text-align: center; }
+        .track-name {
+            font-weight:800; font-size:1rem; letter-spacing:1px;
+            background: linear-gradient(135deg, var(--violet2), #fff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)}
+        }
         .live-badge {
             display:inline-flex; align-items:center; gap:4px; background:rgba(179,136,255,0.15);
             padding:3px 10px; border-radius:14px; font-size:0.65rem; color:var(--violet2); margin-top:4px;
@@ -58,27 +64,36 @@
         .profiles-stats { display:flex; flex-wrap:wrap; gap:4px; margin:6px 0; justify-content:center; font-size:0.7rem; }
         .profile-stat { background:var(--card); padding:5px 12px; border-radius:14px; border:1px solid; display:flex; align-items:center; gap:4px; }
         .antidetect-panel { background:var(--card); border-radius:14px; padding:10px; margin:10px 0; border:1px solid rgba(179,136,255,0.3); }
-        .antidetect-title { font-size:0.7rem; color:var(--violet2); margin-bottom:8px; }
+        .antidetect-title { font-size:0.7rem; color:var(--violet2); margin-bottom:8px; text-align:center; }
         .antidetect-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(110px,1fr)); gap:6px; }
-        .antidetect-item { background:rgba(0,0,0,0.3); border-radius:10px; padding:8px; border:1px solid rgba(255,255,255,0.1); }
+        .antidetect-item { background:rgba(0,0,0,0.3); border-radius:10px; padding:8px; border:1px solid rgba(255,255,255,0.1); text-align:center; }
         .antidetect-label { font-size:0.6rem; color:var(--muted); }
         .antidetect-value { font-size:0.85rem; font-weight:700; margin-top:2px; }
         .recommendations-panel {
             background:var(--card); border-radius:14px; padding:10px; margin:10px 0;
-            border:1px solid var(--violet); display:none;
+            border:1px solid var(--violet); display:none; text-align:center;
         }
         .recommendations-panel.show { display:block; }
-        .rec-header { font-size:0.75rem; font-weight:700; color:var(--violet2); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
-        .rec-item { font-size:0.7rem; padding:6px 0; border-bottom:1px solid rgba(179,136,255,0.1); display:flex; gap:6px; align-items:flex-start; }
+        .rec-header { font-size:0.75rem; font-weight:700; color:var(--violet2); margin-bottom:6px; }
+        .rec-item { font-size:0.7rem; padding:6px 0; border-bottom:1px solid rgba(179,136,255,0.1); display:flex; gap:6px; align-items:flex-start; justify-content:center; }
         .rec-item:last-child { border-bottom:none; }
 
+        .filter-bar {
+            display:flex; gap:6px; align-items:center; justify-content:center; margin-bottom:6px; flex-wrap:wrap;
+        }
+        .filter-bar select {
+            background: var(--card); color: var(--text); border: 2px solid var(--violet);
+            border-radius: 8px; padding: 6px 10px; font-size: 0.7rem; outline: none;
+            box-shadow: 0 0 10px rgba(179,136,255,0.4); font-weight: 600;
+        }
+        .filter-bar button {
+            background: var(--violet); border: none; padding: 6px 12px; border-radius: 14px;
+            font-weight: 700; font-size: 0.7rem; cursor: pointer; color: #000;
+            box-shadow: 0 0 10px rgba(179,136,255,0.4);
+        }
         .map-area { margin:10px 0; border-radius:20px; overflow:hidden; border:1px solid rgba(179,136,255,0.2); }
         #mapid { height:280px; width:100%; z-index:1; }
         .leaflet-container { background:#0a0a1e; font-family:'Inter',sans-serif; }
-        .filter-bar { display:flex; gap:6px; align-items:center; margin-bottom:6px; flex-wrap:wrap; }
-        .filter-bar select { background:var(--card); color:var(--text); border:1px solid var(--violet); border-radius:8px; padding:4px 8px; font-size:0.7rem; outline:none; }
-        .filter-bar button { background:var(--violet); border:none; padding:6px 12px; border-radius:14px; font-weight:700; font-size:0.7rem; cursor:pointer; color:#000; }
-        .filter-bar button:hover { background:var(--violet2); }
         .chart-area { background:var(--card); border-radius:14px; padding:10px; margin:10px 0; border:1px solid rgba(179,136,255,0.2); }
         .chart-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
         .chart-title { font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#fff; text-shadow:0 0 8px var(--violet); }
@@ -92,24 +107,23 @@
         .btn.gold { background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000; }
         .btn:disabled { opacity:0.4; pointer-events:none; }
         .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1530; color:var(--violet2); padding:6px 14px; border-radius:20px; z-index:999; border:1px solid var(--violet); font-size:0.7rem; transition:transform 0.3s; }
-        .controls-bar { display:flex; align-items:center; gap:6px; margin:8px 0; background:var(--card); padding:8px 14px; border-radius:20px; border:1px solid rgba(179,136,255,0.4); }
+        .controls-bar { display:flex; align-items:center; gap:6px; margin:8px 0; background:var(--card); padding:8px 14px; border-radius:20px; border:1px solid rgba(179,136,255,0.4); justify-content:center; }
         .controls-label { font-size:0.7rem; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:4px; }
         .controls-label svg { width:16px; height:16px; fill:var(--violet); }
         .controls-input { width:50px; background:rgba(0,0,0,0.4); border:1px solid var(--violet); border-radius:6px; color:var(--violet2); font-family:'Orbitron',monospace; font-size:0.8rem; text-align:center; padding:2px; }
         .controls-select { background:rgba(0,0,0,0.4); color:var(--text); border:1px solid var(--violet); border-radius:8px; padding:4px; font-size:0.7rem; }
         .controls-btn { background:var(--violet); border:none; padding:6px 14px; border-radius:14px; font-weight:700; font-size:0.7rem; cursor:pointer; color:#000; display:flex; align-items:center; gap:4px; }
-        /* Modal mágico mejorado */
         .magic-modal {
-            position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
-            z-index: 300; background: rgba(0,0,0,0.75); backdrop-filter: blur(12px);
+            position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+            z-index:300; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
         }
-        .magic-modal.show { display: flex; }
+        .magic-modal.show { display:flex; }
         .magic-box {
             background: linear-gradient(145deg, #1a1030, #0f0a22);
             border: 2px solid var(--violet);
-            border-radius: 28px;
-            padding: 24px 20px;
-            max-width: 380px;
+            border-radius: 24px;
+            padding: 20px;
+            max-width: 360px;
             width: 90%;
             text-align: center;
             animation: magicIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -118,7 +132,7 @@
             overflow: hidden;
         }
         @keyframes magicIn {
-            0% { transform: scale(0.3) rotate(-8deg); opacity: 0; }
+            0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
             60% { transform: scale(1.05); opacity: 1; }
             100% { transform: scale(1) rotate(0); opacity: 1; }
         }
@@ -127,32 +141,35 @@
             pointer-events: none;
         }
         .magic-sparkle {
-            position: absolute; width: 8px; height: 8px;
+            position: absolute; width: 6px; height: 6px;
             background: var(--violet2); border-radius: 50%;
-            animation: sparkle 1.2s linear infinite;
+            animation: sparkle 1.5s linear infinite;
         }
         @keyframes sparkle {
             0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-180px) scale(0); opacity: 0; }
+            100% { transform: translateY(-200px) scale(0); opacity: 0; }
         }
         .magic-title {
             font-family: 'Orbitron', monospace;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             color: #fff;
-            text-shadow: 0 0 20px var(--violet), 0 0 40px var(--violet);
-            margin-bottom: 16px;
+            text-shadow: 0 0 15px var(--violet);
+            margin-bottom: 12px;
         }
-        .magic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; }
-        .magic-stat { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 4px 0; }
-        .magic-stat span:first-child { color: var(--muted); }
-        .magic-stat span:last-child { font-weight: 700; }
-        .magic-message { margin-top: 12px; font-size: 0.75rem; padding: 8px 12px; border-radius: 12px; background: rgba(179,136,255,0.1); }
+        .magic-stat {
+            display: flex; justify-content: space-between;
+            margin: 6px 0; font-size: 0.8rem;
+        }
         .context-menu {
             position: absolute; z-index: 1000; background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
-            border-radius: 12px; padding: 4px 0; min-width: 150px; box-shadow: 0 0 15px var(--violet); display: none;
+            border-radius: 12px; padding: 4px 0; min-width: 150px;
+            box-shadow: 0 0 15px var(--violet); display: none;
         }
         .context-menu.show { display: block; }
-        .context-menu-item { padding: 8px 12px; cursor: pointer; font-size: 0.7rem; color: var(--text); }
+        .context-menu-item {
+            padding: 8px 12px; cursor: pointer; font-size: 0.7rem; color: var(--text);
+            transition: background 0.2s;
+        }
         .context-menu-item:hover { background: rgba(179,136,255,0.2); }
     </style>
 </head>
@@ -163,8 +180,7 @@
     <div class="player">
         <div class="album-art"><div class="visualizer"><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div></div></div>
         <div class="track-info">
-            <div class="track-name" id="trackName">Sin reproducción</div>
-            <div class="track-artist">Jeff Mkeyz</div>
+            <div class="track-name">🎛️ MKEYZ STUDIO</div>
             <div class="live-badge"><div class="dot"></div><span id="liveCount">0</span> escuchándote</div>
         </div>
     </div>
@@ -177,6 +193,7 @@
     </div>
 
     <div class="profiles-stats" id="profilesStats"></div>
+
     <div class="antidetect-panel">
         <div class="antidetect-title">🛡️ Indicadores Antidetect</div>
         <div class="antidetect-grid">
@@ -186,21 +203,23 @@
             <div class="antidetect-item"><span class="antidetect-label">Binge%</span><div class="antidetect-value" id="bingePct">0%</div></div>
         </div>
     </div>
+
     <div class="recommendations-panel" id="recommendationsPanel">
-        <div class="rec-header"><span>🧠</span> Recomendaciones</div>
+        <div class="rec-header">🧠 Recomendaciones</div>
         <div id="recList"></div>
     </div>
 
     <div class="filter-bar">
-        <select id="filterCountry"><option value="">🌍 Todos</option></select>
+        <select id="filterCountry"><option value="">🌍 Todos los países</option></select>
         <select id="filterPlatform"><option value="">📱 Plataforma</option></select>
         <button id="heatmapToggle">🔥 Heatmap</button>
     </div>
+
     <div class="map-area"><div id="mapid"></div></div>
 
     <div class="controls-bar">
         <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Cantidad:</span>
-        <input type="number" id="listenerCount" value="8" min="1" max="100" class="controls-input">
+        <input type="number" id="listenerCount" value="10" min="1" max="100" class="controls-input">
         <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Perfil:</span>
         <select id="profileSelect" class="controls-select"><option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option></select>
         <button onclick="generateListeners()" class="controls-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Generar</button>
@@ -234,13 +253,14 @@
         <div class="context-menu-item" data-profile="ocasional">🎲 Ocasional</div>
         <div class="context-menu-item" data-profile="binge">🔥 Binge</div>
     </div>
+
+    <!-- Modal Mágico -->
     <div class="magic-modal" id="magicModal">
         <div class="magic-box">
             <div class="magic-sparkles" id="magicSparkles"></div>
             <div class="magic-title">✨ Simulación Completa ✨</div>
-            <div class="magic-grid" id="magicContent"></div>
-            <div id="magicMessage" class="magic-message"></div>
-            <button class="btn gold" style="width:100%;margin-top:16px" onclick="closeMagicModal()">Cerrar</button>
+            <div id="magicContent"></div>
+            <button class="btn gold" style="width:100%; margin-top:12px" onclick="closeMagicModal()">Cerrar</button>
         </div>
     </div>
 
@@ -307,7 +327,6 @@
             {name:"Spotify",color:"#b388ff"},{name:"Apple Music",color:"#e040fb"},
             {name:"YouTube",color:"#ff4081"},{name:"Deezer",color:"#aa66cc"}
         ];
-        const tracks = ["Dímelo tú","Bla Bla Bla","Fuego Fuego","Pla Pla Pla","Todo Pa' Ti"];
         const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael","Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria"];
         const userAgents = ["Mozilla/5.0 (Windows NT 10.0)","Mozilla/5.0 (iPhone)","Mozilla/5.0 (Android)"];
 
@@ -321,7 +340,8 @@
         let markersLayer = L.layerGroup().addTo(map), heatLayer = null, heatmapActive = false;
         const canvas = document.getElementById('activityChart'), ctx = canvas.getContext('2d');
         const contextMenu = document.getElementById('contextMenu'); let contextMenuTarget = null;
-        const magicModal = document.getElementById('magicModal'), magicContent = document.getElementById('magicContent'), magicMessage = document.getElementById('magicMessage'), magicSparkles = document.getElementById('magicSparkles');
+        const magicModal = document.getElementById('magicModal'), magicContent = document.getElementById('magicContent');
+        const magicSparkles = document.getElementById('magicSparkles');
 
         function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 180; }
         window.addEventListener('resize', () => { resizeCanvas(); drawChart(); });
@@ -413,17 +433,9 @@
 
         function updateHeatmap() {
             if(heatLayer) map.removeLayer(heatLayer);
-            heatLayer = L.heatLayer(listeners.map(l => [l.lat, l.lng]), {
-                radius: 30,
-                blur: 20,
-                maxZoom: 8,
-                gradient: {
-                    0.2: '#b388ff',
-                    0.4: '#e040fb',
-                    0.6: '#ff4081',
-                    0.8: '#ff9800',
-                    1.0: '#f0b90b'
-                }
+            heatLayer=L.heatLayer(listeners.map(l=>[l.lat,l.lng]),{
+                radius:20, blur:15,
+                gradient: {0.2: '#ff00ff', 0.4: '#b388ff', 0.6: '#00e676', 0.8: '#ffff00', 1: '#ff0000'}
             }).addTo(map);
         }
 
@@ -448,7 +460,7 @@
         setInterval(moveMarkers,4000);
 
         function generateListeners() {
-            const count=parseInt(document.getElementById('listenerCount').value)||8;
+            const count=parseInt(document.getElementById('listenerCount').value)||10;
             const profileKey=document.getElementById('profileSelect').value;
             listeners=[]; state=[];
             for(let i=0;i<count;i++){
@@ -563,55 +575,36 @@
             return {labels:Array.from({length:24},(_,i)=>i+'h'),activity:hA,plays:hP,otherPlays:hO};
         }
 
+        function showMagicModal(plays, other, oyentes, gini, ratio, peaks, bingePct) {
+            magicContent.innerHTML = `
+                <div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div>
+                <div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div>
+                <div class="magic-stat"><span>👥 Oyentes:</span><strong>${oyentes}</strong></div>
+                <div class="magic-stat"><span>📊 Gini:</span><strong>${gini}</strong></div>
+                <div class="magic-stat"><span>🔁 Ratio:</span><strong>${ratio}</strong></div>
+                <div class="magic-stat"><span>⚠️ Picos:</span><strong>${peaks}</strong></div>
+                <div class="magic-stat"><span>🔥 Binge:</span><strong>${bingePct}%</strong></div>`;
+            magicSparkles.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const s = document.createElement('div'); s.className = 'magic-sparkle';
+                s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%';
+                s.style.animationDelay = Math.random() * 1.5 + 's';
+                magicSparkles.appendChild(s);
+            }
+            magicModal.classList.add('show');
+        }
+
         function finishSimulation(days) {
             simulationRunning=false; document.querySelectorAll('.btn').forEach(b=>b.disabled=false);
             document.getElementById('progressWrapper').style.display='none';
             document.getElementById('view1D').disabled=false; if(data7D)document.getElementById('view7D').disabled=false; if(data28D)document.getElementById('view28D').disabled=false;
             updateStats(); updateIndicators(); setView('1D');
-
-            const plays=data1D?data1D.plays.reduce((a,b)=>a+b,0):totalMyPlays;
-            const other=data1D?data1D.otherPlays.reduce((a,b)=>a+b,0):totalOtherPlays;
-            const gini=document.getElementById('giniValue').textContent;
-            const ratio=document.getElementById('ratioPlays').textContent;
-            const peaks=document.getElementById('suspiciousPeaks').textContent;
-            const bingePct=document.getElementById('bingePct').textContent;
-            const duration = days===1?'24 horas':days===7?'7 días':'28 días';
-
-            magicContent.innerHTML = `
-                <div class="magic-stat"><span>🎵 Tus plays</span><span>${plays}</span></div>
-                <div class="magic-stat"><span>🎧 Otros plays</span><span>${other}</span></div>
-                <div class="magic-stat"><span>👥 Oyentes</span><span>${listeners.length}</span></div>
-                <div class="magic-stat"><span>📊 Gini</span><span>${gini}</span></div>
-                <div class="magic-stat"><span>🔁 Ratio</span><span>${ratio}</span></div>
-                <div class="magic-stat"><span>⚠️ Picos</span><span>${peaks}</span></div>
-                <div class="magic-stat"><span>🔥 Binge</span><span>${bingePct}</span></div>
-                <div class="magic-stat"><span>⏱️ Duración</span><span>${duration}</span></div>
-            `;
-
-            // Mensaje dinámico según salud del streaming
-            const giniNum = parseFloat(gini);
-            const ratioNum = parseFloat(ratio);
-            const peaksNum = parseInt(peaks);
-            const bingeNum = parseInt(bingePct);
-            let salud = '✅ Saludable';
-            if (giniNum > 0.6 || ratioNum > 15 || peaksNum >= 3 || bingeNum > 40) {
-                salud = '⚠️ Revisar indicadores';
-            } else if (giniNum > 0.4 || ratioNum > 10 || peaksNum > 1 || bingeNum > 30) {
-                salud = '🟡 Precaución';
-            }
-            magicMessage.textContent = `Estado: ${salud}. Revisa las recomendaciones debajo de los indicadores.`;
-
-            // Generar sparkles
-            magicSparkles.innerHTML = '';
-            for (let i = 0; i < 16; i++) {
-                const s = document.createElement('div');
-                s.className = 'magic-sparkle';
-                s.style.left = Math.random() * 100 + '%';
-                s.style.top = Math.random() * 100 + '%';
-                s.style.animationDelay = Math.random() * 1.2 + 's';
-                magicSparkles.appendChild(s);
-            }
-            magicModal.classList.add('show');
+            const plays=data1D?data1D.plays.reduce((a,b)=>a+b,0):totalMyPlays, other=data1D?data1D.otherPlays.reduce((a,b)=>a+b,0):totalOtherPlays;
+            const gini = document.getElementById('giniValue').textContent;
+            const ratio = document.getElementById('ratioPlays').textContent;
+            const peaks = document.getElementById('suspiciousPeaks').textContent;
+            const bingePct = document.getElementById('bingePct').textContent.replace('%','');
+            showMagicModal(plays, other, listeners.length, gini, ratio, peaks, bingePct);
         }
 
         function startSimulation(mode) { if(simulationRunning)return; if(!listeners.length){alert('Añade oyentes');return;} runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
