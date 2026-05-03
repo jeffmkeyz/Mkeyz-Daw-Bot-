@@ -8,205 +8,108 @@
     <style>
         :root {
             --violet: #b388ff; --violet2: #d1b8ff; --green: #00e676;
-            --red: #ff4d4d; --blue: #4fc3f7; --orange: #ff9800;
+            --red: #ff4d4d; --blue: #4fc3f7; --orange: #ff9800; --fucsia: #e040fb;
             --text: #f0f3ff; --muted: #9a8fb8; --card: rgba(20, 15, 35, 0.85);
-            --neon: 0 0 10px var(--violet), 0 0 20px var(--violet), 0 0 40px rgba(179,136,255,0.5);
-            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius: 14px;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background: radial-gradient(circle at 30% 20%, #0a0e1a, #020408);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            padding: 14px 14px 30px;
-            overflow-x: hidden;
+            color: var(--text); font-family: 'Inter', sans-serif;
+            min-height: 100vh; padding: 8px 8px 20px; overflow-x: hidden;
         }
-        .floating-spheres { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
+        .floating-spheres, .shooting-stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
         .sphere {
             position:absolute; border-radius:50%;
             background: radial-gradient(circle at 30% 30%, rgba(179,136,255,0.5), rgba(100,60,200,0.15));
-            box-shadow: 0 0 20px rgba(179,136,255,0.4), 0 0 40px rgba(179,136,255,0.2);
-            animation: floatSphere linear infinite; opacity:0.7;
+            box-shadow: 0 0 20px rgba(179,136,255,0.4); animation: floatSphere linear infinite; opacity:0.7;
         }
         @keyframes floatSphere {
-            0% { transform: translateY(0) translateX(0) scale(1); opacity:0.5; }
-            25% { transform: translateY(-80px) translateX(30px) scale(1.1); opacity:0.8; }
-            50% { transform: translateY(-160px) translateX(-20px) scale(0.9); opacity:0.6; }
-            75% { transform: translateY(-80px) translateX(-50px) scale(1.05); opacity:0.7; }
-            100% { transform: translateY(0) translateX(0) scale(1); opacity:0.5; }
+            0%{transform:translateY(0) scale(1);opacity:.5} 50%{transform:translateY(-60px) scale(1.1);opacity:.8} 100%{transform:translateY(0) scale(1);opacity:.5}
         }
-        .shooting-stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
-        .player, .stats-grid, .map-area, .chart-area, .btn-group, .custom-listeners, .profiles-stats, .antidetect-panel { position:relative; z-index:1; }
+        .player, .stats-grid, .map-area, .chart-area, .btn-group, .custom-listeners, .profiles-stats, .antidetect-panel, .recommendations-panel { position:relative; z-index:1; }
         .player {
-            background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:30px; padding:18px 20px 12px; margin-bottom:20px;
-            border:1px solid rgba(179,136,255,0.3); box-shadow:var(--neon); display:flex; flex-direction:column; gap:12px;
+            background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:20px; padding:10px 14px; margin-bottom:10px;
+            border:1px solid rgba(179,136,255,0.3); box-shadow:0 0 10px var(--violet); display:flex; align-items:center; gap:10px;
         }
-        .player-main { display:flex; align-items:center; gap:16px; }
         .album-art {
-            width:70px; height:70px; border-radius:22px;
-            background:linear-gradient(145deg, #2a1f4a, #1a123a);
-            display:flex; align-items:center; justify-content:center;
-            box-shadow:0 0 18px rgba(179,136,255,0.4);
+            width:48px; height:48px; border-radius:16px; background:linear-gradient(145deg, #2a1f4a, #1a123a);
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
         }
-        .visualizer { display:flex; gap:3px; align-items:flex-end; height:30px; }
-        .vbar { width:5px; border-radius:3px; background:var(--violet); animation:eqAnim 0.8s infinite alternate; }
-        .vbar:nth-child(1) { height:12px; } .vbar:nth-child(2) { height:22px; }
-        .vbar:nth-child(3) { height:16px; } .vbar:nth-child(4) { height:28px; }
-        .vbar:nth-child(5) { height:14px; }
-        @keyframes eqAnim { 0% { transform:scaleY(0.5); } 100% { transform:scaleY(1.3); } }
-        .track-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
-        .track-name { font-weight:700; }
+        .visualizer { display:flex; gap:2px; align-items:flex-end; height:20px; }
+        .vbar { width:4px; border-radius:2px; background:var(--violet); animation:eqAnim 0.8s infinite alternate; }
+        .vbar:nth-child(1){height:8px} .vbar:nth-child(2){height:14px} .vbar:nth-child(3){height:10px} .vbar:nth-child(4){height:16px} .vbar:nth-child(5){height:8px}
+        @keyframes eqAnim { 0%{transform:scaleY(0.5)} 100%{transform:scaleY(1.3)} }
+        .track-info { flex:1; min-width:0; }
+        .track-name { font-weight:700; font-size:0.85rem; }
+        .track-artist { font-size:0.65rem; color:var(--muted); }
         .live-badge {
-            display:inline-flex; align-items:center; gap:6px;
-            background:rgba(179,136,255,0.15); padding:4px 12px; border-radius:20px;
-            font-size:0.7rem; color:var(--violet2);
+            display:inline-flex; align-items:center; gap:4px; background:rgba(179,136,255,0.15);
+            padding:3px 10px; border-radius:14px; font-size:0.65rem; color:var(--violet2); margin-top:4px;
         }
-        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:10px; margin:20px 0; }
+        .live-badge .dot { width:6px; height:6px; border-radius:50%; background:var(--violet); animation:pulseDot 1.4s infinite; }
+        @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(100px,1fr)); gap:6px; margin:10px 0; }
         .mini-stat {
-            background:var(--card); backdrop-filter:blur(10px); border-radius:22px; padding:14px 12px;
-            border:1px solid rgba(179,136,255,0.2); text-align:center; box-shadow:0 0 12px rgba(179,136,255,0.15);
+            background:var(--card); backdrop-filter:blur(10px); border-radius:14px; padding:10px 8px;
+            border:1px solid rgba(179,136,255,0.2); text-align:center; font-size:0.7rem;
         }
-        .mini-stat .value { font-family:'Orbitron',monospace; font-size:1.3rem; color:var(--violet2); text-shadow:0 0 10px var(--violet); }
-        .profiles-stats { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; justify-content:center; }
-        .profile-stat {
-            background:var(--card); padding:8px 16px; border-radius:20px; font-size:0.75rem;
-            border:1px solid; display:flex; align-items:center; gap:6px;
+        .mini-stat .value { font-family:'Orbitron',monospace; font-size:1rem; color:var(--violet2); text-shadow:0 0 8px var(--violet); }
+        .profiles-stats { display:flex; flex-wrap:wrap; gap:4px; margin:6px 0; justify-content:center; font-size:0.7rem; }
+        .profile-stat { background:var(--card); padding:5px 12px; border-radius:14px; border:1px solid; display:flex; align-items:center; gap:4px; }
+        .antidetect-panel { background:var(--card); border-radius:14px; padding:10px; margin:10px 0; border:1px solid rgba(179,136,255,0.3); }
+        .antidetect-title { font-size:0.7rem; color:var(--violet2); margin-bottom:8px; }
+        .antidetect-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(110px,1fr)); gap:6px; }
+        .antidetect-item { background:rgba(0,0,0,0.3); border-radius:10px; padding:8px; border:1px solid rgba(255,255,255,0.1); }
+        .antidetect-label { font-size:0.6rem; color:var(--muted); }
+        .antidetect-value { font-size:0.85rem; font-weight:700; margin-top:2px; }
+        .recommendations-panel {
+            background:var(--card); border-radius:14px; padding:10px; margin:10px 0;
+            border:1px solid var(--violet); display:none;
         }
-        .antidetect-panel {
-            background: var(--card); border-radius: 20px; padding: 16px;
-            border: 1px solid rgba(179,136,255,0.3); margin: 16px 0;
-        }
-        .antidetect-title { font-size:0.8rem; color:var(--violet2); margin-bottom:12px; }
-        .antidetect-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 8px; }
-        .antidetect-item {
-            background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .antidetect-label { font-size:0.65rem; color:var(--muted); }
-        .antidetect-value { font-size:1rem; font-weight:700; color:var(--text); margin-top:4px; }
+        .recommendations-panel.show { display:block; }
+        .rec-header { font-size:0.75rem; font-weight:700; color:var(--violet2); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+        .rec-item { font-size:0.7rem; padding:6px 0; border-bottom:1px solid rgba(179,136,255,0.1); display:flex; gap:6px; align-items:flex-start; }
+        .rec-item:last-child { border-bottom:none; }
 
-        .map-area {
-            margin: 20px 0;
-            border-radius: 30px;
-            overflow: hidden;
-            border: 1px solid rgba(179,136,255,0.2);
-            box-shadow: 0 0 20px rgba(179,136,255,0.2);
-        }
-        #mapid { height: 450px; width: 100%; z-index: 1; }
-        .leaflet-container { background: #0a0a1e; font-family: 'Inter', sans-serif; }
-        .leaflet-popup-content-wrapper {
-            background: rgba(20,15,35,0.95); color: var(--text);
-            border: 1px solid var(--violet); border-radius: 16px;
-            box-shadow: 0 0 20px var(--violet);
-        }
-        .leaflet-popup-tip { background: rgba(20,15,35,0.95); }
-        .filter-bar {
-            display: flex; gap: 10px; align-items: center; margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        .filter-bar select {
-            background: var(--card); color: var(--text); border: 1px solid var(--violet);
-            border-radius: 10px; padding: 6px 10px; font-size: 0.8rem; outline: none;
-        }
-        .filter-bar button {
-            background: var(--violet); border: none; padding: 8px 16px; border-radius: 20px;
-            font-weight: 700; cursor: pointer; color: #000; transition: var(--transition);
-        }
-        .filter-bar button:hover { background: var(--violet2); }
-        .chart-area {
-            background:var(--card); backdrop-filter:blur(10px); border-radius:24px; padding:16px;
-            margin:20px 0; border:1px solid rgba(179,136,255,0.2); box-shadow:0 0 20px rgba(179,136,255,0.15);
-        }
-        .chart-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
-        .chart-title {
-            font-size: 1rem; font-weight:800; text-transform: uppercase; letter-spacing:2px;
-            color: #fff; text-shadow: 0 0 10px var(--violet), 0 0 25px var(--violet);
-            background: linear-gradient(135deg, var(--violet2), #ffffff);
-            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .view-btns { display:flex; gap:10px; }
-        .view-btn {
-            padding:8px 20px; font-size:0.75rem; font-weight:700; border:2px solid rgba(179,136,255,0.5);
-            border-radius:25px; background:rgba(20,15,35,0.7); color:var(--text); cursor:pointer;
-            transition: var(--transition); box-shadow:0 0 10px rgba(179,136,255,0.3);
-        }
-        .view-btn:hover { box-shadow:0 0 20px var(--violet); border-color:var(--violet); }
-        .view-btn.active { background:var(--violet); color:#000; border-color:var(--violet); box-shadow:0 0 25px var(--violet); }
-        canvas#activityChart { width:100%; height:240px; display:block; background:rgba(0,0,0,0.2); border-radius:16px; }
-        .btn-group { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:12px; }
-        .btn {
-            background:var(--card); border:2px solid rgba(179,136,255,0.4); padding:12px 22px;
-            border-radius:50px; font-weight:700; font-size:0.8rem; color:var(--text); cursor:pointer;
-            transition: var(--transition); box-shadow:0 0 10px rgba(179,136,255,0.2);
-            position: relative; overflow: hidden;
-        }
-        .btn::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-            transition: left 0.5s ease;
-        }
-        .btn:hover::after { left: 100%; }
-        .btn:hover {
-            border-color: var(--violet2);
-            box-shadow: 0 0 25px rgba(179,136,255,0.6), 0 0 40px rgba(179,136,255,0.3);
-            transform: translateY(-3px);
-            color: #fff;
-            text-shadow: 0 0 8px var(--violet);
-        }
-        .btn.gold {
-            background:linear-gradient(135deg, var(--violet), #7c4dff);
-            border: none; color: #000; font-weight: 800;
-        }
-        .btn.gold:hover {
-            background: linear-gradient(135deg, var(--violet2), #9c6dff);
-            box-shadow: 0 0 30px rgba(179,136,255,0.8), 0 0 50px rgba(179,136,255,0.5);
-            transform: translateY(-3px);
-            text-shadow: none;
-        }
-        .btn:disabled { opacity:0.4; pointer-events:none; transform: none; }
-        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1530; color:var(--violet2); padding:8px 18px; border-radius:50px; z-index:999; border:1px solid var(--violet); box-shadow:0 0 12px var(--violet); }
-        .controls-bar {
-            display: flex; align-items: center; gap: 10px; margin: 10px 0;
-            background: var(--card); padding: 12px 20px; border-radius: 50px;
-            border: 1px solid rgba(179,136,255,0.4);
-            box-shadow: 0 0 20px rgba(179,136,255,0.2);
-        }
-        .controls-label {
-            display: flex; align-items: center; gap: 6px;
-            font-size: 0.75rem; font-weight: 600; color: var(--muted);
-        }
-        .controls-label svg { width: 18px; height: 18px; fill: var(--violet); }
-        .controls-input {
-            width: 60px; background: rgba(0,0,0,0.4); border: 1px solid var(--violet);
-            border-radius: 8px; color: var(--violet2); font-family: 'Orbitron', monospace;
-            font-size: 0.9rem; text-align: center; outline: none; padding: 4px;
-        }
-        .controls-select {
-            background: rgba(0,0,0,0.4); color: var(--text); border: 1px solid var(--violet);
-            border-radius: 10px; padding: 6px 10px; font-size: 0.8rem; outline: none;
-        }
-        .controls-btn {
-            background: var(--violet); border: none; padding: 8px 18px; border-radius: 20px;
-            font-weight: 700; cursor: pointer; color: #000; display: flex; align-items: center; gap: 6px;
-            transition: var(--transition); box-shadow: 0 0 12px rgba(179,136,255,0.3);
-        }
-        .controls-btn:hover {
-            background: var(--violet2); box-shadow: 0 0 20px var(--violet);
-            transform: translateY(-2px);
-        }
-        .controls-btn svg { width: 16px; height: 16px; fill: #000; }
+        .map-area { margin:10px 0; border-radius:20px; overflow:hidden; border:1px solid rgba(179,136,255,0.2); }
+        #mapid { height:280px; width:100%; z-index:1; }
+        .leaflet-container { background:#0a0a1e; font-family:'Inter',sans-serif; }
+        .filter-bar { display:flex; gap:6px; align-items:center; margin-bottom:6px; flex-wrap:wrap; }
+        .filter-bar select { background:var(--card); color:var(--text); border:1px solid var(--violet); border-radius:8px; padding:4px 8px; font-size:0.7rem; outline:none; }
+        .filter-bar button { background:var(--violet); border:none; padding:6px 12px; border-radius:14px; font-weight:700; font-size:0.7rem; cursor:pointer; color:#000; }
+        .filter-bar button:hover { background:var(--violet2); }
+        .chart-area { background:var(--card); border-radius:14px; padding:10px; margin:10px 0; border:1px solid rgba(179,136,255,0.2); }
+        .chart-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
+        .chart-title { font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#fff; text-shadow:0 0 8px var(--violet); }
+        .view-btns { display:flex; gap:4px; }
+        .view-btn { padding:5px 12px; font-size:0.65rem; font-weight:700; border:2px solid rgba(179,136,255,0.5); border-radius:14px; background:rgba(20,15,35,0.7); color:var(--text); cursor:pointer; }
+        .view-btn.active { background:var(--violet); color:#000; border-color:var(--violet); }
+        canvas#activityChart { width:100%; height:180px; display:block; background:rgba(0,0,0,0.2); border-radius:10px; }
+        .btn-group { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
+        .btn { background:var(--card); border:2px solid rgba(179,136,255,0.4); padding:8px 16px; border-radius:20px; font-weight:700; font-size:0.7rem; color:var(--text); cursor:pointer; transition:0.2s; }
+        .btn:hover { border-color:var(--violet); box-shadow:0 0 12px var(--violet); }
+        .btn.gold { background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000; }
+        .btn:disabled { opacity:0.4; pointer-events:none; }
+        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1530; color:var(--violet2); padding:6px 14px; border-radius:20px; z-index:999; border:1px solid var(--violet); font-size:0.7rem; transition:transform 0.3s; }
+        .controls-bar { display:flex; align-items:center; gap:6px; margin:8px 0; background:var(--card); padding:8px 14px; border-radius:20px; border:1px solid rgba(179,136,255,0.4); }
+        .controls-label { font-size:0.7rem; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:4px; }
+        .controls-label svg { width:16px; height:16px; fill:var(--violet); }
+        .controls-input { width:50px; background:rgba(0,0,0,0.4); border:1px solid var(--violet); border-radius:6px; color:var(--violet2); font-family:'Orbitron',monospace; font-size:0.8rem; text-align:center; padding:2px; }
+        .controls-select { background:rgba(0,0,0,0.4); color:var(--text); border:1px solid var(--violet); border-radius:8px; padding:4px; font-size:0.7rem; }
+        .controls-btn { background:var(--violet); border:none; padding:6px 14px; border-radius:14px; font-weight:700; font-size:0.7rem; cursor:pointer; color:#000; display:flex; align-items:center; gap:4px; }
+        /* Modal mágico mejorado */
         .magic-modal {
             position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
-            z-index: 300; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+            z-index: 300; background: rgba(0,0,0,0.75); backdrop-filter: blur(12px);
         }
         .magic-modal.show { display: flex; }
         .magic-box {
             background: linear-gradient(145deg, #1a1030, #0f0a22);
             border: 2px solid var(--violet);
-            border-radius: 32px;
-            padding: 28px 24px;
-            max-width: 400px;
+            border-radius: 28px;
+            padding: 24px 20px;
+            max-width: 380px;
             width: 90%;
             text-align: center;
             animation: magicIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -215,7 +118,7 @@
             overflow: hidden;
         }
         @keyframes magicIn {
-            0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+            0% { transform: scale(0.3) rotate(-8deg); opacity: 0; }
             60% { transform: scale(1.05); opacity: 1; }
             100% { transform: scale(1) rotate(0); opacity: 1; }
         }
@@ -224,37 +127,32 @@
             pointer-events: none;
         }
         .magic-sparkle {
-            position: absolute; width: 6px; height: 6px;
+            position: absolute; width: 8px; height: 8px;
             background: var(--violet2); border-radius: 50%;
-            animation: sparkle 1.5s linear infinite;
+            animation: sparkle 1.2s linear infinite;
         }
         @keyframes sparkle {
             0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-200px) scale(0); opacity: 0; }
+            100% { transform: translateY(-180px) scale(0); opacity: 0; }
         }
         .magic-title {
             font-family: 'Orbitron', monospace;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             color: #fff;
             text-shadow: 0 0 20px var(--violet), 0 0 40px var(--violet);
             margin-bottom: 16px;
         }
-        .magic-stat {
-            display: flex; justify-content: space-between;
-            margin: 8px 0; font-size: 0.9rem;
-            color: var(--text);
-        }
+        .magic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; }
+        .magic-stat { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 4px 0; }
+        .magic-stat span:first-child { color: var(--muted); }
+        .magic-stat span:last-child { font-weight: 700; }
+        .magic-message { margin-top: 12px; font-size: 0.75rem; padding: 8px 12px; border-radius: 12px; background: rgba(179,136,255,0.1); }
         .context-menu {
             position: absolute; z-index: 1000; background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
-            border-radius: 16px; padding: 8px 0; min-width: 180px;
-            box-shadow: 0 0 20px var(--violet); backdrop-filter: blur(12px);
-            display: none;
+            border-radius: 12px; padding: 4px 0; min-width: 150px; box-shadow: 0 0 15px var(--violet); display: none;
         }
         .context-menu.show { display: block; }
-        .context-menu-item {
-            padding: 10px 16px; cursor: pointer; font-size: 0.8rem; color: var(--text);
-            transition: background 0.2s;
-        }
+        .context-menu-item { padding: 8px 12px; cursor: pointer; font-size: 0.7rem; color: var(--text); }
         .context-menu-item:hover { background: rgba(179,136,255,0.2); }
     </style>
 </head>
@@ -263,18 +161,11 @@
     <canvas class="shooting-stars" id="starsCanvas"></canvas>
 
     <div class="player">
-        <div class="player-main">
-            <div class="album-art">
-                <div class="visualizer">
-                    <div class="vbar"></div><div class="vbar"></div><div class="vbar"></div>
-                    <div class="vbar"></div><div class="vbar"></div>
-                </div>
-            </div>
-            <div class="track-info">
-                <div class="track-name" id="trackName">Sin reproducción</div>
-                <div class="track-artist">Jeff Mkeyz</div>
-                <div class="live-badge"><span id="liveCount">0</span> escuchándote</div>
-            </div>
+        <div class="album-art"><div class="visualizer"><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div></div></div>
+        <div class="track-info">
+            <div class="track-name" id="trackName">Sin reproducción</div>
+            <div class="track-artist">Jeff Mkeyz</div>
+            <div class="live-badge"><div class="dot"></div><span id="liveCount">0</span> escuchándote</div>
         </div>
     </div>
 
@@ -285,90 +176,55 @@
         <div class="mini-stat"><div class="value" id="activePlatform">0</div><div class="label">🟢 Activos</div></div>
     </div>
 
-    <div class="profiles-stats" id="profilesStats">
-        <div class="profile-stat" id="stat-fiel" style="border-color:#00e676"><span>🔒</span> Fieles: 0</div>
-        <div class="profile-stat" id="stat-explorador" style="border-color:#4fc3f7"><span>🔍</span> Exploradores: 0</div>
-        <div class="profile-stat" id="stat-ocasional" style="border-color:#b388ff"><span>🎲</span> Ocasionales: 0</div>
-        <div class="profile-stat" id="stat-binge" style="border-color:#ff4d4d"><span>🔥</span> Binge: 0</div>
-    </div>
-
+    <div class="profiles-stats" id="profilesStats"></div>
     <div class="antidetect-panel">
         <div class="antidetect-title">🛡️ Indicadores Antidetect</div>
         <div class="antidetect-grid">
-            <div class="antidetect-item">
-                <div class="antidetect-label">Coeficiente Gini (plays)</div>
-                <div class="antidetect-value" id="giniValue">—</div>
-            </div>
-            <div class="antidetect-item">
-                <div class="antidetect-label">Ratio plays/oyente</div>
-                <div class="antidetect-value" id="ratioPlays">—</div>
-            </div>
-            <div class="antidetect-item">
-                <div class="antidetect-label">Picos sospechosos</div>
-                <div class="antidetect-value" id="suspiciousPeaks">0</div>
-            </div>
-            <div class="antidetect-item">
-                <div class="antidetect-label">Binge listeners (%)</div>
-                <div class="antidetect-value" id="bingePct">0%</div>
-            </div>
+            <div class="antidetect-item"><span class="antidetect-label">Gini</span><div class="antidetect-value" id="giniValue">—</div></div>
+            <div class="antidetect-item"><span class="antidetect-label">Ratio</span><div class="antidetect-value" id="ratioPlays">—</div></div>
+            <div class="antidetect-item"><span class="antidetect-label">Picos</span><div class="antidetect-value" id="suspiciousPeaks">0</div></div>
+            <div class="antidetect-item"><span class="antidetect-label">Binge%</span><div class="antidetect-value" id="bingePct">0%</div></div>
         </div>
+    </div>
+    <div class="recommendations-panel" id="recommendationsPanel">
+        <div class="rec-header"><span>🧠</span> Recomendaciones</div>
+        <div id="recList"></div>
     </div>
 
     <div class="filter-bar">
-        <select id="filterCountry"><option value="">🌍 Todos los países</option></select>
-        <select id="filterPlatform"><option value="">📱 Todas las plataformas</option></select>
+        <select id="filterCountry"><option value="">🌍 Todos</option></select>
+        <select id="filterPlatform"><option value="">📱 Plataforma</option></select>
         <button id="heatmapToggle">🔥 Heatmap</button>
     </div>
-
-    <div class="map-area">
-        <div id="mapid"></div>
-    </div>
+    <div class="map-area"><div id="mapid"></div></div>
 
     <div class="controls-bar">
-        <div class="controls-label">
-            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-            Cantidad:
-        </div>
-        <input type="number" id="listenerCount" value="10" min="1" max="100" class="controls-input">
-        <div class="controls-label">
-            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-            Perfil:
-        </div>
-        <select id="profileSelect" class="controls-select">
-            <option value="aleatorio">🎲 Aleatorio</option>
-            <option value="fiel">🔒 Fiel</option>
-            <option value="explorador">🔍 Explorador</option>
-            <option value="ocasional">🎲 Ocasional</option>
-            <option value="binge">🔥 Binge</option>
-        </select>
-        <button onclick="generateListeners()" class="controls-btn">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            Generar
-        </button>
+        <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Cantidad:</span>
+        <input type="number" id="listenerCount" value="8" min="1" max="100" class="controls-input">
+        <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Perfil:</span>
+        <select id="profileSelect" class="controls-select"><option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option></select>
+        <button onclick="generateListeners()" class="controls-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Generar</button>
     </div>
 
     <div class="chart-area">
         <div class="chart-header">
             <div class="chart-title" id="chartTitle">📊 Actividad (1D)</div>
             <div class="view-btns">
-                <button class="view-btn active" id="view1D" onclick="setView('1D')">1 Día</button>
-                <button class="view-btn" id="view7D" onclick="setView('7D')" disabled>7 Días</button>
-                <button class="view-btn" id="view28D" onclick="setView('28D')" disabled>28 Días</button>
+                <button class="view-btn active" id="view1D" onclick="setView('1D')">1D</button>
+                <button class="view-btn" id="view7D" onclick="setView('7D')" disabled>7D</button>
+                <button class="view-btn" id="view28D" onclick="setView('28D')" disabled>28D</button>
             </div>
         </div>
         <canvas id="activityChart"></canvas>
-        <div class="progress-wrapper" id="progressWrapper" style="display:none; text-align:center; margin:10px 0;">
-            <div id="progressLabel">0%</div>
-            <div class="progress-bar-bg" style="width:80%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin:0 auto;"><div class="progress-bar-fill" id="progressBarFill" style="height:100%; width:0%; background:var(--violet); border-radius:3px;"></div></div>
-        </div>
+        <div id="progressWrapper" style="display:none;text-align:center;margin:6px 0;"><span id="progressLabel">0%</span><div style="width:80%;height:4px;background:rgba(255,255,255,0.1);border-radius:3px;margin:4px auto;"><div id="progressBarFill" style="height:100%;width:0%;background:var(--violet);border-radius:3px;"></div></div></div>
     </div>
 
     <div class="btn-group">
-        <button class="btn gold" onclick="addListener()">➕ Añadir Oyente</button>
-        <button class="btn" onclick="startSimulation('1D')">📊 Simular 1 Día</button>
-        <button class="btn" onclick="startSimulation('7D')">📅 Simular 7 Días</button>
-        <button class="btn" onclick="startSimulation('28D')">🗓️ Simular 28 Días</button>
-        <button class="btn" id="resetBtn" onclick="resetAll()">🔄 Reiniciar</button>
+        <button class="btn gold" onclick="addListener()">➕ Añadir</button>
+        <button class="btn" onclick="startSimulation('1D')">1 Día</button>
+        <button class="btn" onclick="startSimulation('7D')">7 Días</button>
+        <button class="btn" onclick="startSimulation('28D')">28 Días</button>
+        <button class="btn" onclick="resetAll()">🔄 Reset</button>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -382,8 +238,9 @@
         <div class="magic-box">
             <div class="magic-sparkles" id="magicSparkles"></div>
             <div class="magic-title">✨ Simulación Completa ✨</div>
-            <div id="magicContent"></div>
-            <button class="btn gold" style="width:100%; margin-top:16px;" onclick="closeMagicModal()">Cerrar</button>
+            <div class="magic-grid" id="magicContent"></div>
+            <div id="magicMessage" class="magic-message"></div>
+            <button class="btn gold" style="width:100%;margin-top:16px" onclick="closeMagicModal()">Cerrar</button>
         </div>
     </div>
 
@@ -394,527 +251,381 @@
     (function() {
         // Esferas
         const spheresContainer = document.getElementById('spheres');
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 16; i++) {
             const sphere = document.createElement('div');
-            sphere.className = 'sphere';
-            sphere.style.width = (Math.random() * 80 + 40) + 'px';
-            sphere.style.height = sphere.style.width;
-            sphere.style.left = Math.random() * 100 + '%';
-            sphere.style.top = Math.random() * 100 + '%';
+            sphere.className = 'sphere'; sphere.style.width = (Math.random() * 60 + 30) + 'px'; sphere.style.height = sphere.style.width;
+            sphere.style.left = Math.random() * 100 + '%'; sphere.style.top = Math.random() * 100 + '%';
             sphere.style.animationDuration = (Math.random() * 20 + 15) + 's';
-            sphere.style.animationDelay = (Math.random() * 15) + 's';
             spheresContainer.appendChild(sphere);
         }
 
         // Estrellas fugaces
         const starsCanvas = document.getElementById('starsCanvas');
         const starsCtx = starsCanvas.getContext('2d');
-        function resizeStarsCanvas() { starsCanvas.width = window.innerWidth; starsCanvas.height = window.innerHeight; }
-        window.addEventListener('resize', resizeStarsCanvas);
-        resizeStarsCanvas();
+        function resizeStars() { starsCanvas.width = window.innerWidth; starsCanvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeStars); resizeStars();
         let stars = [];
-        for (let i = 0; i < 12; i++) {
-            stars.push({
-                x: Math.random() * starsCanvas.width,
-                y: Math.random() * starsCanvas.height * 0.5,
-                length: Math.random() * 80 + 40,
-                speed: Math.random() * 10 + 5,
-                opacity: Math.random() * 0.5 + 0.5,
-                reset() { this.x = Math.random() * starsCanvas.width; this.y = Math.random() * starsCanvas.height * 0.3; }
-            });
-        }
+        for (let i = 0; i < 8; i++) stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height*0.4, len: 60+Math.random()*40, speed: 4+Math.random()*6, opacity: 0.4+Math.random()*0.4 });
         function drawStars() {
-            starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
-            stars.forEach(star => {
-                star.x += star.speed;
-                star.y -= star.speed * 0.5;
-                if (star.x > starsCanvas.width + 100 || star.y < -100) star.reset();
-                starsCtx.beginPath();
-                starsCtx.moveTo(star.x, star.y);
-                starsCtx.lineTo(star.x - star.length, star.y + star.length * 0.5);
-                starsCtx.strokeStyle = `rgba(179,136,255,${star.opacity})`;
-                starsCtx.lineWidth = 2;
-                starsCtx.shadowColor = '#b388ff';
-                starsCtx.shadowBlur = 10;
-                starsCtx.stroke();
-            });
+            starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
+            stars.forEach(s => { s.x += s.speed; s.y -= s.speed*0.5; if(s.x>starsCanvas.width+100||s.y<-100){s.x=Math.random()*starsCanvas.width; s.y=Math.random()*starsCanvas.height*0.3;} starsCtx.beginPath(); starsCtx.moveTo(s.x,s.y); starsCtx.lineTo(s.x-s.len,s.y+s.len*0.5); starsCtx.strokeStyle=`rgba(179,136,255,${s.opacity})`; starsCtx.lineWidth=2; starsCtx.shadowColor='#b388ff'; starsCtx.shadowBlur=8; starsCtx.stroke(); });
             requestAnimationFrame(drawStars);
         }
         drawStars();
 
-        // Perfiles
         const PROFILES = {
-            fiel: { name: "Fiel", icon: "🔒", color: "#00e676", activityProb: 0.8, myRadioProb: 0.7, trackChangeProb: 0.15, idleProb: 0.1, maxDailyPlays: 15, sessionLength: 5 },
-            explorador: { name: "Explorador", icon: "🔍", color: "#4fc3f7", activityProb: 0.6, myRadioProb: 0.3, trackChangeProb: 0.5, idleProb: 0.2, maxDailyPlays: 8, sessionLength: 3 },
-            ocasional: { name: "Ocasional", icon: "🎲", color: "#b388ff", activityProb: 0.3, myRadioProb: 0.4, trackChangeProb: 0.3, idleProb: 0.4, maxDailyPlays: 5, sessionLength: 2 },
-            binge: { name: "Binge", icon: "🔥", color: "#ff4d4d", activityProb: 0.9, myRadioProb: 0.9, trackChangeProb: 0.05, idleProb: 0.05, maxDailyPlays: 30, sessionLength: 8 }
+            fiel:{name:"Fiel",icon:"🔒",color:"#00e676",activity:0.8,myRadio:0.7,change:0.15,idle:0.1,max:15,session:5},
+            explorador:{name:"Explorador",icon:"🔍",color:"#4fc3f7",activity:0.6,myRadio:0.3,change:0.5,idle:0.2,max:8,session:3},
+            ocasional:{name:"Ocasional",icon:"🎲",color:"#b388ff",activity:0.3,myRadio:0.4,change:0.3,idle:0.4,max:5,session:2},
+            binge:{name:"Binge",icon:"🔥",color:"#ff4d4d",activity:0.9,myRadio:0.9,change:0.05,idle:0.05,max:30,session:8}
         };
 
-        const countryCoords = {
-            "Rep. Dominicana":{x:28,y:45}, "España":{x:45,y:32}, "Brasil":{x:32,y:62},
-            "México":{x:15,y:40}, "Francia":{x:48,y:30}, "Colombia":{x:25,y:55},
-            "Argentina":{x:28,y:80}, "Venezuela":{x:26,y:50}, "EE.UU.":{x:18,y:32},
-            "Perú":{x:22,y:62}, "Chile":{x:26,y:78}, "Ecuador":{x:22,y:58},
-            "Panamá":{x:26,y:48}, "Costa Rica":{x:24,y:46}, "Uruguay":{x:30,y:78},
-            "Paraguay":{x:30,y:70}, "Bolivia":{x:27,y:66}, "Nicaragua":{x:24,y:44},
-            "Guatemala":{x:22,y:42}, "Cuba":{x:24,y:38}, "Puerto Rico":{x:30,y:40},
-            "Honduras":{x:23,y:44}, "El Salvador":{x:21,y:44}, "Canadá":{x:22,y:22},
-            "Italia":{x:50,y:34}, "Japón":{x:85,y:36}, "Nigeria":{x:48,y:57},
-            "Alemania":{x:51,y:27}, "Reino Unido":{x:47,y:25}, "Corea del Sur":{x:83,y:38},
-            "Australia":{x:80,y:72}, "Sudáfrica":{x:53,y:75}, "India":{x:68,y:50}
+        const countryCities = {
+            "Rep. Dominicana":[{name:"Santo Domingo",lat:18.48,lng:-69.93},{name:"Santiago",lat:19.45,lng:-70.7}],
+            "España":[{name:"Madrid",lat:40.42,lng:-3.70},{name:"Barcelona",lat:41.39,lng:2.16}],
+            "Brasil":[{name:"São Paulo",lat:-23.55,lng:-46.63},{name:"Río",lat:-22.91,lng:-43.17}],
+            "México":[{name:"CDMX",lat:19.43,lng:-99.13},{name:"Guadalajara",lat:20.66,lng:-103.35}],
+            "Francia":[{name:"París",lat:48.86,lng:2.35},{name:"Lyon",lat:45.76,lng:4.84}],
+            "Colombia":[{name:"Bogotá",lat:4.71,lng:-74.07},{name:"Medellín",lat:6.25,lng:-75.56}],
+            "Argentina":[{name:"Buenos Aires",lat:-34.60,lng:-58.38},{name:"Córdoba",lat:-31.42,lng:-64.18}],
+            "EE.UU.":[{name:"Nueva York",lat:40.71,lng:-74.01},{name:"Los Ángeles",lat:34.05,lng:-118.24}],
+            "Perú":[{name:"Lima",lat:-12.05,lng:-77.04}],
+            "Chile":[{name:"Santiago",lat:-33.45,lng:-70.67}],
+            "Ecuador":[{name:"Quito",lat:-0.18,lng:-78.47}],
+            "Canadá":[{name:"Toronto",lat:43.65,lng:-79.38}],
+            "Italia":[{name:"Roma",lat:41.90,lng:12.50}],
+            "Japón":[{name:"Tokio",lat:35.68,lng:139.76}],
+            "Nigeria":[{name:"Lagos",lat:6.45,lng:3.40}],
+            "Alemania":[{name:"Berlín",lat:52.52,lng:13.40}],
+            "Reino Unido":[{name:"Londres",lat:51.51,lng:-0.13}],
+            "Corea del Sur":[{name:"Seúl",lat:37.57,lng:126.98}],
+            "Australia":[{name:"Sídney",lat:-33.87,lng:151.21}],
+            "India":[{name:"Bombay",lat:19.08,lng:72.88}]
         };
+
         const platforms = [
             {name:"Spotify",color:"#b388ff"},{name:"Apple Music",color:"#e040fb"},
-            {name:"YouTube",color:"#ff4081"},{name:"Amazon Music",color:"#7c4dff"},
-            {name:"Deezer",color:"#aa66cc"},{name:"SoundCloud",color:"#ff8800"}
+            {name:"YouTube",color:"#ff4081"},{name:"Deezer",color:"#aa66cc"}
         ];
-        const tracks = ["Dímelo tú","Bla Bla Bla","Fuego Fuego","Pla Pla Pla","Todo Pa' Ti","Ronca'íto","No Ta' En Na'","Tú Eres Mía","Vem Comigo","Yo Soy La Que Manda"];
-        const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael","Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria","Gabriel","Natalia","Mateo","Luciana","Samuel","Martina","Nicolás","Andrea","Hiroshi","Amara","Klaus","Oliver"];
-        const userAgents = [
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
-            "Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
-        ];
-        const resolutions = ["1920x1080","1366x768","390x844","412x915","1440x900"];
-        const languages = ["es-ES","es-MX","en-US","pt-BR","fr-FR","de-DE"];
+        const tracks = ["Dímelo tú","Bla Bla Bla","Fuego Fuego","Pla Pla Pla","Todo Pa' Ti"];
+        const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael","Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria"];
+        const userAgents = ["Mozilla/5.0 (Windows NT 10.0)","Mozilla/5.0 (iPhone)","Mozilla/5.0 (Android)"];
 
         let listeners = [], state = [];
         let totalMyPlays = 0, totalOtherPlays = 0;
         let data1D = null, data7D = null, data28D = null;
-        let currentView = '1D';
-        let simulationRunning = false;
+        let currentView = '1D', simulationRunning = false;
 
-        // Mapa Leaflet
-        const map = L.map('mapid', {
-            center: [20, 0],
-            zoom: 2,
-            zoomControl: false,
-            attributionControl: false,
-            minZoom: 2,
-            maxZoom: 8,
-            worldCopyJump: true
-        });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            subdomains: 'abcd',
-            maxZoom: 19
-        }).addTo(map);
+        const map = L.map('mapid', { center:[20,0], zoom:2, zoomControl:false, attributionControl:false, minZoom:2, maxZoom:8 });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(map);
+        let markersLayer = L.layerGroup().addTo(map), heatLayer = null, heatmapActive = false;
+        const canvas = document.getElementById('activityChart'), ctx = canvas.getContext('2d');
+        const contextMenu = document.getElementById('contextMenu'); let contextMenuTarget = null;
+        const magicModal = document.getElementById('magicModal'), magicContent = document.getElementById('magicContent'), magicMessage = document.getElementById('magicMessage'), magicSparkles = document.getElementById('magicSparkles');
 
-        let markersLayer = L.layerGroup().addTo(map);
-        let heatLayer = null;
-        let heatmapActive = false;
-        let movementInterval = null;
+        function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 180; }
+        window.addEventListener('resize', () => { resizeCanvas(); drawChart(); });
 
-        function pctToLatLng(px, py) {
-            const lat = 90 - py * 1.8;
-            const lng = px * 3.6 - 180;
-            return [lat, lng];
+        function getActivityFactor(h) { if(h>=7&&h<=9)return 1.4; if(h>=12&&h<=14)return 1.2; if(h>=19&&h<=22)return 1.5; if(h>=0&&h<=5)return 0.3; return 0.8; }
+
+        function drawChart() {
+            const w=canvas.width,h=canvas.height; ctx.clearRect(0,0,w,h);
+            const data = currentView==='1D'?data1D:(currentView==='7D'?data7D:data28D);
+            if(!data) return;
+            const {labels,activity,plays,otherPlays}=data;
+            const maxVal=Math.max(...activity,...plays,...otherPlays,1);
+            const pad={top:16,right:16,bottom:24,left:32},cw=w-pad.left-pad.right,ch=h-pad.top-pad.bottom,n=labels.length,stepX=cw/(n-1);
+            ctx.strokeStyle='#2a1f4a'; ctx.beginPath(); ctx.moveTo(pad.left,pad.top); ctx.lineTo(pad.left,h-pad.bottom); ctx.lineTo(w-pad.right,h-pad.bottom); ctx.stroke();
+            ctx.fillStyle='#9a8fb8'; ctx.font='8px Inter'; ctx.textAlign='center';
+            const step=n<=7?1:(n<=28?7:5);
+            for(let i=0;i<n;i+=step) ctx.fillText(labels[i],pad.left+i*stepX,h-pad.bottom+12);
+            function line(arr,color,dash){
+                ctx.strokeStyle=color; ctx.lineWidth=2; ctx.setLineDash(dash||[]);
+                ctx.beginPath(); for(let i=0;i<n;i++){const x=pad.left+i*stepX,y=h-pad.bottom-(arr[i]/maxVal)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke(); ctx.setLineDash([]);
+            }
+            line(activity,'#b388ff'); line(plays,'#00e676',[4,4]); line(otherPlays,'#4fc3f7',[2,4]);
         }
 
-        function createMarker(l, s, index) {
-            const latlng = pctToLatLng(l.x, l.y);
-            const marker = L.circleMarker(latlng, {
-                radius: 8,
-                fillColor: s.active ? l.color : '#555',
-                color: s.active ? PROFILES[l.profile].color : '#555',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            });
-            const popupContent = `
-                <div style="font-weight:700;color:var(--violet2)">${l.name}</div>
-                <div style="font-size:0.65rem;color:var(--muted)">${l.country} · ${l.device} · ${l.platform}</div>
-                <div style="font-size:0.65rem;color:${PROFILES[l.profile].color}">Perfil: ${PROFILES[l.profile].icon} ${PROFILES[l.profile].name}</div>
-                <div style="font-size:0.6rem;color:var(--muted)">UA: ${l.ua?.slice(0,30)}...</div>`;
-            marker.bindPopup(popupContent);
-            marker.on('contextmenu', (e) => {
-                L.DomEvent.preventDefault(e);
-                contextMenuTarget = index;
-                const menu = document.getElementById('contextMenu');
-                menu.style.left = e.originalEvent.clientX + 'px';
-                menu.style.top = e.originalEvent.clientY + 'px';
-                menu.classList.add('show');
-            });
-            marker.on('click', () => {
-                if (s.active) s.inMyRadio ? leaveRadio(index) : enterRadio(index);
-                else { s.active = true; updateStats(); renderDots(); }
-            });
+        function updateIndicators() {
+            if(!listeners.length){document.getElementById('giniValue').textContent='—'; document.getElementById('ratioPlays').textContent='—'; document.getElementById('suspiciousPeaks').textContent='0'; document.getElementById('bingePct').textContent='0%'; return;}
+            const arr=state.map(s=>s.dailyPlays||0),total=arr.reduce((a,b)=>a+b,0);
+            let sum=0; for(let i=0;i<arr.length;i++)for(let j=0;j<arr.length;j++) sum+=Math.abs(arr[i]-arr[j]);
+            const gini=total?sum/(2*arr.length*total):0; document.getElementById('giniValue').textContent=gini.toFixed(2);
+            document.getElementById('ratioPlays').textContent=(total/listeners.length).toFixed(1);
+            let peaks=0; if(data1D&&data1D.activity.length){const avg=data1D.activity.reduce((a,b)=>a+b,0)/24; data1D.activity.forEach(v=>{if(v>avg*3&&v>2)peaks++;})}
+            document.getElementById('suspiciousPeaks').textContent=peaks;
+            const bingeCount=listeners.filter(l=>l.profile==='binge').length;
+            document.getElementById('bingePct').textContent=Math.round(bingeCount/listeners.length*100)+'%';
+            analyzeRecommendations();
+        }
+
+        function analyzeRecommendations() {
+            const panel=document.getElementById('recommendationsPanel'), list=document.getElementById('recList');
+            const gini=parseFloat(document.getElementById('giniValue').textContent);
+            const ratio=parseFloat(document.getElementById('ratioPlays').textContent);
+            const peaks=parseInt(document.getElementById('suspiciousPeaks').textContent);
+            const bingePct=parseInt(document.getElementById('bingePct').textContent);
+            const recs=[];
+            if(gini>0.6) recs.push({icon:'📊',text:'Gini alto (>0.6). Añade oyentes ocasionales.'});
+            else if(gini>0.4) recs.push({icon:'📊',text:'Gini moderado. Vigila que no suba.'});
+            if(ratio>15) recs.push({icon:'🔁',text:'Ratio plays/oyente muy alto. Aumenta la base de oyentes.'});
+            if(peaks>=3) recs.push({icon:'⚠️',text:`${peaks} picos sospechosos. Distribuye mejor la actividad.`});
+            if(bingePct>40) recs.push({icon:'🔥',text:'Exceso de binge listeners. Convierte algunos en fieles.'});
+            if(!recs.length) recs.push({icon:'✅',text:'Indicadores saludables. Patrón natural.'});
+            list.innerHTML=recs.map(r=>`<div class="rec-item"><span>${r.icon}</span><span>${r.text}</span></div>`).join('');
+            panel.classList.add('show');
+            panel.style.borderColor=recs[0].icon==='✅'?'var(--green)':'var(--violet)';
+        }
+
+        function updateProfileStats() {
+            const counts={fiel:0,explorador:0,ocasional:0,binge:0}; listeners.forEach(l=>counts[l.profile]++);
+            document.getElementById('profilesStats').innerHTML=`
+                <div class="profile-stat" style="border-color:#00e676">🔒 Fieles: ${counts.fiel}</div>
+                <div class="profile-stat" style="border-color:#4fc3f7">🔍 Exp: ${counts.explorador}</div>
+                <div class="profile-stat" style="border-color:#b388ff">🎲 Ocas: ${counts.ocasional}</div>
+                <div class="profile-stat" style="border-color:#ff4d4d">🔥 Binge: ${counts.binge}</div>`;
+        }
+
+        function getRandomCity(country) {
+            const cities=countryCities[country]||[{name:"Desconocido",lat:40.42,lng:-3.70}];
+            const c=cities[Math.floor(Math.random()*cities.length)];
+            return {name:c.name, lat:c.lat+(Math.random()-0.5)*0.1, lng:c.lng+(Math.random()-0.5)*0.1};
+        }
+
+        function createMarker(l,s,index) {
+            const marker=L.circleMarker([l.lat,l.lng],{radius:7,fillColor:s.active?l.color:'#555',color:s.active?PROFILES[l.profile].color:'#555',weight:2,fillOpacity:0.8});
+            marker.bindPopup(`<b>${l.name}</b><br>${l.country} · ${l.city}<br>${l.platform} · ${PROFILES[l.profile].name}`);
+            marker.on('contextmenu',e=>{L.DomEvent.preventDefault(e);contextMenuTarget=index;const menu=document.getElementById('contextMenu');menu.style.left=e.originalEvent.clientX+'px';menu.style.top=e.originalEvent.clientY+'px';menu.classList.add('show');});
+            marker.on('click',()=>{if(s.active)s.inMyRadio?leaveRadio(index):enterRadio(index);else{s.active=true;updateStats();renderDots();}});
             return marker;
         }
 
         function renderDots() {
             markersLayer.clearLayers();
-            state.forEach((s, i) => {
-                const l = listeners[i];
-                const countryFilter = document.getElementById('filterCountry').value;
-                const platformFilter = document.getElementById('filterPlatform').value;
-                if (countryFilter && l.country !== countryFilter) return;
-                if (platformFilter && l.platform !== platformFilter) return;
-                const marker = createMarker(l, s, i);
-                markersLayer.addLayer(marker);
-                l._marker = marker;
+            state.forEach((s,i)=>{
+                const l=listeners[i];
+                if(document.getElementById('filterCountry').value&&l.country!==document.getElementById('filterCountry').value)return;
+                if(document.getElementById('filterPlatform').value&&l.platform!==document.getElementById('filterPlatform').value)return;
+                markersLayer.addLayer(createMarker(l,s,i));
             });
-            updateHeatmap();
+            if(heatmapActive) updateHeatmap();
         }
 
         function updateHeatmap() {
-            if (!heatmapActive) return;
-            if (heatLayer) map.removeLayer(heatLayer);
-            const points = listeners.map(l => pctToLatLng(l.x, l.y));
-            heatLayer = L.heatLayer(points, { radius: 25, blur: 15, maxZoom: 8, gradient: {0.4: '#b388ff', 0.65: '#7c4dff', 1: '#00e676'} }).addTo(map);
+            if(heatLayer) map.removeLayer(heatLayer);
+            heatLayer = L.heatLayer(listeners.map(l => [l.lat, l.lng]), {
+                radius: 30,
+                blur: 20,
+                maxZoom: 8,
+                gradient: {
+                    0.2: '#b388ff',
+                    0.4: '#e040fb',
+                    0.6: '#ff4081',
+                    0.8: '#ff9800',
+                    1.0: '#f0b90b'
+                }
+            }).addTo(map);
         }
 
-        document.getElementById('heatmapToggle').addEventListener('click', function() {
-            heatmapActive = !heatmapActive;
-            this.classList.toggle('active', heatmapActive);
-            if (heatmapActive) updateHeatmap();
-            else if (heatLayer) map.removeLayer(heatLayer);
+        document.getElementById('heatmapToggle').addEventListener('click',function(){
+            heatmapActive=!heatmapActive; this.classList.toggle('active',heatmapActive);
+            heatmapActive?updateHeatmap():heatLayer&&map.removeLayer(heatLayer);
         });
 
         function populateFilters() {
-            const countrySelect = document.getElementById('filterCountry');
-            const platformSelect = document.getElementById('filterPlatform');
-            countrySelect.innerHTML = '<option value="">🌍 Todos los países</option>';
-            platformSelect.innerHTML = '<option value="">📱 Todas las plataformas</option>';
-            const countries = [...new Set(listeners.map(l => l.country))].sort();
-            countries.forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; countrySelect.appendChild(opt); });
-            const plats = [...new Set(listeners.map(l => l.platform))].sort();
-            plats.forEach(p => { const opt = document.createElement('option'); opt.value = p; opt.textContent = p; platformSelect.appendChild(opt); });
+            const cs=document.getElementById('filterCountry'), ps=document.getElementById('filterPlatform');
+            cs.innerHTML='<option value="">🌍 Todos</option>'; ps.innerHTML='<option value="">📱 Plataforma</option>';
+            [...new Set(listeners.map(l=>l.country))].sort().forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;cs.appendChild(o);});
+            [...new Set(listeners.map(l=>l.platform))].sort().forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;ps.appendChild(o);});
         }
-
-        document.getElementById('filterCountry').addEventListener('change', renderDots);
-        document.getElementById('filterPlatform').addEventListener('change', renderDots);
+        document.getElementById('filterCountry').addEventListener('change',renderDots);
+        document.getElementById('filterPlatform').addEventListener('change',renderDots);
 
         function moveMarkers() {
-            listeners.forEach((l, i) => {
-                if (l._marker) {
-                    const newX = Math.min(95, Math.max(5, l.x + (Math.random() - 0.5) * 0.5));
-                    const newY = Math.min(95, Math.max(5, l.y + (Math.random() - 0.5) * 0.5));
-                    l.x = newX; l.y = newY;
-                    const latlng = pctToLatLng(newX, newY);
-                    l._marker.setLatLng(latlng);
-                }
-            });
-            updateHeatmap();
+            listeners.forEach(l=>{ if(l._marker){l.lat+=(Math.random()-0.5)*0.02;l.lng+=(Math.random()-0.5)*0.02;l._marker.setLatLng([l.lat,l.lng]);}});
+            if(heatmapActive) updateHeatmap();
         }
-        if (movementInterval) clearInterval(movementInterval);
-        movementInterval = setInterval(moveMarkers, 3000);
-
-        // Resto de funciones del simulador
-        const canvas = document.getElementById('activityChart');
-        const ctx = canvas.getContext('2d');
-        const contextMenu = document.getElementById('contextMenu');
-        let contextMenuTarget = null;
-
-        function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 240; }
-        window.addEventListener('resize', () => { resizeCanvas(); drawChart(); });
-
-        function getActivityFactor(h) {
-            if (h>=7 && h<=9) return 1.4;
-            if (h>=12 && h<=14) return 1.2;
-            if (h>=19 && h<=22) return 1.5;
-            if (h>=0 && h<=5) return 0.3;
-            return 0.8;
-        }
-
-        function drawChart() {
-            const w = canvas.width, h = canvas.height;
-            ctx.clearRect(0, 0, w, h);
-            const data = currentView === '1D' ? data1D : (currentView === '7D' ? data7D : data28D);
-            if (!data) {
-                ctx.fillStyle = '#7a7e90'; ctx.font = '14px Inter'; ctx.textAlign = 'center';
-                ctx.fillText('Sin datos para esta vista', w/2, h/2); return;
-            }
-            const { labels, activity, plays, otherPlays } = data;
-            const maxVal = Math.max(...activity, ...plays, ...otherPlays, 1);
-            const pad = { top:20, right:20, bottom:30, left:40 };
-            const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
-            const n = labels.length, stepX = cw / (n - 1);
-            ctx.strokeStyle = '#2a1f4a';
-            ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, h-pad.bottom); ctx.lineTo(w-pad.right, h-pad.bottom); ctx.stroke();
-            ctx.fillStyle = '#9a8fb8'; ctx.font = '9px Inter'; ctx.textAlign = 'center';
-            const step = n <= 7 ? 1 : (n <= 28 ? 7 : 5);
-            for (let i = 0; i < n; i += step) ctx.fillText(labels[i], pad.left + i*stepX, h-pad.bottom+15);
-            function line(arr, color, dash) {
-                ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash || []);
-                ctx.beginPath();
-                for (let i = 0; i < n; i++) { const x = pad.left + i*stepX, y = h-pad.bottom - (arr[i]/maxVal)*ch; i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y); }
-                ctx.stroke(); ctx.setLineDash([]);
-            }
-            line(activity, '#b388ff'); line(plays, '#00e676', [4,4]); line(otherPlays, '#4fc3f7', [2,4]);
-            ctx.fillStyle = '#9a8fb8'; ctx.font = '8px Inter'; ctx.textAlign = 'right'; ctx.fillText(maxVal, pad.left-5, pad.top+10);
-        }
-
-        function updateAntidetectIndicators() {
-            if (listeners.length === 0) {
-                document.getElementById('giniValue').textContent = '—';
-                document.getElementById('ratioPlays').textContent = '—';
-                document.getElementById('suspiciousPeaks').textContent = '0';
-                document.getElementById('bingePct').textContent = '0%';
-                return;
-            }
-            const playsArray = state.map(s => s.dailyPlays || 0), total = playsArray.reduce((a,b)=>a+b,0);
-            let sum = 0;
-            for (let i = 0; i < playsArray.length; i++) for (let j = 0; j < playsArray.length; j++) sum += Math.abs(playsArray[i] - playsArray[j]);
-            const gini = total ? sum / (2 * playsArray.length * total) : 0;
-            document.getElementById('giniValue').textContent = gini.toFixed(2);
-            document.getElementById('ratioPlays').textContent = (total / listeners.length).toFixed(1);
-            let peaks = 0;
-            if (data1D && data1D.activity.length > 0) {
-                const avg = data1D.activity.reduce((a,b)=>a+b,0) / 24;
-                data1D.activity.forEach(v => { if (v > avg * 3 && v > 2) peaks++; });
-            }
-            document.getElementById('suspiciousPeaks').textContent = peaks;
-            const bingeCount = listeners.filter(l => l.profile === 'binge').length;
-            document.getElementById('bingePct').textContent = ((bingeCount / listeners.length) * 100).toFixed(0) + '%';
-        }
-
-        function updateProfileStats() {
-            const counts = { fiel: 0, explorador: 0, ocasional: 0, binge: 0 };
-            listeners.forEach(l => counts[l.profile]++);
-            document.getElementById('stat-fiel').innerHTML = `<span>🔒</span> Fieles: ${counts.fiel}`;
-            document.getElementById('stat-explorador').innerHTML = `<span>🔍</span> Exploradores: ${counts.explorador}`;
-            document.getElementById('stat-ocasional').innerHTML = `<span>🎲</span> Ocasionales: ${counts.ocasional}`;
-            document.getElementById('stat-binge').innerHTML = `<span>🔥</span> Binge: ${counts.binge}`;
-        }
+        setInterval(moveMarkers,4000);
 
         function generateListeners() {
-            const count = parseInt(document.getElementById('listenerCount').value) || 10;
-            const profileKey = document.getElementById('profileSelect').value;
-            listeners = []; state = [];
-            for (let i = 0; i < count; i++) {
-                const c = Object.keys(countryCoords)[Math.floor(Math.random()*Object.keys(countryCoords).length)];
-                const coords = countryCoords[c];
-                const plat = platforms[Math.floor(Math.random()*platforms.length)];
-                const name = namePool[Math.floor(Math.random()*namePool.length)];
-                const device = ["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
-                const profile = profileKey === 'aleatorio' ? Object.keys(PROFILES)[Math.floor(Math.random()*4)] : profileKey;
-                const ua = userAgents[Math.floor(Math.random()*userAgents.length)];
-                const res = resolutions[Math.floor(Math.random()*resolutions.length)];
-                const lang = languages[Math.floor(Math.random()*languages.length)];
-                listeners.push({ name, country: c, device, platform: plat.name, color: plat.color,
-                    x: Math.min(95, Math.max(5, coords.x + Math.random()*4 - 2)),
-                    y: Math.min(95, Math.max(5, coords.y + Math.random()*4 - 2)),
-                    profile, ua, res, lang });
-                const p = PROFILES[profile];
-                state.push({ active: true, inMyRadio: false, trackTimeLeft: 0, otherTrackTimeLeft: 0,
-                    dailyPlays: 0, maxDailyPlays: p.maxDailyPlays, sessionRemaining: 0, profile: profile });
+            const count=parseInt(document.getElementById('listenerCount').value)||8;
+            const profileKey=document.getElementById('profileSelect').value;
+            listeners=[]; state=[];
+            for(let i=0;i<count;i++){
+                const c=Object.keys(countryCities)[Math.floor(Math.random()*Object.keys(countryCities).length)];
+                const city=getRandomCity(c);
+                const plat=platforms[Math.floor(Math.random()*platforms.length)];
+                const name=namePool[Math.floor(Math.random()*namePool.length)];
+                const device=["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
+                const profile=profileKey==='aleatorio'?Object.keys(PROFILES)[Math.floor(Math.random()*4)]:profileKey;
+                const ua=userAgents[Math.floor(Math.random()*userAgents.length)];
+                listeners.push({name,country:c,city:city.name,lat:city.lat,lng:city.lng,device,platform:plat.name,color:plat.color,profile,ua});
+                const p=PROFILES[profile];
+                state.push({active:true,inMyRadio:false,trackTimeLeft:0,otherTrackTimeLeft:0,dailyPlays:0,maxDailyPlays:p.max,sessionRemaining:0,profile});
             }
-            updateStats(); renderDots(); updateProfileStats(); updateAntidetectIndicators(); populateFilters();
+            updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
         }
 
         function addListener() {
-            const c = Object.keys(countryCoords)[Math.floor(Math.random()*Object.keys(countryCoords).length)];
-            const coords = countryCoords[c];
-            const plat = platforms[Math.floor(Math.random()*platforms.length)];
-            const name = namePool[Math.floor(Math.random()*namePool.length)];
-            const device = ["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
-            const profile = Object.keys(PROFILES)[Math.floor(Math.random()*4)];
-            const ua = userAgents[Math.floor(Math.random()*userAgents.length)];
-            const res = resolutions[Math.floor(Math.random()*resolutions.length)];
-            const lang = languages[Math.floor(Math.random()*languages.length)];
-            listeners.push({ name, country: c, device, platform: plat.name, color: plat.color,
-                x: Math.min(95, Math.max(5, coords.x + Math.random()*4 - 2)),
-                y: Math.min(95, Math.max(5, coords.y + Math.random()*4 - 2)),
-                profile, ua, res, lang });
-            const p = PROFILES[profile];
-            state.push({ active: true, inMyRadio: false, trackTimeLeft: 0, otherTrackTimeLeft: 0,
-                dailyPlays: 0, maxDailyPlays: p.maxDailyPlays, sessionRemaining: 0, profile: profile });
-            updateStats(); renderDots(); updateProfileStats(); updateAntidetectIndicators(); populateFilters();
+            const c=Object.keys(countryCities)[Math.floor(Math.random()*Object.keys(countryCities).length)];
+            const city=getRandomCity(c);
+            const plat=platforms[Math.floor(Math.random()*platforms.length)];
+            const name=namePool[Math.floor(Math.random()*namePool.length)];
+            const device=["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
+            const profile=Object.keys(PROFILES)[Math.floor(Math.random()*4)];
+            const ua=userAgents[Math.floor(Math.random()*userAgents.length)];
+            listeners.push({name,country:c,city:city.name,lat:city.lat,lng:city.lng,device,platform:plat.name,color:plat.color,profile,ua});
+            const p=PROFILES[profile];
+            state.push({active:true,inMyRadio:false,trackTimeLeft:0,otherTrackTimeLeft:0,dailyPlays:0,maxDailyPlays:p.max,sessionRemaining:0,profile});
+            updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
         }
 
-        function changeProfile(index, newProfile) {
-            listeners[index].profile = newProfile;
-            state[index].profile = newProfile;
-            const p = PROFILES[newProfile];
-            state[index].maxDailyPlays = p.maxDailyPlays;
-            state[index].dailyPlays = 0;
-            renderDots(); updateProfileStats(); updateAntidetectIndicators();
-            showToast(`Perfil cambiado a ${PROFILES[newProfile].name}`);
+        function changeProfile(index,newProfile) {
+            listeners[index].profile=newProfile; state[index].profile=newProfile;
+            const p=PROFILES[newProfile]; state[index].maxDailyPlays=p.max; state[index].dailyPlays=0;
+            renderDots(); updateProfileStats(); updateIndicators();
         }
 
-        document.getElementById('contextMenu').addEventListener('click', (e) => {
-            const item = e.target.closest('.context-menu-item');
-            if (item && contextMenuTarget !== null) { changeProfile(contextMenuTarget, item.dataset.profile); }
-            contextMenu.classList.remove('show'); contextMenuTarget = null;
+        document.getElementById('contextMenu').addEventListener('click',e=>{
+            const item=e.target.closest('.context-menu-item');
+            if(item&&contextMenuTarget!==null) changeProfile(contextMenuTarget,item.dataset.profile);
+            contextMenu.classList.remove('show'); contextMenuTarget=null;
         });
-        document.addEventListener('click', () => { contextMenu.classList.remove('show'); contextMenuTarget = null; });
+        document.addEventListener('click',()=>{contextMenu.classList.remove('show');});
 
         function enterRadio(i) {
-            const s = state[i]; const p = PROFILES[s.profile];
-            if (!s.active || s.dailyPlays >= s.maxDailyPlays) return;
-            s.inMyRadio = true; s.trackTimeLeft = 200 + Math.floor(Math.random()*50);
-            s.dailyPlays++; s.sessionRemaining = p.sessionLength - 1; totalMyPlays++;
-            updateStats(); renderDots(); updateAntidetectIndicators();
+            const s=state[i],p=PROFILES[s.profile];
+            if(!s.active||s.dailyPlays>=s.maxDailyPlays)return;
+            s.inMyRadio=true; s.trackTimeLeft=200+Math.floor(Math.random()*50);
+            s.dailyPlays++; s.sessionRemaining=p.session-1; totalMyPlays++;
+            updateStats(); renderDots(); updateIndicators();
         }
-        function leaveRadio(i) {
-            const s = state[i]; if (!s.inMyRadio) return;
-            s.inMyRadio = false; s.otherTrackTimeLeft = 200 + Math.floor(Math.random()*80);
-            updateStats(); renderDots();
-        }
+        function leaveRadio(i) { state[i].inMyRadio=false; state[i].otherTrackTimeLeft=200+Math.floor(Math.random()*80); updateStats(); renderDots(); }
 
         function updateStats() {
-            document.getElementById('totalPlays').textContent = totalMyPlays;
-            document.getElementById('totalOtherPlays').textContent = totalOtherPlays;
-            document.getElementById('uniqueListeners').textContent = listeners.length;
-            document.getElementById('activePlatform').textContent = state.filter(s => s.active).length;
-            document.getElementById('liveCount').textContent = state.filter(s => s.inMyRadio).length;
+            document.getElementById('totalPlays').textContent=totalMyPlays;
+            document.getElementById('totalOtherPlays').textContent=totalOtherPlays;
+            document.getElementById('uniqueListeners').textContent=listeners.length;
+            document.getElementById('activePlatform').textContent=state.filter(s=>s.active).length;
+            document.getElementById('liveCount').textContent=state.filter(s=>s.inMyRadio).length;
             drawChart();
         }
 
-        function simulateTick(factor, simA, simP, simO, index) {
-            state.forEach((s, i) => {
-                const p = PROFILES[s.profile];
-                if (!s.active) { if (Math.random() < p.activityProb * 0.1 * factor) s.active = true; return; }
-                if (s.inMyRadio) {
-                    s.trackTimeLeft -= 30;
-                    if (s.trackTimeLeft <= 0) {
-                        if (s.sessionRemaining > 0 && s.dailyPlays < s.maxDailyPlays) {
-                            if (Math.random() < 1 - p.trackChangeProb) {
-                                s.trackTimeLeft = 200 + Math.floor(Math.random()*50);
-                                s.dailyPlays++; s.sessionRemaining--; totalMyPlays++; simP[index]++;
-                            } else { leaveRadio(i); }
-                        } else { leaveRadio(i); }
+        function simulateTick(factor,simA,simP,simO,index) {
+            state.forEach((s,i)=>{
+                const p=PROFILES[s.profile];
+                if(!s.active){if(Math.random()<p.activity*0.1*factor)s.active=true;return;}
+                if(s.inMyRadio){
+                    s.trackTimeLeft-=30;
+                    if(s.trackTimeLeft<=0){
+                        if(s.sessionRemaining>0&&s.dailyPlays<s.maxDailyPlays){
+                            if(Math.random()<1-p.change){s.trackTimeLeft=200+Math.floor(Math.random()*50);s.dailyPlays++;s.sessionRemaining--;totalMyPlays++;simP[index]++;}
+                            else leaveRadio(i);
+                        }else leaveRadio(i);
                     }
-                } else {
-                    s.otherTrackTimeLeft -= 30;
-                    if (s.otherTrackTimeLeft <= 0) { s.otherTrackTimeLeft = 200 + Math.floor(Math.random()*80); totalOtherPlays++; simO[index]++; }
-                    if (s.dailyPlays < s.maxDailyPlays && Math.random() < p.myRadioProb * 0.1 * factor) { enterRadio(i); simP[index]++; }
+                }else{
+                    s.otherTrackTimeLeft-=30;
+                    if(s.otherTrackTimeLeft<=0){s.otherTrackTimeLeft=200+Math.floor(Math.random()*80);totalOtherPlays++;simO[index]++;}
+                    if(s.dailyPlays<s.maxDailyPlays&&Math.random()<p.myRadio*0.1*factor){enterRadio(i);simP[index]++;}
                 }
-                if (s.active && !s.inMyRadio && Math.random() < p.idleProb * 0.1) s.active = false;
+                if(s.active&&!s.inMyRadio&&Math.random()<p.idle*0.1)s.active=false;
             });
-            simA[index] = Math.max(simA[index], state.filter(s => s.inMyRadio).length);
+            simA[index]=Math.max(simA[index],state.filter(s=>s.inMyRadio).length);
         }
 
         function runSimulation(days) {
-            const stepsPerDay = 2880, totalSteps = days * stepsPerDay;
-            const simA = [], simP = [], simO = [];
-            const daysCount = days === 1 ? 24 : days;
-            for (let i = 0; i < daysCount; i++) { simA.push(0); simP.push(0); simO.push(0); }
-            let step = 0;
-            simulationRunning = true;
-            document.querySelectorAll('.btn').forEach(b => b.disabled = true);
-            document.getElementById('progressWrapper').style.display = 'block';
-
+            const spd=2880, total=days*spd, simA=[],simP=[],simO=[], dc=days===1?24:days;
+            for(let i=0;i<dc;i++){simA.push(0);simP.push(0);simO.push(0);}
+            let step=0; simulationRunning=true; document.querySelectorAll('.btn').forEach(b=>b.disabled=true); document.getElementById('progressWrapper').style.display='block';
             function batch() {
-                const batchSize = 500;
-                const end = Math.min(step + batchSize, totalSteps);
-                for (let s = step; s < end; s++) {
-                    const day = Math.floor(s / stepsPerDay);
-                    const hour = Math.floor(((s % stepsPerDay) * 30) / 3600);
-                    const index = days === 1 ? hour : day;
-                    if (day > 0 && s % stepsPerDay === 0) {
-                        state.forEach(s => { s.dailyPlays = 0; const p = PROFILES[s.profile]; s.maxDailyPlays = p.maxDailyPlays; s.sessionRemaining = 0; if (s.inMyRadio) leaveRadio(state.indexOf(s)); });
-                    }
-                    simulateTick(getActivityFactor(hour), simA, simP, simO, index);
+                const end=Math.min(step+500,total);
+                for(let s=step;s<end;s++){
+                    const day=Math.floor(s/spd), hour=Math.floor(((s%spd)*30)/3600), idx=days===1?hour:day;
+                    if(day>0&&s%spd===0){state.forEach(s=>{s.dailyPlays=0;s.maxDailyPlays=PROFILES[s.profile].max;s.sessionRemaining=0;if(s.inMyRadio)leaveRadio(state.indexOf(s));});}
+                    simulateTick(getActivityFactor(hour),simA,simP,simO,idx);
                 }
-                step = end;
-                document.getElementById('progressLabel').textContent = Math.round((step/totalSteps)*100) + '%';
-                document.getElementById('progressBarFill').style.width = (step/totalSteps)*100 + '%';
-                if (step < totalSteps) { setTimeout(batch, 0); }
+                step=end; document.getElementById('progressLabel').textContent=Math.round(step/total*100)+'%'; document.getElementById('progressBarFill').style.width=(step/total*100)+'%';
+                if(step<total) setTimeout(batch,0);
                 else {
-                    if (days === 1) data1D = { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: simA, plays: simP, otherPlays: simO };
-                    else if (days === 7) { data1D = generate1DFromDaily(simA, simP, simO); data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA, plays: simP, otherPlays: simO }; }
-                    else if (days === 28) {
-                        data1D = generate1DFromDaily(simA.slice(0,7), simP.slice(0,7), simO.slice(0,7));
-                        data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA.slice(0,7), plays: simP.slice(0,7), otherPlays: simO.slice(0,7) };
-                        data28D = { labels: Array.from({length:28}, (_,i)=>'D'+(i+1)), activity: simA, plays: simP, otherPlays: simO };
-                    }
+                    if(days===1) data1D={labels:Array.from({length:24},(_,i)=>i+'h'),activity:simA,plays:simP,otherPlays:simO};
+                    else if(days===7){data1D=gen1D(simA,simP,simO);data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA,plays:simP,otherPlays:simO};}
+                    else {data1D=gen1D(simA.slice(0,7),simP.slice(0,7),simO.slice(0,7));data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA.slice(0,7),plays:simP.slice(0,7),otherPlays:simO.slice(0,7)};data28D={labels:Array.from({length:28},(_,i)=>'D'+(i+1)),activity:simA,plays:simP,otherPlays:simO};}
                     finishSimulation(days);
                 }
             }
             batch();
         }
 
-        function generate1DFromDaily(dailyA, dailyP, dailyO) {
-            const hourlyA = new Array(24).fill(0), hourlyP = new Array(24).fill(0), hourlyO = new Array(24).fill(0);
-            const totalA = dailyA.reduce((a,b)=>a+b,0), totalP = dailyP.reduce((a,b)=>a+b,0), totalO = dailyO.reduce((a,b)=>a+b,0);
-            for (let h=0; h<24; h++) { const f = getActivityFactor(h); hourlyA[h] = Math.round(totalA * f / 10); hourlyP[h] = Math.round(totalP * f / 10); hourlyO[h] = Math.round(totalO * f / 10); }
-            return { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: hourlyA, plays: hourlyP, otherPlays: hourlyO };
+        function gen1D(dA,dP,dO) {
+            const hA=new Array(24).fill(0),hP=new Array(24).fill(0),hO=new Array(24).fill(0);
+            const tA=dA.reduce((a,b)=>a+b,0),tP=dP.reduce((a,b)=>a+b,0),tO=dO.reduce((a,b)=>a+b,0);
+            for(let h=0;h<24;h++){const f=getActivityFactor(h);hA[h]=Math.round(tA*f/10);hP[h]=Math.round(tP*f/10);hO[h]=Math.round(tO*f/10);}
+            return {labels:Array.from({length:24},(_,i)=>i+'h'),activity:hA,plays:hP,otherPlays:hO};
         }
-
-        function showMagicModal(plays, other, oyentes, gini, ratio, peaks, bingePct) {
-            document.getElementById('magicContent').innerHTML = `
-                <div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div>
-                <div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div>
-                <div class="magic-stat"><span>👥 Oyentes:</span><strong>${oyentes}</strong></div>
-                <div class="magic-stat"><span>📊 Gini:</span><strong>${gini}</strong></div>
-                <div class="magic-stat"><span>🔁 Ratio:</span><strong>${ratio}</strong></div>
-                <div class="magic-stat"><span>⚠️ Picos:</span><strong>${peaks}</strong></div>
-                <div class="magic-stat"><span>🔥 Binge:</span><strong>${bingePct}%</strong></div>`;
-            const sparklesContainer = document.getElementById('magicSparkles');
-            sparklesContainer.innerHTML = '';
-            for (let i = 0; i < 20; i++) {
-                const s = document.createElement('div'); s.className = 'magic-sparkle';
-                s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%';
-                s.style.animationDelay = Math.random() * 1.5 + 's';
-                sparklesContainer.appendChild(s);
-            }
-            document.getElementById('magicModal').classList.add('show');
-        }
-
-        function closeMagicModal() { document.getElementById('magicModal').classList.remove('show'); }
 
         function finishSimulation(days) {
-            simulationRunning = false;
-            document.querySelectorAll('.btn').forEach(b => b.disabled = false);
-            document.getElementById('progressWrapper').style.display = 'none';
-            document.getElementById('view1D').disabled = false;
-            if (data7D) document.getElementById('view7D').disabled = false;
-            if (data28D) document.getElementById('view28D').disabled = false;
-            updateStats(); updateAntidetectIndicators();
-            setView('1D');
-            const plays = data1D ? data1D.plays.reduce((a,b)=>a+b,0) : totalMyPlays;
-            const other = data1D ? data1D.otherPlays.reduce((a,b)=>a+b,0) : totalOtherPlays;
-            const gini = document.getElementById('giniValue').textContent;
-            const ratio = document.getElementById('ratioPlays').textContent;
-            const peaks = document.getElementById('suspiciousPeaks').textContent;
-            const bingePct = document.getElementById('bingePct').textContent.replace('%','');
-            showMagicModal(plays, other, listeners.length, gini, ratio, peaks, bingePct);
+            simulationRunning=false; document.querySelectorAll('.btn').forEach(b=>b.disabled=false);
+            document.getElementById('progressWrapper').style.display='none';
+            document.getElementById('view1D').disabled=false; if(data7D)document.getElementById('view7D').disabled=false; if(data28D)document.getElementById('view28D').disabled=false;
+            updateStats(); updateIndicators(); setView('1D');
+
+            const plays=data1D?data1D.plays.reduce((a,b)=>a+b,0):totalMyPlays;
+            const other=data1D?data1D.otherPlays.reduce((a,b)=>a+b,0):totalOtherPlays;
+            const gini=document.getElementById('giniValue').textContent;
+            const ratio=document.getElementById('ratioPlays').textContent;
+            const peaks=document.getElementById('suspiciousPeaks').textContent;
+            const bingePct=document.getElementById('bingePct').textContent;
+            const duration = days===1?'24 horas':days===7?'7 días':'28 días';
+
+            magicContent.innerHTML = `
+                <div class="magic-stat"><span>🎵 Tus plays</span><span>${plays}</span></div>
+                <div class="magic-stat"><span>🎧 Otros plays</span><span>${other}</span></div>
+                <div class="magic-stat"><span>👥 Oyentes</span><span>${listeners.length}</span></div>
+                <div class="magic-stat"><span>📊 Gini</span><span>${gini}</span></div>
+                <div class="magic-stat"><span>🔁 Ratio</span><span>${ratio}</span></div>
+                <div class="magic-stat"><span>⚠️ Picos</span><span>${peaks}</span></div>
+                <div class="magic-stat"><span>🔥 Binge</span><span>${bingePct}</span></div>
+                <div class="magic-stat"><span>⏱️ Duración</span><span>${duration}</span></div>
+            `;
+
+            // Mensaje dinámico según salud del streaming
+            const giniNum = parseFloat(gini);
+            const ratioNum = parseFloat(ratio);
+            const peaksNum = parseInt(peaks);
+            const bingeNum = parseInt(bingePct);
+            let salud = '✅ Saludable';
+            if (giniNum > 0.6 || ratioNum > 15 || peaksNum >= 3 || bingeNum > 40) {
+                salud = '⚠️ Revisar indicadores';
+            } else if (giniNum > 0.4 || ratioNum > 10 || peaksNum > 1 || bingeNum > 30) {
+                salud = '🟡 Precaución';
+            }
+            magicMessage.textContent = `Estado: ${salud}. Revisa las recomendaciones debajo de los indicadores.`;
+
+            // Generar sparkles
+            magicSparkles.innerHTML = '';
+            for (let i = 0; i < 16; i++) {
+                const s = document.createElement('div');
+                s.className = 'magic-sparkle';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 100 + '%';
+                s.style.animationDelay = Math.random() * 1.2 + 's';
+                magicSparkles.appendChild(s);
+            }
+            magicModal.classList.add('show');
         }
 
-        function startSimulation(mode) {
-            if (simulationRunning) return;
-            if (listeners.length === 0) { alert('Añade oyentes primero'); return; }
-            if (mode === '1D') runSimulation(1); else if (mode === '7D') runSimulation(7); else if (mode === '28D') runSimulation(28);
-        }
+        function startSimulation(mode) { if(simulationRunning)return; if(!listeners.length){alert('Añade oyentes');return;} runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
+        function setView(v){currentView=v; document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); document.getElementById('view'+v).classList.add('active'); document.getElementById('chartTitle').textContent='📊 Actividad ('+v+')'; drawChart();}
+        function resetAll() { if(simulationRunning)return; listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; updateStats(); renderDots(); drawChart(); updateProfileStats(); updateIndicators(); }
+        function closeMagicModal() { magicModal.classList.remove('show'); }
+        function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.transform='translateX(-50%) translateY(0)'; setTimeout(()=>t.style.transform='translateX(-50%) translateY(80px)',2000); }
 
-        function setView(view) {
-            currentView = view;
-            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('view'+view).classList.add('active');
-            document.getElementById('chartTitle').textContent = '📊 Actividad (' + view + ')';
-            drawChart();
-        }
+        window.addListener=addListener; window.generateListeners=generateListeners; window.startSimulation=startSimulation; window.setView=setView; window.resetAll=resetAll; window.closeMagicModal=closeMagicModal;
 
-        function resetAll() {
-            if (simulationRunning) return;
-            listeners = []; state = []; totalMyPlays = 0; totalOtherPlays = 0;
-            data1D = data7D = data28D = null;
-            document.getElementById('view1D').classList.add('active');
-            document.getElementById('view7D').classList.remove('active'); document.getElementById('view28D').classList.remove('active');
-            ['1D','7D','28D'].forEach(v => document.getElementById('view'+v).disabled = true);
-            document.getElementById('view1D').disabled = false;
-            document.getElementById('chartTitle').textContent = '📊 Actividad (1D)';
-            updateStats(); renderDots(); drawChart(); updateProfileStats(); updateAntidetectIndicators();
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg; toast.style.transform = 'translateX(-50%) translateY(0)';
-            setTimeout(() => toast.style.transform = 'translateX(-50%) translateY(80px)', 2000);
-        }
-
-        window.addListener = addListener;
-        window.generateListeners = generateListeners;
-        window.startSimulation = startSimulation;
-        window.setView = setView;
-        window.resetAll = resetAll;
-        window.closeMagicModal = closeMagicModal;
-
-        document.getElementById('listenerCount').value = 10;
+        document.getElementById('listenerCount').value=8;
         generateListeners();
         resizeCanvas();
+        setInterval(()=>{if(!simulationRunning)updateStats();},5000);
     })();
     </script>
 </body>
