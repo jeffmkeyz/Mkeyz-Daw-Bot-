@@ -203,846 +203,916 @@
             border:1px solid var(--violet); display:none;
             transform:translate(-50%, -130%);
         }
+
+        .history-panel {
+            background: var(--card); border-radius:12px; padding:8px; margin:6px 0;
+            border:1px solid rgba(179,136,255,0.4); display:none;
+        }
+        .history-panel h4 { font-size:0.7rem; color:var(--violet2); text-align:center; margin-bottom:6px; }
+        .history-table { width:100%; font-size:0.6rem; border-collapse:collapse; }
+        .history-table th, .history-table td { padding:3px 4px; border:1px solid var(--violet); text-align:center; }
+        .history-table th { background:rgba(179,136,255,0.2); }
     </style>
 </head>
 <body>
-    <div class="main-scroll">
-        <div class="player"><div class="track-name">🎛️ MKEYZ STUDIO</div></div>
+<div class="main-scroll">
+    <div class="player"><div class="track-name">🎛️ MKEYZ STUDIO</div></div>
 
-        <div class="stats-grid">
-            <div class="mini-stat"><div class="value" id="totalPlays">0</div><div class="label">🎵 Tus plays</div></div>
-            <div class="mini-stat"><div class="value" id="totalOtherPlays">0</div><div class="label">🎧 Otros plays</div></div>
-            <div class="mini-stat"><div class="value" id="uniqueListeners">0</div><div class="label">👥 Oyentes</div></div>
-            <div class="mini-stat"><div class="value" id="activePlatform">0</div><div class="label">🟢 Activos</div></div>
-            <div class="mini-stat"><div class="value" id="artistCount">0</div><div class="label">🎼 Artistas</div></div>
+    <div class="stats-grid">
+        <div class="mini-stat"><div class="value" id="totalPlays">0</div><div class="label">🎵 Tus plays</div></div>
+        <div class="mini-stat"><div class="value" id="totalOtherPlays">0</div><div class="label">🎧 Otros plays</div></div>
+        <div class="mini-stat"><div class="value" id="uniqueListeners">0</div><div class="label">👥 Oyentes</div></div>
+        <div class="mini-stat"><div class="value" id="activePlatform">0</div><div class="label">🟢 Activos</div></div>
+        <div class="mini-stat"><div class="value" id="artistCount">0</div><div class="label">🎼 Artistas</div></div>
+    </div>
+
+    <div class="audit-panel">
+        <div class="risk-tooltip-wrap">
+            <div class="risk-score" id="riskScore">0%</div>
+            <div class="risk-status" id="riskStatus">—</div>
+            <div class="risk-tooltip" id="riskTooltip">Mide el riesgo global de detección. <br>✅ 0-24% Desapercibido <br>⚠️ 25-54% Precaución <br>🚫 55-100% Riesgo de baneo</div>
         </div>
+        <div style="font-size:0.6rem;" id="riskDetails">Sin datos</div>
+    </div>
 
-        <div class="audit-panel">
-            <div class="risk-tooltip-wrap">
-                <div class="risk-score" id="riskScore">0%</div>
-                <div class="risk-status" id="riskStatus">—</div>
-                <div class="risk-tooltip" id="riskTooltip">Mide el riesgo global de detección. <br>✅ 0-24% Desapercibido <br>⚠️ 25-54% Precaución <br>🚫 55-100% Riesgo de baneo</div>
+    <div class="profiles-stats" id="profilesStats"></div>
+
+    <div class="antidetect-panel">
+        <div class="antidetect-grid">
+            <div class="antidetect-item">
+                <span class="antidetect-label">Gini</span>
+                <div class="antidetect-value" id="giniValue">—</div>
+                <div class="metric-tooltip" id="giniTooltip">Coeficiente de desigualdad en la distribución de plays. <br>🔹 0 = igualdad total <br>🔸 >0.6 = concentración alta</div>
             </div>
-            <div style="font-size:0.6rem;" id="riskDetails">Sin datos</div>
-        </div>
-
-        <div class="profiles-stats" id="profilesStats"></div>
-
-        <div class="antidetect-panel">
-            <div class="antidetect-grid">
-                <div class="antidetect-item">
-                    <span class="antidetect-label">Gini</span>
-                    <div class="antidetect-value" id="giniValue">—</div>
-                    <div class="metric-tooltip" id="giniTooltip">Coeficiente de desigualdad en la distribución de plays. <br>🔹 0 = igualdad total <br>🔸 >0.6 = concentración alta</div>
-                </div>
-                <div class="antidetect-item">
-                    <span class="antidetect-label">Ratio</span>
-                    <div class="antidetect-value" id="ratioPlays">—</div>
-                    <div class="metric-tooltip" id="ratioTooltip">Plays promedio por oyente. <br>🔹 <15 natural <br>🔸 15-20 sospechoso <br>🔴 >20 muy alto</div>
-                </div>
-                <div class="antidetect-item">
-                    <span class="antidetect-label">Picos</span>
-                    <div class="antidetect-value" id="suspiciousPeaks">0</div>
-                    <div class="metric-tooltip" id="peaksTooltip">Picos de actividad fuera del ritmo normal. <br>🔹 <3 aceptable <br>🔸 3-4 revisar <br>🔴 ≥4 sospechoso</div>
-                </div>
-                <div class="antidetect-item">
-                    <span class="antidetect-label">Binge%</span>
-                    <div class="antidetect-value" id="bingePct">0%</div>
-                    <div class="metric-tooltip" id="bingeTooltip">Porcentaje de oyentes compulsivos. <br>🔹 <30% variado <br>🔸 30-50% alto <br>🔴 >50% excesivo</div>
-                </div>
+            <div class="antidetect-item">
+                <span class="antidetect-label">Ratio</span>
+                <div class="antidetect-value" id="ratioPlays">—</div>
+                <div class="metric-tooltip" id="ratioTooltip">Plays promedio por oyente. <br>🔹 <15 natural <br>🔸 15-20 sospechoso <br>🔴 >20 muy alto</div>
             </div>
-        </div>
-
-        <div class="recommendations-panel" id="recommendationsPanel"><div id="recList"></div></div>
-
-        <div class="platform-audit" id="platformAudit">
-            <h4>🕵️ Auditoría de Plataforma</h4>
-            <div id="verdictBox"></div>
-            <div class="rule-list" id="ruleList"></div>
-        </div>
-
-        <div class="plan-panel">
-            <h4>📈 Plan de Crecimiento Gradual</h4>
-            <div class="plan-inputs">
-                <span style="font-size:0.7rem;">Objetivo:</span>
-                <input type="number" id="planTarget" value="1000" min="1">
-                <span style="font-size:0.7rem;">Plazo (días):</span>
-                <input type="number" id="planDays" value="30" min="1">
-                <button class="btn gold" onclick="generatePlan()">🧠 Generar Plan</button>
-                <button class="btn gold" onclick="executePlan()">▶️ Ejecutar Plan</button>
+            <div class="antidetect-item">
+                <span class="antidetect-label">Picos</span>
+                <div class="antidetect-value" id="suspiciousPeaks">0</div>
+                <div class="metric-tooltip" id="peaksTooltip">Picos de actividad fuera del ritmo normal. <br>🔹 <3 aceptable <br>🔸 3-4 revisar <br>🔴 ≥4 sospechoso</div>
             </div>
-            <div id="planProgress" style="text-align:center;font-size:0.7rem;margin-top:4px;"></div>
-            <div style="max-height:150px;overflow-y:auto;margin-top:6px;" id="planTableContainer"></div>
-        </div>
-
-        <div class="filter-bar">
-            <select id="filterCountry"><option value="">🌍 Todos</option></select>
-            <select id="filterPlatform"><option value="">📱 Plataforma</option></select>
-            <button class="btn" id="glowToggle">✨ Destello</button>
-        </div>
-
-        <div class="bubbles-area" id="bubblesArea">
-            <canvas id="bubblesCanvas"></canvas>
-            <div class="bubble-tooltip" id="bubbleTooltip"></div>
-        </div>
-
-        <div class="controls-bar">
-            <span style="font-size:0.7rem;">Cantidad:</span>
-            <div class="scrubber-wrapper" id="scrubberWrapper">
-                <span class="scrubber-value" id="scrubberValue">0</span>
-                <div class="scrubber-tooltip">0</div>
+            <div class="antidetect-item">
+                <span class="antidetect-label">Binge%</span>
+                <div class="antidetect-value" id="bingePct">0%</div>
+                <div class="metric-tooltip" id="bingeTooltip">Porcentaje de oyentes compulsivos. <br>🔹 <30% variado <br>🔸 30-50% alto <br>🔴 >50% excesivo</div>
             </div>
-            <select id="profileSelect" style="background:var(--card);color:var(--text);border:1px solid var(--violet);border-radius:6px;padding:4px;font-size:0.7rem;">
-                <option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option>
-            </select>
-            <button class="btn" onclick="addListeners()">➕ Sumar</button>
-            <button class="btn gold float" onclick="addListener()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Añadir
-            </button>
-            <button class="btn regenerate" onclick="generateListeners()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><circle cx="12" cy="12" r="9"/></svg>
-                Regenerar
-            </button>
-            <button class="btn reset-btn" onclick="resetAll()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Reset
-            </button>
-        </div>
-
-        <div class="chart-area">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <span style="font-size:0.7rem; font-weight:800;" id="chartTitle">📊 Actividad (1D)</span>
-                <div style="display:flex; gap:4px;">
-                    <button class="btn" onclick="setView('1D')">1D</button>
-                    <button class="btn" onclick="setView('7D')" disabled id="view7D">7D</button>
-                    <button class="btn" onclick="setView('28D')" disabled id="view28D">28D</button>
-                    <button class="btn" onclick="toggleNormalize()">📊 Normalizar</button>
-                </div>
-            </div>
-            <canvas id="activityChart"></canvas>
-            <div id="progressWrapper" style="display:none;"><span id="progressLabel">0%</span><div style="height:3px;background:var(--violet);width:0%" id="progressBarFill"></div></div>
-        </div>
-
-        <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:6px 0;">
-            <button class="btn float" onclick="startSimulation('1D')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                1 Día
-            </button>
-            <button class="btn float" onclick="startSimulation('7D')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                7 Días
-            </button>
-            <button class="btn float" onclick="startSimulation('28D')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                28 Días
-            </button>
-            <button class="btn float" onclick="safeMode()" style="border-color:#00e676;color:#00e676;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Modo Seguro
-            </button>
-        </div>
-
-        <div style="display:flex; gap:4px; justify-content:center; flex-wrap:wrap; margin:4px 0;">
-            <button class="btn" onclick="saveScene()">💾 Guardar</button>
-            <button class="btn" onclick="loadScene()">📂 Cargar</button>
-            <button class="btn" onclick="exportJSON()">📤 Exportar</button>
-            <button class="btn" onclick="importJSON()">📥 Importar</button>
-            <button class="btn" onclick="loadCSV()">📈 Cargar CSV</button>
-            <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
-            <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCSVUpload(event)">
         </div>
     </div>
 
-    <div class="modal-overlay" id="magicModal">
-        <div class="modal-content">
-            <div class="magic-sparkles" id="magicSparkles"></div>
-            <div style="font-weight:800; font-size:1rem; margin-bottom:8px; z-index:1; position:relative;">✨ Simulación Completa ✨</div>
-            <div id="magicContent" style="z-index:1; position:relative;"></div>
-            <button class="btn gold" style="width:100%; margin-top:10px; z-index:1; position:relative;" onclick="closeMagicModal()">Cerrar</button>
-        </div>
+    <div class="recommendations-panel" id="recommendationsPanel"><div id="recList"></div></div>
+
+    <div class="platform-audit" id="platformAudit">
+        <h4>🕵️ Auditoría de Plataforma</h4>
+        <div id="verdictBox"></div>
+        <div class="rule-list" id="ruleList"></div>
     </div>
 
-    <script>
-    (function() {
-        // ---------- DATA ----------
-        const PROFILES = {
-            fiel:{name:"Fiel",icon:"🔒",color:"#00e676",act:0.8,myRadio:0.7,change:0.15,idle:0.1,max:15,sess:5},
-            explorador:{name:"Explorador",icon:"🔍",color:"#4fc3f7",act:0.6,myRadio:0.3,change:0.5,idle:0.2,max:8,sess:3},
-            ocasional:{name:"Ocasional",icon:"🎲",color:"#b388ff",act:0.3,myRadio:0.4,change:0.3,idle:0.4,max:5,sess:2},
-            binge:{name:"Binge",icon:"🔥",color:"#ff4d4d",act:0.9,myRadio:0.9,change:0.05,idle:0.05,max:30,sess:8}
-        };
-        const countryCities = {
-            "Rep. Dominicana":[{name:"Santo Domingo",lat:18.48,lng:-69.93}],
-            "España":[{name:"Madrid",lat:40.42,lng:-3.70}],
-            "Brasil":[{name:"São Paulo",lat:-23.55,lng:-46.63}],
-            "México":[{name:"CDMX",lat:19.43,lng:-99.13}],
-            "EE.UU.":[{name:"Nueva York",lat:40.71,lng:-74.01}],
-            "Francia":[{name:"París",lat:48.86,lng:2.35}],
-            "Colombia":[{name:"Bogotá",lat:4.71,lng:-74.07}],
-            "Argentina":[{name:"Buenos Aires",lat:-34.60,lng:-58.38}]
-        };
-        const platforms = [{name:"Spotify",color:"#b388ff"},{name:"Apple Music",color:"#e040fb"},{name:"YouTube",color:"#ff4081"}];
-        const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael"];
-        const FINGERPRINTS = {
-            userAgents: ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36","Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"],
-            resolutions: ["1920x1080","1366x768","1440x900","390x844","414x896"],
-            languages: ["es-ES","es-MX","en-US","pt-BR","fr-FR"],
-            timezones: ["Europe/Madrid","America/Santo_Domingo","America/Mexico_City","America/Bogota","America/New_York"],
-            isps: ["Telefónica","Orange","Vodafone","Claro","AT&T"],
-            connectionTypes: ["wifi","4g","5g"]
-        };
+    <div class="plan-panel">
+        <h4>📈 Plan de Crecimiento Gradual</h4>
+        <div class="plan-inputs">
+            <span style="font-size:0.7rem;">Objetivo:</span>
+            <input type="number" id="planTarget" value="1000" min="1">
+            <span style="font-size:0.7rem;">Plazo (días):</span>
+            <input type="number" id="planDays" value="30" min="1">
+            <button class="btn gold" onclick="generatePlan()">🧠 Generar Plan</button>
+            <button class="btn gold" onclick="executePlan()">▶️ Ejecutar Plan</button>
+        </div>
+        <div id="planProgress" style="text-align:center;font-size:0.7rem;margin-top:4px;"></div>
+        <div style="max-height:150px;overflow-y:auto;margin-top:6px;" id="planTableContainer"></div>
+    </div>
 
-        let listeners = [], state = [], totalMyPlays = 0, totalOtherPlays = 0;
-        let data1D = null, data7D = null, data28D = null, currentView = '1D', simulationRunning = false;
-        let recommendedScale = [], normalizedMode = false;
-        let planData = [];
-        let artistCountEstimate = 0;
-        let glowActive = false;
+    <div class="filter-bar">
+        <select id="filterCountry"><option value="">🌍 Todos</option></select>
+        <select id="filterPlatform"><option value="">📱 Plataforma</option></select>
+        <button class="btn" id="glowToggle">✨ Destello</button>
+    </div>
 
-        // ---------- BUBBLES CANVAS ----------
-        const bubblesCanvas = document.getElementById('bubblesCanvas');
-        const bubblesCtx = bubblesCanvas.getContext('2d');
-        const bubblesArea = document.getElementById('bubblesArea');
-        const bubbleTooltip = document.getElementById('bubbleTooltip');
-        let bubbleParticles = [];
+    <div class="bubbles-area" id="bubblesArea">
+        <canvas id="bubblesCanvas"></canvas>
+        <div class="bubble-tooltip" id="bubbleTooltip"></div>
+    </div>
 
-        function resizeBubblesCanvas() {
-            bubblesCanvas.width = bubblesArea.clientWidth;
-            bubblesCanvas.height = bubblesArea.clientHeight;
-        }
-        window.addEventListener('resize', resizeBubblesCanvas);
-        resizeBubblesCanvas();
+    <div class="controls-bar">
+        <span style="font-size:0.7rem;">Cantidad:</span>
+        <div class="scrubber-wrapper" id="scrubberWrapper">
+            <span class="scrubber-value" id="scrubberValue">0</span>
+            <div class="scrubber-tooltip">0</div>
+        </div>
+        <select id="profileSelect" style="background:var(--card);color:var(--text);border:1px solid var(--violet);border-radius:6px;padding:4px;font-size:0.7rem;">
+            <option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option>
+        </select>
+        <button class="btn" onclick="addListeners()">➕ Sumar</button>
+        <button class="btn gold float" onclick="addListener()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Añadir
+        </button>
+        <button class="btn regenerate" onclick="generateListeners()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><circle cx="12" cy="12" r="9"/></svg>
+            Regenerar
+        </button>
+        <button class="btn reset-btn" onclick="resetAll()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Reset
+        </button>
+    </div>
 
-        function initBubbleParticles() {
-            bubbleParticles = [];
-            listeners.forEach((l, i) => {
+    <div class="chart-area">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:0.7rem; font-weight:800;" id="chartTitle">📊 Actividad (1D)</span>
+            <div style="display:flex; gap:4px;">
+                <button class="btn" onclick="setView('1D')">1D</button>
+                <button class="btn" onclick="setView('7D')" disabled id="view7D">7D</button>
+                <button class="btn" onclick="setView('28D')" disabled id="view28D">28D</button>
+                <button class="btn" onclick="toggleNormalize()">📊 Normalizar</button>
+            </div>
+        </div>
+        <canvas id="activityChart"></canvas>
+        <div id="progressWrapper" style="display:none;"><span id="progressLabel">0%</span><div style="height:3px;background:var(--violet);width:0%" id="progressBarFill"></div></div>
+    </div>
+
+    <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:6px 0;">
+        <button class="btn float" onclick="startSimulation('1D')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            1 Día
+        </button>
+        <button class="btn float" onclick="startSimulation('7D')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            7 Días
+        </button>
+        <button class="btn float" onclick="startSimulation('28D')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            28 Días
+        </button>
+        <button class="btn float" onclick="safeMode()" style="border-color:#00e676;color:#00e676;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Modo Seguro
+        </button>
+    </div>
+
+    <div style="display:flex; gap:4px; justify-content:center; flex-wrap:wrap; margin:4px 0;">
+        <button class="btn" onclick="saveScene()">💾 Guardar</button>
+        <button class="btn" onclick="loadScene()">📂 Cargar</button>
+        <button class="btn" onclick="exportJSON()">📤 Exportar</button>
+        <button class="btn" onclick="importJSON()">📥 Importar</button>
+        <button class="btn" onclick="loadCSV()">📈 Cargar CSV</button>
+        <button class="btn" id="historyToggle" onclick="toggleHistory()">📋 Historial</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+        <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCSVUpload(event)">
+    </div>
+
+    <div class="history-panel" id="historyPanel">
+        <h4>📋 Historial de Simulaciones</h4>
+        <div id="historyContent"></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="magicModal">
+    <div class="modal-content">
+        <div class="magic-sparkles" id="magicSparkles"></div>
+        <div style="font-weight:800; font-size:1rem; margin-bottom:8px; z-index:1; position:relative;">✨ Simulación Completa ✨</div>
+        <div id="magicContent" style="z-index:1; position:relative;"></div>
+        <button class="btn gold" style="width:100%; margin-top:10px; z-index:1; position:relative;" onclick="closeMagicModal()">Cerrar</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    // ---------- DATA ----------
+    const PROFILES = {
+        fiel:{name:"Fiel",icon:"🔒",color:"#00e676",act:0.8,myRadio:0.7,change:0.15,idle:0.1,max:15,sess:5},
+        explorador:{name:"Explorador",icon:"🔍",color:"#4fc3f7",act:0.6,myRadio:0.3,change:0.5,idle:0.2,max:8,sess:3},
+        ocasional:{name:"Ocasional",icon:"🎲",color:"#b388ff",act:0.3,myRadio:0.4,change:0.3,idle:0.4,max:5,sess:2},
+        binge:{name:"Binge",icon:"🔥",color:"#ff4d4d",act:0.9,myRadio:0.9,change:0.05,idle:0.05,max:30,sess:8}
+    };
+    const countryCities = {
+        "Rep. Dominicana":[{name:"Santo Domingo",lat:18.48,lng:-69.93}],
+        "España":[{name:"Madrid",lat:40.42,lng:-3.70}],
+        "Brasil":[{name:"São Paulo",lat:-23.55,lng:-46.63}],
+        "México":[{name:"CDMX",lat:19.43,lng:-99.13}],
+        "EE.UU.":[{name:"Nueva York",lat:40.71,lng:-74.01}],
+        "Francia":[{name:"París",lat:48.86,lng:2.35}],
+        "Colombia":[{name:"Bogotá",lat:4.71,lng:-74.07}],
+        "Argentina":[{name:"Buenos Aires",lat:-34.60,lng:-58.38}]
+    };
+    const platforms = [{name:"Spotify",color:"#b388ff"},{name:"Apple Music",color:"#e040fb"},{name:"YouTube",color:"#ff4081"}];
+    const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael"];
+    const FINGERPRINTS = {
+        userAgents: ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36","Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"],
+        resolutions: ["1920x1080","1366x768","1440x900","390x844","414x896"],
+        languages: ["es-ES","es-MX","en-US","pt-BR","fr-FR"],
+        timezones: ["Europe/Madrid","America/Santo_Domingo","America/Mexico_City","America/Bogota","America/New_York"],
+        isps: ["Telefónica","Orange","Vodafone","Claro","AT&T"],
+        connectionTypes: ["wifi","4g","5g"]
+    };
+
+    let listeners = [], state = [], totalMyPlays = 0, totalOtherPlays = 0;
+    let data1D = null, data7D = null, data28D = null, currentView = '1D', simulationRunning = false;
+    let recommendedScale = [], normalizedMode = false;
+    let planData = [];
+    let artistCountEstimate = 0;
+    let glowActive = false;
+    let simHistory = [];
+
+    // ---------- BUBBLES CANVAS ----------
+    const bubblesCanvas = document.getElementById('bubblesCanvas');
+    const bubblesCtx = bubblesCanvas.getContext('2d');
+    const bubblesArea = document.getElementById('bubblesArea');
+    const bubbleTooltip = document.getElementById('bubbleTooltip');
+    let bubbleParticles = [];
+
+    function resizeBubblesCanvas() {
+        bubblesCanvas.width = bubblesArea.clientWidth;
+        bubblesCanvas.height = bubblesArea.clientHeight;
+    }
+    window.addEventListener('resize', resizeBubblesCanvas);
+    resizeBubblesCanvas();
+
+    function initBubbleParticles() {
+        bubbleParticles = [];
+        listeners.forEach((l, i) => {
+            const p = PROFILES[l.profile];
+            const color = p.color;
+            const radius = 5 + Math.random() * 4;
+            bubbleParticles.push({
+                x: Math.random() * bubblesCanvas.width,
+                y: Math.random() * bubblesCanvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                radius,
+                color,
+                listenerIndex: i,
+                baseX: Math.random() * bubblesCanvas.width,
+                baseY: Math.random() * bubblesCanvas.height,
+                phase: Math.random() * Math.PI * 2,
+                amplitude: 0.3 + Math.random() * 0.5,
+            });
+        });
+    }
+
+    function drawBubbles() {
+        if (!bubblesCtx) return;
+        bubblesCtx.clearRect(0, 0, bubblesCanvas.width, bubblesCanvas.height);
+        const countryFilter = document.getElementById('filterCountry').value;
+        const platformFilter = document.getElementById('filterPlatform').value;
+
+        bubbleParticles.forEach(p => {
+            const l = listeners[p.listenerIndex];
+            if (!l) return;
+            if (countryFilter && l.country !== countryFilter) return;
+            if (platformFilter && l.platform !== platformFilter) return;
+
+            const s = state[p.listenerIndex];
+            const isActive = s && s.active;
+            const alpha = isActive ? 1 : 0.4;
+            const color = p.color;
+            const r = p.radius;
+
+            p.x += p.vx;
+            p.y += Math.sin(Date.now() * 0.002 + p.phase) * p.amplitude * 0.3;
+            if (p.x < r) { p.x = r; p.vx *= -1; }
+            if (p.x > bubblesCanvas.width - r) { p.x = bubblesCanvas.width - r; p.vx *= -1; }
+            if (p.y < r) p.y = r;
+            if (p.y > bubblesCanvas.height - r) p.y = bubblesCanvas.height - r;
+
+            bubblesCtx.beginPath();
+            bubblesCtx.arc(p.x, p.y, r, 0, Math.PI * 2);
+            bubblesCtx.fillStyle = color;
+            bubblesCtx.globalAlpha = alpha;
+            bubblesCtx.fill();
+            if (glowActive && isActive) {
+                bubblesCtx.shadowColor = color;
+                bubblesCtx.shadowBlur = 10;
+                bubblesCtx.fill();
+                bubblesCtx.shadowBlur = 0;
+            }
+            bubblesCtx.globalAlpha = 1;
+        });
+
+        requestAnimationFrame(drawBubbles);
+    }
+
+    function updateBubbleParticles() {
+        const currentCount = bubbleParticles.length;
+        const targetCount = listeners.length;
+        if (targetCount > currentCount) {
+            for (let i = currentCount; i < targetCount; i++) {
+                const l = listeners[i];
                 const p = PROFILES[l.profile];
-                const color = p.color;
-                const radius = 5 + Math.random() * 4;
                 bubbleParticles.push({
                     x: Math.random() * bubblesCanvas.width,
                     y: Math.random() * bubblesCanvas.height,
                     vx: (Math.random() - 0.5) * 0.5,
                     vy: (Math.random() - 0.5) * 0.5,
-                    radius,
-                    color,
+                    radius: 5 + Math.random() * 4,
+                    color: p.color,
                     listenerIndex: i,
                     baseX: Math.random() * bubblesCanvas.width,
                     baseY: Math.random() * bubblesCanvas.height,
                     phase: Math.random() * Math.PI * 2,
                     amplitude: 0.3 + Math.random() * 0.5,
                 });
-            });
+            }
+        } else if (targetCount < currentCount) {
+            bubbleParticles = bubbleParticles.filter(p => p.listenerIndex < targetCount);
+            bubbleParticles.forEach((p, idx) => { p.listenerIndex = idx; });
         }
+    }
 
-        function drawBubbles() {
-            if (!bubblesCtx) return;
-            bubblesCtx.clearRect(0, 0, bubblesCanvas.width, bubblesCanvas.height);
-            const countryFilter = document.getElementById('filterCountry').value;
-            const platformFilter = document.getElementById('filterPlatform').value;
-
-            bubbleParticles.forEach(p => {
-                const l = listeners[p.listenerIndex];
-                if (!l) return;
-                if (countryFilter && l.country !== countryFilter) return;
-                if (platformFilter && l.platform !== platformFilter) return;
-
-                const s = state[p.listenerIndex];
-                const isActive = s && s.active;
-                const alpha = isActive ? 1 : 0.4;
-                const color = p.color;
-                const r = p.radius;
-
-                p.x += p.vx;
-                p.y += Math.sin(Date.now() * 0.002 + p.phase) * p.amplitude * 0.3;
-                if (p.x < r) { p.x = r; p.vx *= -1; }
-                if (p.x > bubblesCanvas.width - r) { p.x = bubblesCanvas.width - r; p.vx *= -1; }
-                if (p.y < r) p.y = r;
-                if (p.y > bubblesCanvas.height - r) p.y = bubblesCanvas.height - r;
-
-                bubblesCtx.beginPath();
-                bubblesCtx.arc(p.x, p.y, r, 0, Math.PI * 2);
-                bubblesCtx.fillStyle = color;
-                bubblesCtx.globalAlpha = alpha;
-                bubblesCtx.fill();
-                if (glowActive && isActive) {
-                    bubblesCtx.shadowColor = color;
-                    bubblesCtx.shadowBlur = 10;
-                    bubblesCtx.fill();
-                    bubblesCtx.shadowBlur = 0;
-                }
-                bubblesCtx.globalAlpha = 1;
-            });
-
-            requestAnimationFrame(drawBubbles);
-        }
-
-        function updateBubbleParticles() {
-            const currentCount = bubbleParticles.length;
-            const targetCount = listeners.length;
-            if (targetCount > currentCount) {
-                for (let i = currentCount; i < targetCount; i++) {
-                    const l = listeners[i];
-                    const p = PROFILES[l.profile];
-                    bubbleParticles.push({
-                        x: Math.random() * bubblesCanvas.width,
-                        y: Math.random() * bubblesCanvas.height,
-                        vx: (Math.random() - 0.5) * 0.5,
-                        vy: (Math.random() - 0.5) * 0.5,
-                        radius: 5 + Math.random() * 4,
-                        color: p.color,
-                        listenerIndex: i,
-                        baseX: Math.random() * bubblesCanvas.width,
-                        baseY: Math.random() * bubblesCanvas.height,
-                        phase: Math.random() * Math.PI * 2,
-                        amplitude: 0.3 + Math.random() * 0.5,
-                    });
-                }
-            } else if (targetCount < currentCount) {
-                bubbleParticles = bubbleParticles.filter(p => p.listenerIndex < targetCount);
-                bubbleParticles.forEach((p, idx) => { p.listenerIndex = idx; });
+    bubblesCanvas.addEventListener('mousemove', (e) => {
+        const rect = bubblesCanvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        let found = null;
+        for (const p of bubbleParticles) {
+            const dx = mouseX - p.x, dy = mouseY - p.y;
+            if (Math.sqrt(dx*dx+dy*dy) < p.radius + 4) {
+                found = p; break;
             }
         }
+        if (found) {
+            const l = listeners[found.listenerIndex];
+            if (l) {
+                bubbleTooltip.style.display = 'block';
+                bubbleTooltip.style.left = (found.x) + 'px';
+                bubbleTooltip.style.top = (found.y - found.radius - 10) + 'px';
+                bubbleTooltip.innerHTML = `<b>${l.name}</b><br>${l.country} · ${l.city}<br>${l.platform} · ${PROFILES[l.profile].name}`;
+            }
+        } else {
+            bubbleTooltip.style.display = 'none';
+        }
+    });
+    bubblesCanvas.addEventListener('mouseleave', () => { bubbleTooltip.style.display = 'none'; });
 
-        bubblesCanvas.addEventListener('mousemove', (e) => {
-            const rect = bubblesCanvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            let found = null;
-            for (const p of bubbleParticles) {
-                const dx = mouseX - p.x, dy = mouseY - p.y;
-                if (Math.sqrt(dx*dx+dy*dy) < p.radius + 4) {
-                    found = p; break;
-                }
-            }
-            if (found) {
-                const l = listeners[found.listenerIndex];
-                if (l) {
-                    bubbleTooltip.style.display = 'block';
-                    bubbleTooltip.style.left = (found.x) + 'px';
-                    bubbleTooltip.style.top = (found.y - found.radius - 10) + 'px';
-                    bubbleTooltip.innerHTML = `<b>${l.name}</b><br>${l.country} · ${l.city}<br>${l.platform} · ${PROFILES[l.profile].name}`;
-                }
-            } else {
-                bubbleTooltip.style.display = 'none';
-            }
+    document.getElementById('glowToggle').addEventListener('click', () => {
+        glowActive = !glowActive;
+        document.getElementById('glowToggle').style.background = glowActive ? 'var(--violet)' : '';
+    });
+
+    // ---------- CHART ----------
+    const canvas = document.getElementById('activityChart'), ctx = canvas.getContext('2d');
+    function resizeChartCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 140; }
+    window.addEventListener('resize', resizeChartCanvas);
+    function drawChart() {
+        const w=canvas.width, h=canvas.height; ctx.clearRect(0,0,w,h);
+        const data = currentView==='1D'?data1D:(currentView==='7D'?data7D:data28D);
+        if(!data) return;
+        let {activity, plays, otherPlays} = data;
+        if (normalizedMode) {
+            const maxA = Math.max(...activity,1), maxP = Math.max(...plays,1), maxO = Math.max(...otherPlays,1);
+            activity = activity.map(v=>v/maxA); plays = plays.map(v=>v/maxP); otherPlays = otherPlays.map(v=>v/maxO);
+        }
+        const maxVal = normalizedMode ? 1 : Math.max(...activity,...plays,...otherPlays,1);
+        const pad={top:12,right:12,bottom:20,left:28}, cw=w-pad.left-pad.right, ch=h-pad.top-pad.bottom, n=data.labels.length, stepX=cw/(n-1);
+        ctx.strokeStyle='#2a1f4a'; ctx.beginPath(); ctx.moveTo(pad.left,pad.top); ctx.lineTo(pad.left,h-pad.bottom); ctx.lineTo(w-pad.right,h-pad.bottom); ctx.stroke();
+        ctx.fillStyle='#9a8fb8'; ctx.font='7px Inter'; ctx.textAlign='center';
+        const step=n<=7?1:(n<=28?7:5);
+        for(let i=0;i<n;i+=step) ctx.fillText(data.labels[i], pad.left+i*stepX, h-pad.bottom+10);
+        function line(arr,color,dash){ ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.setLineDash(dash||[]); ctx.beginPath(); for(let i=0;i<n;i++){const x=pad.left+i*stepX, y=h-pad.bottom-(arr[i]/maxVal)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke(); ctx.setLineDash([]); }
+        line(activity,'#b388ff'); line(plays,'#00e676',[4,4]); line(otherPlays,'#4fc3f7',[2,4]);
+    }
+    function toggleNormalize() { normalizedMode=!normalizedMode; drawChart(); }
+
+    function gaussianRandom(mean=0, stdev=1) { let u=1-Math.random(), v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)*stdev+mean; }
+    function getBiorythm(h) { if(h>=6&&h<9)return 0.7; if(h>=9&&h<12)return 1.1; if(h>=12&&h<14)return 1.2; if(h>=14&&h<17)return 1.4; if(h>=17&&h<20)return 1.6; if(h>=20&&h<23)return 1.8; return 0.5; }
+    function getActFactor(h) { if(h>=7&&h<=9)return 1.4; if(h>=12&&h<=14)return 1.2; if(h>=19&&h<=22)return 1.5; if(h>=0&&h<=5)return 0.3; return 0.8; }
+
+    function addListenerWithProfile(profile) {
+        const c = Object.keys(countryCities)[Math.floor(Math.random()*Object.keys(countryCities).length)];
+        const city = countryCities[c][0];
+        const plat = platforms[Math.floor(Math.random()*platforms.length)];
+        const name = namePool[Math.floor(Math.random()*namePool.length)];
+        const fp = {
+            userAgent: FINGERPRINTS.userAgents[Math.floor(Math.random()*FINGERPRINTS.userAgents.length)],
+            resolution: FINGERPRINTS.resolutions[Math.floor(Math.random()*FINGERPRINTS.resolutions.length)],
+            language: FINGERPRINTS.languages[Math.floor(Math.random()*FINGERPRINTS.languages.length)],
+            timezone: FINGERPRINTS.timezones[Math.floor(Math.random()*FINGERPRINTS.timezones.length)],
+            isp: FINGERPRINTS.isps[Math.floor(Math.random()*FINGERPRINTS.isps.length)],
+            connection: FINGERPRINTS.connectionTypes[Math.floor(Math.random()*FINGERPRINTS.connectionTypes.length)]
+        };
+        listeners.push({
+            name, country:c, city:city.name, lat:city.lat+(Math.random()-0.5)*0.1, lng:city.lng+(Math.random()-0.5)*0.1,
+            platform:plat.name, color:plat.color, profile, fingerprint:fp,
+            sessionCount:0, maxSessions:3+Math.floor(Math.random()*4), currentIP:fp.isp+'.'+Math.floor(Math.random()*255)
         });
-        bubblesCanvas.addEventListener('mouseleave', () => { bubbleTooltip.style.display = 'none'; });
-
-        document.getElementById('glowToggle').addEventListener('click', () => {
-            glowActive = !glowActive;
-            document.getElementById('glowToggle').style.background = glowActive ? 'var(--violet)' : '';
+        const p = PROFILES[profile];
+        state.push({
+            active:true, inMyRadio:false, trackTimeLeft:0, otherTrackTimeLeft:0, dailyPlays:0,
+            maxDailyPlays:p.max, sessionRemaining:0, profile, fatigue:0, pauseTime:0, sessionsToday:0
         });
+        updateBubbleParticles();
+    }
 
-        // ---------- CHART ----------
-        const canvas = document.getElementById('activityChart'), ctx = canvas.getContext('2d');
-        function resizeChartCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 140; }
-        window.addEventListener('resize', resizeChartCanvas);
-        function drawChart() {
-            const w=canvas.width, h=canvas.height; ctx.clearRect(0,0,w,h);
-            const data = currentView==='1D'?data1D:(currentView==='7D'?data7D:data28D);
-            if(!data) return;
-            let {activity, plays, otherPlays} = data;
-            if (normalizedMode) {
-                const maxA = Math.max(...activity,1), maxP = Math.max(...plays,1), maxO = Math.max(...otherPlays,1);
-                activity = activity.map(v=>v/maxA); plays = plays.map(v=>v/maxP); otherPlays = otherPlays.map(v=>v/maxO);
-            }
-            const maxVal = normalizedMode ? 1 : Math.max(...activity,...plays,...otherPlays,1);
-            const pad={top:12,right:12,bottom:20,left:28}, cw=w-pad.left-pad.right, ch=h-pad.top-pad.bottom, n=data.labels.length, stepX=cw/(n-1);
-            ctx.strokeStyle='#2a1f4a'; ctx.beginPath(); ctx.moveTo(pad.left,pad.top); ctx.lineTo(pad.left,h-pad.bottom); ctx.lineTo(w-pad.right,h-pad.bottom); ctx.stroke();
-            ctx.fillStyle='#9a8fb8'; ctx.font='7px Inter'; ctx.textAlign='center';
-            const step=n<=7?1:(n<=28?7:5);
-            for(let i=0;i<n;i+=step) ctx.fillText(data.labels[i], pad.left+i*stepX, h-pad.bottom+10);
-            function line(arr,color,dash){ ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.setLineDash(dash||[]); ctx.beginPath(); for(let i=0;i<n;i++){const x=pad.left+i*stepX, y=h-pad.bottom-(arr[i]/maxVal)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke(); ctx.setLineDash([]); }
-            line(activity,'#b388ff'); line(plays,'#00e676',[4,4]); line(otherPlays,'#4fc3f7',[2,4]);
-        }
-        function toggleNormalize() { normalizedMode=!normalizedMode; drawChart(); }
+    function enterRadio(i) { const s=state[i]; if(!s.active||s.dailyPlays>=s.maxDailyPlays) return; s.inMyRadio=true; s.trackTimeLeft=Math.max(30,Math.round(gaussianRandom(210,40))); s.dailyPlays++; totalMyPlays++; s.sessionRemaining=PROFILES[s.profile].sess-1; s.fatigue=0; }
+    function leaveRadio(i) { state[i].inMyRadio=false; state[i].otherTrackTimeLeft=Math.max(30,Math.round(gaussianRandom(220,50))); }
 
-        function gaussianRandom(mean=0, stdev=1) { let u=1-Math.random(), v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)*stdev+mean; }
-        function getBiorythm(h) { if(h>=6&&h<9)return 0.7; if(h>=9&&h<12)return 1.1; if(h>=12&&h<14)return 1.2; if(h>=14&&h<17)return 1.4; if(h>=17&&h<20)return 1.6; if(h>=20&&h<23)return 1.8; return 0.5; }
-        function getActFactor(h) { if(h>=7&&h<=9)return 1.4; if(h>=12&&h<=14)return 1.2; if(h>=19&&h<=22)return 1.5; if(h>=0&&h<=5)return 0.3; return 0.8; }
-
-        function addListenerWithProfile(profile) {
-            const c = Object.keys(countryCities)[Math.floor(Math.random()*Object.keys(countryCities).length)];
-            const city = countryCities[c][0];
-            const plat = platforms[Math.floor(Math.random()*platforms.length)];
-            const name = namePool[Math.floor(Math.random()*namePool.length)];
-            const fp = {
-                userAgent: FINGERPRINTS.userAgents[Math.floor(Math.random()*FINGERPRINTS.userAgents.length)],
-                resolution: FINGERPRINTS.resolutions[Math.floor(Math.random()*FINGERPRINTS.resolutions.length)],
-                language: FINGERPRINTS.languages[Math.floor(Math.random()*FINGERPRINTS.languages.length)],
-                timezone: FINGERPRINTS.timezones[Math.floor(Math.random()*FINGERPRINTS.timezones.length)],
-                isp: FINGERPRINTS.isps[Math.floor(Math.random()*FINGERPRINTS.isps.length)],
-                connection: FINGERPRINTS.connectionTypes[Math.floor(Math.random()*FINGERPRINTS.connectionTypes.length)]
-            };
-            listeners.push({
-                name, country:c, city:city.name, lat:city.lat+(Math.random()-0.5)*0.1, lng:city.lng+(Math.random()-0.5)*0.1,
-                platform:plat.name, color:plat.color, profile, fingerprint:fp,
-                sessionCount:0, maxSessions:3+Math.floor(Math.random()*4), currentIP:fp.isp+'.'+Math.floor(Math.random()*255)
-            });
-            const p = PROFILES[profile];
-            state.push({
-                active:true, inMyRadio:false, trackTimeLeft:0, otherTrackTimeLeft:0, dailyPlays:0,
-                maxDailyPlays:p.max, sessionRemaining:0, profile, fatigue:0, pauseTime:0, sessionsToday:0
-            });
-            updateBubbleParticles();
-        }
-
-        function enterRadio(i) { const s=state[i]; if(!s.active||s.dailyPlays>=s.maxDailyPlays) return; s.inMyRadio=true; s.trackTimeLeft=Math.max(30,Math.round(gaussianRandom(210,40))); s.dailyPlays++; totalMyPlays++; s.sessionRemaining=PROFILES[s.profile].sess-1; s.fatigue=0; }
-        function leaveRadio(i) { state[i].inMyRadio=false; state[i].otherTrackTimeLeft=Math.max(30,Math.round(gaussianRandom(220,50))); }
-
-        function simulateTick(factor, simA, simP, simO, index, currentHour) {
-            const bio = getBiorythm(currentHour);
-            state.forEach((s,i)=>{
-                const l=listeners[i], p=PROFILES[s.profile];
-                if(!s.active) {
-                    if(s.sessionsToday < l.maxSessions && Math.random() < p.act*0.1*factor*bio) {
-                        s.active=true; l.sessionCount++; s.sessionsToday++;
-                        l.currentIP = l.fingerprint.isp+'.'+Math.floor(Math.random()*255);
-                        s.trackTimeLeft = Math.max(30, Math.round(gaussianRandom(210,40)));
-                        s.sessionRemaining = p.sess; s.fatigue=0;
-                    }
-                    return;
+    function simulateTick(factor, simA, simP, simO, index, currentHour) {
+        const bio = getBiorythm(currentHour);
+        state.forEach((s,i)=>{
+            const l=listeners[i], p=PROFILES[s.profile];
+            if(!s.active) {
+                if(s.sessionsToday < l.maxSessions && Math.random() < p.act*0.1*factor*bio) {
+                    s.active=true; l.sessionCount++; s.sessionsToday++;
+                    l.currentIP = l.fingerprint.isp+'.'+Math.floor(Math.random()*255);
+                    s.trackTimeLeft = Math.max(30, Math.round(gaussianRandom(210,40)));
+                    s.sessionRemaining = p.sess; s.fatigue=0;
                 }
-                if(s.inMyRadio) {
-                    if(s.pauseTime>0){ s.pauseTime-=30; return; }
-                    s.trackTimeLeft-=30;
-                    if(s.trackTimeLeft<=0){
-                        s.fatigue++;
-                        if(Math.random() < Math.min(0.8, p.change + s.fatigue*0.05)) leaveRadio(i);
-                        else {
-                            if(s.sessionRemaining>0 && s.dailyPlays<s.maxDailyPlays){
-                                s.trackTimeLeft = Math.max(30, Math.round(gaussianRandom(210,40)));
-                                s.pauseTime = Math.round(gaussianRandom(4,2));
-                                s.dailyPlays++; totalMyPlays++; simP[index]++; s.sessionRemaining--;
-                            } else leaveRadio(i);
-                        }
-                    }
-                } else {
-                    if(s.otherTrackTimeLeft>0) s.otherTrackTimeLeft-=30;
-                    else { s.otherTrackTimeLeft=Math.max(30,Math.round(gaussianRandom(220,50))); totalOtherPlays++; simO[index]++; }
-                    if(s.dailyPlays<s.maxDailyPlays && Math.random()<p.myRadio*0.1*factor*bio) { enterRadio(i); simP[index]++; }
-                }
-                if(s.active && !s.inMyRadio && Math.random()<p.idle*0.1) s.active=false;
-            });
-            simA[index]=Math.max(simA[index], state.filter(s=>s.inMyRadio).length);
-        }
-
-        function runSimulation(days, callback) {
-            const spd=2880, total=days*spd, simA=[],simP=[],simO=[], dc=days===1?24:days;
-            for(let i=0;i<dc;i++){simA.push(0);simP.push(0);simO.push(0);}
-            let step=0; simulationRunning=true; document.querySelectorAll('.btn').forEach(b=>b.disabled=true); document.getElementById('progressWrapper').style.display='block';
-            function batch() {
-                const end=Math.min(step+500,total);
-                for(let s=step;s<end;s++) {
-                    const day=Math.floor(s/spd), hour=Math.floor(((s%spd)*30)/3600), idx=days===1?hour:day;
-                    if(day>0 && s%spd===0){ state.forEach(s=>{ s.dailyPlays=0; s.maxDailyPlays=PROFILES[s.profile].max; s.sessionRemaining=0; s.sessionsToday=0; if(s.inMyRadio) leaveRadio(state.indexOf(s)); }); }
-                    simulateTick(getActFactor(hour),simA,simP,simO,idx,hour);
-                }
-                step=end; document.getElementById('progressLabel').textContent=Math.round(step/total*100)+'%'; document.getElementById('progressBarFill').style.width=(step/total*100)+'%';
-                if(step<total) setTimeout(batch,0);
-                else {
-                    if(days===1) data1D={labels:Array.from({length:24},(_,i)=>i+'h'),activity:simA,plays:simP,otherPlays:simO};
-                    else if(days===7){ data1D=gen1D(simA,simP,simO); data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA,plays:simP,otherPlays:simO}; }
-                    else { data1D=gen1D(simA.slice(0,7),simP.slice(0,7),simO.slice(0,7)); data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA.slice(0,7),plays:simP.slice(0,7),otherPlays:simO.slice(0,7)}; data28D={labels:Array.from({length:28},(_,i)=>'D'+(i+1)),activity:simA,plays:simP,otherPlays:simO}; }
-                    if(callback) callback();
-                    else finishSimulation(days);
-                }
-            }
-            batch();
-        }
-        function gen1D(dA,dP,dO) { const hA=new Array(24).fill(0),hP=new Array(24).fill(0),hO=new Array(24).fill(0); const tA=dA.reduce((a,b)=>a+b,0),tP=dP.reduce((a,b)=>a+b,0),tO=dO.reduce((a,b)=>a+b,0); for(let h=0;h<24;h++){ const f=getActFactor(h); hA[h]=Math.round(tA*f/10); hP[h]=Math.round(tP*f/10); hO[h]=Math.round(tO*f/10); } return {labels:Array.from({length:24},(_,i)=>i+'h'),activity:hA,plays:hP,otherPlays:hO}; }
-
-        function finishSimulation(days) {
-            simulationRunning=false; document.querySelectorAll('.btn').forEach(b=>b.disabled=false); document.getElementById('progressWrapper').style.display='none';
-            updateStats(); updateIndicators(); setView('1D');
-            const plays = data1D?data1D.plays.reduce((a,b)=>a+b,0):totalMyPlays;
-            const other = data1D?data1D.otherPlays.reduce((a,b)=>a+b,0):totalOtherPlays;
-            showMagicModal(`Simulación ${days}D`,
-                `<div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div>
-                 <div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div>
-                 <div class="magic-stat"><span>👥 Oyentes:</span><strong>${listeners.length}</strong></div>
-                 <div class="magic-stat"><span>🎼 Artistas:</span><strong>${artistCountEstimate}</strong></div>
-                 <div class="magic-stat"><span>📊 Gini:</span><strong>${document.getElementById('giniValue').textContent}</strong></div>
-                 <div class="magic-stat"><span>🔁 Ratio:</span><strong>${document.getElementById('ratioPlays').textContent}</strong></div>
-                 <div class="magic-stat"><span>⚠️ Picos:</span><strong>${document.getElementById('suspiciousPeaks').textContent}</strong></div>
-                 <div class="magic-stat"><span>🔥 Binge:</span><strong>${document.getElementById('bingePct').textContent}</strong></div>`);
-        }
-        function startSimulation(mode) { if(simulationRunning) return; if(!listeners.length){ showToast('Añade oyentes primero'); return; } runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
-        function setView(v) { currentView=v; document.getElementById('chartTitle').textContent='📊 Actividad ('+v+')'; document.getElementById('view7D').disabled=!data7D; document.getElementById('view28D').disabled=!data28D; drawChart(); }
-
-        // ---------- INDICATORS & AUDIT ----------
-        function updateIndicators() {
-            if(!listeners.length) {
-                document.getElementById('giniValue').textContent='—';
-                document.getElementById('ratioPlays').textContent='—';
-                document.getElementById('suspiciousPeaks').textContent='0';
-                document.getElementById('bingePct').textContent='0%';
-                document.getElementById('riskScore').textContent='0%';
-                document.getElementById('riskStatus').textContent='—';
-                document.getElementById('riskDetails').textContent='Sin datos';
-                document.getElementById('verdictBox').innerHTML='';
-                document.getElementById('ruleList').innerHTML='';
-                resetTooltips();
                 return;
             }
-            const arr=state.map(s=>s.dailyPlays), total=arr.reduce((a,b)=>a+b,0);
-            let sum=0; for(let i=0;i<arr.length;i++) for(let j=0;j<arr.length;j++) sum+=Math.abs(arr[i]-arr[j]);
-            const gini=total?sum/(2*arr.length*total):0; 
-            document.getElementById('giniValue').textContent=gini.toFixed(2);
-            const ratio=total/listeners.length; 
-            document.getElementById('ratioPlays').textContent=ratio.toFixed(1);
-            let peaks=0; if(data1D){ const avg=data1D.activity.reduce((a,b)=>a+b,0)/24; data1D.activity.forEach(v=>{ if(v>avg*3&&v>2) peaks++; }); }
-            document.getElementById('suspiciousPeaks').textContent=peaks;
-            const bingePct=Math.round(listeners.filter(l=>l.profile==='binge').length/listeners.length*100);
-            document.getElementById('bingePct').textContent=bingePct+'%';
-
-            updateMetricTooltips(gini, ratio, peaks, bingePct);
-
-            let riskScore=0;
-            if(gini>0.7) riskScore+=40; else if(gini>0.5) riskScore+=20;
-            if(ratio>20) riskScore+=30; else if(ratio>12) riskScore+=15;
-            if(peaks>=4) riskScore+=20; else if(peaks>=2) riskScore+=10;
-            if(bingePct>50) riskScore+=20; else if(bingePct>30) riskScore+=10;
-            riskScore=Math.min(100,riskScore);
-            document.getElementById('riskScore').textContent=riskScore+'%';
-            const status = riskScore<25?'✅ Desapercibido':riskScore<55?'⚠️ Aviso':'🚫 Riesgo Baneo';
-            document.getElementById('riskStatus').textContent=status;
-            document.getElementById('riskStatus').style.background = riskScore<25?'#00e676':riskScore<55?'#ff9800':'#ff4d4d';
-            document.getElementById('riskDetails').textContent = riskScore<25?'Sin flags':(riskScore<55?'Precaución':'Posible baneo');
-            analyzeRecommendations(gini,ratio,peaks,bingePct);
-            runPlatformAudit(gini,ratio,peaks,bingePct);
-        }
-
-        function resetTooltips() {
-            document.getElementById('giniTooltip').innerHTML = 'Coeficiente de desigualdad en la distribución de plays. <br>🔹 0 = igualdad total <br>🔸 >0.6 = concentración alta';
-            document.getElementById('ratioTooltip').innerHTML = 'Plays promedio por oyente. <br>🔹 <15 natural <br>🔸 15-20 sospechoso <br>🔴 >20 muy alto';
-            document.getElementById('peaksTooltip').innerHTML = 'Picos de actividad fuera del ritmo normal. <br>🔹 <3 aceptable <br>🔸 3-4 revisar <br>🔴 ≥4 sospechoso';
-            document.getElementById('bingeTooltip').innerHTML = 'Porcentaje de oyentes compulsivos. <br>🔹 <30% variado <br>🔸 30-50% alto <br>🔴 >50% excesivo';
-        }
-
-        function updateMetricTooltips(gini, ratio, peaks, bingePct) {
-            let giniMsg = `Gini = ${gini.toFixed(2)}. `;
-            if (gini > 0.7) giniMsg += '🔴 Riesgo alto: concentración extrema de plays.';
-            else if (gini > 0.5) giniMsg += '🔸 Moderado: algo de concentración.';
-            else giniMsg += '🔹 Saludable: plays bien distribuidos.';
-            document.getElementById('giniTooltip').innerHTML = giniMsg;
-
-            let ratioMsg = `Ratio = ${ratio.toFixed(1)} plays/oyente. `;
-            if (ratio > 20) ratioMsg += '🔴 Muy alto: posible bot o abuso.';
-            else if (ratio > 15) ratioMsg += '🔸 Sospechoso: revisa la distribución.';
-            else ratioMsg += '🔹 Natural: parece audiencia real.';
-            document.getElementById('ratioTooltip').innerHTML = ratioMsg;
-
-            let peaksMsg = `${peaks} picos detectados. `;
-            if (peaks >= 4) peaksMsg += '🔴 Excesivos: actividad muy irregular.';
-            else if (peaks >= 3) peaksMsg += '🔸 Algo irregular: revisa horarios.';
-            else peaksMsg += '🔹 Actividad horaria normal.';
-            document.getElementById('peaksTooltip').innerHTML = peaksMsg;
-
-            let bingeMsg = `${bingePct}% de oyentes binge. `;
-            if (bingePct > 50) bingeMsg += '🔴 Excesivo: poco variado.';
-            else if (bingePct > 30) bingeMsg += '🔸 Alto: mezcla más perfiles.';
-            else bingeMsg += '🔹 Buen equilibrio de perfiles.';
-            document.getElementById('bingeTooltip').innerHTML = bingeMsg;
-        }
-
-        function runPlatformAudit(gini,ratio,peaks,bingePct) {
-            const ipSet = new Set(listeners.map(l=>l.currentIP));
-            const countriesSet = new Set(listeners.map(l=>l.country));
-            const nightActivity = data1D ? data1D.activity.slice(0,6).reduce((a,b)=>a+b,0) / Math.max(1, data1D.activity.reduce((a,b)=>a+b,0)) : 0;
-            const rules = [
-                { desc: 'Ratio plays/oyente < 15', pass: ratio < 15, comment: ratio < 15 ? 'Distribución saludable' : 'Demasiados plays por oyente' },
-                { desc: 'Gini < 0.6', pass: gini < 0.6, comment: gini < 0.6 ? 'Buena distribución' : 'Concentración alta de plays' },
-                { desc: 'Picos horarios < 3', pass: peaks < 3, comment: peaks < 3 ? 'Actividad horaria natural' : 'Picos sospechosos detectados' },
-                { desc: 'Binge listeners < 40%', pass: bingePct < 40, comment: bingePct < 40 ? 'Perfil variado' : 'Exceso de consumo compulsivo' },
-                { desc: 'Países diferentes > 2', pass: countriesSet.size > 2, comment: `Países: ${countriesSet.size}` },
-                { desc: 'IPs únicas > 50%', pass: ipSet.size / listeners.length > 0.5, comment: `IPs únicas: ${Math.round(ipSet.size/listeners.length*100)}%` },
-                { desc: 'Actividad nocturna < 30%', pass: nightActivity < 0.3, comment: `Nocturna: ${Math.round(nightActivity*100)}%` },
-            ];
-            const failed = rules.filter(r=>!r.pass);
-            const verdict = failed.length === 0 ? {text:'✅ Aprobado', color:'#00e676'} :
-                            failed.length <= 2 ? {text:'⚠️ Revisión manual', color:'#ff9800'} :
-                            {text:'🚫 Riesgo alto', color:'#ff4d4d'};
-            document.getElementById('verdictBox').innerHTML = `<div style="background:${verdict.color};padding:6px;border-radius:8px;color:#000;font-weight:800;">${verdict.text}</div>`;
-            document.getElementById('ruleList').innerHTML = rules.map(r=>`
-                <div class="rule-item ${r.pass?'pass':'fail'}">
-                    <span>${r.pass?'✅':'❌'} ${r.desc}</span>
-                    <span style="color:${r.pass?'var(--green)':'var(--red)'}">${r.comment}</span>
-                </div>
-            `).join('');
-        }
-
-        function analyzeRecommendations(gini,ratio,peaks,bingePct) {
-            const panel=document.getElementById('recommendationsPanel'), list=document.getElementById('recList');
-            const recs=[];
-            if(gini>0.6) recs.push('📊 Gini alto. Añade oyentes ocasionales.');
-            else if(gini>0.4) recs.push('📊 Gini moderado. Vigila.');
-            if(ratio>15) recs.push('🔁 Ratio alto. Aumenta base de oyentes.');
-            if(peaks>=3) recs.push(`⚠️ ${peaks} picos. Distribuye actividad.`);
-            if(bingePct>40) recs.push('🔥 Exceso binge. Convierte en fieles.');
-            if(!recs.length) recs.push('✅ Indicadores saludables.');
-            list.innerHTML=recs.map(r=>`<div>${r}</div>`).join('');
-            panel.style.display='block';
-        }
-
-        function updateProfileStats() {
-            const counts={fiel:0,explorador:0,ocasional:0,binge:0}; listeners.forEach(l=>counts[l.profile]++);
-            document.getElementById('profilesStats').innerHTML=`
-                <div class="profile-stat" style="border-color:#00e676">🔒 Fieles: ${counts.fiel}</div>
-                <div class="profile-stat" style="border-color:#4fc3f7">🔍 Exp: ${counts.explorador}</div>
-                <div class="profile-stat" style="border-color:#b388ff">🎲 Ocas: ${counts.ocasional}</div>
-                <div class="profile-stat" style="border-color:#ff4d4d">🔥 Binge: ${counts.binge}</div>`;
-        }
-
-        // ---------- GROWTH PLAN ----------
-        function generatePlan() {
-            const target = parseInt(document.getElementById('planTarget').value) || 1000;
-            const days = parseInt(document.getElementById('planDays').value) || 30;
-            const current = listeners.length;
-            if (target <= current) { showToast('El objetivo ya está alcanzado'); return; }
-            const totalToAdd = target - current;
-            const dailyAdd = Math.ceil(totalToAdd / days);
-            planData = [];
-            let remaining = totalToAdd;
-            for (let d = 0; d < days; d++) {
-                const addToday = Math.min(dailyAdd, remaining);
-                const oc = Math.floor(addToday * 0.5);
-                const fi = Math.floor(addToday * 0.3);
-                const ex = Math.floor(addToday * 0.15);
-                const bi = addToday - oc - fi - ex;
-                planData.push({ day: d+1, listenersToAdd: { ocasional: oc, fiel: fi, explorador: ex, binge: bi } });
-                remaining -= addToday;
-                if (remaining <= 0) break;
-            }
-            let html = '<table class="plan-table"><tr><th>Día</th><th>Ocas.</th><th>Fiel</th><th>Exp.</th><th>Binge</th><th>Total</th></tr>';
-            planData.forEach(p => {
-                const t = p.listenersToAdd;
-                html += `<tr><td>${p.day}</td><td>+${t.ocasional}</td><td>+${t.fiel}</td><td>+${t.explorador}</td><td>+${t.binge}</td><td>+${t.ocasional+t.fiel+t.explorador+t.binge}</td></tr>`;
-            });
-            html += '</table>';
-            document.getElementById('planTableContainer').innerHTML = html;
-            showToast(`Plan generado: ${totalToAdd} oyentes en ${planData.length} días`);
-        }
-
-        async function executePlan() {
-            if (!planData.length) { showToast('Genera un plan primero'); return; }
-            simulationRunning = true;
-            document.querySelectorAll('.btn').forEach(b => b.disabled = true);
-            document.getElementById('planProgress').textContent = `Ejecutando día 0/${planData.length}...`;
-
-            for (let i = 0; i < planData.length; i++) {
-                const dayPlan = planData[i];
-                for (const [profile, count] of Object.entries(dayPlan.listenersToAdd)) {
-                    for (let j = 0; j < count; j++) addListenerWithProfile(profile);
+            if(s.inMyRadio) {
+                if(s.pauseTime>0){ s.pauseTime-=30; return; }
+                s.trackTimeLeft-=30;
+                if(s.trackTimeLeft<=0){
+                    s.fatigue++;
+                    if(Math.random() < Math.min(0.8, p.change + s.fatigue*0.05)) leaveRadio(i);
+                    else {
+                        if(s.sessionRemaining>0 && s.dailyPlays<s.maxDailyPlays){
+                            s.trackTimeLeft = Math.max(30, Math.round(gaussianRandom(210,40)));
+                            s.pauseTime = Math.round(gaussianRandom(4,2));
+                            s.dailyPlays++; totalMyPlays++; simP[index]++; s.sessionRemaining--;
+                        } else leaveRadio(i);
+                    }
                 }
-                updateStats(); updateProfileStats(); updateIndicators();
-                document.getElementById('planProgress').textContent = `Ejecutando día ${i+1}/${planData.length}...`;
-                await new Promise(resolve => { runSimulation(1, () => resolve()); });
-            }
-            simulationRunning = false;
-            document.querySelectorAll('.btn').forEach(b => b.disabled = false);
-            document.getElementById('planProgress').textContent = 'Plan completado ✅';
-            showToast('Plan ejecutado con éxito');
-        }
-
-        // ---------- PERSISTENCE ----------
-        function saveScene() {
-            const name=prompt('Nombre:'); if(!name) return;
-            const scenes=JSON.parse(localStorage.getItem('oyentes_scenes')||'[]');
-            scenes.push({name, data:{listeners,state,totalMyPlays,totalOtherPlays,data1D,data7D,data28D}});
-            localStorage.setItem('oyentes_scenes',JSON.stringify(scenes)); showToast('Escena guardada');
-        }
-        function loadScene() {
-            const scenes=JSON.parse(localStorage.getItem('oyentes_scenes')||'[]');
-            if(!scenes.length){ showToast('No hay escenas'); return; }
-            const last=scenes[scenes.length-1];
-            listeners=last.data.listeners; state=last.data.state; totalMyPlays=last.data.totalMyPlays||0; totalOtherPlays=last.data.totalOtherPlays||0;
-            data1D=last.data.data1D; data7D=last.data.data7D; data28D=last.data.data28D;
-            updateStats(); updateProfileStats(); updateIndicators(); showToast('Escena cargada');
-            updateBubbleParticles();
-        }
-        async function exportJSON() {
-            const data={listeners,state,totalMyPlays,totalOtherPlays,data1D,data7D,data28D};
-            const json=JSON.stringify(data,null,2);
-            try{ await navigator.clipboard.writeText(json); showToast('Copiado al portapapeles'); }
-            catch{ const b=new Blob([json],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='oyentes_mkeyz.json'; a.click(); URL.revokeObjectURL(u); showToast('Descargado'); }
-        }
-        function importJSON() { document.getElementById('importFile').click(); }
-        function handleImport(event) {
-            const file=event.target.files[0]; if(!file) return;
-            const reader=new FileReader();
-            reader.onload=function(e){
-                try{
-                    const data=JSON.parse(e.target.result);
-                    listeners=data.listeners; state=data.state; totalMyPlays=data.totalMyPlays||0; totalOtherPlays=data.totalOtherPlays||0;
-                    data1D=data.data1D; data7D=data.data7D; data28D=data.data28D;
-                    updateStats(); updateProfileStats(); updateIndicators(); showToast('Importado');
-                    updateBubbleParticles();
-                }catch(ex){ showToast('Archivo no válido'); }
-            }; reader.readAsText(file);
-        }
-
-        function loadCSV() { document.getElementById('csvFile').click(); }
-        function handleCSVUpload(event) {
-            const file=event.target.files[0]; if(!file) return;
-            const reader=new FileReader();
-            reader.onload=function(e){
-                const rows=e.target.result.split('\n').filter(r=>r.trim());
-                if(rows.length<2){ showToast('CSV inválido'); return; }
-                const idx=rows[0].split(',').map(h=>h.trim().toLowerCase()).indexOf('listeners');
-                if(idx===-1){ showToast('Falta columna listeners'); return; }
-                const last=parseInt(rows[rows.length-1].split(',')[idx])||10;
-                listeners=[]; state=[];
-                const counts={ocasional:0,fiel:0,explorador:0,binge:0};
-                for(let i=0;i<last;i++){ const p=i<last*0.4?'ocasional':i<last*0.7?'fiel':i<last*0.9?'explorador':'binge'; addListenerWithProfile(p); counts[p]++; }
-                updateStats(); updateProfileStats(); updateIndicators();
-                document.getElementById('planTarget').value = last * 2;
-                showToast(`CSV cargado: ${last} oyentes`);
-            };
-            reader.readAsText(file);
-        }
-
-        function showToast(msg) {
-            const t=document.createElement('div'); t.textContent=msg;
-            t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1530;padding:8px 16px;border-radius:20px;z-index:9999;font-size:0.7rem;';
-            document.body.appendChild(t); setTimeout(()=>t.remove(),2000);
-        }
-
-        function showMagicModal(title, msg) {
-            document.getElementById('magicContent').innerHTML = msg;
-            const sparklesContainer = document.getElementById('magicSparkles');
-            sparklesContainer.innerHTML = '';
-            for (let i = 0; i < 20; i++) {
-                const s = document.createElement('div');
-                s.className = 'magic-sparkle';
-                s.style.left = Math.random() * 100 + '%';
-                s.style.top = Math.random() * 100 + '%';
-                s.style.animationDelay = Math.random() * 1.5 + 's';
-                sparklesContainer.appendChild(s);
-            }
-            document.getElementById('magicModal').style.display = 'flex';
-        }
-        function closeMagicModal() { document.getElementById('magicModal').style.display = 'none'; }
-
-        // ---------- BUTTONS ----------
-        function addListeners() {
-            const count=parseInt(document.getElementById('scrubberValue').textContent)||0;
-            if (count <= 0) { showToast('Cantidad debe ser > 0'); return; }
-            const profileKey=document.getElementById('profileSelect').value;
-            for(let i=0;i<count;i++) addListenerWithProfile(profileKey==='aleatorio'?Object.keys(PROFILES)[Math.floor(Math.random()*4)]:profileKey);
-            updateStats(); updateProfileStats(); updateIndicators();
-        }
-        function generateListeners() {
-            listeners = []; state = []; totalMyPlays = 0; totalOtherPlays = 0;
-            data1D = data7D = data28D = null; artistCountEstimate = 0;
-            const count = parseInt(document.getElementById('scrubberValue').textContent) || 0;
-            if (count > 0) {
-                const profileKey = document.getElementById('profileSelect').value;
-                for (let i = 0; i < count; i++) {
-                    addListenerWithProfile(profileKey === 'aleatorio' ? Object.keys(PROFILES)[Math.floor(Math.random() * 4)] : profileKey);
-                }
-                showToast(`Regenerados ${count} oyentes`);
             } else {
-                showToast('Panel reseteado (0 oyentes)');
+                if(s.otherTrackTimeLeft>0) s.otherTrackTimeLeft-=30;
+                else { s.otherTrackTimeLeft=Math.max(30,Math.round(gaussianRandom(220,50))); totalOtherPlays++; simO[index]++; }
+                if(s.dailyPlays<s.maxDailyPlays && Math.random()<p.myRadio*0.1*factor*bio) { enterRadio(i); simP[index]++; }
             }
-            updateStats(); updateProfileStats(); updateIndicators();
-            updateBubbleParticles();
-        }
-        function addListener() { addListeners(); }
-        function safeMode() {
-            if(!listeners.length) return;
-            let changed=0;
-            listeners.forEach((l,i)=>{ if(l.profile==='binge'){ listeners[i].profile='fiel'; state[i].profile='fiel'; changed++; } });
-            updateStats(); updateProfileStats(); updateIndicators();
-            updateBubbleParticles();
-            showToast(`🛡️ Modo Seguro (${changed} cambios)`);
-        }
-        function resetAll() {
-            listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; artistCountEstimate=0;
-            updateStats(); updateProfileStats(); updateIndicators();
-            updateBubbleParticles();
-            showToast('Reset completo');
-        }
-
-        function updateStats() {
-            document.getElementById('totalPlays').textContent=totalMyPlays;
-            document.getElementById('totalOtherPlays').textContent=totalOtherPlays;
-            document.getElementById('uniqueListeners').textContent=listeners.length;
-            document.getElementById('activePlatform').textContent=state.filter(s=>s.active).length;
-            if (totalOtherPlays > 0) {
-                artistCountEstimate = Math.min(totalOtherPlays, Math.ceil(listeners.length * 1.5));
-            } else {
-                artistCountEstimate = listeners.length > 0 ? Math.ceil(listeners.length * 1.2) : 0;
-            }
-            document.getElementById('artistCount').textContent = artistCountEstimate;
-            populateFilters();
-            drawChart();
-        }
-
-        // Scrubber
-        const scrubberValueEl = document.getElementById('scrubberValue');
-        const tooltipEl = document.querySelector('.scrubber-tooltip');
-        let scrubberCurrent = 0;
-        function updateScrubberDisplay(val) {
-            scrubberValueEl.textContent = val;
-            tooltipEl.textContent = val;
-        }
-        updateScrubberDisplay(scrubberCurrent);
-        document.getElementById('scrubberWrapper').addEventListener('pointerdown', e => {
-            const startY = e.clientY, startVal = scrubberCurrent;
-            const onMove = ev => {
-                scrubberCurrent = Math.min(100, Math.max(0, startVal + Math.round((startY - ev.clientY) / 10)));
-                updateScrubberDisplay(scrubberCurrent);
-            };
-            const onUp = () => {
-                window.removeEventListener('pointermove', onMove);
-                window.removeEventListener('pointerup', onUp);
-            };
-            window.addEventListener('pointermove', onMove);
-            window.addEventListener('pointerup', onUp);
+            if(s.active && !s.inMyRadio && Math.random()<p.idle*0.1) s.active=false;
         });
+        simA[index]=Math.max(simA[index], state.filter(s=>s.inMyRadio).length);
+    }
 
-        function populateFilters() {
-            const cs = document.getElementById('filterCountry'), ps = document.getElementById('filterPlatform');
-            const currentCountry = cs.value, currentPlatform = ps.value;
-            cs.innerHTML = '<option value="">🌍 Todos</option>';
-            ps.innerHTML = '<option value="">📱 Plataforma</option>';
-            [...new Set(listeners.map(l => l.country))].sort().forEach(c => {
-                const o = document.createElement('option'); o.value = c; o.textContent = c; cs.appendChild(o);
-            });
-            [...new Set(listeners.map(l => l.platform))].sort().forEach(p => {
-                const o = document.createElement('option'); o.value = p; o.textContent = p; ps.appendChild(o);
-            });
-            if ([...cs.options].some(o => o.value === currentCountry)) cs.value = currentCountry;
-            if ([...ps.options].some(o => o.value === currentPlatform)) ps.value = currentPlatform;
+    function runSimulation(days, callback) {
+        const spd=2880, total=days*spd, simA=[],simP=[],simO=[], dc=days===1?24:days;
+        for(let i=0;i<dc;i++){simA.push(0);simP.push(0);simO.push(0);}
+        let step=0; simulationRunning=true; document.querySelectorAll('.btn').forEach(b=>b.disabled=true); document.getElementById('progressWrapper').style.display='block';
+        function batch() {
+            const end=Math.min(step+500,total);
+            for(let s=step;s<end;s++) {
+                const day=Math.floor(s/spd), hour=Math.floor(((s%spd)*30)/3600), idx=days===1?hour:day;
+                if(day>0 && s%spd===0){ state.forEach(s=>{ s.dailyPlays=0; s.maxDailyPlays=PROFILES[s.profile].max; s.sessionRemaining=0; s.sessionsToday=0; if(s.inMyRadio) leaveRadio(state.indexOf(s)); }); }
+                simulateTick(getActFactor(hour),simA,simP,simO,idx,hour);
+            }
+            step=end; document.getElementById('progressLabel').textContent=Math.round(step/total*100)+'%'; document.getElementById('progressBarFill').style.width=(step/total*100)+'%';
+            if(step<total) setTimeout(batch,0);
+            else {
+                if(days===1) data1D={labels:Array.from({length:24},(_,i)=>i+'h'),activity:simA,plays:simP,otherPlays:simO};
+                else if(days===7){ data1D=gen1D(simA,simP,simO); data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA,plays:simP,otherPlays:simO}; }
+                else { data1D=gen1D(simA.slice(0,7),simP.slice(0,7),simO.slice(0,7)); data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA.slice(0,7),plays:simP.slice(0,7),otherPlays:simO.slice(0,7)}; data28D={labels:Array.from({length:28},(_,i)=>'D'+(i+1)),activity:simA,plays:simP,otherPlays:simO}; }
+                if(callback) callback();
+                else finishSimulation(days);
+            }
         }
-        document.getElementById('filterCountry').addEventListener('change', () => {});
-        document.getElementById('filterPlatform').addEventListener('change', () => {});
+        batch();
+    }
+    function gen1D(dA,dP,dO) { const hA=new Array(24).fill(0),hP=new Array(24).fill(0),hO=new Array(24).fill(0); const tA=dA.reduce((a,b)=>a+b,0),tP=dP.reduce((a,b)=>a+b,0),tO=dO.reduce((a,b)=>a+b,0); for(let h=0;h<24;h++){ const f=getActFactor(h); hA[h]=Math.round(tA*f/10); hP[h]=Math.round(tP*f/10); hO[h]=Math.round(tO*f/10); } return {labels:Array.from({length:24},(_,i)=>i+'h'),activity:hA,plays:hP,otherPlays:hO}; }
 
-        // Exports
-        window.addListener = addListener; window.addListeners = addListeners;
-        window.generateListeners = generateListeners; window.startSimulation = startSimulation;
-        window.setView = setView; window.toggleNormalize = toggleNormalize;
-        window.safeMode = safeMode; window.resetAll = resetAll;
-        window.saveScene = saveScene; window.loadScene = loadScene;
-        window.exportJSON = exportJSON; window.importJSON = importJSON;
-        window.handleImport = handleImport; window.loadCSV = loadCSV;
-        window.handleCSVUpload = handleCSVUpload;
-        window.generatePlan = generatePlan; window.executePlan = executePlan;
-        window.closeMagicModal = closeMagicModal;
+    function finishSimulation(days) {
+        simulationRunning=false; document.querySelectorAll('.btn').forEach(b=>b.disabled=false); document.getElementById('progressWrapper').style.display='none';
+        updateStats(); updateIndicators(); setView('1D');
+        const plays = data1D?data1D.plays.reduce((a,b)=>a+b,0):totalMyPlays;
+        const other = data1D?data1D.otherPlays.reduce((a,b)=>a+b,0):totalOtherPlays;
+        addHistoryRecord(days, plays, other);
+        showMagicModal(`Simulación ${days}D`,
+            `<div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div>
+             <div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div>
+             <div class="magic-stat"><span>👥 Oyentes:</span><strong>${listeners.length}</strong></div>
+             <div class="magic-stat"><span>🎼 Artistas:</span><strong>${artistCountEstimate}</strong></div>
+             <div class="magic-stat"><span>📊 Gini:</span><strong>${document.getElementById('giniValue').textContent}</strong></div>
+             <div class="magic-stat"><span>🔁 Ratio:</span><strong>${document.getElementById('ratioPlays').textContent}</strong></div>
+             <div class="magic-stat"><span>⚠️ Picos:</span><strong>${document.getElementById('suspiciousPeaks').textContent}</strong></div>
+             <div class="magic-stat"><span>🔥 Binge:</span><strong>${document.getElementById('bingePct').textContent}</strong></div>`);
+    }
+    function startSimulation(mode) { if(simulationRunning) return; if(!listeners.length){ showToast('Añade oyentes primero'); return; } runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
+    function setView(v) { currentView=v; document.getElementById('chartTitle').textContent='📊 Actividad ('+v+')'; document.getElementById('view7D').disabled=!data7D; document.getElementById('view28D').disabled=!data28D; drawChart(); }
 
-        // Init
-        resizeChartCanvas();
-        resizeBubblesCanvas();
-        updateStats();
-        updateProfileStats();
-        updateIndicators();
-        initBubbleParticles();
-        drawBubbles();
-        setInterval(() => { if (!simulationRunning) updateStats(); }, 5000);
-    })();
-    </script>
+    // ---------- INDICATORS & AUDIT ----------
+    function updateIndicators() {
+        if(!listeners.length) {
+            document.getElementById('giniValue').textContent='—';
+            document.getElementById('ratioPlays').textContent='—';
+            document.getElementById('suspiciousPeaks').textContent='0';
+            document.getElementById('bingePct').textContent='0%';
+            document.getElementById('riskScore').textContent='0%';
+            document.getElementById('riskStatus').textContent='—';
+            document.getElementById('riskDetails').textContent='Sin datos';
+            document.getElementById('verdictBox').innerHTML='';
+            document.getElementById('ruleList').innerHTML='';
+            resetTooltips();
+            return;
+        }
+        const arr=state.map(s=>s.dailyPlays), total=arr.reduce((a,b)=>a+b,0);
+        let sum=0; for(let i=0;i<arr.length;i++) for(let j=0;j<arr.length;j++) sum+=Math.abs(arr[i]-arr[j]);
+        const gini=total?sum/(2*arr.length*total):0; 
+        document.getElementById('giniValue').textContent=gini.toFixed(2);
+        const ratio=total/listeners.length; 
+        document.getElementById('ratioPlays').textContent=ratio.toFixed(1);
+        let peaks=0; if(data1D){ const avg=data1D.activity.reduce((a,b)=>a+b,0)/24; data1D.activity.forEach(v=>{ if(v>avg*3&&v>2) peaks++; }); }
+        document.getElementById('suspiciousPeaks').textContent=peaks;
+        const bingePct=Math.round(listeners.filter(l=>l.profile==='binge').length/listeners.length*100);
+        document.getElementById('bingePct').textContent=bingePct+'%';
+
+        updateMetricTooltips(gini, ratio, peaks, bingePct);
+
+        let riskScore=0;
+        if(gini>0.7) riskScore+=40; else if(gini>0.5) riskScore+=20;
+        if(ratio>20) riskScore+=30; else if(ratio>12) riskScore+=15;
+        if(peaks>=4) riskScore+=20; else if(peaks>=2) riskScore+=10;
+        if(bingePct>50) riskScore+=20; else if(bingePct>30) riskScore+=10;
+        riskScore=Math.min(100,riskScore);
+        document.getElementById('riskScore').textContent=riskScore+'%';
+        const status = riskScore<25?'✅ Desapercibido':riskScore<55?'⚠️ Aviso':'🚫 Riesgo Baneo';
+        document.getElementById('riskStatus').textContent=status;
+        document.getElementById('riskStatus').style.background = riskScore<25?'#00e676':riskScore<55?'#ff9800':'#ff4d4d';
+        document.getElementById('riskDetails').textContent = riskScore<25?'Sin flags':(riskScore<55?'Precaución':'Posible baneo');
+        analyzeRecommendations(gini,ratio,peaks,bingePct);
+        runPlatformAudit(gini,ratio,peaks,bingePct);
+    }
+
+    function resetTooltips() {
+        document.getElementById('giniTooltip').innerHTML = 'Coeficiente de desigualdad en la distribución de plays. <br>🔹 0 = igualdad total <br>🔸 >0.6 = concentración alta';
+        document.getElementById('ratioTooltip').innerHTML = 'Plays promedio por oyente. <br>🔹 <15 natural <br>🔸 15-20 sospechoso <br>🔴 >20 muy alto';
+        document.getElementById('peaksTooltip').innerHTML = 'Picos de actividad fuera del ritmo normal. <br>🔹 <3 aceptable <br>🔸 3-4 revisar <br>🔴 ≥4 sospechoso';
+        document.getElementById('bingeTooltip').innerHTML = 'Porcentaje de oyentes compulsivos. <br>🔹 <30% variado <br>🔸 30-50% alto <br>🔴 >50% excesivo';
+    }
+
+    function updateMetricTooltips(gini, ratio, peaks, bingePct) {
+        let giniMsg = `Gini = ${gini.toFixed(2)}. `;
+        if (gini > 0.7) giniMsg += '🔴 Riesgo alto: concentración extrema de plays.';
+        else if (gini > 0.5) giniMsg += '🔸 Moderado: algo de concentración.';
+        else giniMsg += '🔹 Saludable: plays bien distribuidos.';
+        document.getElementById('giniTooltip').innerHTML = giniMsg;
+
+        let ratioMsg = `Ratio = ${ratio.toFixed(1)} plays/oyente. `;
+        if (ratio > 20) ratioMsg += '🔴 Muy alto: posible bot o abuso.';
+        else if (ratio > 15) ratioMsg += '🔸 Sospechoso: revisa la distribución.';
+        else ratioMsg += '🔹 Natural: parece audiencia real.';
+        document.getElementById('ratioTooltip').innerHTML = ratioMsg;
+
+        let peaksMsg = `${peaks} picos detectados. `;
+        if (peaks >= 4) peaksMsg += '🔴 Excesivos: actividad muy irregular.';
+        else if (peaks >= 3) peaksMsg += '🔸 Algo irregular: revisa horarios.';
+        else peaksMsg += '🔹 Actividad horaria normal.';
+        document.getElementById('peaksTooltip').innerHTML = peaksMsg;
+
+        let bingeMsg = `${bingePct}% de oyentes binge. `;
+        if (bingePct > 50) bingeMsg += '🔴 Excesivo: poco variado.';
+        else if (bingePct > 30) bingeMsg += '🔸 Alto: mezcla más perfiles.';
+        else bingeMsg += '🔹 Buen equilibrio de perfiles.';
+        document.getElementById('bingeTooltip').innerHTML = bingeMsg;
+    }
+
+    function runPlatformAudit(gini,ratio,peaks,bingePct) {
+        const ipSet = new Set(listeners.map(l=>l.currentIP));
+        const countriesSet = new Set(listeners.map(l=>l.country));
+        const nightActivity = data1D ? data1D.activity.slice(0,6).reduce((a,b)=>a+b,0) / Math.max(1, data1D.activity.reduce((a,b)=>a+b,0)) : 0;
+        const rules = [
+            { desc: 'Ratio plays/oyente < 15', pass: ratio < 15, comment: ratio < 15 ? 'Distribución saludable' : 'Demasiados plays por oyente' },
+            { desc: 'Gini < 0.6', pass: gini < 0.6, comment: gini < 0.6 ? 'Buena distribución' : 'Concentración alta de plays' },
+            { desc: 'Picos horarios < 3', pass: peaks < 3, comment: peaks < 3 ? 'Actividad horaria natural' : 'Picos sospechosos detectados' },
+            { desc: 'Binge listeners < 40%', pass: bingePct < 40, comment: bingePct < 40 ? 'Perfil variado' : 'Exceso de consumo compulsivo' },
+            { desc: 'Países diferentes > 2', pass: countriesSet.size > 2, comment: `Países: ${countriesSet.size}` },
+            { desc: 'IPs únicas > 50%', pass: ipSet.size / listeners.length > 0.5, comment: `IPs únicas: ${Math.round(ipSet.size/listeners.length*100)}%` },
+            { desc: 'Actividad nocturna < 30%', pass: nightActivity < 0.3, comment: `Nocturna: ${Math.round(nightActivity*100)}%` },
+        ];
+        const failed = rules.filter(r=>!r.pass);
+        const verdict = failed.length === 0 ? {text:'✅ Aprobado', color:'#00e676'} :
+                        failed.length <= 2 ? {text:'⚠️ Revisión manual', color:'#ff9800'} :
+                        {text:'🚫 Riesgo alto', color:'#ff4d4d'};
+        document.getElementById('verdictBox').innerHTML = `<div style="background:${verdict.color};padding:6px;border-radius:8px;color:#000;font-weight:800;">${verdict.text}</div>`;
+        document.getElementById('ruleList').innerHTML = rules.map(r=>`
+            <div class="rule-item ${r.pass?'pass':'fail'}">
+                <span>${r.pass?'✅':'❌'} ${r.desc}</span>
+                <span style="color:${r.pass?'var(--green)':'var(--red)'}">${r.comment}</span>
+            </div>
+        `).join('');
+    }
+
+    function analyzeRecommendations(gini,ratio,peaks,bingePct) {
+        const panel=document.getElementById('recommendationsPanel'), list=document.getElementById('recList');
+        const recs=[];
+        if(gini>0.6) recs.push('📊 Gini alto. Añade oyentes ocasionales.');
+        else if(gini>0.4) recs.push('📊 Gini moderado. Vigila.');
+        if(ratio>15) recs.push('🔁 Ratio alto. Aumenta base de oyentes.');
+        if(peaks>=3) recs.push(`⚠️ ${peaks} picos. Distribuye actividad.`);
+        if(bingePct>40) recs.push('🔥 Exceso binge. Convierte en fieles.');
+        if(!recs.length) recs.push('✅ Indicadores saludables.');
+        list.innerHTML=recs.map(r=>`<div>${r}</div>`).join('');
+        panel.style.display='block';
+    }
+
+    function updateProfileStats() {
+        const counts={fiel:0,explorador:0,ocasional:0,binge:0}; listeners.forEach(l=>counts[l.profile]++);
+        document.getElementById('profilesStats').innerHTML=`
+            <div class="profile-stat" style="border-color:#00e676">🔒 Fieles: ${counts.fiel}</div>
+            <div class="profile-stat" style="border-color:#4fc3f7">🔍 Exp: ${counts.explorador}</div>
+            <div class="profile-stat" style="border-color:#b388ff">🎲 Ocas: ${counts.ocasional}</div>
+            <div class="profile-stat" style="border-color:#ff4d4d">🔥 Binge: ${counts.binge}</div>`;
+    }
+
+    // ---------- GROWTH PLAN ----------
+    function generatePlan() {
+        const target = parseInt(document.getElementById('planTarget').value) || 1000;
+        const days = parseInt(document.getElementById('planDays').value) || 30;
+        const current = listeners.length;
+        if (target <= current) { showToast('El objetivo ya está alcanzado'); return; }
+        const totalToAdd = target - current;
+        const dailyAdd = Math.ceil(totalToAdd / days);
+        planData = [];
+        let remaining = totalToAdd;
+        for (let d = 0; d < days; d++) {
+            const addToday = Math.min(dailyAdd, remaining);
+            const oc = Math.floor(addToday * 0.5);
+            const fi = Math.floor(addToday * 0.3);
+            const ex = Math.floor(addToday * 0.15);
+            const bi = addToday - oc - fi - ex;
+            planData.push({ day: d+1, listenersToAdd: { ocasional: oc, fiel: fi, explorador: ex, binge: bi } });
+            remaining -= addToday;
+            if (remaining <= 0) break;
+        }
+        let html = '<table class="plan-table"><tr><th>Día</th><th>Ocas.</th><th>Fiel</th><th>Exp.</th><th>Binge</th><th>Total</th></tr>';
+        planData.forEach(p => {
+            const t = p.listenersToAdd;
+            html += `<tr><td>${p.day}</td><td>+${t.ocasional}</td><td>+${t.fiel}</td><td>+${t.explorador}</td><td>+${t.binge}</td><td>+${t.ocasional+t.fiel+t.explorador+t.binge}</td></tr>`;
+        });
+        html += '</table>';
+        document.getElementById('planTableContainer').innerHTML = html;
+        showToast(`Plan generado: ${totalToAdd} oyentes en ${planData.length} días`);
+    }
+
+    async function executePlan() {
+        if (!planData.length) { showToast('Genera un plan primero'); return; }
+        simulationRunning = true;
+        document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+        document.getElementById('planProgress').textContent = `Ejecutando día 0/${planData.length}...`;
+
+        for (let i = 0; i < planData.length; i++) {
+            const dayPlan = planData[i];
+            for (const [profile, count] of Object.entries(dayPlan.listenersToAdd)) {
+                for (let j = 0; j < count; j++) addListenerWithProfile(profile);
+            }
+            updateStats(); updateProfileStats(); updateIndicators();
+            document.getElementById('planProgress').textContent = `Ejecutando día ${i+1}/${planData.length}...`;
+            await new Promise(resolve => { runSimulation(1, () => resolve()); });
+        }
+        simulationRunning = false;
+        document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+        document.getElementById('planProgress').textContent = 'Plan completado ✅';
+        showToast('Plan ejecutado con éxito');
+    }
+
+    // ---------- PERSISTENCE ----------
+    function saveScene() {
+        const name=prompt('Nombre:'); if(!name) return;
+        const scenes=JSON.parse(localStorage.getItem('oyentes_scenes')||'[]');
+        scenes.push({name, data:{listeners,state,totalMyPlays,totalOtherPlays,data1D,data7D,data28D}});
+        localStorage.setItem('oyentes_scenes',JSON.stringify(scenes)); showToast('Escena guardada');
+    }
+    function loadScene() {
+        const scenes=JSON.parse(localStorage.getItem('oyentes_scenes')||'[]');
+        if(!scenes.length){ showToast('No hay escenas'); return; }
+        const last=scenes[scenes.length-1];
+        listeners=last.data.listeners; state=last.data.state; totalMyPlays=last.data.totalMyPlays||0; totalOtherPlays=last.data.totalOtherPlays||0;
+        data1D=last.data.data1D; data7D=last.data.data7D; data28D=last.data.data28D;
+        updateStats(); updateProfileStats(); updateIndicators(); showToast('Escena cargada');
+        updateBubbleParticles();
+    }
+    async function exportJSON() {
+        const data={listeners,state,totalMyPlays,totalOtherPlays,data1D,data7D,data28D};
+        const json=JSON.stringify(data,null,2);
+        try{ await navigator.clipboard.writeText(json); showToast('Copiado al portapapeles'); }
+        catch{ const b=new Blob([json],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='oyentes_mkeyz.json'; a.click(); URL.revokeObjectURL(u); showToast('Descargado'); }
+    }
+    function importJSON() { document.getElementById('importFile').click(); }
+    function handleImport(event) {
+        const file=event.target.files[0]; if(!file) return;
+        const reader=new FileReader();
+        reader.onload=function(e){
+            try{
+                const data=JSON.parse(e.target.result);
+                listeners=data.listeners; state=data.state; totalMyPlays=data.totalMyPlays||0; totalOtherPlays=data.totalOtherPlays||0;
+                data1D=data.data1D; data7D=data.data7D; data28D=data.data28D;
+                updateStats(); updateProfileStats(); updateIndicators(); showToast('Importado');
+                updateBubbleParticles();
+            }catch(ex){ showToast('Archivo no válido'); }
+        }; reader.readAsText(file);
+    }
+
+    function loadCSV() { document.getElementById('csvFile').click(); }
+    function handleCSVUpload(event) {
+        const file=event.target.files[0]; if(!file) return;
+        const reader=new FileReader();
+        reader.onload=function(e){
+            const rows=e.target.result.split('\n').filter(r=>r.trim());
+            if(rows.length<2){ showToast('CSV inválido'); return; }
+            const idx=rows[0].split(',').map(h=>h.trim().toLowerCase()).indexOf('listeners');
+            if(idx===-1){ showToast('Falta columna listeners'); return; }
+            const last=parseInt(rows[rows.length-1].split(',')[idx])||10;
+            listeners=[]; state=[];
+            const counts={ocasional:0,fiel:0,explorador:0,binge:0};
+            for(let i=0;i<last;i++){ const p=i<last*0.4?'ocasional':i<last*0.7?'fiel':i<last*0.9?'explorador':'binge'; addListenerWithProfile(p); counts[p]++; }
+            updateStats(); updateProfileStats(); updateIndicators();
+            document.getElementById('planTarget').value = last * 2;
+            showToast(`CSV cargado: ${last} oyentes`);
+        };
+        reader.readAsText(file);
+    }
+
+    // 🔥 HISTORIAL
+    function loadHistory() {
+        const stored = localStorage.getItem('oyentes_history');
+        if (stored) {
+            try { simHistory = JSON.parse(stored); } catch(e) { simHistory = []; }
+        }
+    }
+    function saveHistory() {
+        localStorage.setItem('oyentes_history', JSON.stringify(simHistory));
+    }
+    function addHistoryRecord(days, plays, other) {
+        const record = {
+            timestamp: new Date().toLocaleString(),
+            duration: days === 1 ? '1 Día' : days === 7 ? '7 Días' : '28 Días',
+            plays,
+            other,
+            listeners: listeners.length,
+            artists: artistCountEstimate,
+            riskScore: document.getElementById('riskScore').textContent,
+            verdict: document.getElementById('riskStatus').textContent
+        };
+        simHistory.unshift(record);
+        if (simHistory.length > 20) simHistory.pop();
+        saveHistory();
+        renderHistory();
+    }
+    function renderHistory() {
+        const container = document.getElementById('historyContent');
+        if (!simHistory.length) {
+            container.innerHTML = '<p style="text-align:center;font-size:0.7rem;">No hay simulaciones guardadas.</p>';
+            return;
+        }
+        let html = '<table class="history-table"><tr><th>Fecha</th><th>Dur.</th><th>🎵</th><th>🎧</th><th>👥</th><th>Riesgo</th><th>Vered.</th></tr>';
+        simHistory.forEach(r => {
+            html += `<tr>
+                <td>${r.timestamp}</td><td>${r.duration}</td><td>${r.plays}</td><td>${r.other}</td>
+                <td>${r.listeners}</td><td>${r.riskScore}</td><td>${r.verdict}</td>
+            </tr>`;
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    }
+    window.toggleHistory = function() {
+        const panel = document.getElementById('historyPanel');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+        } else {
+            panel.style.display = 'block';
+            renderHistory();
+        }
+    };
+
+    function showToast(msg) {
+        const t=document.createElement('div'); t.textContent=msg;
+        t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1530;padding:8px 16px;border-radius:20px;z-index:9999;font-size:0.7rem;';
+        document.body.appendChild(t); setTimeout(()=>t.remove(),2000);
+    }
+
+    function showMagicModal(title, msg) {
+        document.getElementById('magicContent').innerHTML = msg;
+        const sparklesContainer = document.getElementById('magicSparkles');
+        sparklesContainer.innerHTML = '';
+        for (let i = 0; i < 20; i++) {
+            const s = document.createElement('div');
+            s.className = 'magic-sparkle';
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 100 + '%';
+            s.style.animationDelay = Math.random() * 1.5 + 's';
+            sparklesContainer.appendChild(s);
+        }
+        document.getElementById('magicModal').style.display = 'flex';
+    }
+    function closeMagicModal() { document.getElementById('magicModal').style.display = 'none'; }
+
+    // ---------- BUTTONS ----------
+    function addListeners() {
+        const count=parseInt(document.getElementById('scrubberValue').textContent)||0;
+        if (count <= 0) { showToast('Cantidad debe ser > 0'); return; }
+        const profileKey=document.getElementById('profileSelect').value;
+        for(let i=0;i<count;i++) addListenerWithProfile(profileKey==='aleatorio'?Object.keys(PROFILES)[Math.floor(Math.random()*4)]:profileKey);
+        updateStats(); updateProfileStats(); updateIndicators();
+    }
+    function generateListeners() {
+        listeners = []; state = []; totalMyPlays = 0; totalOtherPlays = 0;
+        data1D = data7D = data28D = null; artistCountEstimate = 0;
+        const count = parseInt(document.getElementById('scrubberValue').textContent) || 0;
+        if (count > 0) {
+            const profileKey = document.getElementById('profileSelect').value;
+            for (let i = 0; i < count; i++) {
+                addListenerWithProfile(profileKey === 'aleatorio' ? Object.keys(PROFILES)[Math.floor(Math.random() * 4)] : profileKey);
+            }
+            showToast(`Regenerados ${count} oyentes`);
+        } else {
+            showToast('Panel reseteado (0 oyentes)');
+        }
+        updateStats(); updateProfileStats(); updateIndicators();
+        updateBubbleParticles();
+    }
+    function addListener() { addListeners(); }
+    function safeMode() {
+        if(!listeners.length) return;
+        let changed=0;
+        listeners.forEach((l,i)=>{ if(l.profile==='binge'){ listeners[i].profile='fiel'; state[i].profile='fiel'; changed++; } });
+        updateStats(); updateProfileStats(); updateIndicators();
+        updateBubbleParticles();
+        showToast(`🛡️ Modo Seguro (${changed} cambios)`);
+    }
+    function resetAll() {
+        listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; artistCountEstimate=0;
+        updateStats(); updateProfileStats(); updateIndicators();
+        updateBubbleParticles();
+        showToast('Reset completo');
+    }
+
+    function updateStats() {
+        document.getElementById('totalPlays').textContent=totalMyPlays;
+        document.getElementById('totalOtherPlays').textContent=totalOtherPlays;
+        document.getElementById('uniqueListeners').textContent=listeners.length;
+        document.getElementById('activePlatform').textContent=state.filter(s=>s.active).length;
+        if (totalOtherPlays > 0) {
+            artistCountEstimate = Math.min(totalOtherPlays, Math.ceil(listeners.length * 1.5));
+        } else {
+            artistCountEstimate = listeners.length > 0 ? Math.ceil(listeners.length * 1.2) : 0;
+        }
+        document.getElementById('artistCount').textContent = artistCountEstimate;
+        populateFilters();
+        drawChart();
+    }
+
+    // Scrubber
+    const scrubberValueEl = document.getElementById('scrubberValue');
+    const tooltipEl = document.querySelector('.scrubber-tooltip');
+    let scrubberCurrent = 0;
+    function updateScrubberDisplay(val) {
+        scrubberValueEl.textContent = val;
+        tooltipEl.textContent = val;
+    }
+    updateScrubberDisplay(scrubberCurrent);
+    document.getElementById('scrubberWrapper').addEventListener('pointerdown', e => {
+        const startY = e.clientY, startVal = scrubberCurrent;
+        const onMove = ev => {
+            scrubberCurrent = Math.min(100, Math.max(0, startVal + Math.round((startY - ev.clientY) / 10)));
+            updateScrubberDisplay(scrubberCurrent);
+        };
+        const onUp = () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+    });
+
+    function populateFilters() {
+        const cs = document.getElementById('filterCountry'), ps = document.getElementById('filterPlatform');
+        const currentCountry = cs.value, currentPlatform = ps.value;
+        cs.innerHTML = '<option value="">🌍 Todos</option>';
+        ps.innerHTML = '<option value="">📱 Plataforma</option>';
+        [...new Set(listeners.map(l => l.country))].sort().forEach(c => {
+            const o = document.createElement('option'); o.value = c; o.textContent = c; cs.appendChild(o);
+        });
+        [...new Set(listeners.map(l => l.platform))].sort().forEach(p => {
+            const o = document.createElement('option'); o.value = p; o.textContent = p; ps.appendChild(o);
+        });
+        if ([...cs.options].some(o => o.value === currentCountry)) cs.value = currentCountry;
+        if ([...ps.options].some(o => o.value === currentPlatform)) ps.value = currentPlatform;
+    }
+    document.getElementById('filterCountry').addEventListener('change', () => {});
+    document.getElementById('filterPlatform').addEventListener('change', () => {});
+
+    // Exports
+    window.addListener = addListener; window.addListeners = addListeners;
+    window.generateListeners = generateListeners; window.startSimulation = startSimulation;
+    window.setView = setView; window.toggleNormalize = toggleNormalize;
+    window.safeMode = safeMode; window.resetAll = resetAll;
+    window.saveScene = saveScene; window.loadScene = loadScene;
+    window.exportJSON = exportJSON; window.importJSON = importJSON;
+    window.handleImport = handleImport; window.loadCSV = loadCSV;
+    window.handleCSVUpload = handleCSVUpload;
+    window.generatePlan = generatePlan; window.executePlan = executePlan;
+    window.closeMagicModal = closeMagicModal;
+
+    // Init
+    loadHistory();
+    resizeChartCanvas();
+    resizeBubblesCanvas();
+    updateStats();
+    updateProfileStats();
+    updateIndicators();
+    initBubbleParticles();
+    drawBubbles();
+    setInterval(() => { if (!simulationRunning) updateStats(); }, 5000);
+})();
+</script>
 </body>
 </html>
