@@ -76,16 +76,81 @@
         .chart-area { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.2); }
         canvas#activityChart { width:100%; height:140px; display:block; background:rgba(0,0,0,0.2); border-radius:8px; }
 
-        .btn { background:var(--card); border:1px solid rgba(179,136,255,0.4); padding:6px 12px; border-radius:14px; font-weight:700; font-size:0.6rem; color:var(--text); cursor:pointer; }
-        .btn.gold { background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000; }
-        .btn.regenerate { background:linear-gradient(135deg, #ff9800, #ff5722); color:#000; border:none; padding:6px 14px; font-weight:800; letter-spacing:0.5px; box-shadow:0 0 10px rgba(255,152,0,0.5); }
+        /* Estilos flotantes y SVG */
+        .btn {
+            background:var(--card); border:1px solid rgba(179,136,255,0.4);
+            padding:6px 12px; border-radius:14px; font-weight:700; font-size:0.6rem;
+            color:var(--text); cursor:pointer;
+            transition: all 0.25s ease;
+            display: inline-flex; align-items:center; justify-content:center; gap:4px;
+        }
+        .btn.float {
+            box-shadow: 0 4px 8px rgba(179,136,255,0.3);
+        }
+        .btn.float:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(179,136,255,0.6);
+            filter: brightness(1.2);
+            border-color: var(--violet2);
+        }
+        .btn.gold {
+            background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000;
+            box-shadow: 0 4px 10px rgba(179,136,255,0.5);
+        }
+        .btn.gold:hover {
+            box-shadow: 0 8px 20px rgba(179,136,255,0.8);
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+        }
+        .btn.regenerate, .btn.reset-btn {
+            border: none; color:#000; padding:8px 16px; font-weight:800;
+            letter-spacing:0.5px; border-radius:20px;
+            transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .btn.regenerate {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            box-shadow: 0 0 12px rgba(255,152,0,0.6);
+            animation: glowPulseOrange 2s infinite alternate;
+        }
+        .btn.reset-btn {
+            background: linear-gradient(135deg, #b388ff, #7c4dff);
+            box-shadow: 0 0 12px rgba(179,136,255,0.6);
+            animation: glowPulseViolet 2s infinite alternate;
+        }
+        .btn.regenerate:hover, .btn.reset-btn:hover {
+            transform: translateY(-4px) scale(1.05);
+            filter: brightness(1.15);
+        }
+        @keyframes glowPulseOrange {
+            0% { box-shadow: 0 0 8px rgba(255,152,0,0.5); }
+            100% { box-shadow: 0 0 20px rgba(255,152,0,0.9); }
+        }
+        @keyframes glowPulseViolet {
+            0% { box-shadow: 0 0 8px rgba(179,136,255,0.5); }
+            100% { box-shadow: 0 0 20px rgba(179,136,255,0.9); }
+        }
 
-        .controls-bar { display:flex; align-items:center; gap:4px; margin:4px 0; background:var(--card); padding:6px 10px; border-radius:14px; border:1px solid rgba(179,136,255,0.4); justify-content:center; flex-wrap:wrap; }
-        .scrubber-wrapper { position:relative; width:50px; height:26px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); border:1px solid var(--violet); border-radius:6px; touch-action:none; user-select:none; }
+        .scrubber-tooltip {
+            position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
+            background: var(--violet); color:#000; padding:2px 8px; border-radius:12px;
+            font-size:0.7rem; font-weight:800; white-space:nowrap;
+            pointer-events: none; opacity:0; transition: opacity 0.2s;
+        }
+        .scrubber-wrapper:hover .scrubber-tooltip { opacity:1; }
+
+        .controls-bar {
+            display:flex; align-items:center; gap:6px; margin:6px 0;
+            background:var(--card); padding:8px 10px; border-radius:14px;
+            border:1px solid rgba(179,136,255,0.4); justify-content:center; flex-wrap:wrap;
+        }
+        .scrubber-wrapper {
+            position:relative; width:50px; height:26px; display:flex;
+            align-items:center; justify-content:center; background:rgba(0,0,0,0.4);
+            border:1px solid var(--violet); border-radius:6px;
+            touch-action:none; user-select:none;
+        }
         .scrubber-value { font-family:'Orbitron',monospace; font-size:0.8rem; color:var(--violet2); pointer-events:none; }
-
-        .scale-panel { background:var(--card); border-radius:12px; padding:8px; margin:6px 0; border:1px solid var(--violet); display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
-        .scale-panel input { width:70px; background:transparent; border:1px solid var(--violet); border-radius:6px; color:var(--violet2); font-family:'Orbitron',monospace; text-align:center; padding:3px; }
 
         .plan-panel { background:var(--card); border-radius:12px; padding:8px; margin:6px 0; border:1px solid var(--violet); }
         .plan-panel h4 { font-size:0.7rem; color:var(--violet2); text-align:center; margin-bottom:6px; }
@@ -106,9 +171,7 @@
             position:relative;
         }
         @keyframes popIn { 0%{transform:scale(0.5) rotate(-5deg);opacity:0} 100%{transform:scale(1) rotate(0);opacity:1} }
-        .magic-sparkles {
-            position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none;
-        }
+        .magic-sparkles { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
         .magic-sparkle {
             position: absolute; width: 6px; height: 6px;
             background: var(--violet2); border-radius: 50%;
@@ -175,14 +238,29 @@
 
         <div class="map-area"><div id="mapid"></div></div>
 
+        <!-- BARRA DE CONTROLES: Cantidad, perfil, Sumar, Añadir, Regenerar, Reset -->
         <div class="controls-bar">
             <span style="font-size:0.7rem;">Cantidad:</span>
-            <div class="scrubber-wrapper" id="scrubberWrapper"><span class="scrubber-value" id="scrubberValue">0</span></div>
+            <div class="scrubber-wrapper" id="scrubberWrapper">
+                <span class="scrubber-value" id="scrubberValue">0</span>
+                <div class="scrubber-tooltip">0</div>
+            </div>
             <select id="profileSelect" style="background:var(--card);color:var(--text);border:1px solid var(--violet);border-radius:6px;padding:4px;font-size:0.7rem;">
                 <option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option>
             </select>
             <button class="btn" onclick="addListeners()">➕ Sumar</button>
-            <button class="btn regenerate" onclick="generateListeners()">🔄 Regenerar</button>
+            <button class="btn gold float" onclick="addListener()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Añadir
+            </button>
+            <button class="btn regenerate" onclick="generateListeners()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><circle cx="12" cy="12" r="9"/></svg>
+                Regenerar
+            </button>
+            <button class="btn reset-btn" onclick="resetAll()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Reset
+            </button>
         </div>
 
         <div class="chart-area">
@@ -199,15 +277,27 @@
             <div id="progressWrapper" style="display:none;"><span id="progressLabel">0%</span><div style="height:3px;background:var(--violet);width:0%" id="progressBarFill"></div></div>
         </div>
 
-        <div style="display:flex; gap:4px; justify-content:center; flex-wrap:wrap; margin:4px 0;">
-            <button class="btn gold" onclick="addListener()">➕ Añadir</button>
-            <button class="btn" onclick="startSimulation('1D')">1 Día</button>
-            <button class="btn" onclick="startSimulation('7D')">7 Días</button>
-            <button class="btn" onclick="startSimulation('28D')">28 Días</button>
-            <button class="btn" onclick="safeMode()" style="border-color:#00e676;color:#00e676;">🛡️ Modo Seguro</button>
-            <button class="btn" onclick="resetAll()">🔄 Reset</button>
+        <!-- BOTONES DE SIMULACIÓN -->
+        <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:6px 0;">
+            <button class="btn float" onclick="startSimulation('1D')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                1 Día
+            </button>
+            <button class="btn float" onclick="startSimulation('7D')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                7 Días
+            </button>
+            <button class="btn float" onclick="startSimulation('28D')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                28 Días
+            </button>
+            <button class="btn float" onclick="safeMode()" style="border-color:#00e676;color:#00e676;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Modo Seguro
+            </button>
         </div>
 
+        <!-- BOTONES DE ARCHIVOS -->
         <div style="display:flex; gap:4px; justify-content:center; flex-wrap:wrap; margin:4px 0;">
             <button class="btn" onclick="saveScene()">💾 Guardar</button>
             <button class="btn" onclick="loadScene()">📂 Cargar</button>
@@ -678,6 +768,7 @@
         function resetAll() {
             listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; artistCountEstimate=0;
             updateStats(); renderDots(); updateProfileStats(); updateIndicators();
+            showToast('Reset completo');
         }
 
         function updateStats() {
@@ -695,47 +786,71 @@
             drawChart();
         }
 
-        // Scrubber 0-100
-        const scrubberValueEl=document.getElementById('scrubberValue');
+        // Scrubber 0-100 (con tooltip)
+        const scrubberValueEl = document.getElementById('scrubberValue');
+        const tooltipEl = document.querySelector('.scrubber-tooltip');
         let scrubberCurrent = 0;
-        scrubberValueEl.textContent = scrubberCurrent;
-        document.getElementById('scrubberWrapper').addEventListener('pointerdown',e=>{
-            const startY=e.clientY, startVal=scrubberCurrent;
-            const onMove=(ev)=>{ scrubberCurrent=Math.min(100,Math.max(0,startVal+Math.round((startY-ev.clientY)/10))); scrubberValueEl.textContent=scrubberCurrent; };
-            const onUp=()=>{ window.removeEventListener('pointermove',onMove); window.removeEventListener('pointerup',onUp); };
-            window.addEventListener('pointermove',onMove); window.addEventListener('pointerup',onUp);
+        function updateScrubberDisplay(val) {
+            scrubberValueEl.textContent = val;
+            tooltipEl.textContent = val;
+        }
+        updateScrubberDisplay(scrubberCurrent);
+        document.getElementById('scrubberWrapper').addEventListener('pointerdown', e => {
+            const startY = e.clientY, startVal = scrubberCurrent;
+            const onMove = ev => {
+                scrubberCurrent = Math.min(100, Math.max(0, startVal + Math.round((startY - ev.clientY) / 10)));
+                updateScrubberDisplay(scrubberCurrent);
+            };
+            const onUp = () => {
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onUp);
+            };
+            window.addEventListener('pointermove', onMove);
+            window.addEventListener('pointerup', onUp);
         });
 
-        document.getElementById('heatmapToggle').addEventListener('click',()=>{ heatmapActive=!heatmapActive; if(heatmapActive) updateHeatmap(); else if(heatLayer) map.removeLayer(heatLayer); });
+        document.getElementById('heatmapToggle').addEventListener('click', ()=>{
+            heatmapActive = !heatmapActive;
+            if (heatmapActive) updateHeatmap();
+            else if (heatLayer) map.removeLayer(heatLayer);
+        });
 
         function populateFilters() {
-            const cs=document.getElementById('filterCountry'), ps=document.getElementById('filterPlatform');
+            const cs = document.getElementById('filterCountry'), ps = document.getElementById('filterPlatform');
             const currentCountry = cs.value, currentPlatform = ps.value;
-            cs.innerHTML='<option value="">🌍 Todos</option>'; ps.innerHTML='<option value="">📱 Plataforma</option>';
-            [...new Set(listeners.map(l=>l.country))].sort().forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; cs.appendChild(o); });
-            [...new Set(listeners.map(l=>l.platform))].sort().forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; ps.appendChild(o); });
-            if ([...cs.options].some(o=>o.value===currentCountry)) cs.value = currentCountry;
-            if ([...ps.options].some(o=>o.value===currentPlatform)) ps.value = currentPlatform;
+            cs.innerHTML = '<option value="">🌍 Todos</option>';
+            ps.innerHTML = '<option value="">📱 Plataforma</option>';
+            [...new Set(listeners.map(l => l.country))].sort().forEach(c => {
+                const o = document.createElement('option'); o.value = c; o.textContent = c; cs.appendChild(o);
+            });
+            [...new Set(listeners.map(l => l.platform))].sort().forEach(p => {
+                const o = document.createElement('option'); o.value = p; o.textContent = p; ps.appendChild(o);
+            });
+            if ([...cs.options].some(o => o.value === currentCountry)) cs.value = currentCountry;
+            if ([...ps.options].some(o => o.value === currentPlatform)) ps.value = currentPlatform;
         }
-        document.getElementById('filterCountry').addEventListener('change',renderDots);
-        document.getElementById('filterPlatform').addEventListener('change',renderDots);
+        document.getElementById('filterCountry').addEventListener('change', renderDots);
+        document.getElementById('filterPlatform').addEventListener('change', renderDots);
 
         // Exports
-        window.addListener=addListener; window.addListeners=addListeners; window.generateListeners=generateListeners;
-        window.startSimulation=startSimulation; window.setView=setView; window.toggleNormalize=toggleNormalize;
-        window.safeMode=safeMode; window.resetAll=resetAll;
-        window.saveScene=saveScene; window.loadScene=loadScene; window.exportJSON=exportJSON; window.importJSON=importJSON; window.handleImport=handleImport;
-        window.loadCSV=loadCSV; window.handleCSVUpload=handleCSVUpload;
-        window.generatePlan=generatePlan; window.executePlan=executePlan;
-        window.closeMagicModal=closeMagicModal;
+        window.addListener = addListener; window.addListeners = addListeners;
+        window.generateListeners = generateListeners; window.startSimulation = startSimulation;
+        window.setView = setView; window.toggleNormalize = toggleNormalize;
+        window.safeMode = safeMode; window.resetAll = resetAll;
+        window.saveScene = saveScene; window.loadScene = loadScene;
+        window.exportJSON = exportJSON; window.importJSON = importJSON;
+        window.handleImport = handleImport; window.loadCSV = loadCSV;
+        window.handleCSVUpload = handleCSVUpload;
+        window.generatePlan = generatePlan; window.executePlan = executePlan;
+        window.closeMagicModal = closeMagicModal;
 
-        // Init – ahora sin oyentes automáticos
+        // Init
         resizeCanvas();
         updateStats();
         renderDots();
         updateProfileStats();
         updateIndicators();
-        setInterval(()=>{ if(!simulationRunning) updateStats(); },5000);
+        setInterval(() => { if (!simulationRunning) updateStats(); }, 5000);
     })();
     </script>
 </body>
