@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Detector de Escala — Mkeyz Studio</title>
+<title>Mkeyz Studio — Detector de Escala & Oyentes</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -12,13 +12,34 @@
   --gold:#f5c518; --green:#00e676; --fire:#ff4d4d;
   --blue:#4fc3f7; --purple:#9c27b0; --text:#fff; --muted:#555;
 }
-body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; padding:16px; padding-bottom:40px; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; padding:16px; padding-bottom:80px; }
 
+/* ── Tabs fijas abajo ── */
+.tab-bar {
+  position: fixed; bottom:0; left:0; right:0;
+  display: flex; background: var(--card);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+  padding: 8px 0 env(safe-area-inset-bottom);
+  justify-content: space-around;
+}
+.tab-btn {
+  flex:1; text-align:center; padding:6px; color:var(--muted);
+  font-size:11px; font-weight:600; cursor:pointer; border:none;
+  background:transparent; display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.tab-btn.active { color:var(--gold); }
+.tab-icon { font-size:20px; }
+
+.panel { display: none; animation: fadeSlide 0.3s; }
+.panel.active { display: block; }
+@keyframes fadeSlide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Detector de Escala (estilos originales) ── */
 .header { text-align:center; padding:16px 0 20px; }
 .header h1 { font-size:22px; font-weight:900; background:linear-gradient(135deg,#fff,var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:4px; }
 .header p { font-size:13px; color:var(--muted); }
 
-/* Result box */
 .result-box {
   background:linear-gradient(135deg,#1a0a2e,#111);
   border:1px solid var(--purple); border-radius:20px;
@@ -29,12 +50,8 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 .result-type  { font-size:14px; color:var(--purple); margin-top:4px; font-weight:600; }
 .result-notes { font-size:13px; color:var(--muted); margin-top:8px; }
 
-/* Piano */
 .piano-wrap { overflow-x:auto; padding-bottom:8px; margin-bottom:20px; }
-.piano {
-  display:flex; position:relative;
-  height:140px; width:max-content; margin:0 auto;
-}
+.piano { display:flex; position:relative; height:140px; width:max-content; margin:0 auto; }
 .white-key {
   width:44px; height:140px; background:#f0f0f0;
   border:1px solid #999; border-radius:0 0 6px 6px;
@@ -59,73 +76,100 @@ body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkM
 .black-key.in-scale.active { background:var(--green); }
 .black-key:active { background:#333; }
 
-/* Chord grid */
 .section-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; margin-top:20px; }
-
 .chord-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
-.chord-card {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:12px; padding:12px; text-align:center;
-}
+.chord-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center; }
 .chord-num  { font-size:10px; color:var(--muted); margin-bottom:4px; }
 .chord-name { font-size:16px; font-weight:800; color:var(--gold); }
 .chord-type { font-size:10px; color:var(--muted); margin-top:2px; }
 
-/* Notes display */
 .notes-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
-.note-pill {
-  padding:6px 14px; border-radius:100px;
-  font-size:13px; font-weight:700;
-  background:var(--border); color:var(--muted);
-}
+.note-pill { padding:6px 14px; border-radius:100px; font-size:13px; font-weight:700; background:var(--border); color:var(--muted); }
 .note-pill.active { background:var(--purple); color:#fff; }
 
-/* Buttons */
 .btn-clear {
   width:100%; padding:14px; border:1px solid var(--border);
   border-radius:14px; background:transparent; color:var(--muted);
   font-size:14px; font-weight:600; cursor:pointer; margin-bottom:10px;
 }
 .btn-clear:active { background:var(--border); }
+
+/* ── Panel de Oyentes ── */
+#panel-oyentes {
+  height: calc(100vh - 180px);
+  display: flex;
+  flex-direction: column;
+}
+#panel-oyentes iframe {
+  flex: 1;
+  border: none;
+  border-radius: 16px;
+  background: var(--card);
+}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>🎹 Detector de Escala</h1>
-  <p>Toca las notas de tu melodía y detecta la escala</p>
+<!-- ═══════════ PANEL DETECTOR DE ESCALA ═══════════ -->
+<div class="panel active" id="panel-scale">
+  <div class="header">
+    <h1>🎹 Detector de Escala</h1>
+    <p>Toca las notas de tu melodía y detecta la escala</p>
+  </div>
+
+  <div class="result-box" id="result-box">
+    <div style="color:var(--muted);font-size:14px">Toca notas en el piano 👇</div>
+  </div>
+
+  <div class="piano-wrap">
+    <div class="piano" id="piano"></div>
+  </div>
+
+  <button class="btn-clear" onclick="clearAll()">🗑️ Limpiar selección</button>
+
+  <div id="scale-info" style="display:none">
+    <div class="section-title">Notas de la escala</div>
+    <div class="notes-row" id="notes-row"></div>
+
+    <div class="section-title">Acordes que funcionan</div>
+    <div class="chord-grid" id="chord-grid"></div>
+
+    <div class="section-title">Info de la escala</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;font-size:13px;line-height:1.8;color:var(--muted)" id="scale-tips"></div>
+  </div>
 </div>
 
-<div class="result-box" id="result-box">
-  <div style="color:var(--muted);font-size:14px">Toca notas en el piano 👇</div>
+<!-- ═══════════ PANEL OYENTES EN VIVO ═══════════ -->
+<div class="panel" id="panel-oyentes">
+  <iframe src="/oyentes" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"></iframe>
 </div>
 
-<div class="piano-wrap">
-  <div class="piano" id="piano"></div>
-</div>
-
-<button class="btn-clear" onclick="clearAll()">🗑️ Limpiar selección</button>
-
-<div id="scale-info" style="display:none">
-  <div class="section-title">Notas de la escala</div>
-  <div class="notes-row" id="notes-row"></div>
-
-  <div class="section-title">Acordes que funcionan</div>
-  <div class="chord-grid" id="chord-grid"></div>
-
-  <div class="section-title">Info de la escala</div>
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;font-size:13px;line-height:1.8;color:var(--muted)" id="scale-tips"></div>
+<!-- ═══════════ BARRA DE PESTAÑAS ═══════════ -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-panel="panel-scale"><span class="tab-icon">🎹</span>Escala</button>
+  <button class="tab-btn" data-panel="panel-oyentes"><span class="tab-icon">🌍</span>Oyentes</button>
 </div>
 
 <script>
+// ── Telegram Web App ──
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
 
-const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-const WHITE_NOTES = [0,2,4,5,7,9,11]; // C D E F G A B
-const BLACK_NOTES = [1,3,null,6,8,10]; // C# D# - F# G# A#
+// ── Cambio de pestañas ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(btn.dataset.panel).classList.add('active');
+  });
+});
 
-// Scale patterns (intervals from root)
+// ── Lógica del detector de escala (sin cambios) ──
+const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const WHITE_NOTES = [0,2,4,5,7,9,11];
+const BLACK_NOTES = [1,3,null,6,8,10];
+
 const SCALES = {
   "Mayor":           { intervals:[0,2,4,5,7,9,11], chords:["Maj","min","min","Maj","Maj","min","dim"], mood:"Alegre, brillante, positiva" },
   "Menor Natural":   { intervals:[0,2,3,5,7,8,10], chords:["min","dim","Maj","min","min","Maj","Maj"], mood:"Oscura, melancólica, emocional" },
@@ -140,7 +184,6 @@ const SCALES = {
 };
 
 const ROMAN = ["I","II","III","IV","V","VI","VII"];
-
 let selectedNotes = new Set();
 let audioCtx = null;
 
@@ -168,11 +211,7 @@ function playNote(midi) {
 function buildPiano() {
   const piano = document.getElementById("piano");
   const octaves = 2;
-  const startNote = 0; // C
-
   let whiteIdx = 0;
-  const whites = [];
-  const blacks = [];
 
   for (let oct = 0; oct < octaves; oct++) {
     for (let w = 0; w < 7; w++) {
@@ -187,11 +226,9 @@ function buildPiano() {
       key.innerHTML = `<span>${name}</span>`;
       key.onclick = () => toggleNote(noteIdx, key, midi);
       piano.appendChild(key);
-      whites.push({ el: key, x: whiteIdx * 44 });
       whiteIdx++;
     }
 
-    // Black keys
     const blackOffsets = [0.6, 1.6, null, 3.6, 4.6, 5.6];
     blackOffsets.forEach((offset, i) => {
       if (offset === null) return;
@@ -238,7 +275,6 @@ function analyzeScale() {
   let bestScore = -1;
   let bestRoot  = 0;
 
-  // Try each note as root and each scale
   for (let root = 0; root < 12; root++) {
     for (const [scaleName, scaleData] of Object.entries(SCALES)) {
       const scaleNotes = scaleData.intervals.map(i => (root + i) % 12);
@@ -260,26 +296,22 @@ function analyzeScale() {
   const rootName  = NOTE_NAMES[bestRoot];
   const scaleNotes = scale.intervals.map(i => (bestRoot + i) % 12);
 
-  // Update result
   document.getElementById("result-box").innerHTML = `
     <div class="result-scale">${rootName} ${bestMatch}</div>
     <div class="result-type">${scale.mood}</div>
     <div class="result-notes">${scaleNotes.map(n => NOTE_NAMES[n]).join(" · ")}</div>
   `;
 
-  // Highlight scale notes on piano
   document.querySelectorAll(".white-key, .black-key").forEach(k => {
     k.classList.remove("in-scale");
     if (scaleNotes.includes(parseInt(k.dataset.note))) k.classList.add("in-scale");
   });
 
-  // Notes pills
   const notesRow = document.getElementById("notes-row");
   notesRow.innerHTML = scaleNotes.map(n =>
     `<div class="note-pill ${notes.includes(n) ? 'active' : ''}">${NOTE_NAMES[n]}</div>`
   ).join("");
 
-  // Chords
   const chordGrid = document.getElementById("chord-grid");
   if (scale.chords) {
     chordGrid.innerHTML = scale.chords.map((type, i) => {
@@ -290,12 +322,10 @@ function analyzeScale() {
         <div class="chord-type">${type}</div>
       </div>`;
     }).join("");
-    document.getElementById("chord-grid").parentElement.style.display = "";
   } else {
     chordGrid.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:13px">Escala pentatónica — cualquier acorde de la escala mayor/menor correspondiente funciona.</div>';
   }
 
-  // Tips
   const genreMap = {
     "Mayor":"Pop Latino · Reggaeton · Salsa · Bachata","Menor Natural":"Trap · R&B · Drill · Afrobeats",
     "Menor Armónica":"Dancehall · Flamenco Urbano","Pentatónica Maj":"Pop · Folk · Country",
