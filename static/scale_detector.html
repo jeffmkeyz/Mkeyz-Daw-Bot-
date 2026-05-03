@@ -20,7 +20,6 @@
             overscroll-behavior-y: contain;
         }
         .main-scroll { max-height: 100vh; overflow-y: auto; padding-bottom: 8px; }
-
         .player {
             background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:16px; padding:8px 12px; margin-bottom:6px;
             border:1px solid rgba(179,136,255,0.3); box-shadow:0 0 8px var(--violet); display:flex; align-items:center; justify-content:center;
@@ -32,55 +31,50 @@
             animation: bounce 2s infinite;
         }
         @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
-
         .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin:6px 0; }
         .mini-stat { background:var(--card); border-radius:10px; padding:8px 4px; border:1px solid rgba(179,136,255,0.2); text-align:center; font-size:0.6rem; }
         .mini-stat .value { font-family:'Orbitron',monospace; font-size:0.85rem; color:var(--violet2); text-shadow:0 0 6px var(--violet); }
-
         .audit-panel { background:var(--card); border-radius:12px; padding:8px; margin:6px 0; border:1px solid rgba(179,136,255,0.3); display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
         .risk-score { font-family:'Orbitron',monospace; font-size:1.6rem; font-weight:800; }
         .risk-status { padding:3px 12px; border-radius:14px; font-size:0.65rem; font-weight:700; }
-
         .profiles-stats { display:flex; flex-wrap:wrap; gap:3px; margin:4px 0; justify-content:center; font-size:0.6rem; }
         .profile-stat { background:var(--card); padding:3px 8px; border-radius:10px; border:1px solid; display:flex; align-items:center; gap:3px; }
-
         .antidetect-panel { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.3); }
         .antidetect-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
         .antidetect-item { background:rgba(0,0,0,0.3); border-radius:8px; padding:6px 4px; border:1px solid rgba(255,255,255,0.1); text-align:center; }
         .antidetect-label { font-size:0.55rem; color:var(--muted); }
         .antidetect-value { font-size:0.7rem; font-weight:700; }
-
         .recommendations-panel { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid var(--violet); display:none; text-align:center; font-size:0.6rem; }
-
+        .platform-audit { background:var(--card); border-radius:12px; padding:10px; margin:6px 0; border:1px solid rgba(179,136,255,0.4); box-shadow:0 0 15px rgba(179,136,255,0.2); }
+        .platform-audit h4 { font-size:0.75rem; color:var(--violet2); text-align:center; margin-bottom:8px; }
+        .verdict { text-align:center; font-size:1rem; font-weight:800; padding:6px; border-radius:10px; margin-bottom:8px; }
+        .rule-list { font-size:0.6rem; }
+        .rule-item { display:flex; justify-content:space-between; align-items:center; padding:4px 8px; border-radius:6px; margin:2px 0; background:rgba(0,0,0,0.2); }
+        .rule-item.pass { border-left:3px solid var(--green); }
+        .rule-item.fail { border-left:3px solid var(--red); }
         .filter-bar { display:flex; gap:4px; align-items:center; justify-content:center; margin-bottom:4px; }
         .filter-bar select { background:var(--card); color:var(--text); border:1px solid var(--violet); border-radius:6px; padding:4px 6px; font-size:0.6rem; }
-
         .map-area { margin:4px 0; border-radius:14px; overflow:hidden; border:1px solid rgba(179,136,255,0.2); }
         #mapid { height:200px; width:100%; }
-
         .chart-area { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.2); }
         canvas#activityChart { width:100%; height:140px; display:block; background:rgba(0,0,0,0.2); border-radius:8px; }
-
         .btn { background:var(--card); border:1px solid rgba(179,136,255,0.4); padding:6px 12px; border-radius:14px; font-weight:700; font-size:0.6rem; color:var(--text); cursor:pointer; }
         .btn.gold { background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000; }
-
         .controls-bar { display:flex; align-items:center; gap:4px; margin:4px 0; background:var(--card); padding:6px 10px; border-radius:14px; border:1px solid rgba(179,136,255,0.4); justify-content:center; }
         .scrubber-wrapper { position:relative; width:50px; height:26px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); border:1px solid var(--violet); border-radius:6px; touch-action:none; user-select:none; }
         .scrubber-value { font-family:'Orbitron',monospace; font-size:0.8rem; color:var(--violet2); pointer-events:none; }
-
         .scale-panel { background:var(--card); border-radius:12px; padding:8px; margin:6px 0; border:1px solid var(--violet); display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
         .scale-panel input { width:70px; background:transparent; border:1px solid var(--violet); border-radius:6px; color:var(--violet2); font-family:'Orbitron',monospace; text-align:center; padding:3px; }
-
-        .modal-overlay {
-            position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px);
-            display:none; align-items:center; justify-content:center; z-index:10000;
-        }
-        .modal-content {
-            background:linear-gradient(145deg,#1a1030,#0f0a22); border:2px solid var(--violet);
-            border-radius:20px; padding:16px; max-width:320px; width:90%; text-align:center;
-            animation: popIn 0.6s ease; box-shadow:0 0 60px var(--violet);
-        }
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); display:none; align-items:center; justify-content:center; z-index:10000; }
+        .modal-content { background:linear-gradient(145deg,#1a1030,#0f0a22); border:2px solid var(--violet); border-radius:20px; padding:16px; max-width:320px; width:90%; text-align:center; animation:popIn 0.6s ease; box-shadow:0 0 60px var(--violet); }
         @keyframes popIn { 0%{transform:scale(0.5) rotate(-5deg);opacity:0} 100%{transform:scale(1) rotate(0);opacity:1} }
+        .plan-panel { background:var(--card); border-radius:12px; padding:8px; margin:6px 0; border:1px solid var(--violet); }
+        .plan-panel h4 { font-size:0.7rem; color:var(--violet2); text-align:center; margin-bottom:6px; }
+        .plan-inputs { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-bottom:6px; }
+        .plan-inputs input { width:70px; background:transparent; border:1px solid var(--violet); border-radius:6px; color:var(--violet2); font-family:'Orbitron',monospace; text-align:center; padding:3px; font-size:0.7rem; }
+        .plan-table { width:100%; font-size:0.6rem; border-collapse:collapse; }
+        .plan-table th, .plan-table td { padding:3px 6px; border:1px solid var(--violet); text-align:center; }
+        .plan-table th { background:rgba(179,136,255,0.2); }
     </style>
 </head>
 <body>
@@ -106,11 +100,23 @@
             </div>
         </div>
         <div class="recommendations-panel" id="recommendationsPanel"><div id="recList"></div></div>
-        <div class="scale-panel">
-            <span style="font-size:0.7rem;">🎯 Oyentes objetivo:</span>
-            <input type="number" id="targetListeners" value="500" min="1">
-            <button class="btn gold" onclick="recommendScale()">🧠 Recomendar</button>
-            <button class="btn gold" onclick="applyScale()">✅ Aplicar</button>
+        <div class="platform-audit" id="platformAudit">
+            <h4>🕵️ Auditoría de Plataforma</h4>
+            <div id="verdictBox"></div>
+            <div class="rule-list" id="ruleList"></div>
+        </div>
+        <div class="plan-panel">
+            <h4>📈 Plan de Crecimiento Gradual</h4>
+            <div class="plan-inputs">
+                <span style="font-size:0.7rem;">Objetivo:</span>
+                <input type="number" id="planTarget" value="1000" min="1">
+                <span style="font-size:0.7rem;">Plazo (días):</span>
+                <input type="number" id="planDays" value="30" min="1">
+                <button class="btn gold" onclick="generatePlan()">🧠 Generar Plan</button>
+                <button class="btn gold" onclick="executePlan()">▶️ Ejecutar Plan</button>
+            </div>
+            <div id="planProgress" style="text-align:center;font-size:0.7rem;margin-top:4px;"></div>
+            <div style="max-height:150px;overflow-y:auto;margin-top:6px;" id="planTableContainer"></div>
         </div>
         <div class="filter-bar">
             <select id="filterCountry"><option value="">🌍 Todos</option></select>
@@ -166,18 +172,12 @@
             <button class="btn gold" style="width:100%; margin-top:8px;" onclick="closeMagicModal()">Cerrar</button>
         </div>
     </div>
-    <div class="modal-overlay" id="csvModal">
-        <div class="modal-content">
-            <div style="font-weight:800; font-size:1rem; margin-bottom:8px;">📈 CSV Cargado</div>
-            <div id="csvContent"></div>
-            <button class="btn gold" style="width:100%; margin-top:8px;" onclick="closeCSVModal()">Cerrar</button>
-        </div>
-    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
     <script>
     (function() {
+        // ---------- DATA ----------
         const PROFILES = {
             fiel:{name:"Fiel",icon:"🔒",color:"#00e676",act:0.8,myRadio:0.7,change:0.15,idle:0.1,max:15,sess:5},
             explorador:{name:"Explorador",icon:"🔍",color:"#4fc3f7",act:0.6,myRadio:0.3,change:0.5,idle:0.2,max:8,sess:3},
@@ -197,16 +197,9 @@
         const platforms = [{name:"Spotify",color:"#b388ff"},{name:"Apple Music",color:"#e040fb"},{name:"YouTube",color:"#ff4081"}];
         const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael"];
         const FINGERPRINTS = {
-            userAgents: [
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-                "Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.144 Mobile Safari/537.36",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0"
-            ],
-            resolutions: ["1920x1080","1366x768","1440x900","390x844"],
-            languages: ["es-ES","es-MX","en-US","pt-BR"],
+            userAgents: ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36","Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"],
+            resolutions: ["1920x1080","1366x768","1440x900","390x844","414x896"],
+            languages: ["es-ES","es-MX","en-US","pt-BR","fr-FR"],
             timezones: ["Europe/Madrid","America/Santo_Domingo","America/Mexico_City","America/Bogota","America/New_York"],
             isps: ["Telefónica","Orange","Vodafone","Claro","AT&T"],
             connectionTypes: ["wifi","4g","5g"]
@@ -215,7 +208,9 @@
         let listeners = [], state = [], totalMyPlays = 0, totalOtherPlays = 0;
         let data1D = null, data7D = null, data28D = null, currentView = '1D', simulationRunning = false;
         let recommendedScale = [], normalizedMode = false;
+        let planData = []; // { day, listenersToAdd: {ocasional, fiel, explorador, binge} }
 
+        // ---------- MAP ----------
         const map = L.map('mapid', {center:[20,0], zoom:2, zoomControl:false, attributionControl:false});
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {maxZoom:19}).addTo(map);
         let markersLayer = L.layerGroup().addTo(map), heatmapActive = false, heatLayer = null;
@@ -226,7 +221,7 @@
 
         function addListenerWithProfile(profile) {
             const c = Object.keys(countryCities)[Math.floor(Math.random()*Object.keys(countryCities).length)];
-            const city = countryCities[c][0]; // simplificado
+            const city = countryCities[c][0];
             const plat = platforms[Math.floor(Math.random()*platforms.length)];
             const name = namePool[Math.floor(Math.random()*namePool.length)];
             const fp = {
@@ -239,14 +234,13 @@
             };
             listeners.push({
                 name, country:c, city:city.name, lat:city.lat+(Math.random()-0.5)*0.1, lng:city.lng+(Math.random()-0.5)*0.1,
-                platform:plat.name, color:plat.color, profile, fingerprint: fp,
+                platform:plat.name, color:plat.color, profile, fingerprint:fp,
                 sessionCount:0, maxSessions:3+Math.floor(Math.random()*4), currentIP:fp.isp+'.'+Math.floor(Math.random()*255)
             });
             const p = PROFILES[profile];
             state.push({
-                active:true, inMyRadio:false, trackTimeLeft:0, otherTrackTimeLeft:0,
-                dailyPlays:0, maxDailyPlays:p.max, sessionRemaining:0, profile,
-                fatigue:0, pauseTime:0, sessionsToday:0
+                active:true, inMyRadio:false, trackTimeLeft:0, otherTrackTimeLeft:0, dailyPlays:0,
+                maxDailyPlays:p.max, sessionRemaining:0, profile, fatigue:0, pauseTime:0, sessionsToday:0
             });
         }
 
@@ -264,6 +258,7 @@
         }
         function updateHeatmap() { if(heatLayer) map.removeLayer(heatLayer); heatLayer = L.heatLayer(listeners.map(l=>[l.lat,l.lng]),{radius:18,blur:12,gradient:{0.2:'#ff00ff',0.4:'#b388ff',0.6:'#00e676',0.8:'#ffff00',1:'#ff0000'}}).addTo(map); }
 
+        // ---------- CHART ----------
         const canvas = document.getElementById('activityChart'), ctx = canvas.getContext('2d');
         function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 140; }
         window.addEventListener('resize', ()=>{ resizeCanvas(); drawChart(); });
@@ -327,7 +322,7 @@
             simA[index]=Math.max(simA[index], state.filter(s=>s.inMyRadio).length);
         }
 
-        function runSimulation(days) {
+        function runSimulation(days, callback) {
             const spd=2880, total=days*spd, simA=[],simP=[],simO=[], dc=days===1?24:days;
             for(let i=0;i<dc;i++){simA.push(0);simP.push(0);simO.push(0);}
             let step=0; simulationRunning=true; document.querySelectorAll('.btn').forEach(b=>b.disabled=true); document.getElementById('progressWrapper').style.display='block';
@@ -344,7 +339,8 @@
                     if(days===1) data1D={labels:Array.from({length:24},(_,i)=>i+'h'),activity:simA,plays:simP,otherPlays:simO};
                     else if(days===7){ data1D=gen1D(simA,simP,simO); data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA,plays:simP,otherPlays:simO}; }
                     else { data1D=gen1D(simA.slice(0,7),simP.slice(0,7),simO.slice(0,7)); data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA.slice(0,7),plays:simP.slice(0,7),otherPlays:simO.slice(0,7)}; data28D={labels:Array.from({length:28},(_,i)=>'D'+(i+1)),activity:simA,plays:simP,otherPlays:simO}; }
-                    finishSimulation(days);
+                    if(callback) callback();
+                    else finishSimulation(days);
                 }
             }
             batch();
@@ -356,11 +352,12 @@
             updateStats(); updateIndicators(); setView('1D');
             const plays = data1D?data1D.plays.reduce((a,b)=>a+b,0):totalMyPlays;
             const other = data1D?data1D.otherPlays.reduce((a,b)=>a+b,0):totalOtherPlays;
-            showMagicModal(`Simulación ${days}D`, `<div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div><div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div><div class="magic-stat"><span>👥 Oyentes:</span><strong>${listeners.length}</strong></div><div class="magic-stat"><span>📊 Gini:</span><strong>${document.getElementById('giniValue').textContent}</strong></div><div class="magic-stat"><span>🔁 Ratio:</span><strong>${document.getElementById('ratioPlays').textContent}</strong></div><div class="magic-stat"><span>⚠️ Picos:</span><strong>${document.getElementById('suspiciousPeaks').textContent}</strong></div><div class="magic-stat"><span>🔥 Binge:</span><strong>${document.getElementById('bingePct').textContent}</strong></div>`);
+            showMagicModal(`Simulación ${days}D`, `<div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div><div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div><div class="magic-stat"><span>👥 Oyentes:</span><strong>${listeners.length}</strong></div>`);
         }
         function startSimulation(mode) { if(simulationRunning) return; if(!listeners.length){ showToast('Añade oyentes primero'); return; } runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
         function setView(v) { currentView=v; document.getElementById('chartTitle').textContent='📊 Actividad ('+v+')'; document.getElementById('view7D').disabled=!data7D; document.getElementById('view28D').disabled=!data28D; drawChart(); }
 
+        // ---------- INDICATORS & AUDIT ----------
         function updateIndicators() {
             if(!listeners.length) {
                 document.getElementById('giniValue').textContent='—';
@@ -370,6 +367,8 @@
                 document.getElementById('riskScore').textContent='0%';
                 document.getElementById('riskStatus').textContent='—';
                 document.getElementById('riskDetails').textContent='Sin datos';
+                document.getElementById('verdictBox').innerHTML='';
+                document.getElementById('ruleList').innerHTML='';
                 return;
             }
             const arr=state.map(s=>s.dailyPlays), total=arr.reduce((a,b)=>a+b,0);
@@ -392,9 +391,36 @@
             document.getElementById('riskStatus').textContent=status;
             document.getElementById('riskStatus').style.background = riskScore<25?'#00e676':riskScore<55?'#ff9800':'#ff4d4d';
             document.getElementById('riskDetails').textContent = riskScore<25?'Sin flags':(riskScore<55?'Precaución':'Posible baneo');
-
             analyzeRecommendations(gini,ratio,peaks,bingePct);
+            runPlatformAudit(gini,ratio,peaks,bingePct);
         }
+
+        function runPlatformAudit(gini,ratio,peaks,bingePct) {
+            const ipSet = new Set(listeners.map(l=>l.currentIP));
+            const countriesSet = new Set(listeners.map(l=>l.country));
+            const nightActivity = data1D ? data1D.activity.slice(0,6).reduce((a,b)=>a+b,0) / Math.max(1, data1D.activity.reduce((a,b)=>a+b,0)) : 0;
+            const rules = [
+                { desc: 'Ratio plays/oyente < 15', pass: ratio < 15, comment: ratio < 15 ? 'Distribución saludable' : 'Demasiados plays por oyente' },
+                { desc: 'Gini < 0.6', pass: gini < 0.6, comment: gini < 0.6 ? 'Buena distribución' : 'Concentración alta de plays' },
+                { desc: 'Picos horarios < 3', pass: peaks < 3, comment: peaks < 3 ? 'Actividad horaria natural' : 'Picos sospechosos detectados' },
+                { desc: 'Binge listeners < 40%', pass: bingePct < 40, comment: bingePct < 40 ? 'Perfil variado' : 'Exceso de consumo compulsivo' },
+                { desc: 'Países diferentes > 2', pass: countriesSet.size > 2, comment: `Países: ${countriesSet.size}` },
+                { desc: 'IPs únicas > 50%', pass: ipSet.size / listeners.length > 0.5, comment: `IPs únicas: ${Math.round(ipSet.size/listeners.length*100)}%` },
+                { desc: 'Actividad nocturna < 30%', pass: nightActivity < 0.3, comment: `Nocturna: ${Math.round(nightActivity*100)}%` },
+            ];
+            const failed = rules.filter(r=>!r.pass);
+            const verdict = failed.length === 0 ? {text:'✅ Aprobado', color:'#00e676'} :
+                            failed.length <= 2 ? {text:'⚠️ Revisión manual', color:'#ff9800'} :
+                            {text:'🚫 Riesgo alto', color:'#ff4d4d'};
+            document.getElementById('verdictBox').innerHTML = `<div style="background:${verdict.color};padding:6px;border-radius:8px;color:#000;font-weight:800;">${verdict.text}</div>`;
+            document.getElementById('ruleList').innerHTML = rules.map(r=>`
+                <div class="rule-item ${r.pass?'pass':'fail'}">
+                    <span>${r.pass?'✅':'❌'} ${r.desc}</span>
+                    <span style="color:${r.pass?'var(--green)':'var(--red)'}">${r.comment}</span>
+                </div>
+            `).join('');
+        }
+
         function analyzeRecommendations(gini,ratio,peaks,bingePct) {
             const panel=document.getElementById('recommendationsPanel'), list=document.getElementById('recList');
             const recs=[];
@@ -416,95 +442,130 @@
                 <div class="profile-stat" style="border-color:#ff4d4d">🔥 Binge: ${counts.binge}</div>`;
         }
 
-        function recommendScale() {
-            const target=parseInt(document.getElementById('targetListeners').value)||500;
-            if(target<=listeners.length){ showToast('El objetivo debe ser mayor'); return; }
-            const toAdd=target-listeners.length;
-            const oc=Math.floor(toAdd*0.5), fi=Math.floor(toAdd*0.3), ex=Math.floor(toAdd*0.15), bi=toAdd-oc-fi-ex;
-            recommendedScale=[{profile:'ocasional',add:oc},{profile:'fiel',add:fi},{profile:'explorador',add:ex},{profile:'binge',add:bi}];
-            document.getElementById('magicContent').innerHTML=`<b>Para ${target} oyentes:</b><br>🎲 Ocasionales: +${oc}<br>🔒 Fieles: +${fi}<br>🔍 Exp: +${ex}<br>🔥 Binge: +${bi}`;
-            document.getElementById('magicModal').style.display='flex';
-        }
-        function applyScale() {
-            if(!recommendedScale.length) return;
-            let added=0; recommendedScale.forEach(d=>{ for(let i=0;i<d.add;i++){ addListenerWithProfile(d.profile); added++; } });
-            recommendedScale=[]; updateStats(); renderDots(); updateProfileStats(); updateIndicators();
-            showToast(`✅ +${added} oyentes`);
+        // ---------- GROWTH PLAN ----------
+        function generatePlan() {
+            const target = parseInt(document.getElementById('planTarget').value) || 1000;
+            const days = parseInt(document.getElementById('planDays').value) || 30;
+            const current = listeners.length;
+            if (target <= current) { showToast('El objetivo ya está alcanzado'); return; }
+            const totalToAdd = target - current;
+            const dailyAdd = Math.ceil(totalToAdd / days);
+            planData = [];
+            let remaining = totalToAdd;
+            for (let d = 0; d < days; d++) {
+                const addToday = Math.min(dailyAdd, remaining);
+                const oc = Math.floor(addToday * 0.5);
+                const fi = Math.floor(addToday * 0.3);
+                const ex = Math.floor(addToday * 0.15);
+                const bi = addToday - oc - fi - ex;
+                planData.push({ day: d+1, listenersToAdd: { ocasional: oc, fiel: fi, explorador: ex, binge: bi } });
+                remaining -= addToday;
+                if (remaining <= 0) break;
+            }
+            // Render table
+            let html = '<table class="plan-table"><tr><th>Día</th><th>Ocas.</th><th>Fiel</th><th>Exp.</th><th>Binge</th><th>Total</th></tr>';
+            planData.forEach(p => {
+                const t = p.listenersToAdd;
+                html += `<tr><td>${p.day}</td><td>+${t.ocasional}</td><td>+${t.fiel}</td><td>+${t.explorador}</td><td>+${t.binge}</td><td>+${t.ocasional+t.fiel+t.explorador+t.binge}</td></tr>`;
+            });
+            html += '</table>';
+            document.getElementById('planTableContainer').innerHTML = html;
+            showToast(`Plan generado: ${totalToAdd} oyentes en ${planData.length} días`);
         }
 
+        async function executePlan() {
+            if (!planData.length) { showToast('Genera un plan primero'); return; }
+            simulationRunning = true;
+            document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+            document.getElementById('planProgress').textContent = `Ejecutando día 0/${planData.length}...`;
+
+            for (let i = 0; i < planData.length; i++) {
+                const dayPlan = planData[i];
+                // Añadir oyentes del día
+                for (const [profile, count] of Object.entries(dayPlan.listenersToAdd)) {
+                    for (let j = 0; j < count; j++) addListenerWithProfile(profile);
+                }
+                updateStats();
+                renderDots();
+                updateProfileStats();
+                updateIndicators();
+                document.getElementById('planProgress').textContent = `Ejecutando día ${i+1}/${planData.length}...`;
+
+                // Simular un día completo para este nuevo conjunto
+                await new Promise(resolve => {
+                    runSimulation(1, () => {
+                        resolve();
+                    });
+                });
+            }
+            simulationRunning = false;
+            document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+            document.getElementById('planProgress').textContent = 'Plan completado ✅';
+            showToast('Plan de crecimiento ejecutado con éxito');
+        }
+
+        // ---------- PERSISTENCE ----------
+        function saveScene() {
+            const name=prompt('Nombre:'); if(!name) return;
+            const scenes=JSON.parse(localStorage.getItem('oyentes_scenes')||'[]');
+            scenes.push({name, data:{listeners,state,totalMyPlays,totalOtherPlays,data1D,data7D,data28D}});
+            localStorage.setItem('oyentes_scenes',JSON.stringify(scenes)); showToast('Escena guardada');
+        }
+        function loadScene() {
+            const scenes=JSON.parse(localStorage.getItem('oyentes_scenes')||'[]');
+            if(!scenes.length){ showToast('No hay escenas'); return; }
+            const last=scenes[scenes.length-1];
+            listeners=last.data.listeners; state=last.data.state; totalMyPlays=last.data.totalMyPlays||0; totalOtherPlays=last.data.totalOtherPlays||0;
+            data1D=last.data.data1D; data7D=last.data.data7D; data28D=last.data.data28D;
+            updateStats(); renderDots(); updateProfileStats(); updateIndicators(); showToast('Escena cargada');
+        }
+        async function exportJSON() {
+            const data={listeners,state,totalMyPlays,totalOtherPlays,data1D,data7D,data28D};
+            const json=JSON.stringify(data,null,2);
+            try{ await navigator.clipboard.writeText(json); showToast('Copiado al portapapeles'); }
+            catch{ const b=new Blob([json],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='oyentes_mkeyz.json'; a.click(); URL.revokeObjectURL(u); showToast('Descargado'); }
+        }
+        function importJSON() { document.getElementById('importFile').click(); }
+        function handleImport(event) {
+            const file=event.target.files[0]; if(!file) return;
+            const reader=new FileReader();
+            reader.onload=function(e){
+                try{
+                    const data=JSON.parse(e.target.result);
+                    listeners=data.listeners; state=data.state; totalMyPlays=data.totalMyPlays||0; totalOtherPlays=data.totalOtherPlays||0;
+                    data1D=data.data1D; data7D=data.data7D; data28D=data.data28D;
+                    updateStats(); renderDots(); updateProfileStats(); updateIndicators(); showToast('Importado');
+                }catch(ex){ showToast('Archivo no válido'); }
+            }; reader.readAsText(file);
+        }
+
+        // ---------- CSV ----------
         function loadCSV() { document.getElementById('csvFile').click(); }
         function handleCSVUpload(event) {
             const file=event.target.files[0]; if(!file) return;
             const reader=new FileReader();
             reader.onload=function(e){
                 const rows=e.target.result.split('\n').filter(r=>r.trim());
-                if(rows.length<2) return;
+                if(rows.length<2){ showToast('CSV inválido'); return; }
                 const idx=rows[0].split(',').map(h=>h.trim().toLowerCase()).indexOf('listeners');
-                if(idx===-1) return;
+                if(idx===-1){ showToast('Falta columna listeners'); return; }
                 const last=parseInt(rows[rows.length-1].split(',')[idx])||10;
                 listeners=[]; state=[];
                 const counts={ocasional:0,fiel:0,explorador:0,binge:0};
                 for(let i=0;i<last;i++){ const p=i<last*0.4?'ocasional':i<last*0.7?'fiel':i<last*0.9?'explorador':'binge'; addListenerWithProfile(p); counts[p]++; }
                 updateStats(); renderDots(); updateProfileStats(); updateIndicators();
-                document.getElementById('targetListeners').value=last*2;
-                document.getElementById('csvContent').innerHTML=`✅ ${last} oyentes cargados<br>🔒 Fieles: ${counts.fiel}<br>🔍 Exp: ${counts.explorador}<br>🎲 Ocas: ${counts.ocasional}<br>🔥 Binge: ${counts.binge}`;
-                document.getElementById('csvModal').style.display='flex';
+                document.getElementById('planTarget').value = last * 2;
+                showToast(`CSV cargado: ${last} oyentes`);
             };
             reader.readAsText(file);
         }
-        function closeCSVModal() { document.getElementById('csvModal').style.display='none'; }
-        function closeMagicModal() { document.getElementById('magicModal').style.display='none'; }
-        function showMagicModal(title,msg) { document.getElementById('magicContent').innerHTML=msg; document.getElementById('magicModal').style.display='flex'; }
-
-        function saveScene() {
-            const name=prompt('Nombre:'); if(!name) return;
-            const scenes=JSON.parse(localStorage.getItem('oyentes_scenes')||'[]');
-            scenes.push({name, data:{listeners,state,totalMyPlays,totalOtherPlays,data1D,data7D,data28D}});
-            localStorage.setItem('oyentes_scenes',JSON.stringify(scenes));
-            showToast('Escena guardada');
-        }
-        function loadScene() {
-            const scenes=JSON.parse(localStorage.getItem('oyentes_scenes')||'[]');
-            if(!scenes.length) return;
-            const last=scenes[scenes.length-1];
-            listeners=last.data.listeners.map(l=>({...l})); state=last.data.state.map(s=>({...s}));
-            totalMyPlays=last.data.totalMyPlays||0; totalOtherPlays=last.data.totalOtherPlays||0;
-            data1D=last.data.data1D; data7D=last.data.data7D; data28D=last.data.data28D;
-            updateStats(); renderDots(); updateProfileStats(); updateIndicators();
-            showToast('Escena cargada: '+last.name);
-        }
-        async function exportJSON() {
-            const data = { listeners, state, totalMyPlays, totalOtherPlays, data1D, data7D, data28D };
-            const jsonStr = JSON.stringify(data, null, 2);
-            try {
-                await navigator.clipboard.writeText(jsonStr);
-                showToast('Copiado al portapapeles');
-            } catch {
-                const blob = new Blob([jsonStr], {type: 'application/json'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = 'oyentes_mkeyz.json';
-                a.click(); URL.revokeObjectURL(url);
-                showToast('Descargado como archivo');
-            }
-        }
-        function importJSON() { document.getElementById('importFile').click(); }
-        function handleImport(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    listeners = data.listeners.map(l=>({...l})); state = data.state.map(s=>({...s}));
-                    totalMyPlays = data.totalMyPlays||0; totalOtherPlays = data.totalOtherPlays||0;
-                    data1D = data.data1D; data7D = data.data7D; data28D = data.data28D;
-                    updateStats(); renderDots(); updateProfileStats(); updateIndicators();
-                    showToast('Importado correctamente');
-                } catch(ex) { showToast('Archivo no válido'); }
-            };
-            reader.readAsText(file);
+        function showToast(msg) {
+            const t=document.createElement('div'); t.textContent=msg;
+            t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1530;padding:8px 16px;border-radius:20px;z-index:9999;font-size:0.7rem;';
+            document.body.appendChild(t); setTimeout(()=>t.remove(),2000);
         }
 
+        // ---------- BUTTONS ----------
         function addListeners() {
             const count=parseInt(document.getElementById('scrubberValue').textContent)||5;
             const profileKey=document.getElementById('profileSelect').value;
@@ -517,8 +578,7 @@
             if(!listeners.length) return;
             let changed=0;
             listeners.forEach((l,i)=>{ if(l.profile==='binge'){ listeners[i].profile='fiel'; state[i].profile='fiel'; changed++; } });
-            updateStats(); renderDots(); updateProfileStats(); updateIndicators();
-            showToast(`🛡️ Modo Seguro (${changed} cambios)`);
+            updateStats(); renderDots(); updateProfileStats(); updateIndicators(); showToast(`🛡️ Modo Seguro (${changed} cambios)`);
         }
         function resetAll() { listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; updateStats(); renderDots(); updateProfileStats(); updateIndicators(); }
 
@@ -528,12 +588,6 @@
             document.getElementById('uniqueListeners').textContent=listeners.length;
             document.getElementById('activePlatform').textContent=state.filter(s=>s.active).length;
             drawChart();
-        }
-
-        function showToast(msg) {
-            const t=document.createElement('div'); t.textContent=msg;
-            t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1530;color:var(--violet2);padding:8px 16px;border-radius:20px;z-index:9999;font-size:0.7rem;';
-            document.body.appendChild(t); setTimeout(()=>t.remove(),2000);
         }
 
         // Scrubber
@@ -546,10 +600,7 @@
         });
         scrubberValueEl.textContent=scrubberCurrent;
 
-        document.getElementById('heatmapToggle').addEventListener('click',()=>{
-            heatmapActive=!heatmapActive;
-            if(heatmapActive) updateHeatmap(); else if(heatLayer) map.removeLayer(heatLayer);
-        });
+        document.getElementById('heatmapToggle').addEventListener('click',()=>{ heatmapActive=!heatmapActive; if(heatmapActive) updateHeatmap(); else if(heatLayer) map.removeLayer(heatLayer); });
 
         function populateFilters() {
             const cs=document.getElementById('filterCountry'), ps=document.getElementById('filterPlatform');
@@ -560,16 +611,17 @@
         document.getElementById('filterCountry').addEventListener('change',renderDots);
         document.getElementById('filterPlatform').addEventListener('change',renderDots);
 
+        // Exports
         window.addListener=addListener; window.addListeners=addListeners; window.generateListeners=generateListeners;
         window.startSimulation=startSimulation; window.setView=setView; window.toggleNormalize=toggleNormalize;
         window.safeMode=safeMode; window.resetAll=resetAll;
         window.saveScene=saveScene; window.loadScene=loadScene; window.exportJSON=exportJSON; window.importJSON=importJSON; window.handleImport=handleImport;
         window.loadCSV=loadCSV; window.handleCSVUpload=handleCSVUpload;
-        window.recommendScale=recommendScale; window.applyScale=applyScale;
-        window.closeMagicModal=closeMagicModal; window.closeCSVModal=closeCSVModal;
+        window.generatePlan=generatePlan; window.executePlan=executePlan;
+        window.closeMagicModal=()=>document.getElementById('magicModal').style.display='none';
 
-        resizeCanvas(); generateListeners(); renderDots(); updateProfileStats(); updateIndicators();
-        populateFilters();
+        // Init
+        resizeCanvas(); generateListeners(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
         setInterval(()=>{ if(!simulationRunning) updateStats(); },5000);
     })();
     </script>
