@@ -26,9 +26,7 @@
             box-shadow: 0 0 20px rgba(179,136,255,0.4); animation: floatSphere linear infinite; opacity:0.7;
         }
         @keyframes floatSphere { 0%{transform:translateY(0) scale(1);opacity:.5} 50%{transform:translateY(-40px) scale(1.1);opacity:.8} 100%{transform:translateY(0) scale(1);opacity:.5} }
-
         .main-scroll { max-height: 100vh; overflow-y: auto; padding-bottom: 8px; }
-
         .player {
             background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:16px; padding:8px 12px; margin-bottom:6px;
             border:1px solid rgba(179,136,255,0.3); box-shadow:0 0 8px var(--violet); display:flex; align-items:center; justify-content:center; gap:8px;
@@ -49,19 +47,15 @@
         .live-badge { display:inline-flex; align-items:center; gap:3px; background:rgba(179,136,255,0.15); padding:2px 8px; border-radius:12px; font-size:0.6rem; color:var(--violet2); margin-top:3px; }
         .live-badge .dot { width:5px; height:5px; border-radius:50%; background:var(--violet); animation:pulseDot 1.4s infinite; }
         @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
         .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin:6px 0; }
         .mini-stat { background:var(--card); border-radius:10px; padding:8px 4px; border:1px solid rgba(179,136,255,0.2); text-align:center; font-size:0.6rem; }
         .mini-stat .value { font-family:'Orbitron',monospace; font-size:0.85rem; color:var(--violet2); text-shadow:0 0 6px var(--violet); }
-
-        /* Auditoría compacta */
         .audit-panel { background:var(--card); border-radius:12px; padding:8px; margin:6px 0; border:1px solid rgba(179,136,255,0.3); display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; }
         .audit-score-wrap { text-align:center; }
         .risk-score { font-family:'Orbitron',monospace; font-size:1.6rem; font-weight:800; transition: color 0.5s ease; animation: pulse 2s infinite; }
         @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
         .risk-status { padding:3px 12px; border-radius:14px; font-size:0.65rem; font-weight:700; transition: background 0.5s ease; }
         .risk-details { font-size:0.6rem; color:var(--muted); text-align:center; }
-
         .profiles-stats { display:flex; flex-wrap:wrap; gap:3px; margin:4px 0; justify-content:center; font-size:0.6rem; }
         .profile-stat { background:var(--card); padding:3px 8px; border-radius:10px; border:1px solid; display:flex; align-items:center; gap:3px; }
         .antidetect-panel { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.3); }
@@ -70,18 +64,14 @@
         .antidetect-item { background:rgba(0,0,0,0.3); border-radius:8px; padding:6px 4px; border:1px solid rgba(255,255,255,0.1); text-align:center; }
         .antidetect-label { font-size:0.55rem; color:var(--muted); }
         .antidetect-value { font-size:0.7rem; font-weight:700; margin-top:2px; }
-
         .recommendations-panel { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid var(--violet); display:none; text-align:center; font-size:0.6rem; }
         .recommendations-panel.show { display:block; }
-
         .filter-bar { display:flex; gap:4px; align-items:center; justify-content:center; margin-bottom:4px; }
         .filter-bar select { background:var(--card); color:var(--text); border:1px solid var(--violet); border-radius:6px; padding:4px 6px; font-size:0.6rem; }
         .filter-bar button { background:var(--violet); border:none; padding:4px 10px; border-radius:10px; font-weight:700; font-size:0.6rem; cursor:pointer; color:#000; }
-
         .map-area { margin:4px 0; border-radius:14px; overflow:hidden; border:1px solid rgba(179,136,255,0.2); }
         #mapid { height:200px; width:100%; }
         .leaflet-container { background:#0a0a1e; }
-
         .chart-area { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.2); }
         .chart-header { display:flex; flex-direction:column; align-items:center; gap:4px; margin-bottom:4px; }
         .chart-title { font-size:0.7rem; font-weight:800; color:#fff; text-shadow:0 0 6px var(--violet); }
@@ -90,13 +80,18 @@
         .view-btn { padding:3px 8px; font-size:0.6rem; font-weight:700; border:1px solid rgba(179,136,255,0.5); border-radius:10px; background:rgba(20,15,35,0.7); color:var(--text); cursor:pointer; }
         .view-btn.active { background:var(--violet); color:#000; border-color:var(--violet); }
         canvas#activityChart { width:100%; height:140px; display:block; background:rgba(0,0,0,0.2); border-radius:8px; }
-
+        .chart-tooltip {
+            position: absolute; background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
+            border-radius: 8px; padding: 4px 8px; pointer-events: none; z-index: 50;
+            opacity: 0; transition: opacity 0.15s; font-size: 0.6rem; color: var(--text);
+            white-space: nowrap; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+        .chart-tooltip.visible { opacity: 1; }
         .btn-group { display:flex; gap:4px; flex-wrap:wrap; justify-content:center; margin-top:4px; }
         .btn { background:var(--card); border:1px solid rgba(179,136,255,0.4); padding:6px 12px; border-radius:14px; font-weight:700; font-size:0.6rem; color:var(--text); cursor:pointer; transition:0.2s; }
         .btn:hover { border-color:var(--violet); box-shadow:0 0 8px var(--violet); }
         .btn.gold { background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000; }
         .btn:disabled { opacity:0.4; pointer-events:none; }
-
         .controls-bar { display:flex; align-items:center; gap:4px; margin:4px 0; background:var(--card); padding:6px 10px; border-radius:14px; border:1px solid rgba(179,136,255,0.4); justify-content:center; }
         .controls-label { font-size:0.6rem; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:3px; }
         .controls-label svg { width:14px; height:14px; fill:var(--violet); }
@@ -105,38 +100,49 @@
         .scrubber-indicator { position:absolute; left:0; top:0; height:100%; width:0%; background:rgba(179,136,255,0.2); pointer-events:none; transition:width 0.1s; }
         .controls-select { background:rgba(0,0,0,0.4); color:var(--text); border:1px solid var(--violet); border-radius:6px; padding:3px; font-size:0.6rem; }
         .controls-btn { background:var(--violet); border:none; padding:5px 10px; border-radius:10px; font-weight:700; font-size:0.6rem; cursor:pointer; color:#000; display:flex; align-items:center; gap:3px; }
-
         .persist-bar { display:flex; gap:4px; flex-wrap:wrap; justify-content:center; margin-top:4px; }
         .persist-bar .btn { font-size:0.6rem; padding:5px 8px; }
-
         .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1530; color:var(--violet2); padding:5px 12px; border-radius:14px; z-index:999; border:1px solid var(--violet); font-size:0.6rem; transition:transform 0.3s; }
-
-        .magic-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:300; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); }
-        .magic-modal.show { display:flex; }
-        .magic-box { background:linear-gradient(145deg,#1a1030,#0f0a22); border:2px solid var(--violet); border-radius:20px; padding:16px; max-width:320px; width:90%; text-align:center; animation:magicIn 0.6s ease; }
+        .magic-modal {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            display: none; align-items: center; justify-content: center;
+            z-index: 10000; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+        }
+        .magic-modal.show { display: flex; }
+        .magic-box {
+            background: linear-gradient(145deg,#1a1030,#0f0a22);
+            border: 2px solid var(--violet);
+            border-radius: 20px;
+            padding: 16px;
+            max-width: 320px;
+            width: 90%;
+            text-align: center;
+            animation: magicIn 0.6s ease;
+            box-shadow: 0 0 60px var(--violet);
+            position: relative;
+        }
         @keyframes magicIn { 0%{transform:scale(0.5) rotate(-5deg);opacity:0} 100%{transform:scale(1) rotate(0);opacity:1} }
+        .magic-sparkles { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
+        .magic-sparkle {
+            position: absolute; width: 6px; height: 6px;
+            background: var(--violet2); border-radius: 50%;
+            animation: sparkle 1.5s linear infinite;
+        }
+        @keyframes sparkle { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-200px) scale(0); opacity: 0; } }
         .magic-title { font-family:'Orbitron',monospace; font-size:1rem; color:#fff; text-shadow:0 0 12px var(--violet); margin-bottom:10px; }
         .magic-stat { display:flex; justify-content:space-between; margin:4px 0; font-size:0.7rem; }
-
-        .context-menu { position:absolute; z-index:1000; background:rgba(20,15,35,0.96); border:1px solid var(--violet); border-radius:10px; padding:3px 0; min-width:130px; box-shadow:0 0 12px var(--violet); display:none; }
-        .context-menu.show { display:block; }
-        .context-menu-item { padding:6px 10px; cursor:pointer; font-size:0.65rem; color:var(--text); }
-        .context-menu-item:hover { background:rgba(179,136,255,0.2); }
-
-        .chart-tooltip {
-            position: absolute; background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
-            border-radius: 8px; padding: 4px 8px; pointer-events: none; z-index: 50;
-            opacity: 0; transition: opacity 0.15s; font-size: 0.6rem; color: var(--text);
-            white-space: nowrap; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        .scale-panel {
+            background: var(--card); border-radius:12px; padding:8px; margin:6px 0;
+            border:1px solid var(--violet); display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;
         }
-        .chart-tooltip.visible { opacity: 1; }
+        .scale-panel input { width:70px; background:transparent; border:1px solid var(--violet); border-radius:6px; color:var(--violet2); font-family:'Orbitron',monospace; text-align:center; padding:3px; }
+        .scale-panel button { background:var(--violet); border:none; padding:5px 12px; border-radius:10px; font-weight:700; font-size:0.6rem; cursor:pointer; color:#000; }
     </style>
 </head>
 <body>
     <div class="floating-spheres" id="spheres"></div>
     <canvas class="shooting-stars" id="starsCanvas"></canvas>
     <div class="main-scroll">
-
         <div class="player">
             <div class="album-art"><div class="visualizer"><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div></div></div>
             <div class="track-info">
@@ -144,28 +150,22 @@
                 <div class="live-badge"><div class="dot"></div><span id="liveCount">0</span> escuchándote</div>
             </div>
         </div>
-
         <div class="stats-grid">
             <div class="mini-stat"><div class="value" id="totalPlays">0</div><div class="label">🎵 Tus plays</div></div>
             <div class="mini-stat"><div class="value" id="totalOtherPlays">0</div><div class="label">🎧 Otros plays</div></div>
             <div class="mini-stat"><div class="value" id="uniqueListeners">0</div><div class="label">👥 Oyentes</div></div>
             <div class="mini-stat"><div class="value" id="activePlatform">0</div><div class="label">🟢 Activos</div></div>
         </div>
-
-        <!-- Auditoría compacta -->
-        <div class="audit-panel" id="auditPanel">
+        <div class="audit-panel">
             <div class="audit-score-wrap">
                 <div class="risk-score" id="riskScore">0%</div>
                 <div class="risk-status" id="riskStatus" style="background:#555;">—</div>
             </div>
             <div>
-                <div class="risk-details" id="riskDetails"></div>
-                <div style="font-size:0.6rem;color:var(--muted);margin-top:2px;" id="auditFlags"></div>
+                <div class="risk-details" id="riskDetails">Sin datos</div>
             </div>
         </div>
-
         <div class="profiles-stats" id="profilesStats"></div>
-
         <div class="antidetect-panel">
             <div class="antidetect-title">🛡️ Indicadores</div>
             <div class="antidetect-grid">
@@ -175,31 +175,33 @@
                 <div class="antidetect-item"><span class="antidetect-label">Binge%</span><div class="antidetect-value" id="bingePct">0%</div></div>
             </div>
         </div>
-
         <div class="recommendations-panel" id="recommendationsPanel">
             <div><strong>🧠 Recomendaciones</strong></div>
             <div id="recList"></div>
         </div>
-
+        <div class="scale-panel">
+            <span style="font-size:0.7rem;">🎯 Oyentes objetivo:</span>
+            <input type="number" id="targetListeners" value="500" min="1">
+            <button onclick="recommendScale()">🧠 Recomendar</button>
+            <button onclick="applyScale()" style="background:#00e676;">✅ Aplicar</button>
+        </div>
         <div class="filter-bar">
             <select id="filterCountry"><option value="">🌍 Todos</option></select>
             <select id="filterPlatform"><option value="">📱 Plataforma</option></select>
             <button id="heatmapToggle">🔥 Heatmap</button>
         </div>
-
         <div class="map-area"><div id="mapid"></div></div>
-
         <div class="controls-bar">
             <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Cantidad:</span>
             <div class="scrubber-wrapper" id="scrubberWrapper">
                 <div class="scrubber-indicator" id="scrubberIndicator"></div>
-                <span class="scrubber-value" id="scrubberValue">10</span>
+                <span class="scrubber-value" id="scrubberValue">5</span>
             </div>
             <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Perfil:</span>
             <select id="profileSelect" class="controls-select"><option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option></select>
-            <button onclick="generateListeners()" class="controls-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Generar</button>
+            <button onclick="addListeners()" class="controls-btn">➕ Sumar</button>
+            <button onclick="generateListeners()" class="controls-btn">🔄 Regenerar</button>
         </div>
-
         <div class="chart-area">
             <div class="chart-header">
                 <div class="chart-title" id="chartTitle">📊 Actividad (1D)</div>
@@ -216,25 +218,24 @@
             <div class="chart-tooltip" id="chartTooltip"></div>
             <div id="progressWrapper" style="display:none;text-align:center;margin:4px 0;"><span id="progressLabel">0%</span><div style="width:80%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin:3px auto;"><div id="progressBarFill" style="height:100%;width:0%;background:var(--violet);border-radius:2px;"></div></div></div>
         </div>
-
         <div class="btn-group">
             <button class="btn gold" onclick="addListener()">➕ Añadir</button>
             <button class="btn" onclick="startSimulation('1D')">1 Día</button>
             <button class="btn" onclick="startSimulation('7D')">7 Días</button>
             <button class="btn" onclick="startSimulation('28D')">28 Días</button>
+            <button class="btn" onclick="safeMode()" style="border-color:#00e676;color:#00e676;">🛡️ Modo Seguro</button>
             <button class="btn" onclick="resetAll()">🔄 Reset</button>
         </div>
-
         <div class="persist-bar">
             <button class="btn" onclick="saveScene()">💾 Guardar</button>
             <button class="btn" onclick="loadScene()">📂 Cargar</button>
             <button class="btn" onclick="exportJSON()">📤 Exportar</button>
             <button class="btn" onclick="importJSON()">📥 Importar</button>
+            <button class="btn" onclick="loadCSV()">📈 Cargar CSV</button>
             <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+            <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCSVUpload(event)">
         </div>
-
     </div>
-
     <div class="toast" id="toast"></div>
     <div class="context-menu" id="contextMenu">
         <div class="context-menu-item" data-profile="fiel">🔒 Fiel</div>
@@ -244,6 +245,7 @@
     </div>
     <div class="magic-modal" id="magicModal">
         <div class="magic-box">
+            <div class="magic-sparkles" id="magicSparkles"></div>
             <div class="magic-title">✨ Simulación Completa ✨</div>
             <div id="magicContent"></div>
             <button class="btn gold" style="width:100%;margin-top:10px" onclick="closeMagicModal()">Cerrar</button>
@@ -254,14 +256,15 @@
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
     <script>
     (function() {
+        // ============ INICIALIZACIONES ============
         const STORAGE_CURRENT = 'mkeyz_oyentes_current', STORAGE_SCENES = 'mkeyz_oyentes_scenes', STORAGE_AUDITS = 'mkeyz_oyentes_audits';
-        // Esferas
+        // Esferas flotantes
         const spheresContainer = document.getElementById('spheres');
         for (let i = 0; i < 12; i++) {
             const sphere = document.createElement('div');
-            sphere.className = 'sphere'; sphere.style.width = (Math.random() * 50 + 25) + 'px'; sphere.style.height = sphere.style.width;
-            sphere.style.left = Math.random() * 100 + '%'; sphere.style.top = Math.random() * 100 + '%';
-            sphere.style.animationDuration = (Math.random() * 15 + 10) + 's';
+            sphere.className = 'sphere'; sphere.style.width = (Math.random()*50+25)+'px'; sphere.style.height = sphere.style.width;
+            sphere.style.left = Math.random()*100+'%'; sphere.style.top = Math.random()*100+'%';
+            sphere.style.animationDuration = (Math.random()*15+10)+'s';
             spheresContainer.appendChild(sphere);
         }
         // Estrellas fugaces
@@ -269,7 +272,7 @@
         function resizeStars() { starsCanvas.width = window.innerWidth; starsCanvas.height = window.innerHeight; }
         window.addEventListener('resize', resizeStars); resizeStars();
         let stars = [];
-        for (let i = 0; i < 6; i++) stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height*0.3, len: 40+Math.random()*30, speed: 3+Math.random()*5, opacity: 0.3+Math.random()*0.4 });
+        for (let i=0; i<6; i++) stars.push({x:Math.random()*starsCanvas.width, y:Math.random()*starsCanvas.height*0.3, len:40+Math.random()*30, speed:3+Math.random()*5, opacity:0.3+Math.random()*0.4});
         function drawStars() {
             starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
             stars.forEach(s => { s.x += s.speed; s.y -= s.speed*0.4; if(s.x>starsCanvas.width+80||s.y<-80){s.x=Math.random()*starsCanvas.width; s.y=Math.random()*starsCanvas.height*0.2;} starsCtx.beginPath(); starsCtx.moveTo(s.x,s.y); starsCtx.lineTo(s.x-s.len,s.y+s.len*0.5); starsCtx.strokeStyle=`rgba(179,136,255,${s.opacity})`; starsCtx.lineWidth=1.5; starsCtx.shadowColor='#b388ff'; starsCtx.shadowBlur=6; starsCtx.stroke(); });
@@ -277,6 +280,7 @@
         }
         drawStars();
 
+        // ============ DATOS Y ESTADO ============
         const PROFILES = {
             fiel:{name:"Fiel",icon:"🔒",color:"#00e676",activity:0.8,myRadio:0.7,change:0.15,idle:0.1,max:15,session:5},
             explorador:{name:"Explorador",icon:"🔍",color:"#4fc3f7",activity:0.6,myRadio:0.3,change:0.5,idle:0.2,max:8,session:3},
@@ -299,208 +303,200 @@
 
         let listeners = [], state = [], totalMyPlays = 0, totalOtherPlays = 0;
         let data1D = null, data7D = null, data28D = null, currentView = '1D', simulationRunning = false, normalizedMode = false;
-        let auditHistory = JSON.parse(localStorage.getItem(STORAGE_AUDITS) || '[]');
+        let recommendedScale = [];
+        let auditHistory = JSON.parse(localStorage.getItem(STORAGE_AUDITS)||'[]');
 
+        // ============ SCRUBBER ============
         const scrubberWrapper = document.getElementById('scrubberWrapper'), scrubberValueEl = document.getElementById('scrubberValue'), scrubberIndicator = document.getElementById('scrubberIndicator');
-        let scrubberCurrent = 10, scrubberDragging = false, scrubberStartY = 0, scrubberStartVal = 10;
-        function setScrubberVal(val) { val = Math.min(100, Math.max(1, Math.round(val))); scrubberCurrent = val; scrubberValueEl.textContent = val; scrubberIndicator.style.width = ((val-1)/99*100) + '%'; }
+        let scrubberCurrent = 5, scrubberDragging = false, scrubberStartY = 0, scrubberStartVal = 5;
+        function setScrubberVal(val) { val = Math.min(100, Math.max(1, Math.round(val))); scrubberCurrent = val; scrubberValueEl.textContent = val; scrubberIndicator.style.width = ((val-1)/99*100)+'%'; }
         scrubberWrapper.addEventListener('pointerdown', e => { scrubberDragging = true; scrubberStartY = e.clientY; scrubberStartVal = scrubberCurrent; scrubberWrapper.setPointerCapture(e.pointerId); e.preventDefault(); });
         window.addEventListener('pointermove', e => { if (!scrubberDragging) return; const dy = scrubberStartY - e.clientY; setScrubberVal(scrubberStartVal + Math.round(dy/10)); });
         window.addEventListener('pointerup', e => { if (scrubberDragging) { scrubberDragging = false; scrubberWrapper.releasePointerCapture(e.pointerId); } });
-        setScrubberVal(10);
+        setScrubberVal(5);
 
-        const map = L.map('mapid', { center:[20,0], zoom:2, zoomControl:false, attributionControl:false, minZoom:2, maxZoom:8 });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(map);
+        // ============ MAPA LEAFLET ============
+        const map = L.map('mapid', {center:[20,0], zoom:2, zoomControl:false, attributionControl:false, minZoom:2, maxZoom:8});
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {maxZoom:19}).addTo(map);
         let markersLayer = L.layerGroup().addTo(map), heatLayer = null, heatmapActive = false;
+
+        // ============ CANVAS Y GRÁFICO ============
         const canvas = document.getElementById('activityChart'), ctx = canvas.getContext('2d');
-        const contextMenu = document.getElementById('contextMenu'); let contextMenuTarget = null;
-        const magicModal = document.getElementById('magicModal'), magicContent = document.getElementById('magicContent');
         const chartTooltip = document.getElementById('chartTooltip');
         let mouseChartX = -1;
-
         function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 140; }
-        window.addEventListener('resize', () => { resizeCanvas(); drawChart(); });
+        window.addEventListener('resize', ()=>{ resizeCanvas(); drawChart(); });
         function getActivityFactor(h) { if(h>=7&&h<=9)return 1.4; if(h>=12&&h<=14)return 1.2; if(h>=19&&h<=22)return 1.5; if(h>=0&&h<=5)return 0.3; return 0.8; }
 
         canvas.addEventListener('mousemove', function(e) {
             if (simulationRunning) return;
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
-            const data = currentView === '1D' ? data1D : (currentView === '7D' ? data7D : data28D);
-            if (!data || data.labels.length === 0) return;
-            const n = data.labels.length, cw = canvas.width - 60, stepX = cw / (n - 1), idx = Math.round((x - 40) / stepX);
-            if (idx >= 0 && idx < n && Math.abs((x - 40) - idx * stepX) < stepX * 0.6) {
+            const data = currentView==='1D'?data1D:(currentView==='7D'?data7D:data28D);
+            if (!data || data.labels.length===0) return;
+            const n = data.labels.length, cw = canvas.width - 60, stepX = cw/(n-1), idx = Math.round((x-40)/stepX);
+            if (idx>=0 && idx<n && Math.abs((x-40)-idx*stepX)<stepX*0.6) {
                 mouseChartX = idx;
                 chartTooltip.innerHTML = `<div style="color:#b388ff;">👥 Oyentes: ${data.activity[idx]}</div><div style="color:#00e676;">🎵 Mis plays: ${data.plays[idx]}</div><div style="color:#4fc3f7;">🎧 Otros plays: ${data.otherPlays[idx]}</div>`;
                 chartTooltip.classList.add('visible');
-                chartTooltip.style.left = (e.clientX - rect.left + 15) + 'px';
-                chartTooltip.style.top = (e.clientY - rect.top - 60) + 'px';
+                chartTooltip.style.left = (e.clientX - rect.left + 15)+'px';
+                chartTooltip.style.top = (e.clientY - rect.top - 60)+'px';
             } else { mouseChartX = -1; chartTooltip.classList.remove('visible'); }
             drawChart();
         });
-        canvas.addEventListener('mouseleave', function() { mouseChartX = -1; chartTooltip.classList.remove('visible'); if (!simulationRunning) drawChart(); });
-        canvas.addEventListener('touchmove', function(e) { e.preventDefault(); const touch = e.touches[0]; const me = new MouseEvent('mousemove', {clientX: touch.clientX, clientY: touch.clientY}); canvas.dispatchEvent(me); }, {passive: false});
-        canvas.addEventListener('touchend', function() { canvas.dispatchEvent(new MouseEvent('mouseleave')); });
+        canvas.addEventListener('mouseleave', ()=>{ mouseChartX=-1; chartTooltip.classList.remove('visible'); if(!simulationRunning) drawChart(); });
+        canvas.addEventListener('touchmove', function(e) { e.preventDefault(); const touch = e.touches[0]; canvas.dispatchEvent(new MouseEvent('mousemove', {clientX: touch.clientX, clientY: touch.clientY})); }, {passive: false});
+        canvas.addEventListener('touchend', ()=>{ canvas.dispatchEvent(new MouseEvent('mouseleave')); });
 
         function drawChart() {
-            const w=canvas.width,h=canvas.height; ctx.clearRect(0,0,w,h);
+            const w=canvas.width, h=canvas.height; ctx.clearRect(0,0,w,h);
             const data = currentView==='1D'?data1D:(currentView==='7D'?data7D:data28D);
             if(!data) return;
             let {activity, plays, otherPlays} = data;
             const labels = data.labels;
             if (normalizedMode) {
-                const maxA = Math.max(...activity, 1), maxP = Math.max(...plays, 1), maxO = Math.max(...otherPlays, 1);
-                activity = activity.map(v => v / maxA); plays = plays.map(v => v / maxP); otherPlays = otherPlays.map(v => v / maxO);
+                const maxA = Math.max(...activity,1), maxP = Math.max(...plays,1), maxO = Math.max(...otherPlays,1);
+                activity = activity.map(v=>v/maxA); plays = plays.map(v=>v/maxP); otherPlays = otherPlays.map(v=>v/maxO);
             }
-            const maxVal = normalizedMode ? 1 : Math.max(...activity, ...plays, ...otherPlays, 1);
-            const pad={top:12,right:12,bottom:20,left:28},cw=w-pad.left-pad.right,ch=h-pad.top-pad.bottom,n=labels.length,stepX=cw/(n-1);
+            const maxVal = normalizedMode ? 1 : Math.max(...activity,...plays,...otherPlays,1);
+            const pad={top:12,right:12,bottom:20,left:28}, cw=w-pad.left-pad.right, ch=h-pad.top-pad.bottom, n=labels.length, stepX=cw/(n-1);
             ctx.strokeStyle='#2a1f4a'; ctx.beginPath(); ctx.moveTo(pad.left,pad.top); ctx.lineTo(pad.left,h-pad.bottom); ctx.lineTo(w-pad.right,h-pad.bottom); ctx.stroke();
             ctx.fillStyle='#9a8fb8'; ctx.font='7px Inter'; ctx.textAlign='center';
             const step=n<=7?1:(n<=28?7:5);
-            for(let i=0;i<n;i+=step) ctx.fillText(labels[i],pad.left+i*stepX,h-pad.bottom+10);
-            function line(arr,color,dash){ ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.setLineDash(dash||[]); ctx.beginPath(); for(let i=0;i<n;i++){const x=pad.left+i*stepX,y=h-pad.bottom-(arr[i]/maxVal)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke(); ctx.setLineDash([]); }
+            for(let i=0;i<n;i+=step) ctx.fillText(labels[i], pad.left+i*stepX, h-pad.bottom+10);
+            function line(arr,color,dash){ ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.setLineDash(dash||[]); ctx.beginPath(); for(let i=0;i<n;i++){const x=pad.left+i*stepX, y=h-pad.bottom-(arr[i]/maxVal)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke(); ctx.setLineDash([]); }
             line(activity,'#b388ff'); line(plays,'#00e676',[4,4]); line(otherPlays,'#4fc3f7',[2,4]);
-            if (mouseChartX >= 0 && mouseChartX < n) { const x = pad.left + mouseChartX * stepX; ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.setLineDash([2,4]); ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, h-pad.bottom); ctx.stroke(); ctx.setLineDash([]); }
+            if (mouseChartX>=0 && mouseChartX<n) { const x=pad.left+mouseChartX*stepX; ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.setLineDash([2,4]); ctx.beginPath(); ctx.moveTo(x,pad.top); ctx.lineTo(x,h-pad.bottom); ctx.stroke(); ctx.setLineDash([]); }
         }
-        function toggleNormalize() { normalizedMode = !normalizedMode; document.getElementById('normalizeBtn').textContent = normalizedMode ? '📊 Normalizado' : '📊 Normalizar'; drawChart(); }
+        function toggleNormalize() { normalizedMode=!normalizedMode; document.getElementById('normalizeBtn').textContent = normalizedMode?'📊 Normalizado':'📊 Normalizar'; drawChart(); }
 
-        // Auditoría
+        // ============ AUDITORÍA ============
         function runAudit() {
-            const giniVal = parseFloat(document.getElementById('giniValue').textContent) || 0;
-            const ratioVal = parseFloat(document.getElementById('ratioPlays').textContent) || 0;
-            const peaksVal = parseInt(document.getElementById('suspiciousPeaks').textContent) || 0;
-            const bingeVal = parseInt(document.getElementById('bingePct').textContent) || 0;
+            const giniVal = parseFloat(document.getElementById('giniValue').textContent)||0;
+            const ratioVal = parseFloat(document.getElementById('ratioPlays').textContent)||0;
+            const peaksVal = parseInt(document.getElementById('suspiciousPeaks').textContent)||0;
+            const bingeVal = parseInt(document.getElementById('bingePct').textContent)||0;
             const listenersCount = listeners.length;
-
             let riskScore = 0;
             const flags = [];
-            if (giniVal > 0.7) { riskScore += 40; flags.push("Gini > 0.7"); }
-            else if (giniVal > 0.5) { riskScore += 20; flags.push("Gini > 0.5"); }
-            if (ratioVal > 20) { riskScore += 30; flags.push("Ratio > 20"); }
-            else if (ratioVal > 12) { riskScore += 15; flags.push("Ratio > 12"); }
-            if (peaksVal >= 4) { riskScore += 20; flags.push("≥4 picos"); }
-            else if (peaksVal >= 2) { riskScore += 10; flags.push("≥2 picos"); }
-            if (bingeVal > 50) { riskScore += 20; flags.push("Binge > 50%"); }
-            else if (bingeVal > 30) { riskScore += 10; flags.push("Binge > 30%"); }
-            if (listenersCount < 10 && ratioVal > 10) { riskScore += 15; flags.push("Pocos oyentes + ratio alto"); }
+            if (giniVal>0.7) { riskScore+=40; flags.push("Gini>0.7"); } else if (giniVal>0.5) { riskScore+=20; flags.push("Gini>0.5"); }
+            if (ratioVal>20) { riskScore+=30; flags.push("Ratio>20"); } else if (ratioVal>12) { riskScore+=15; flags.push("Ratio>12"); }
+            if (peaksVal>=4) { riskScore+=20; flags.push("≥4 picos"); } else if (peaksVal>=2) { riskScore+=10; flags.push("≥2 picos"); }
+            if (bingeVal>50) { riskScore+=20; flags.push("Binge>50%"); } else if (bingeVal>30) { riskScore+=10; flags.push("Binge>30%"); }
+            if (listenersCount<10 && ratioVal>10) { riskScore+=15; flags.push("Pocos oyentes+ratio alto"); }
             riskScore = Math.min(100, riskScore);
-
-            let status, statusColor;
-            if (riskScore < 25) { status = "✅ Desapercibido"; statusColor = '#00e676'; }
-            else if (riskScore < 55) { status = "⚠️ Aviso"; statusColor = '#ff9800'; }
-            else { status = "🚫 Riesgo Baneo"; statusColor = '#ff4d4d'; }
-
-            const scoreEl = document.getElementById('riskScore');
-            scoreEl.textContent = riskScore + '%';
-            scoreEl.style.color = statusColor;
-            const statusEl = document.getElementById('riskStatus');
-            statusEl.textContent = status;
-            statusEl.style.background = statusColor;
-            document.getElementById('riskDetails').textContent = flags.length ? 'Flags: ' + flags.join(', ') : 'Sin flags';
-            document.getElementById('auditFlags').textContent = '';
-
-            const entry = { date: new Date().toLocaleString(), riskScore, status, flags };
-            auditHistory.unshift(entry);
-            if (auditHistory.length > 15) auditHistory.pop();
-            try { localStorage.setItem(STORAGE_AUDITS, JSON.stringify(auditHistory)); } catch(e) {}
+            let status, color;
+            if (riskScore<25) { status="✅ Desapercibido"; color='#00e676'; }
+            else if (riskScore<55) { status="⚠️ Aviso"; color='#ff9800'; }
+            else { status="🚫 Riesgo Baneo"; color='#ff4d4d'; }
+            document.getElementById('riskScore').textContent = riskScore+'%';
+            document.getElementById('riskScore').style.color = color;
+            document.getElementById('riskStatus').textContent = status;
+            document.getElementById('riskStatus').style.background = color;
+            document.getElementById('riskDetails').textContent = flags.length ? 'Flags: '+flags.join(', ') : 'Sin flags';
         }
 
+        // ============ INDICADORES ============
         function updateIndicators() {
-            if(!listeners.length){document.getElementById('giniValue').textContent='—'; document.getElementById('ratioPlays').textContent='—'; document.getElementById('suspiciousPeaks').textContent='0'; document.getElementById('bingePct').textContent='0%'; runAudit(); return;}
-            const arr=state.map(s=>s.dailyPlays||0),total=arr.reduce((a,b)=>a+b,0);
-            let sum=0; for(let i=0;i<arr.length;i++)for(let j=0;j<arr.length;j++) sum+=Math.abs(arr[i]-arr[j]);
-            const gini=total?sum/(2*arr.length*total):0; document.getElementById('giniValue').textContent=gini.toFixed(2);
-            document.getElementById('ratioPlays').textContent=(total/listeners.length).toFixed(1);
-            let peaks=0; if(data1D&&data1D.activity.length){const avg=data1D.activity.reduce((a,b)=>a+b,0)/24; data1D.activity.forEach(v=>{if(v>avg*3&&v>2)peaks++;})}
-            document.getElementById('suspiciousPeaks').textContent=peaks;
-            const bingeCount=listeners.filter(l=>l.profile==='binge').length;
-            document.getElementById('bingePct').textContent=Math.round(bingeCount/listeners.length*100)+'%';
+            if(!listeners.length){ document.getElementById('giniValue').textContent='—'; document.getElementById('ratioPlays').textContent='—'; document.getElementById('suspiciousPeaks').textContent='0'; document.getElementById('bingePct').textContent='0%'; runAudit(); return; }
+            const arr = state.map(s=>s.dailyPlays||0), total = arr.reduce((a,b)=>a+b,0);
+            let sum=0; for(let i=0;i<arr.length;i++) for(let j=0;j<arr.length;j++) sum+=Math.abs(arr[i]-arr[j]);
+            const gini = total ? sum/(2*arr.length*total) : 0;
+            document.getElementById('giniValue').textContent = gini.toFixed(2);
+            document.getElementById('ratioPlays').textContent = (total/listeners.length).toFixed(1);
+            let peaks=0; if(data1D&&data1D.activity.length){ const avg=data1D.activity.reduce((a,b)=>a+b,0)/24; data1D.activity.forEach(v=>{ if(v>avg*3&&v>2) peaks++; }) }
+            document.getElementById('suspiciousPeaks').textContent = peaks;
+            const bingeCount = listeners.filter(l=>l.profile==='binge').length;
+            document.getElementById('bingePct').textContent = Math.round(bingeCount/listeners.length*100)+'%';
             analyzeRecommendations();
             runAudit();
         }
         function analyzeRecommendations() {
-            const panel=document.getElementById('recommendationsPanel'), list=document.getElementById('recList');
-            const gini=parseFloat(document.getElementById('giniValue').textContent), ratio=parseFloat(document.getElementById('ratioPlays').textContent);
-            const peaks=parseInt(document.getElementById('suspiciousPeaks').textContent), bingePct=parseInt(document.getElementById('bingePct').textContent);
-            const recs=[];
+            const panel = document.getElementById('recommendationsPanel'), list = document.getElementById('recList');
+            const gini = parseFloat(document.getElementById('giniValue').textContent), ratio = parseFloat(document.getElementById('ratioPlays').textContent);
+            const peaks = parseInt(document.getElementById('suspiciousPeaks').textContent), bingePct = parseInt(document.getElementById('bingePct').textContent);
+            const recs = [];
             if(gini>0.6) recs.push('📊 Gini alto. Añade oyentes ocasionales.');
-            else if(gini>0.4) recs.push('📊 Gini moderado. Vigila que no suba.');
+            else if(gini>0.4) recs.push('📊 Gini moderado. Vigila.');
             if(ratio>15) recs.push('🔁 Ratio alto. Aumenta base de oyentes.');
             if(peaks>=3) recs.push(`⚠️ ${peaks} picos. Distribuye actividad.`);
             if(bingePct>40) recs.push('🔥 Exceso binge. Convierte en fieles.');
             if(!recs.length) recs.push('✅ Indicadores saludables.');
-            list.innerHTML=recs.map(r=>`<div>${r}</div>`).join('');
+            list.innerHTML = recs.map(r=>`<div>${r}</div>`).join('');
             panel.classList.add('show');
         }
         function updateProfileStats() {
             const counts={fiel:0,explorador:0,ocasional:0,binge:0}; listeners.forEach(l=>counts[l.profile]++);
-            document.getElementById('profilesStats').innerHTML=`
+            document.getElementById('profilesStats').innerHTML = `
                 <div class="profile-stat" style="border-color:#00e676">🔒 Fieles: ${counts.fiel}</div>
                 <div class="profile-stat" style="border-color:#4fc3f7">🔍 Exp: ${counts.explorador}</div>
                 <div class="profile-stat" style="border-color:#b388ff">🎲 Ocas: ${counts.ocasional}</div>
                 <div class="profile-stat" style="border-color:#ff4d4d">🔥 Binge: ${counts.binge}</div>`;
         }
+
+        // ============ OYENTES Y MAPA ============
         function getRandomCity(country) { const cities=countryCities[country]||[{name:"Desconocido",lat:40.42,lng:-3.70}]; const c=cities[Math.floor(Math.random()*cities.length)]; return {name:c.name, lat:c.lat+(Math.random()-0.5)*0.1, lng:c.lng+(Math.random()-0.5)*0.1}; }
         function createMarker(l,s,index) {
-            const marker=L.circleMarker([l.lat,l.lng],{radius:6,fillColor:s.active?l.color:'#555',color:s.active?PROFILES[l.profile].color:'#555',weight:1.5,fillOpacity:0.8});
+            const marker = L.circleMarker([l.lat,l.lng], {radius:6, fillColor:s.active?l.color:'#555', color:s.active?PROFILES[l.profile].color:'#555', weight:1.5, fillOpacity:0.8});
             marker.bindPopup(`<b>${l.name}</b><br>${l.country} · ${l.city}<br>${l.platform} · ${PROFILES[l.profile].name}`);
-            marker.on('contextmenu',e=>{L.DomEvent.preventDefault(e);contextMenuTarget=index;const menu=document.getElementById('contextMenu');menu.style.left=e.originalEvent.clientX+'px';menu.style.top=e.originalEvent.clientY+'px';menu.classList.add('show');});
-            marker.on('click',()=>{if(s.active)s.inMyRadio?leaveRadio(index):enterRadio(index);else{s.active=true;updateStats();renderDots();}});
+            marker.on('contextmenu', e=>{ L.DomEvent.preventDefault(e); contextMenuTarget=index; document.getElementById('contextMenu').style.left=e.originalEvent.clientX+'px'; document.getElementById('contextMenu').style.top=e.originalEvent.clientY+'px'; document.getElementById('contextMenu').classList.add('show'); });
+            marker.on('click', ()=>{ if(s.active) s.inMyRadio?leaveRadio(index):enterRadio(index); else { s.active=true; updateStats(); renderDots(); } });
             return marker;
         }
         function renderDots() {
             markersLayer.clearLayers();
-            state.forEach((s,i)=>{const l=listeners[i];if(document.getElementById('filterCountry').value&&l.country!==document.getElementById('filterCountry').value)return;if(document.getElementById('filterPlatform').value&&l.platform!==document.getElementById('filterPlatform').value)return;markersLayer.addLayer(createMarker(l,s,i));});
+            state.forEach((s,i)=>{
+                const l=listeners[i];
+                if(document.getElementById('filterCountry').value && l.country!==document.getElementById('filterCountry').value) return;
+                if(document.getElementById('filterPlatform').value && l.platform!==document.getElementById('filterPlatform').value) return;
+                markersLayer.addLayer(createMarker(l,s,i));
+            });
             if(heatmapActive) updateHeatmap();
         }
-        function updateHeatmap() { if(heatLayer) map.removeLayer(heatLayer); heatLayer=L.heatLayer(listeners.map(l=>[l.lat,l.lng]),{radius:18,blur:12,gradient:{0.2:'#ff00ff',0.4:'#b388ff',0.6:'#00e676',0.8:'#ffff00',1:'#ff0000'}}).addTo(map); }
-        document.getElementById('heatmapToggle').addEventListener('click',function(){heatmapActive=!heatmapActive; this.classList.toggle('active',heatmapActive); heatmapActive?updateHeatmap():heatLayer&&map.removeLayer(heatLayer);});
+        function updateHeatmap() { if(heatLayer) map.removeLayer(heatLayer); heatLayer = L.heatLayer(listeners.map(l=>[l.lat,l.lng]), {radius:18, blur:12, gradient:{0.2:'#ff00ff',0.4:'#b388ff',0.6:'#00e676',0.8:'#ffff00',1:'#ff0000'}}).addTo(map); }
+        document.getElementById('heatmapToggle').addEventListener('click', ()=>{ heatmapActive=!heatmapActive; heatmapActive?updateHeatmap():heatLayer&&map.removeLayer(heatLayer); });
         function populateFilters() {
             const cs=document.getElementById('filterCountry'), ps=document.getElementById('filterPlatform');
             cs.innerHTML='<option value="">🌍 Todos</option>'; ps.innerHTML='<option value="">📱 Plataforma</option>';
-            [...new Set(listeners.map(l=>l.country))].sort().forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;cs.appendChild(o);});
-            [...new Set(listeners.map(l=>l.platform))].sort().forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;ps.appendChild(o);});
+            [...new Set(listeners.map(l=>l.country))].sort().forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; cs.appendChild(o); });
+            [...new Set(listeners.map(l=>l.platform))].sort().forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; ps.appendChild(o); });
         }
-        document.getElementById('filterCountry').addEventListener('change',renderDots); document.getElementById('filterPlatform').addEventListener('change',renderDots);
-        function moveMarkers() { listeners.forEach(l=>{ if(l._marker){l.lat+=(Math.random()-0.5)*0.02;l.lng+=(Math.random()-0.5)*0.02;l._marker.setLatLng([l.lat,l.lng]);}}); if(heatmapActive) updateHeatmap(); }
-        setInterval(moveMarkers,4000);
+        document.getElementById('filterCountry').addEventListener('change',renderDots);
+        document.getElementById('filterPlatform').addEventListener('change',renderDots);
+        function moveMarkers() { listeners.forEach(l=>{ if(l._marker){ l.lat+=(Math.random()-0.5)*0.02; l.lng+=(Math.random()-0.5)*0.02; l._marker.setLatLng([l.lat,l.lng]); } }); if(heatmapActive) updateHeatmap(); }
+        setInterval(moveMarkers, 4000);
 
-        function generateListeners() {
-            const count = scrubberCurrent;
-            const profileKey=document.getElementById('profileSelect').value;
-            listeners=[]; state=[];
-            for(let i=0;i<count;i++){
-                const c=Object.keys(countryCities)[Math.floor(Math.random()*Object.keys(countryCities).length)];
-                const city=getRandomCity(c); const plat=platforms[Math.floor(Math.random()*platforms.length)];
-                const name=namePool[Math.floor(Math.random()*namePool.length)];
-                const device=["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
-                const profile=profileKey==='aleatorio'?Object.keys(PROFILES)[Math.floor(Math.random()*4)]:profileKey;
-                const ua=userAgents[Math.floor(Math.random()*userAgents.length)];
-                listeners.push({name,country:c,city:city.name,lat:city.lat,lng:city.lng,device,platform:plat.name,color:plat.color,profile,ua});
-                const p=PROFILES[profile];
-                state.push({active:true,inMyRadio:false,trackTimeLeft:0,otherTrackTimeLeft:0,dailyPlays:0,maxDailyPlays:p.max,sessionRemaining:0,profile});
-            }
-            updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
-            autoSaveCurrentState();
-        }
-        function addListener() {
-            const c=Object.keys(countryCities)[Math.floor(Math.random()*Object.keys(countryCities).length)];
-            const city=getRandomCity(c); const plat=platforms[Math.floor(Math.random()*platforms.length)];
-            const name=namePool[Math.floor(Math.random()*namePool.length)];
-            const device=["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
-            const profile=Object.keys(PROFILES)[Math.floor(Math.random()*4)];
-            const ua=userAgents[Math.floor(Math.random()*userAgents.length)];
+        // ============ GENERACIÓN DE OYENTES ============
+        function addListenerWithProfile(profile) {
+            const c = Object.keys(countryCities)[Math.floor(Math.random()*Object.keys(countryCities).length)];
+            const city = getRandomCity(c); const plat = platforms[Math.floor(Math.random()*platforms.length)];
+            const name = namePool[Math.floor(Math.random()*namePool.length)];
+            const device = ["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
+            const ua = userAgents[Math.floor(Math.random()*userAgents.length)];
             listeners.push({name,country:c,city:city.name,lat:city.lat,lng:city.lng,device,platform:plat.name,color:plat.color,profile,ua});
-            const p=PROFILES[profile];
+            const p = PROFILES[profile];
             state.push({active:true,inMyRadio:false,trackTimeLeft:0,otherTrackTimeLeft:0,dailyPlays:0,maxDailyPlays:p.max,sessionRemaining:0,profile});
+        }
+        function addListeners() {
+            const count = scrubberCurrent;
+            const profileKey = document.getElementById('profileSelect').value;
+            for(let i=0;i<count;i++) addListenerWithProfile(profileKey==='aleatorio' ? Object.keys(PROFILES)[Math.floor(Math.random()*4)] : profileKey);
+            updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
+            autoSaveCurrentState();
+            showToast(`+${count} oyentes`);
+        }
+        function generateListeners() {
+            listeners=[]; state=[];
+            const count = scrubberCurrent;
+            const profileKey = document.getElementById('profileSelect').value;
+            for(let i=0;i<count;i++) addListenerWithProfile(profileKey==='aleatorio' ? Object.keys(PROFILES)[Math.floor(Math.random()*4)] : profileKey);
             updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
             autoSaveCurrentState();
         }
-        function changeProfile(index,newProfile) { listeners[index].profile=newProfile; state[index].profile=newProfile; const p=PROFILES[newProfile]; state[index].maxDailyPlays=p.max; state[index].dailyPlays=0; renderDots(); updateProfileStats(); updateIndicators(); autoSaveCurrentState(); }
-        document.getElementById('contextMenu').addEventListener('click',e=>{const item=e.target.closest('.context-menu-item');if(item&&contextMenuTarget!==null) changeProfile(contextMenuTarget,item.dataset.profile); contextMenu.classList.remove('show'); contextMenuTarget=null;});
-        document.addEventListener('click',()=>{contextMenu.classList.remove('show');});
+        function addListener() { addListeners(); } // alias
 
-        function enterRadio(i) { const s=state[i],p=PROFILES[s.profile]; if(!s.active||s.dailyPlays>=s.maxDailyPlays)return; s.inMyRadio=true; s.trackTimeLeft=200+Math.floor(Math.random()*50); s.dailyPlays++; s.sessionRemaining=p.session-1; totalMyPlays++; updateStats(); renderDots(); updateIndicators(); }
+        // ============ SIMULACIÓN ============
+        function enterRadio(i) { const s=state[i],p=PROFILES[s.profile]; if(!s.active||s.dailyPlays>=s.maxDailyPlays) return; s.inMyRadio=true; s.trackTimeLeft=200+Math.floor(Math.random()*50); s.dailyPlays++; s.sessionRemaining=p.session-1; totalMyPlays++; updateStats(); renderDots(); updateIndicators(); }
         function leaveRadio(i) { state[i].inMyRadio=false; state[i].otherTrackTimeLeft=200+Math.floor(Math.random()*80); updateStats(); renderDots(); }
         function updateStats() {
             document.getElementById('totalPlays').textContent=totalMyPlays; document.getElementById('totalOtherPlays').textContent=totalOtherPlays;
@@ -508,70 +504,144 @@
             document.getElementById('liveCount').textContent=state.filter(s=>s.inMyRadio).length; drawChart();
         }
         function simulateTick(factor,simA,simP,simO,index) {
-            state.forEach((s,i)=>{const p=PROFILES[s.profile];if(!s.active){if(Math.random()<p.activity*0.1*factor)s.active=true;return;} if(s.inMyRadio){s.trackTimeLeft-=30;if(s.trackTimeLeft<=0){if(s.sessionRemaining>0&&s.dailyPlays<s.maxDailyPlays){if(Math.random()<1-p.change){s.trackTimeLeft=200+Math.floor(Math.random()*50);s.dailyPlays++;s.sessionRemaining--;totalMyPlays++;simP[index]++;}else leaveRadio(i);}else leaveRadio(i);}}else{s.otherTrackTimeLeft-=30;if(s.otherTrackTimeLeft<=0){s.otherTrackTimeLeft=200+Math.floor(Math.random()*80);totalOtherPlays++;simO[index]++;}if(s.dailyPlays<s.maxDailyPlays&&Math.random()<p.myRadio*0.1*factor){enterRadio(i);simP[index]++;}}if(s.active&&!s.inMyRadio&&Math.random()<p.idle*0.1)s.active=false;});
-            simA[index]=Math.max(simA[index],state.filter(s=>s.inMyRadio).length);
+            state.forEach((s,i)=>{
+                const p=PROFILES[s.profile];
+                if(!s.active){ if(Math.random()<p.activity*0.1*factor) s.active=true; return; }
+                if(s.inMyRadio){
+                    s.trackTimeLeft-=30;
+                    if(s.trackTimeLeft<=0){
+                        if(s.sessionRemaining>0 && s.dailyPlays<s.maxDailyPlays){
+                            if(Math.random()<1-p.change){ s.trackTimeLeft=200+Math.floor(Math.random()*50); s.dailyPlays++; s.sessionRemaining--; totalMyPlays++; simP[index]++; }
+                            else leaveRadio(i);
+                        } else leaveRadio(i);
+                    }
+                } else {
+                    s.otherTrackTimeLeft-=30;
+                    if(s.otherTrackTimeLeft<=0){ s.otherTrackTimeLeft=200+Math.floor(Math.random()*80); totalOtherPlays++; simO[index]++; }
+                    if(s.dailyPlays<s.maxDailyPlays && Math.random()<p.myRadio*0.1*factor){ enterRadio(i); simP[index]++; }
+                }
+                if(s.active && !s.inMyRadio && Math.random()<p.idle*0.1) s.active=false;
+            });
+            simA[index]=Math.max(simA[index], state.filter(s=>s.inMyRadio).length);
         }
         function runSimulation(days) {
             const spd=2880, total=days*spd, simA=[],simP=[],simO=[], dc=days===1?24:days;
-            for(let i=0;i<dc;i++){simA.push(0);simP.push(0);simO.push(0);}
+            for(let i=0;i<dc;i++){ simA.push(0); simP.push(0); simO.push(0); }
             let step=0; simulationRunning=true; document.querySelectorAll('.btn').forEach(b=>b.disabled=true); document.getElementById('progressWrapper').style.display='block';
             function batch() {
                 const end=Math.min(step+500,total);
-                for(let s=step;s<end;s++){const day=Math.floor(s/spd), hour=Math.floor(((s%spd)*30)/3600), idx=days===1?hour:day; if(day>0&&s%spd===0){state.forEach(s=>{s.dailyPlays=0;s.maxDailyPlays=PROFILES[s.profile].max;s.sessionRemaining=0;if(s.inMyRadio)leaveRadio(state.indexOf(s));});} simulateTick(getActivityFactor(hour),simA,simP,simO,idx);}
+                for(let s=step;s<end;s++){
+                    const day=Math.floor(s/spd), hour=Math.floor(((s%spd)*30)/3600), idx=days===1?hour:day;
+                    if(day>0 && s%spd===0){ state.forEach(s=>{ s.dailyPlays=0; s.maxDailyPlays=PROFILES[s.profile].max; s.sessionRemaining=0; if(s.inMyRadio) leaveRadio(state.indexOf(s)); }); }
+                    simulateTick(getActivityFactor(hour),simA,simP,simO,idx);
+                }
                 step=end; document.getElementById('progressLabel').textContent=Math.round(step/total*100)+'%'; document.getElementById('progressBarFill').style.width=(step/total*100)+'%';
                 if(step<total) setTimeout(batch,0);
                 else {
                     if(days===1) data1D={labels:Array.from({length:24},(_,i)=>i+'h'),activity:simA,plays:simP,otherPlays:simO};
-                    else if(days===7){data1D=gen1D(simA,simP,simO);data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA,plays:simP,otherPlays:simO};}
-                    else {data1D=gen1D(simA.slice(0,7),simP.slice(0,7),simO.slice(0,7));data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA.slice(0,7),plays:simP.slice(0,7),otherPlays:simO.slice(0,7)};data28D={labels:Array.from({length:28},(_,i)=>'D'+(i+1)),activity:simA,plays:simP,otherPlays:simO};}
+                    else if(days===7){ data1D=gen1D(simA,simP,simO); data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA,plays:simP,otherPlays:simO}; }
+                    else { data1D=gen1D(simA.slice(0,7),simP.slice(0,7),simO.slice(0,7)); data7D={labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],activity:simA.slice(0,7),plays:simP.slice(0,7),otherPlays:simO.slice(0,7)}; data28D={labels:Array.from({length:28},(_,i)=>'D'+(i+1)),activity:simA,plays:simP,otherPlays:simO}; }
                     finishSimulation(days);
                 }
             }
             batch();
         }
-        function gen1D(dA,dP,dO) { const hA=new Array(24).fill(0),hP=new Array(24).fill(0),hO=new Array(24).fill(0); const tA=dA.reduce((a,b)=>a+b,0),tP=dP.reduce((a,b)=>a+b,0),tO=dO.reduce((a,b)=>a+b,0); for(let h=0;h<24;h++){const f=getActivityFactor(h);hA[h]=Math.round(tA*f/10);hP[h]=Math.round(tP*f/10);hO[h]=Math.round(tO*f/10);} return {labels:Array.from({length:24},(_,i)=>i+'h'),activity:hA,plays:hP,otherPlays:hO}; }
+        function gen1D(dA,dP,dO) { const hA=new Array(24).fill(0),hP=new Array(24).fill(0),hO=new Array(24).fill(0); const tA=dA.reduce((a,b)=>a+b,0),tP=dP.reduce((a,b)=>a+b,0),tO=dO.reduce((a,b)=>a+b,0); for(let h=0;h<24;h++){ const f=getActivityFactor(h); hA[h]=Math.round(tA*f/10); hP[h]=Math.round(tP*f/10); hO[h]=Math.round(tO*f/10); } return {labels:Array.from({length:24},(_,i)=>i+'h'),activity:hA,plays:hP,otherPlays:hO}; }
         function showMagicModal(plays, other, oyentes, gini, ratio, peaks, bingePct) {
-            magicContent.innerHTML = `<div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div><div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div><div class="magic-stat"><span>👥 Oyentes:</span><strong>${oyentes}</strong></div><div class="magic-stat"><span>📊 Gini:</span><strong>${gini}</strong></div><div class="magic-stat"><span>🔁 Ratio:</span><strong>${ratio}</strong></div><div class="magic-stat"><span>⚠️ Picos:</span><strong>${peaks}</strong></div><div class="magic-stat"><span>🔥 Binge:</span><strong>${bingePct}%</strong></div>`;
-            magicModal.classList.add('show');
+            document.getElementById('magicContent').innerHTML = `<div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div><div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div><div class="magic-stat"><span>👥 Oyentes:</span><strong>${oyentes}</strong></div><div class="magic-stat"><span>📊 Gini:</span><strong>${gini}</strong></div><div class="magic-stat"><span>🔁 Ratio:</span><strong>${ratio}</strong></div><div class="magic-stat"><span>⚠️ Picos:</span><strong>${peaks}</strong></div><div class="magic-stat"><span>🔥 Binge:</span><strong>${bingePct}%</strong></div>`;
+            document.getElementById('magicSparkles').innerHTML = ''; for(let i=0;i<20;i++){ const s=document.createElement('div'); s.className='magic-sparkle'; s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%'; s.style.animationDelay=Math.random()*1.5+'s'; document.getElementById('magicSparkles').appendChild(s); }
+            document.getElementById('magicModal').classList.add('show');
         }
         function finishSimulation(days) {
             simulationRunning=false; document.querySelectorAll('.btn').forEach(b=>b.disabled=false); document.getElementById('progressWrapper').style.display='none';
             document.getElementById('view1D').disabled=false; if(data7D)document.getElementById('view7D').disabled=false; if(data28D)document.getElementById('view28D').disabled=false;
             updateStats(); updateIndicators(); setView('1D');
             const plays=data1D?data1D.plays.reduce((a,b)=>a+b,0):totalMyPlays, other=data1D?data1D.otherPlays.reduce((a,b)=>a+b,0):totalOtherPlays;
-            const gini = document.getElementById('giniValue').textContent, ratio = document.getElementById('ratioPlays').textContent;
-            const peaks = document.getElementById('suspiciousPeaks').textContent, bingePct = document.getElementById('bingePct').textContent.replace('%','');
+            const gini=document.getElementById('giniValue').textContent, ratio=document.getElementById('ratioPlays').textContent;
+            const peaks=document.getElementById('suspiciousPeaks').textContent, bingePct=document.getElementById('bingePct').textContent.replace('%','');
             showMagicModal(plays, other, listeners.length, gini, ratio, peaks, bingePct);
             autoSaveCurrentState();
         }
-        function startSimulation(mode) { if(simulationRunning)return; if(!listeners.length){alert('Añade oyentes');return;} runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
-        function setView(v){currentView=v; document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); document.getElementById('view'+v).classList.add('active'); document.getElementById('chartTitle').textContent='📊 Actividad ('+v+')'; drawChart();}
-        function resetAll() { if(simulationRunning)return; listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; updateStats(); renderDots(); drawChart(); updateProfileStats(); updateIndicators(); }
-        function closeMagicModal() { magicModal.classList.remove('show'); }
-        function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.transform='translateX(-50%) translateY(0)'; setTimeout(()=>t.style.transform='translateX(-50%) translateY(80px)',2000); }
+        function startSimulation(mode) { if(simulationRunning)return; if(!listeners.length){ alert('Añade oyentes'); return; } runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
+        function setView(v){ currentView=v; document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); document.getElementById('view'+v).classList.add('active'); document.getElementById('chartTitle').textContent='📊 Actividad ('+v+')'; drawChart(); }
 
-        // Persistencia
-        function getCurrentData() { return { listeners: listeners.map(l => ({...l, _marker: undefined})), state: state.map(s => ({...s})), totalMyPlays, totalOtherPlays, data1D, data7D, data28D, timestamp: Date.now() }; }
-        function restoreData(data) { if (!data) return false; listeners = data.listeners.map(l => ({...l})); state = data.state.map(s => ({...s})); totalMyPlays = data.totalMyPlays || 0; totalOtherPlays = data.totalOtherPlays || 0; data1D = data.data1D || null; data7D = data.data7D || null; data28D = data.data28D || null; updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters(); if (data7D) document.getElementById('view7D').disabled = false; if (data28D) document.getElementById('view28D').disabled = false; return true; }
-        function autoSaveCurrentState() { try { const data = getCurrentData(); localStorage.setItem(STORAGE_CURRENT, JSON.stringify(data)); } catch (e) {} }
-        function loadSavedState() { try { const raw = localStorage.getItem(STORAGE_CURRENT); if (raw) { const data = JSON.parse(raw); if (data.listeners && data.listeners.length > 0) { restoreData(data); return true; } } } catch (e) {} return false; }
-        function saveScene() { const name = prompt('Nombre de la escena:'); if (!name) return; const data = getCurrentData(); data.name = name; data.savedAt = new Date().toLocaleString(); try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); scenes.push(data); localStorage.setItem(STORAGE_SCENES, JSON.stringify(scenes)); showToast('Escena guardada: ' + name); } catch (e) { showToast('Error al guardar'); } }
-        function loadScene() { const listDiv = document.getElementById('sceneList'); try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); if (scenes.length === 0) { showToast('No hay escenas guardadas'); return; } listDiv.innerHTML = scenes.map((s, i) => `<div style="padding:5px;border-bottom:1px solid var(--violet);cursor:pointer;" onclick="loadSceneByIndex(${i})">${s.name} (${s.listeners.length} oyentes, ${s.savedAt || ''})</div>`).join(''); listDiv.style.display='block'; } catch (e) { showToast('Error al cargar escenas'); } }
-        function loadSceneByIndex(index) { try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); if (scenes[index]) { restoreData(scenes[index]); autoSaveCurrentState(); document.getElementById('sceneList').style.display='none'; showToast('Escena cargada'); } } catch (e) {} }
-        async function exportJSON() {
-            const data = getCurrentData(); const jsonStr = JSON.stringify(data, null, 2);
-            try { const blob = new Blob([jsonStr], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'oyentes_mkeyz.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showToast('Archivo exportado'); }
-            catch (e) { try { await navigator.clipboard.writeText(jsonStr); showToast('JSON copiado al portapapeles'); } catch (err) { showToast('Error al exportar'); } }
+        // ============ MODO SEGURO ============
+        function safeMode() {
+            if(listeners.length===0){ showToast('Añade oyentes primero'); return; }
+            let changed=0;
+            listeners.forEach((l,i)=>{ if(l.profile==='binge'){ listeners[i].profile='fiel'; state[i].profile='fiel'; state[i].maxDailyPlays=PROFILES.fiel.max; state[i].dailyPlays=0; changed++; } });
+            const counts={fiel:0,explorador:0,ocasional:0,binge:0}; listeners.forEach(l=>counts[l.profile]++);
+            if(counts.ocasional<listeners.length*0.4){
+                listeners.forEach((l,i)=>{ if(l.profile==='explorador' && counts.ocasional<listeners.length*0.4){ listeners[i].profile='ocasional'; state[i].profile='ocasional'; state[i].maxDailyPlays=PROFILES.ocasional.max; state[i].dailyPlays=0; counts.ocasional++; changed++; } });
+            }
+            updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
+            autoSaveCurrentState();
+            showToast(`🛡️ Modo Seguro (${changed} cambios)`);
         }
-        function importJSON() { document.getElementById('importFile').click(); }
-        function handleImport(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.listeners && data.listeners.length > 0) { restoreData(data); autoSaveCurrentState(); showToast('Importado correctamente'); } else { showToast('Archivo no válido'); } } catch (ex) { showToast('Error al leer el archivo'); } }; reader.readAsText(file); event.target.value = ''; }
 
-        window.addListener=addListener; window.generateListeners=generateListeners; window.startSimulation=startSimulation; window.setView=setView; window.resetAll=resetAll; window.closeMagicModal=closeMagicModal;
-        window.saveScene=saveScene; window.loadScene=loadScene; window.exportJSON=exportJSON; window.importJSON=importJSON; window.handleImport=handleImport; window.loadSceneByIndex=loadSceneByIndex; window.toggleNormalize=toggleNormalize;
+        // ============ ESCALADO ============
+        function recommendScale() {
+            const target = parseInt(document.getElementById('targetListeners').value)||500;
+            const current = listeners.length;
+            if(target<=current){ showToast('El objetivo debe ser mayor'); return; }
+            const toAdd = target - current;
+            const oc = Math.floor(toAdd*0.5), fi = Math.floor(toAdd*0.3), ex = Math.floor(toAdd*0.15), bi = toAdd - oc - fi - ex;
+            recommendedScale = [{profile:'ocasional',add:oc},{profile:'fiel',add:fi},{profile:'explorador',add:ex},{profile:'binge',add:bi}];
+            showToast(`Recomendación: +${toAdd} oyentes\nOcasional:${oc} Fiel:${fi} Exp:${ex} Binge:${bi}`);
+        }
+        function applyScale() {
+            if(!recommendedScale.length){ showToast('Primero da a Recomendar'); return; }
+            recommendedScale.forEach(d=>{ for(let i=0;i<d.add;i++) addListenerWithProfile(d.profile); });
+            recommendedScale=[];
+            updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
+            autoSaveCurrentState();
+            showToast('Escalado aplicado');
+        }
+
+        // ============ CSV ============
+        function loadCSV() { document.getElementById('csvFile').click(); }
+        function handleCSVUpload(event) {
+            const file = event.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const rows = text.split('\n').filter(r=>r.trim().length>0);
+                if(rows.length<2){ showToast('CSV inválido'); return; }
+                const headers = rows[0].split(',');
+                const listenersIdx = headers.findIndex(h=>h.trim().toLowerCase()==='listeners');
+                if(listenersIdx===-1){ showToast('Falta columna listeners'); return; }
+                const lastRow = rows[rows.length-1].split(',');
+                const currentListeners = parseInt(lastRow[listenersIdx])||10;
+                listeners=[]; state=[];
+                const dist = [{profile:'ocasional',pct:0.4},{profile:'fiel',pct:0.3},{profile:'explorador',pct:0.2},{profile:'binge',pct:0.1}];
+                dist.forEach(pd=>{ const cnt = Math.floor(currentListeners*pd.pct); for(let i=0;i<cnt;i++) addListenerWithProfile(pd.profile); });
+                const totalGenerated = listeners.length;
+                for(let i=0;i<currentListeners-totalGenerated;i++) addListenerWithProfile('ocasional');
+                updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
+                autoSaveCurrentState();
+                showToast(`CSV cargado: ${listeners.length} oyentes`);
+            };
+            reader.readAsText(file);
+            event.target.value='';
+        }
+
+        // ============ PERSISTENCIA ============
+        function getCurrentData() { return { listeners: listeners.map(l=>({...l,_marker:undefined})), state: state.map(s=>({...s})), totalMyPlays, totalOtherPlays, data1D, data7D, data28D, timestamp: Date.now() }; }
+        function restoreData(data) { if(!data) return false; listeners=data.listeners.map(l=>({...l})); state=data.state.map(s=>({...s})); totalMyPlays=data.totalMyPlays||0; totalOtherPlays=data.totalOtherPlays||0; data1D=data.data1D||null; data7D=data.data7D||null; data28D=data.data28D||null; updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters(); if(data7D)document.getElementById('view7D').disabled=false; if(data28D)document.getElementById('view28D').disabled=false; return true; }
+        function autoSaveCurrentState() { try { localStorage.setItem(STORAGE_CURRENT, JSON.stringify(getCurrentData())); } catch(e){} }
+        function loadSavedState() { try { const raw=localStorage.getItem(STORAGE_CURRENT); if(raw){ const data=JSON.parse(raw); if(data.listeners&&data.listeners.length>0) return restoreData(data); } } catch(e){} return false; }
+
+        window.addListener=addListener; window.addListeners=addListeners; window.generateListeners=generateListeners;
+        window.startSimulation=startSimulation; window.setView=setView; window.resetAll=resetAll;
+        window.closeMagicModal=()=>document.getElementById('magicModal').classList.remove('show');
+        window.safeMode=safeMode; window.toggleNormalize=toggleNormalize;
+        window.saveScene=saveScene; window.loadScene=loadScene; window.exportJSON=exportJSON; window.importJSON=importJSON; window.handleImport=handleImport; window.loadCSV=loadCSV; window.handleCSVUpload=handleCSVUpload;
+        window.recommendScale=recommendScale; window.applyScale=applyScale;
 
         resizeCanvas();
-        if (!loadSavedState()) { generateListeners(); } else { resizeCanvas(); drawChart(); }
-        setInterval(()=>{if(!simulationRunning)updateStats();},5000);
+        if(!loadSavedState()) generateListeners();
+        else { resizeCanvas(); drawChart(); }
+        setInterval(()=>{ if(!simulationRunning) updateStats(); }, 5000);
     })();
     </script>
 </body>
