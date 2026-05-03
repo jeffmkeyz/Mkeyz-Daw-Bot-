@@ -26,7 +26,7 @@
         @keyframes floatSphere {
             0%{transform:translateY(0) scale(1);opacity:.5} 50%{transform:translateY(-60px) scale(1.1);opacity:.8} 100%{transform:translateY(0) scale(1);opacity:.5}
         }
-        .player, .stats-grid, .map-area, .chart-area, .btn-group, .custom-listeners, .profiles-stats, .antidetect-panel, .recommendations-panel { position:relative; z-index:1; }
+        .player, .stats-grid, .map-area, .chart-area, .btn-group, .custom-listeners, .profiles-stats, .antidetect-panel, .recommendations-panel, .persist-bar { position:relative; z-index:1; }
         .player {
             background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:20px; padding:10px 14px; margin-bottom:10px;
             border:1px solid rgba(179,136,255,0.3); box-shadow:0 0 10px var(--violet); display:flex; align-items:center; justify-content:center; gap:10px;
@@ -110,31 +110,26 @@
         .controls-bar { display:flex; align-items:center; gap:6px; margin:8px 0; background:var(--card); padding:8px 14px; border-radius:20px; border:1px solid rgba(179,136,255,0.4); justify-content:center; }
         .controls-label { font-size:0.7rem; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:4px; }
         .controls-label svg { width:16px; height:16px; fill:var(--violet); }
-        /* Selector iOS flotante */
-        .ios-picker {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 50px;
-            height: 40px;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid var(--violet);
-            border-radius: 8px;
-            color: var(--violet2);
-            font-family: 'Orbitron', monospace;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            user-select: none;
-            overflow: hidden;
-            text-shadow: 0 0 12px var(--violet);
-        }
-        .ios-picker .number {
-            transition: transform 0.15s ease-out;
-        }
+        .controls-input { width:50px; background:rgba(0,0,0,0.4); border:1px solid var(--violet); border-radius:6px; color:var(--violet2); font-family:'Orbitron',monospace; font-size:0.8rem; text-align:center; padding:2px; }
         .controls-select { background:rgba(0,0,0,0.4); color:var(--text); border:1px solid var(--violet); border-radius:8px; padding:4px; font-size:0.7rem; }
         .controls-btn { background:var(--violet); border:none; padding:6px 14px; border-radius:14px; font-weight:700; font-size:0.7rem; cursor:pointer; color:#000; display:flex; align-items:center; gap:4px; }
+
+        .persist-bar {
+            display: flex; gap:6px; flex-wrap: wrap; justify-content: center; margin-top: 8px;
+        }
+        .persist-bar .btn { font-size: 0.65rem; padding: 6px 10px; }
+        .scene-list {
+            background: var(--card); border-radius: 10px; padding: 8px; margin: 6px 0; display: none;
+            border: 1px solid var(--violet); max-height: 150px; overflow-y: auto;
+        }
+        .scene-list.show { display: block; }
+        .scene-item {
+            padding: 6px 10px; cursor: pointer; border-radius: 8px; font-size: 0.7rem;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: background 0.2s;
+        }
+        .scene-item:hover { background: rgba(179,136,255,0.2); }
+        .scene-item .delete-scene { color: var(--red); cursor: pointer; padding: 2px 6px; }
         .magic-modal {
             position:fixed; inset:0; display:none; align-items:center; justify-content:center;
             z-index:300; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
@@ -241,9 +236,7 @@
 
     <div class="controls-bar">
         <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Cantidad:</span>
-        <div class="ios-picker" id="listenerPicker" tabindex="0">
-            <span class="number" id="pickerValue">10</span>
-        </div>
+        <input type="number" id="listenerCount" value="10" min="1" max="100" class="controls-input">
         <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Perfil:</span>
         <select id="profileSelect" class="controls-select"><option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option></select>
         <button onclick="generateListeners()" class="controls-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Generar</button>
@@ -270,6 +263,18 @@
         <button class="btn" onclick="resetAll()">🔄 Reset</button>
     </div>
 
+    <!-- Barra de persistencia -->
+    <div class="persist-bar">
+        <button class="btn" onclick="saveScene()">💾 Guardar</button>
+        <button class="btn" onclick="loadScene()">📂 Cargar</button>
+        <button class="btn" onclick="exportJSON()">📤 Exportar</button>
+        <button class="btn" onclick="importJSON()">📥 Importar</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+    </div>
+
+    <!-- Lista de escenas -->
+    <div class="scene-list" id="sceneList"></div>
+
     <div class="toast" id="toast"></div>
     <div class="context-menu" id="contextMenu">
         <div class="context-menu-item" data-profile="fiel">🔒 Fiel</div>
@@ -293,7 +298,11 @@
 
     <script>
     (function() {
-        // Esferas
+        // === STORAGE KEYS ===
+        const STORAGE_CURRENT = 'mkeyz_oyentes_current';
+        const STORAGE_SCENES = 'mkeyz_oyentes_scenes';
+
+        // === ESFERAS Y ESTRELLAS ===
         const spheresContainer = document.getElementById('spheres');
         for (let i = 0; i < 16; i++) {
             const sphere = document.createElement('div');
@@ -303,7 +312,6 @@
             spheresContainer.appendChild(sphere);
         }
 
-        // Estrellas fugaces
         const starsCanvas = document.getElementById('starsCanvas');
         const starsCtx = starsCanvas.getContext('2d');
         function resizeStars() { starsCanvas.width = window.innerWidth; starsCanvas.height = window.innerHeight; }
@@ -317,6 +325,7 @@
         }
         drawStars();
 
+        // === PERFILES ===
         const PROFILES = {
             fiel:{name:"Fiel",icon:"🔒",color:"#00e676",activity:0.8,myRadio:0.7,change:0.15,idle:0.1,max:15,session:5},
             explorador:{name:"Explorador",icon:"🔍",color:"#4fc3f7",activity:0.6,myRadio:0.3,change:0.5,idle:0.2,max:8,session:3},
@@ -333,18 +342,12 @@
             "Colombia":[{name:"Bogotá",lat:4.71,lng:-74.07},{name:"Medellín",lat:6.25,lng:-75.56}],
             "Argentina":[{name:"Buenos Aires",lat:-34.60,lng:-58.38},{name:"Córdoba",lat:-31.42,lng:-64.18}],
             "EE.UU.":[{name:"Nueva York",lat:40.71,lng:-74.01},{name:"Los Ángeles",lat:34.05,lng:-118.24}],
-            "Perú":[{name:"Lima",lat:-12.05,lng:-77.04}],
-            "Chile":[{name:"Santiago",lat:-33.45,lng:-70.67}],
-            "Ecuador":[{name:"Quito",lat:-0.18,lng:-78.47}],
-            "Canadá":[{name:"Toronto",lat:43.65,lng:-79.38}],
-            "Italia":[{name:"Roma",lat:41.90,lng:12.50}],
-            "Japón":[{name:"Tokio",lat:35.68,lng:139.76}],
-            "Nigeria":[{name:"Lagos",lat:6.45,lng:3.40}],
-            "Alemania":[{name:"Berlín",lat:52.52,lng:13.40}],
-            "Reino Unido":[{name:"Londres",lat:51.51,lng:-0.13}],
-            "Corea del Sur":[{name:"Seúl",lat:37.57,lng:126.98}],
-            "Australia":[{name:"Sídney",lat:-33.87,lng:151.21}],
-            "India":[{name:"Bombay",lat:19.08,lng:72.88}]
+            "Perú":[{name:"Lima",lat:-12.05,lng:-77.04}], "Chile":[{name:"Santiago",lat:-33.45,lng:-70.67}],
+            "Ecuador":[{name:"Quito",lat:-0.18,lng:-78.47}], "Canadá":[{name:"Toronto",lat:43.65,lng:-79.38}],
+            "Italia":[{name:"Roma",lat:41.90,lng:12.50}], "Japón":[{name:"Tokio",lat:35.68,lng:139.76}],
+            "Nigeria":[{name:"Lagos",lat:6.45,lng:3.40}], "Alemania":[{name:"Berlín",lat:52.52,lng:13.40}],
+            "Reino Unido":[{name:"Londres",lat:51.51,lng:-0.13}], "Corea del Sur":[{name:"Seúl",lat:37.57,lng:126.98}],
+            "Australia":[{name:"Sídney",lat:-33.87,lng:151.21}], "India":[{name:"Bombay",lat:19.08,lng:72.88}]
         };
 
         const platforms = [
@@ -354,55 +357,13 @@
         const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael","Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria"];
         const userAgents = ["Mozilla/5.0 (Windows NT 10.0)","Mozilla/5.0 (iPhone)","Mozilla/5.0 (Android)"];
 
+        // === ESTADO GLOBAL ===
         let listeners = [], state = [];
         let totalMyPlays = 0, totalOtherPlays = 0;
         let data1D = null, data7D = null, data28D = null;
         let currentView = '1D', simulationRunning = false;
 
-        // Selector iOS flotante
-        const picker = document.getElementById('listenerPicker');
-        const pickerValue = document.getElementById('pickerValue');
-        let pickerCurrent = parseInt(pickerValue.textContent) || 10;
-        const MIN_LISTENERS = 1, MAX_LISTENERS = 100;
-
-        function updatePickerDisplay(value) {
-            pickerValue.textContent = value;
-            // Animación flotante
-            pickerValue.style.transform = 'translateY(-10px)';
-            pickerValue.style.opacity = '0';
-            setTimeout(() => {
-                pickerValue.style.transform = 'translateY(0)';
-                pickerValue.style.opacity = '1';
-            }, 150);
-        }
-
-        picker.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            const delta = e.deltaY > 0 ? -1 : 1;
-            pickerCurrent = Math.min(MAX_LISTENERS, Math.max(MIN_LISTENERS, pickerCurrent + delta));
-            updatePickerDisplay(pickerCurrent);
-        });
-
-        // Para móviles: gesto táctil
-        let touchStartY = 0;
-        picker.addEventListener('touchstart', (e) => {
-            touchStartY = e.touches[0].clientY;
-        });
-        picker.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const delta = e.touches[0].clientY - touchStartY;
-            if (Math.abs(delta) > 10) {
-                const change = delta > 0 ? -1 : 1;
-                pickerCurrent = Math.min(MAX_LISTENERS, Math.max(MIN_LISTENERS, pickerCurrent + change));
-                updatePickerDisplay(pickerCurrent);
-                touchStartY = e.touches[0].clientY;
-            }
-        });
-
-        function getListenerCount() {
-            return pickerCurrent;
-        }
-
+        // === MAPA ===
         const map = L.map('mapid', { center:[20,0], zoom:2, zoomControl:false, attributionControl:false, minZoom:2, maxZoom:8 });
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(map);
         let markersLayer = L.layerGroup().addTo(map), heatLayer = null, heatmapActive = false;
@@ -528,7 +489,7 @@
         setInterval(moveMarkers,4000);
 
         function generateListeners() {
-            const count = getListenerCount();
+            const count=parseInt(document.getElementById('listenerCount').value)||10;
             const profileKey=document.getElementById('profileSelect').value;
             listeners=[]; state=[];
             for(let i=0;i<count;i++){
@@ -544,6 +505,7 @@
                 state.push({active:true,inMyRadio:false,trackTimeLeft:0,otherTrackTimeLeft:0,dailyPlays:0,maxDailyPlays:p.max,sessionRemaining:0,profile});
             }
             updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
+            autoSaveCurrentState();
         }
 
         function addListener() {
@@ -558,12 +520,14 @@
             const p=PROFILES[profile];
             state.push({active:true,inMyRadio:false,trackTimeLeft:0,otherTrackTimeLeft:0,dailyPlays:0,maxDailyPlays:p.max,sessionRemaining:0,profile});
             updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
+            autoSaveCurrentState();
         }
 
         function changeProfile(index,newProfile) {
             listeners[index].profile=newProfile; state[index].profile=newProfile;
             const p=PROFILES[newProfile]; state[index].maxDailyPlays=p.max; state[index].dailyPlays=0;
             renderDots(); updateProfileStats(); updateIndicators();
+            autoSaveCurrentState();
         }
 
         document.getElementById('contextMenu').addEventListener('click',e=>{
@@ -673,19 +637,173 @@
             const peaks = document.getElementById('suspiciousPeaks').textContent;
             const bingePct = document.getElementById('bingePct').textContent.replace('%','');
             showMagicModal(plays, other, listeners.length, gini, ratio, peaks, bingePct);
+            autoSaveCurrentState();
         }
 
-        function startSimulation(mode) { if(simulationRunning)return; if(!listeners.length){alert('Añade oyentes');return;} runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
-        function setView(v){currentView=v; document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); document.getElementById('view'+v).classList.add('active'); document.getElementById('chartTitle').textContent='📊 Actividad ('+v+')'; drawChart();}
-        function resetAll() { if(simulationRunning)return; listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; updateStats(); renderDots(); drawChart(); updateProfileStats(); updateIndicators(); }
-        function closeMagicModal() { magicModal.classList.remove('show'); }
-        function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.transform='translateX(-50%) translateY(0)'; setTimeout(()=>t.style.transform='translateX(-50%) translateY(80px)',2000); }
+        // === PERSISTENCIA ===
+        function getCurrentData() {
+            return {
+                listeners: listeners.map(l => ({...l, _marker: undefined})),
+                state: state.map(s => ({...s})),
+                totalMyPlays,
+                totalOtherPlays,
+                data1D, data7D, data28D,
+                timestamp: Date.now()
+            };
+        }
 
-        window.addListener=addListener; window.generateListeners=generateListeners; window.startSimulation=startSimulation; window.setView=setView; window.resetAll=resetAll; window.closeMagicModal=closeMagicModal;
+        function restoreData(data) {
+            if (!data) return false;
+            listeners = data.listeners.map(l => ({...l}));
+            state = data.state.map(s => ({...s}));
+            totalMyPlays = data.totalMyPlays || 0;
+            totalOtherPlays = data.totalOtherPlays || 0;
+            data1D = data.data1D || null;
+            data7D = data.data7D || null;
+            data28D = data.data28D || null;
+            updateStats();
+            renderDots();
+            updateProfileStats();
+            updateIndicators();
+            populateFilters();
+            if (data7D) document.getElementById('view7D').disabled = false;
+            if (data28D) document.getElementById('view28D').disabled = false;
+            return true;
+        }
 
-        generateListeners();
-        resizeCanvas();
-        setInterval(()=>{if(!simulationRunning)updateStats();},5000);
+        function autoSaveCurrentState() {
+            try {
+                const data = getCurrentData();
+                localStorage.setItem(STORAGE_CURRENT, JSON.stringify(data));
+            } catch (e) {}
+        }
+
+        function loadSavedState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_CURRENT);
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    if (data.listeners && data.listeners.length > 0) {
+                        restoreData(data);
+                        return true;
+                    }
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        function saveScene() {
+            const name = prompt('Nombre de la escena:');
+            if (!name) return;
+            const data = getCurrentData();
+            data.name = name;
+            data.savedAt = new Date().toLocaleString();
+            try {
+                const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]');
+                scenes.push(data);
+                localStorage.setItem(STORAGE_SCENES, JSON.stringify(scenes));
+                showToast('Escena guardada: ' + name);
+            } catch (e) { showToast('Error al guardar'); }
+        }
+
+        function loadScene() {
+            const listDiv = document.getElementById('sceneList');
+            try {
+                const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]');
+                if (scenes.length === 0) { showToast('No hay escenas guardadas'); return; }
+                listDiv.innerHTML = scenes.map((s, i) => `
+                    <div class="scene-item">
+                        <span onclick="loadSceneByIndex(${i})" style="flex:1">${s.name} (${s.listeners.length} oyentes, ${s.savedAt || ''})</span>
+                        <span class="delete-scene" onclick="deleteScene(${i})">🗑️</span>
+                    </div>
+                `).join('');
+                listDiv.classList.add('show');
+            } catch (e) { showToast('Error al cargar escenas'); }
+        }
+
+        function loadSceneByIndex(index) {
+            try {
+                const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]');
+                if (scenes[index]) {
+                    restoreData(scenes[index]);
+                    autoSaveCurrentState();
+                    document.getElementById('sceneList').classList.remove('show');
+                    showToast('Escena cargada');
+                }
+            } catch (e) {}
+        }
+
+        function deleteScene(index) {
+            try {
+                const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]');
+                scenes.splice(index, 1);
+                localStorage.setItem(STORAGE_SCENES, JSON.stringify(scenes));
+                loadScene();
+            } catch (e) {}
+        }
+
+        function exportJSON() {
+            const data = getCurrentData();
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'oyentes_mkeyz.json'; a.click();
+            URL.revokeObjectURL(url);
+            showToast('Exportado como JSON');
+        }
+
+        function importJSON() {
+            document.getElementById('importFile').click();
+        }
+
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.listeners && data.listeners.length > 0) {
+                        restoreData(data);
+                        autoSaveCurrentState();
+                        showToast('Importado correctamente');
+                    } else {
+                        showToast('Archivo no válido');
+                    }
+                } catch (ex) { showToast('Error al leer el archivo'); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // === INICIALIZACIÓN ===
+        function init() {
+            resizeCanvas();
+            if (!loadSavedState()) {
+                generateListeners();
+            } else {
+                resizeCanvas();
+                drawChart();
+            }
+            setInterval(() => { if(!simulationRunning) updateStats(); }, 5000);
+        }
+
+        window.addListener=addListener;
+        window.generateListeners=generateListeners;
+        window.startSimulation=startSimulation;
+        window.setView=setView;
+        window.resetAll=resetAll;
+        window.closeMagicModal=closeMagicModal;
+        window.saveScene=saveScene;
+        window.loadScene=loadScene;
+        window.exportJSON=exportJSON;
+        window.importJSON=importJSON;
+        window.handleImport=handleImport;
+        window.loadSceneByIndex=loadSceneByIndex;
+        window.deleteScene=deleteScene;
+
+        document.getElementById('listenerCount').value=8;
+        init();
     })();
     </script>
 </body>
