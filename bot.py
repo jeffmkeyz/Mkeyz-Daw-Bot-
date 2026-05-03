@@ -129,7 +129,7 @@ MKEYZ_REWARDS = {
     "calc_royalties":10,   # Usar calculadora
     "cotizador":     10,   # Usar cotizador
     "playlist_gen":  15,   # Generar playlist
-    "oyentespanel":  20,   # Usar Panel Oyentes
+    "scale_detect":  20,   # Usar detector de escala
 }
 
 async def award_mkeyz(tg_id: int, action: str):
@@ -729,7 +729,7 @@ def kb_upgrade(required_plan):
         ])
 
 async def ask_upgrade(query, required_plan):
-    PRO_TOOLS    = "🎛️ Mini DAW · 📊 Analizador · 🎹 Chord Generator + MIDI\n🎤 Voice Studio · 🎚️ Visualizador · 🔍 PAnel Oyentes\n🃏 Tarjeta de Artista · 🎧 Playlist Generator"
+    PRO_TOOLS    = "🎛️ Mini DAW · 📊 Analizador · 🎹 Chord Generator + MIDI\n🎤 Voice Studio · 🎚️ Visualizador · 🔍 Detector Escala\n🃏 Tarjeta de Artista · 🎧 Playlist Generator"
     STUDIO_TOOLS = "🧮 Calculadora · 📊 Simulador de Streams · 📈 Mis Views\n📈 Comparador de Artistas · 🎤 Zona Artistas · 🤝 Colabs"
 
     if required_plan == PLAN_PRO:
@@ -791,7 +791,7 @@ def kb_sub_tools():
         [InlineKeyboardButton("🎛️  Mini DAW",           callback_data="sec_daw")],
         [InlineKeyboardButton("📊  Analizador",         callback_data="sec_analyze")],
         [InlineKeyboardButton("📊  Simulador Streams",  callback_data="sec_simulator")],
-        [InlineKeyboardButton("🎹  Panel Oyentes",      callback_data="sec_scale")],
+        [InlineKeyboardButton("🎹  Detector de Escala", callback_data="sec_scale")],
         [InlineKeyboardButton("🎚️  Visualizador Freq.", callback_data="sec_freq")],
         [InlineKeyboardButton("📈  Comparar Artistas",  callback_data="sec_compare")],
         [InlineKeyboardButton("🎵  Chord Generator",   callback_data="sec_chords")],
@@ -1251,19 +1251,19 @@ async def on_button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await edit(q, "🎤 No disponible.", kb_back())
         return
 
-    # ── Panel Oyentes ─────────────────────────────────
+    # ── Detector de Escala ─────────────────────────────────
     if d == "sec_scale":
         game_url = (GAME_URL.rstrip("/") + "/scale") if GAME_URL else None
         if game_url:
             await edit(q,
-                "👥 *Oyentes en Vivo*\n\n"
-                "Monitoriza en tiempo real quién está escuchando tu música.\n\n"
-                "🌍 Mapa de oyentes por país\n"
-                "📊 Gráficos de actividad (1D / 7D / 28D)\n"
-                "🎧 Diferencia tus plays de los de otros artistas\n"
-                "✨ Simulación realista de audiencia",
+                "🎹 *Detector de Escala Musical*\n\n"
+                "Toca notas en el piano virtual y detecta automáticamente:\n\n"
+                "🎼 La escala musical\n"
+                "🎸 Los acordes que funcionan\n"
+                "🎵 El mood y géneros ideales\n"
+                "✨ Las notas resaltadas en el piano",
                 InlineKeyboardMarkup([
-                    [InlineKeyboardButton("👥 Abrir Oyentes en Vivo", web_app=WebAppInfo(url=game_url))],
+                    [InlineKeyboardButton("🎹 Abrir Piano", web_app=WebAppInfo(url=game_url))],
                     [InlineKeyboardButton("← Herramientas", callback_data="sub_tools")],
                 ]))
         else:
