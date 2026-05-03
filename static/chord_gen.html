@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Generador de Acordes y Escalas Pro — Mkeyz Studio</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/abcjs@6.2.3/dist/abcjs-basic-min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Montserrat:wght@700;900&family=Oswald:wght@700&family=Playfair+Display:wght@700;900&family=Roboto:wght@700;900&family=Bebas+Neue&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #03050a;
+      --card: #0a0c14;
+      --border: #1a1d2e;
+      --gold: #f0b90b;
+      --purple: #b388ff;
+      --green: #00e676;
+      --text: #fff;
+      --muted: #6a6d7a;
+      --radius: 16px;
+      --text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.4);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+    .app-container {
+      width: 100%;
+      max-width: 520px;
+      padding: 16px 12px 80px;
+      position: relative;
+      z-index: 1;
+    }
+    .header {
+      text-align: center;
+      padding: 16px 0 8px;
+    }
+    .header .icon { font-size: 42px; animation: float 3s infinite; display: inline-block; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    .header h1 {
+      font-size: 24px; font-weight:900; letter-spacing:-1px;
+      background: linear-gradient(135deg,#fff,#b388ff,#f0b90b);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .detection-card {
+      background: linear-gradient(145deg,#0f0a1e,#120d24,#0a0f1a);
+      border:1px solid #2a1f4a; border-radius:var(--radius); padding:16px; margin-bottom:12px;
+      box-shadow: 0 0 30px rgba(179,136,255,0.2);
+    }
+    .scale-name { font-size:32px; font-weight:900; color:var(--gold); text-align:center; }
+    .scale-mood { font-size:14px; color:var(--purple); text-align:center; font-weight:600; }
+    .confidence-bar { height:5px; background:rgba(255,255,255,0.05); border-radius:10px; margin-top:8px; }
+    .confidence-fill { height:100%; border-radius:10px; background:linear-gradient(90deg,var(--purple),var(--gold)); transition:width 0.4s; }
+
+    .piano-wrap {
+      overflow-x: auto;
+      margin: 8px 0;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+      -webkit-overflow-scrolling: touch;
+    }
+    .piano-wrap::-webkit-scrollbar { height: 6px; }
+    .piano-wrap::-webkit-scrollbar-track { background: transparent; }
+    .piano-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    .piano { display:flex; position:relative; height:130px; width:max-content; min-width:100%; }
+    .white-key {
+      width:40px; height:130px;
+      background: linear-gradient(180deg, #f5f5f5 0%, #e0e0e0 40%, #d0d0d0 100%);
+      border: 2px solid #b0b0b0;
+      border-radius: 0 0 8px 8px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.1s ease;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #555;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15), inset 0 -6px 12px rgba(0,0,0,0.08);
+      transform-origin: top center;
+      z-index: 1;
+    }
+    .white-key:active {
+      background: linear-gradient(180deg, #e8e8e8 0%, #c8c8c8 40%, #b8b8b8 100%);
+      transform: scaleY(0.97);
+    }
+    .white-key.selected {
+      border-color: var(--gold);
+      box-shadow: 0 0 20px rgba(240,185,11,0.7), 0 2px 4px rgba(0,0,0,0.3);
+      background: linear-gradient(180deg, #fff9c4 0%, #ffe082 40%, #f9a825 100%);
+      color: #000;
+      z-index: 3;
+    }
+    .white-key.in-scale {
+      background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 40%, #a5d6a7 100%);
+      border-color: #81c784;
+    }
+    .white-key.selected.in-scale {
+      background: linear-gradient(180deg, #b9f6ca 0%, #69f0ae 40%, #00c853 100%);
+      border-color: var(--gold);
+      box-shadow: 0 0 25px rgba(0,230,118,0.8), 0 0 15px rgba(240,185,11,0.5);
+      color: #000;
+    }
+
+    .black-key {
+      width: 28px; height: 84px;
+      background: linear-gradient(180deg, #2a2a2a 0%, #0d0d0d 30%, #000000 100%);
+      border-radius: 0 0 5px 5px;
+      cursor: pointer;
+      position: absolute;
+      top: 0;
+      z-index: 2;
+      transition: all 0.1s ease;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 6px;
+      font-size: 8px;
+      font-weight: 700;
+      color: #777;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.6), inset 0 -4px 8px rgba(0,0,0,0.4);
+      transform-origin: top center;
+      border: 2px solid #000;
+    }
+    .black-key:active { transform: scaleY(0.96); }
+    .black-key.selected {
+      border-color: var(--gold);
+      background: linear-gradient(180deg, #ffe082 0%, #ffb300 40%, #e65100 100%);
+      color: #000;
+      box-shadow: 0 0 20px rgba(240,185,11,0.7), 0 3px 8px rgba(0,0,0,0.5);
+    }
+    .black-key.in-scale {
+      background: linear-gradient(180deg, #1b3a1b 0%, #0d2a0d 30%, #051a05 100%);
+      border-color: #2e7d32;
+    }
+    .black-key.selected.in-scale {
+      background: linear-gradient(180deg, #69f0ae 0%, #00c853 40%, #00600f 100%);
+      border-color: var(--gold);
+      box-shadow: 0 0 20px rgba(0,230,118,0.8), 0 0 15px rgba(240,185,11,0.5);
+      color: #000;
+    }
+
+    .tab-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      z-index: 100;
+      padding: 6px 0 env(safe-area-inset-bottom);
+      justify-content: space-around;
+    }
+    .tab-btn {
+      flex: 1; text-align: center; padding: 6px; color: var(--muted);
+      font-size: 11px; font-weight: 600; cursor: pointer; border: none;
+      background: transparent; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .tab-btn.active { color: var(--gold); }
+    .tab-btn .tab-icon { font-size: 20px; }
+
+    .panel { display: none; animation: fadeSlide 0.3s; }
+    .panel.active { display: block; }
+    @keyframes fadeSlide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    .section-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin:12px 0 8px; }
+    .btn {
+      padding: 10px 16px; border-radius: 20px; border: 1px solid var(--border);
+      background: var(--card); color: var(--text); font-weight: 700; cursor: pointer;
+      transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
+    }
+    .btn:active { transform: scale(0.96); background: #1a1028; border-color: var(--purple); }
+    .btn.primary { background: linear-gradient(135deg,var(--purple),#4a0072); border: none; color: #fff; }
+    .btn-sm { padding: 6px 12px; font-size: 11px; }
+
+    .slider-row { display:flex; align-items:center; gap:8px; margin:6px 0; }
+    .slider-row label { font-size:11px; color:var(--muted); min-width:55px; font-weight:600; }
+    input[type=range] {
+      flex: 1; -webkit-appearance:none; appearance:none;
+      height:5px; background: linear-gradient(90deg, var(--border), #2a2a40);
+      border-radius:5px; outline:none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance:none; width:20px; height:20px; border-radius:50%;
+      background: linear-gradient(135deg, var(--purple), var(--purple2));
+      cursor:pointer; border:2px solid #000; box-shadow: 0 0 10px rgba(179,136,255,0.4);
+    }
+
+    .chord-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:12px; }
+    .chord-card {
+      background:var(--card); border:1px solid var(--border); border-radius:12px;
+      padding:10px; text-align:center; cursor:pointer;
+    }
+    .chord-card:active { background:#1a1028; border-color:var(--purple); }
+    .chord-num { font-size:10px; color:var(--muted); margin-bottom:4px; }
+    .chord-name { font-size:15px; font-weight:800; color:var(--gold); }
+    .chord-type { font-size:10px; color:var(--muted); margin-top:2px; }
+
+    .progression-list { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+    .prog-chip {
+      padding:8px 14px; border-radius:20px; background:var(--card);
+      border:1px solid var(--border); font-size:12px; font-weight:600; cursor:pointer;
+    }
+    .prog-chip:active { background:#1a1028; border-color:var(--gold); }
+
+    canvas { border-radius:12px; background:#0a0c14; width:100%; height:100px; display:block; margin-top:8px; }
+
+    .fx-panel {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 12px; margin-top: 8px;
+    }
+    .fx-toggle-btn {
+      width: 100%; padding: 8px; background: transparent; border: 1px solid var(--border);
+      color: var(--muted); border-radius: 20px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .fx-toggle-btn.active { color: var(--gold); border-color: var(--purple); }
+    .fx-controls { display: none; margin-top: 8px; }
+    .fx-controls.show { display: block; }
+
+    .toast {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-120px);
+      background: #1a1028; border: 2px solid var(--purple); border-radius: 20px;
+      padding: 12px 20px; z-index: 1000; font-weight: 700; color: var(--gold);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none; text-align: center; white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div class="header">
+    <div class="icon">🎹</div>
+    <h1>Generador de Acordes y Escalas</h1>
+  </div>
+
+  <div class="detection-card">
+    <div class="scale-name" id="scale-name-display">—</div>
+    <div class="scale-mood" id="scale-mood-display">Toca algunas notas</div>
+    <div class="confidence-bar"><div class="confidence-fill" id="confidence-fill" style="width:0%"></div></div>
+    <div style="text-align:right;font-size:10px;color:var(--muted)" id="confidence-text"></div>
+  </div>
+
+  <!-- PANEL PRINCIPAL -->
+  <div class="panel active" id="panel-piano">
+    <div class="piano-wrap"><div class="piano" id="piano"></div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;">
+      <button class="btn btn-sm" id="sustain-btn" onclick="toggleSustain()">🎹 Sustain</button>
+      <button class="btn btn-sm" id="arp-btn" onclick="toggleArp()">🔄 Arp</button>
+      <button class="btn btn-sm" onclick="clearAll()">🗑️ Limpiar</button>
+      <button class="btn btn-sm primary" onclick="playScale()">▶ Escuchar escala</button>
+    </div>
+    <div class="slider-row">
+      <label>Pitch</label>
+      <input type="range" id="pitch-bend" min="-12" max="12" value="0" oninput="updatePitchBend(this.value)">
+      <span id="pitch-val" style="font-size:11px;color:var(--text)">0</span>
+    </div>
+
+    <!-- Selector de sonido -->
+    <div class="section-title">🎛️ Sonido</div>
+    <div id="sound-selector" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+      <button class="btn btn-sm active" data-sound="piano">🎹 Piano</button>
+      <button class="btn btn-sm" data-sound="organ">🎛️ Órgano</button>
+      <button class="btn btn-sm" data-sound="guitar">🎸 Guitarra</button>
+      <button class="btn btn-sm" data-sound="synth">🎧 Synth</button>
+      <button class="btn btn-sm" data-sound="bells">🔔 Campanas</button>
+    </div>
+
+    <!-- Panel de efectos desplegable -->
+    <div class="fx-panel">
+      <button class="fx-toggle-btn" id="fx-toggle" onclick="toggleFxPanel()">⚙️ Efectos y EQ</button>
+      <div class="fx-controls" id="fx-controls">
+        <div class="slider-row"><label>Reverb</label><input type="range" id="fx-reverb" min="0" max="100" value="30" oninput="updateFx('reverb',this.value)"><span id="val-reverb">30%</span></div>
+        <div class="slider-row"><label>Delay</label><input type="range" id="fx-delay" min="0" max="100" value="0" oninput="updateFx('delay',this.value)"><span id="val-delay">0%</span></div>
+        <div class="slider-row"><label>Chorus</label><input type="range" id="fx-chorus" min="0" max="100" value="0" oninput="updateFx('chorus',this.value)"><span id="val-chorus">0%</span></div>
+        <div class="slider-row"><label>Distortion</label><input type="range" id="fx-distortion" min="0" max="100" value="0" oninput="updateFx('distortion',this.value)"><span id="val-distortion">0%</span></div>
+        <div class="slider-row"><label>Compressor</label><input type="range" id="fx-compressor" min="0" max="100" value="50" oninput="updateFx('compressor',this.value)"><span id="val-compressor">50%</span></div>
+        <div class="section-title">🎚️ Ecualizador</div>
+        <div class="slider-row"><label>Low</label><input type="range" id="fx-eqLow" min="-12" max="12" value="0" oninput="updateFx('eqLow',this.value)"><span id="val-eqLow">0 dB</span></div>
+        <div class="slider-row"><label>Mid</label><input type="range" id="fx-eqMid" min="-12" max="12" value="0" oninput="updateFx('eqMid',this.value)"><span id="val-eqMid">0 dB</span></div>
+        <div class="slider-row"><label>High</label><input type="range" id="fx-eqHigh" min="-12" max="12" value="0" oninput="updateFx('eqHigh',this.value)"><span id="val-eqHigh">0 dB</span></div>
+        <div style="margin-top:8px;display:flex;gap:6px;">
+          <button class="btn btn-sm" onclick="saveFxPreset()">💾 Guardar preset</button>
+          <button class="btn btn-sm" onclick="loadFxPreset()">📂 Cargar preset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">📊 Analizador de Espectro</div>
+    <canvas id="analyzer-canvas"></canvas>
+  </div>
+
+  <!-- PANEL ESTUDIO -->
+  <div class="panel" id="panel-studio">
+    <div class="section-title">🎸 Acordes que funcionan</div>
+    <div class="chord-grid" id="chord-grid"></div>
+    <div class="section-title">🎼 Progresiones de Acordes</div>
+    <div class="progression-list" id="progression-list"></div>
+    <button class="btn btn-sm primary" style="margin-top:8px;" onclick="generateProgression()">✨ Generar progresión</button>
+    <div class="section-title">🎵 Partitura</div>
+    <div id="sheet-music" style="background:var(--card);border-radius:12px;padding:8px;min-height:60px;"></div>
+    <button class="btn btn-sm" style="margin-top:4px;" onclick="exportSheet()">📤 Exportar partitura</button>
+    <div class="section-title">📚 Mis Escalas</div>
+    <div id="scale-library"></div>
+    <button class="btn btn-sm" onclick="saveCurrentScale()">💾 Guardar escala actual</button>
+    <button class="btn btn-sm" onclick="createCustomScale()">➕ Crear escala personalizada</button>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-panel="panel-piano"><span class="tab-icon">🎹</span>Piano</button>
+  <button class="tab-btn" data-panel="panel-studio"><span class="tab-icon">🎼</span>Estudio</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const tg = window.Telegram?.WebApp;
+  if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#03050a"); tg.setBackgroundColor("#03050a"); }
+
+  const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const WHITE_NOTES = [0,2,4,5,7,9,11];
+  const BLACK_NOTES = [1,3,null,6,8,10];
+  const SCALES = {
+    "Mayor":           { intervals:[0,2,4,5,7,9,11], chords:["Maj","min","min","Maj","Maj","min","dim"], mood:"Alegre, brillante" },
+    "Menor Natural":   { intervals:[0,2,3,5,7,8,10], chords:["min","dim","Maj","min","min","Maj","Maj"], mood:"Oscura, melancólica" },
+    "Dórico":          { intervals:[0,2,3,5,7,9,10], chords:["min","min","Maj","Maj","min","dim","Maj"], mood:"Jazz, funk, groove" },
+    "Frigio":          { intervals:[0,1,3,5,7,8,10], chords:["min","Maj","Maj","min","dim","Maj","min"], mood:"Flamenco, dramático" },
+    "Lidio":           { intervals:[0,2,4,6,7,9,11], chords:["Maj","Maj","min","dim","Maj","min","min"], mood:"Épico, flotante" },
+    "Mixolidio":       { intervals:[0,2,4,5,7,9,10], chords:["Maj","min","dim","Maj","min","min","Maj"], mood:"Rock, blues" },
+  };
+  const ROMAN = ["I","II","III","IV","V","VI","VII"];
+  const PROGRESSIONS = {
+    "Mayor": [["I","V","vi","IV"],["I","IV","V","I"],["ii","V","I"],["I","vi","IV","V"]],
+    "Menor Natural": [["i","iv","v","i"],["i","VI","III","VII"],["i","iv","VII","III"]],
+    "default": [["I","IV","V"],["i","iv","V"]]
+  };
+
+  let selectedNotes = new Set();
+  let audioCtx = null;
+  let masterGain, analyserNode, lowEQ, midEQ, highEQ;
+  let delayNode, delayFeedback, delayMix, reverbGain, reverbNode;
+  let chorusNode, chorusGain, distortionNode, compressorNode;
+  let fxSettings = { reverb:30, delay:0, chorus:0, distortion:0, compressor:50, eqLow:0, eqMid:0, eqHigh:0 };
+  let currentSound = 'piano';
+  let currentOctaveStart = 4;
+  let lastDetectedScale = null;
+  let sustainActive = false;
+  let arpActive = false;
+  let arpInterval = null;
+  let activeOscillators = [];
+  let pitchBend = 0;
+  let recordedNotes = [];
+  let scaleLibrary = JSON.parse(localStorage.getItem('scaleLibrary') || '[]');
+  let fxPresets = JSON.parse(localStorage.getItem('fxPresets') || '[]');
+  let analyzerAnimFrame = null;
+
+  function getAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      setupAudioGraph();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function setupAudioGraph() {
+    masterGain = audioCtx.createGain(); masterGain.gain.value = 0.8;
+    lowEQ = audioCtx.createBiquadFilter(); lowEQ.type = "lowshelf"; lowEQ.frequency.value = 250;
+    midEQ = audioCtx.createBiquadFilter(); midEQ.type = "peaking"; midEQ.frequency.value = 1000; midEQ.Q.value = 1;
+    highEQ = audioCtx.createBiquadFilter(); highEQ.type = "highshelf"; highEQ.frequency.value = 4000;
+    delayNode = audioCtx.createDelay(1); delayNode.delayTime.value = 0.3;
+    delayFeedback = audioCtx.createGain(); delayFeedback.gain.value = 0;
+    delayMix = audioCtx.createGain(); delayMix.gain.value = 0;
+    reverbGain = audioCtx.createGain(); reverbGain.gain.value = 0.2;
+    reverbNode = audioCtx.createConvolver(); reverbNode.buffer = createReverbImpulse(1.5);
+    chorusNode = audioCtx.createDelay(0.03); chorusNode.delayTime.value = 0.015;
+    chorusGain = audioCtx.createGain(); chorusGain.gain.value = 0;
+    distortionNode = audioCtx.createWaveShaper(); distortionNode.curve = makeDistortionCurve(0);
+    compressorNode = audioCtx.createDynamicsCompressor(); compressorNode.threshold.value = -24; compressorNode.ratio.value = 12;
+    analyserNode = audioCtx.createAnalyser(); analyserNode.fftSize = 256;
+
+    masterGain.connect(lowEQ);
+    lowEQ.connect(midEQ);
+    midEQ.connect(highEQ);
+    highEQ.connect(audioCtx.destination);
+    highEQ.connect(delayNode);
+    delayNode.connect(delayFeedback);
+    delayFeedback.connect(delayNode);
+    delayNode.connect(delayMix);
+    delayMix.connect(audioCtx.destination);
+    highEQ.connect(reverbGain);
+    reverbGain.connect(reverbNode);
+    reverbNode.connect(audioCtx.destination);
+    highEQ.connect(chorusNode);
+    chorusNode.connect(chorusGain);
+    chorusGain.connect(audioCtx.destination);
+    highEQ.connect(distortionNode);
+    distortionNode.connect(compressorNode);
+    compressorNode.connect(audioCtx.destination);
+    highEQ.connect(analyserNode);
+    updateAllFx();
+  }
+
+  function createReverbImpulse(duration) {
+    const sr = audioCtx.sampleRate;
+    const len = sr * duration;
+    const buf = audioCtx.createBuffer(2, len, sr);
+    for (let ch = 0; ch < 2; ch++) {
+      const data = buf.getChannelData(ch);
+      for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (sr * 0.8));
+    }
+    return buf;
+  }
+
+  function makeDistortionCurve(amount) {
+    const k = amount * 100;
+    const n_samples = 44100;
+    const curve = new Float32Array(n_samples);
+    for (let i = 0; i < n_samples; i++) {
+      const x = i * 2 / n_samples - 1;
+      curve[i] = Math.tanh(k * x) / Math.tanh(k || 1);
+    }
+    return curve;
+  }
+
+  function updateAllFx() {
+    if (!audioCtx) return;
+    reverbGain.gain.value = fxSettings.reverb / 100 * 0.7;
+    delayFeedback.gain.value = fxSettings.delay / 100 * 0.6;
+    delayMix.gain.value = fxSettings.delay / 100 * 0.5;
+    chorusGain.gain.value = fxSettings.chorus / 100 * 0.5;
+    distortionNode.curve = makeDistortionCurve(fxSettings.distortion / 100);
+    compressorNode.threshold.value = -24 + (fxSettings.compressor / 100) * 12;
+    lowEQ.gain.value = fxSettings.eqLow;
+    midEQ.gain.value = fxSettings.eqMid;
+    highEQ.gain.value = fxSettings.eqHigh;
+  }
+
+  function updateFx(type, val) {
+    fxSettings[type] = parseInt(val);
+    const display = document.getElementById(`val-${type}`);
+    if (display) display.textContent = type.startsWith('eq') ? val + ' dB' : val + '%';
+    updateAllFx();
+  }
+
+  function playNote(midi, dur = 0.8, velocity = 0.8) {
+    const ctx = getAudio();
+    const freq = 440 * Math.pow(2, (midi - 69) / 12) * Math.pow(2, pitchBend / 12);
+    const now = ctx.currentTime;
+    const createOsc = (type, freq, gainVal, detune = 0) => {
+      const osc = ctx.createOscillator();
+      osc.type = type; osc.frequency.value = freq; osc.detune.value = detune;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(gainVal * velocity, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      osc.connect(gain); gain.connect(masterGain);
+      osc.start(now); osc.stop(now + dur);
+      return { osc, gain };
+    };
+    const oscs = [];
+    switch (currentSound) {
+      case 'piano':
+        oscs.push(createOsc('triangle', freq, 0.35));
+        oscs.push(createOsc('sine', freq * 2, 0.12));
+        break;
+      case 'organ':
+        [1, 2, 3, 4].forEach((mult, i) => oscs.push(createOsc('sine', freq * mult, 0.15 / (i + 1))));
+        break;
+      case 'guitar':
+        oscs.push(createOsc('triangle', freq, 0.45));
+        break;
+      case 'synth':
+        oscs.push(createOsc('sawtooth', freq, 0.2));
+        break;
+      case 'bells':
+        oscs.push(createOsc('sine', freq, 0.25));
+        const lfo = ctx.createOscillator(); lfo.frequency.value = 5;
+        const lfoGain = ctx.createGain(); lfoGain.gain.value = 10;
+        lfo.connect(lfoGain); lfoGain.connect(oscs[0].osc.frequency);
+        lfo.start(now); lfo.stop(now + dur);
+        break;
+    }
+    if (sustainActive) {
+      activeOscillators.push(...oscs);
+      setTimeout(() => { activeOscillators = activeOscillators.filter(o => !oscs.includes(o)); }, dur * 1000);
+    } else {
+      activeOscillators.push(...oscs);
+      setTimeout(() => oscs.forEach(o => { try { o.osc.stop(); } catch (e) {} }), dur * 1000);
+    }
+    recordedNotes.push({ midi, time: Date.now() });
+  }
+
+  function stopAllOscillators() {
+    activeOscillators.forEach(o => { try { o.osc.stop(); } catch (e) {} });
+    activeOscillators = [];
+  }
+
+  function buildPiano() {
+    const piano = document.getElementById('piano');
+    piano.innerHTML = '';
+    const startMIDI = currentOctaveStart * 12;
+    let whiteIdx = 0;
+
+    for (let oct = 0; oct < 2; oct++) {
+      const octBase = startMIDI + oct * 12;
+      for (let w = 0; w < 7; w++) {
+        const noteIdx = WHITE_NOTES[w];
+        const midi = octBase + noteIdx;
+        const key = document.createElement('div');
+        key.className = 'white-key';
+        key.dataset.note = noteIdx;
+        key.dataset.midi = midi;
+        key.innerHTML = `<span>${NOTE_NAMES[noteIdx]}</span>`;
+        key.addEventListener('pointerdown', (e) => { e.preventDefault(); handleKeyPress(midi, key, e); });
+        piano.appendChild(key);
+        whiteIdx++;
+      }
+      const blackOffsets = [0.55, 1.55, null, 3.55, 4.55, 5.55];
+      blackOffsets.forEach((offset, i) => {
+        if (offset === null) return;
+        const noteIdx = BLACK_NOTES[i];
+        if (noteIdx === null) return;
+        const midi = octBase + noteIdx;
+        const baseX = (oct * 7) * 40;
+        const key = document.createElement('div');
+        key.className = 'black-key';
+        key.dataset.note = noteIdx;
+        key.dataset.midi = midi;
+        key.innerHTML = `<span>${NOTE_NAMES[noteIdx]}</span>`;
+        key.style.left = (baseX + offset * 40 + 5) + 'px';
+        key.addEventListener('pointerdown', (e) => { e.preventDefault(); handleKeyPress(midi, key, e); });
+        piano.appendChild(key);
+      });
+    }
+    refreshPianoVisuals();
+  }
+
+  function handleKeyPress(midi, key, e) {
+    const rect = key.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const velocity = Math.max(0.3, Math.min(1, 1 - (y / rect.height)));
+
+    if (selectedNotes.has(midi)) {
+      selectedNotes.delete(midi);
+    } else {
+      selectedNotes.add(midi);
+      playNote(midi, 0.6, velocity);
+    }
+
+    key.style.transform = 'scaleY(0.94)';
+    setTimeout(() => key.style.transform = '', 80);
+
+    clearTimeout(window._analysisTimeout);
+    window._analysisTimeout = setTimeout(analyzeScale, 200);
+    refreshPianoVisuals();
+  }
+
+  function refreshPianoVisuals() {
+    document.querySelectorAll('.white-key, .black-key').forEach(k => {
+      const midi = parseInt(k.dataset.midi);
+      k.classList.toggle('selected', selectedNotes.has(midi));
+      k.classList.remove('in-scale');
+      if (lastDetectedScale) {
+        const noteIdx = midi % 12;
+        if (lastDetectedScale.scaleNotes.includes(noteIdx)) {
+          k.classList.add('in-scale');
+        }
+      }
+    });
+  }
+
+  function analyzeScale() {
+    const noteIdxs = new Set(Array.from(selectedNotes).map(midi => midi % 12));
+    if (noteIdxs.size === 0) {
+      document.getElementById('scale-name-display').textContent = '—';
+      document.getElementById('scale-mood-display').textContent = 'Toca algunas notas';
+      document.getElementById('confidence-fill').style.width = '0%';
+      document.getElementById('confidence-text').textContent = '';
+      lastDetectedScale = null;
+      refreshPianoVisuals();
+      updateChordsAndProgs();
+      updateSheetMusic();
+      return;
+    }
+    const notes = Array.from(noteIdxs);
+    let allMatches = [];
+    for (let root = 0; root < 12; root++) {
+      for (const [scaleName, scaleData] of Object.entries(SCALES)) {
+        const scaleNotes = scaleData.intervals.map(i => (root + i) % 12);
+        let matches = notes.filter(n => scaleNotes.includes(n)).length;
+        const coverage = matches / notes.length;
+        const efficiency = matches / scaleNotes.length;
+        allMatches.push({ root, scaleName, score: coverage * 0.7 + efficiency * 0.3, scaleData, scaleNotes });
+      }
+    }
+    allMatches.sort((a, b) => b.score - a.score);
+    lastDetectedScale = allMatches[0];
+    const best = lastDetectedScale;
+    document.getElementById('scale-name-display').textContent = `${NOTE_NAMES[best.root]} ${best.scaleName}`;
+    document.getElementById('scale-mood-display').textContent = best.scaleData.mood;
+    const confidence = Math.round(best.score * 100);
+    document.getElementById('confidence-fill').style.width = confidence + '%';
+    document.getElementById('confidence-text').textContent = confidence + '% coincidencia';
+    refreshPianoVisuals();
+    updateChordsAndProgs();
+    updateSheetMusic();
+  }
+
+  function updateChordsAndProgs() {
+    const chordGrid = document.getElementById('chord-grid');
+    const progList = document.getElementById('progression-list');
+    if (!lastDetectedScale || !lastDetectedScale.scaleData.chords) {
+      chordGrid.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:13px;text-align:center;">Selecciona notas para ver acordes</div>';
+      progList.innerHTML = '';
+      return;
+    }
+    const scale = lastDetectedScale;
+    chordGrid.innerHTML = scale.scaleData.chords.map((type, i) => {
+      const chordRoot = NOTE_NAMES[(scale.root + scale.scaleData.intervals[i]) % 12];
+      let symbol = chordRoot;
+      if (type === "min") symbol += "m";
+      else if (type === "dim") symbol += "°";
+      else if (type === "Aug") symbol += "+";
+      return `<div class="chord-card" onclick="playChord(${i})">
+        <div class="chord-num">${ROMAN[i]}</div>
+        <div class="chord-name">${symbol}</div>
+        <div class="chord-type">${type}</div>
+      </div>`;
+    }).join('');
+
+    const scaleType = scale.scaleName.includes('Mayor') ? 'Mayor' : 'Menor Natural';
+    const progs = PROGRESSIONS[scaleType] || PROGRESSIONS.default;
+    progList.innerHTML = progs.map(p => `<div class="prog-chip" onclick="playProgression('${p.join(',')}')">${p.join(' - ')}</div>`).join('');
+  }
+
+  function playChord(index) {
+    if (!lastDetectedScale || !lastDetectedScale.scaleData.chords) return;
+    const scale = lastDetectedScale;
+    const chordType = scale.scaleData.chords[index];
+    const intervals = [0, chordType === 'min' ? 3 : 2, chordType === 'dim' ? 6 : chordType === 'Aug' ? 8 : 4];
+    const rootMIDI = currentOctaveStart * 12 + scale.scaleNotes[index];
+    intervals.forEach(i => playNote(rootMIDI + i, 0.6, 0.7));
+  }
+
+  function playProgression(chordStr) {
+    if (!lastDetectedScale || !lastDetectedScale.scaleData.chords) return;
+    const chords = chordStr.split(',');
+    const scale = lastDetectedScale;
+    let delay = 0;
+    chords.forEach((roman, idx) => {
+      const degree = ROMAN.indexOf(roman.replace('i','I').replace('v','V'));
+      if (degree === -1) return;
+      const type = scale.scaleData.chords[degree];
+      const intervals = [0, type === 'min' ? 3 : 2, type === 'dim' ? 6 : type === 'Aug' ? 8 : 4];
+      const root = currentOctaveStart * 12 + scale.scaleNotes[degree];
+      setTimeout(() => intervals.forEach(i => playNote(root + i, 0.5, 0.7)), delay + idx * 400);
+    });
+  }
+
+  function generateProgression() {
+    if (!lastDetectedScale) { showToast('Detecta una escala primero'); return; }
+    const scaleType = lastDetectedScale.scaleName.includes('Mayor') ? 'Mayor' : 'Menor Natural';
+    const progs = PROGRESSIONS[scaleType] || PROGRESSIONS.default;
+    playProgression(progs[Math.floor(Math.random() * progs.length)].join(','));
+  }
+
+  function updateSheetMusic() {
+    const div = document.getElementById('sheet-music');
+    if (!lastDetectedScale || recordedNotes.length === 0) {
+      div.innerHTML = '<span style="color:var(--muted);">Toca notas para ver partitura</span>';
+      return;
+    }
+    const recent = recordedNotes.slice(-16);
+    const abc = recent.map(n => `${NOTE_NAMES[n.midi % 12]}${Math.floor(n.midi/12)-1}`).join(' ');
+    try { ABCJS.renderAbc(div, `X:1\nM:4/4\nK:C\n${abc}`, { scale:1.2, responsive:'resize' }); }
+    catch(e) { div.innerHTML = '<span style="color:var(--muted);">Error al generar partitura</span>'; }
+  }
+
+  function exportSheet() {
+    const svg = document.querySelector('#sheet-music svg');
+    if (!svg) { showToast('No hay partitura'); return; }
+    const blob = new Blob([new XMLSerializer().serializeToString(svg)], {type:'image/svg+xml'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'partitura.svg'; a.click();
+  }
+
+  function saveCurrentScale() {
+    if (!lastDetectedScale) { showToast('Detecta una escala primero'); return; }
+    const name = prompt('Nombre:', `${NOTE_NAMES[lastDetectedScale.root]} ${lastDetectedScale.scaleName}`);
+    if (!name) return;
+    scaleLibrary.push({ name, notes: lastDetectedScale.scaleNotes });
+    localStorage.setItem('scaleLibrary', JSON.stringify(scaleLibrary));
+    renderScaleLibrary();
+    showToast('Escala guardada ✅');
+  }
+
+  function createCustomScale() {
+    const name = prompt('Nombre de la escala:');
+    if (!name) return;
+    const noteStr = prompt('Notas (ej: C,D,E,G,A):');
+    if (!noteStr) return;
+    const notes = noteStr.split(',').map(n => NOTE_NAMES.indexOf(n.trim())).filter(n => n >= 0);
+    if (!notes.length) return;
+    scaleLibrary.push({ name, notes });
+    localStorage.setItem('scaleLibrary', JSON.stringify(scaleLibrary));
+    renderScaleLibrary();
+    showToast('Escala creada ✅');
+  }
+
+  function renderScaleLibrary() {
+    const div = document.getElementById('scale-library');
+    div.innerHTML = scaleLibrary.map((s, i) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:6px;">
+        <span><strong>${s.name}</strong> - ${s.notes.map(n=>NOTE_NAMES[n]).join(', ')}</span>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-sm" onclick="loadScale(${i})">Cargar</button>
+          <button class="btn btn-sm" onclick="deleteScale(${i})">🗑️</button>
+        </div>
+      </div>`).join('') || '<span style="color:var(--muted);">No hay escalas guardadas</span>';
+  }
+
+  function loadScale(idx) {
+    const scale = scaleLibrary[idx];
+    selectedNotes.clear();
+    document.querySelectorAll('[data-midi]').forEach(k => {
+      if (scale.notes.includes(parseInt(k.dataset.midi) % 12)) {
+        selectedNotes.add(parseInt(k.dataset.midi));
+      }
+    });
+    refreshPianoVisuals();
+    analyzeScale();
+  }
+
+  function deleteScale(idx) { scaleLibrary.splice(idx,1); localStorage.setItem('scaleLibrary',JSON.stringify(scaleLibrary)); renderScaleLibrary(); }
+
+  function toggleSustain() {
+    sustainActive = !sustainActive;
+    document.getElementById('sustain-btn').classList.toggle('primary', sustainActive);
+    if (!sustainActive) stopAllOscillators();
+  }
+
+  function toggleArp() {
+    arpActive = !arpActive;
+    document.getElementById('arp-btn').classList.toggle('primary', arpActive);
+    if (arpActive) {
+      arpInterval = setInterval(() => {
+        if (selectedNotes.size > 0) {
+          const arr = Array.from(selectedNotes);
+          playNote(arr[Math.floor(Date.now()/200) % arr.length], 0.2, 0.6);
+        }
+      }, 200);
+    } else clearInterval(arpInterval);
+  }
+
+  function updatePitchBend(val) { pitchBend = parseInt(val); document.getElementById('pitch-val').textContent = val; }
+
+  function playScale() {
+    if (!lastDetectedScale) { showToast('Toca notas primero'); return; }
+    const notes = lastDetectedScale.scaleNotes;
+    const base = currentOctaveStart * 12;
+    let delay = 0;
+    [...notes, ...notes.slice(0,-1).reverse()].forEach((n,i) => setTimeout(() => playNote(base+n,0.3,0.7), delay + i*200));
+  }
+
+  function clearAll() {
+    selectedNotes.clear();
+    stopAllOscillators();
+    document.querySelectorAll('.white-key,.black-key').forEach(k => k.classList.remove('selected','in-scale'));
+    ['scale-name-display','scale-mood-display'].forEach(id => document.getElementById(id).textContent = id.includes('name') ? '—' : 'Toca algunas notas');
+    document.getElementById('confidence-fill').style.width = '0%';
+    document.getElementById('confidence-text').textContent = '';
+    lastDetectedScale = null; recordedNotes = [];
+    updateChordsAndProgs(); updateSheetMusic();
+  }
+
+  function toggleFxPanel() {
+    const ctrl = document.getElementById('fx-controls');
+    const btn = document.getElementById('fx-toggle');
+    ctrl.classList.toggle('show');
+    btn.classList.toggle('active');
+  }
+
+  function saveFxPreset() {
+    const name = prompt('Nombre del preset:');
+    if (!name) return;
+    fxPresets.push({ name, settings: { ...fxSettings } });
+    localStorage.setItem('fxPresets', JSON.stringify(fxPresets));
+    showToast('Preset guardado 💾');
+  }
+
+  function loadFxPreset() {
+    if (!fxPresets.length) { showToast('No hay presets'); return; }
+    const preset = fxPresets[fxPresets.length-1];
+    Object.assign(fxSettings, preset.settings);
+    Object.keys(fxSettings).forEach(k => {
+      const slider = document.getElementById(`fx-${k}`);
+      if (slider) {
+        slider.value = fxSettings[k];
+        const disp = document.getElementById(`val-${k}`);
+        if (disp) disp.textContent = k.startsWith('eq') ? fxSettings[k]+' dB' : fxSettings[k]+'%';
+      }
+    });
+    updateAllFx();
+    showToast(`Preset cargado: ${preset.name}`);
+  }
+
+  function startAnalyzer() {
+    const canvas = document.getElementById('analyzer-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    (function draw() {
+      if (!analyserNode) { analyzerAnimFrame = requestAnimationFrame(draw); return; }
+      const W = canvas.width = canvas.offsetWidth * devicePixelRatio;
+      const H = canvas.height = canvas.offsetHeight * devicePixelRatio;
+      const data = new Uint8Array(analyserNode.frequencyBinCount);
+      analyserNode.getByteFrequencyData(data);
+      ctx.clearRect(0,0,W,H);
+      const bw = (W / data.length) * 2.5;
+      let x = 0;
+      for (let i = 0; i < data.length; i++) {
+        const h = data[i]/255 * H;
+        const g = ctx.createLinearGradient(0,H,0,H-h);
+        g.addColorStop(0,'#7c4dff'); g.addColorStop(1,'#f0b90b');
+        ctx.fillStyle = g;
+        ctx.fillRect(x, H-h, bw, h);
+        x += bw + 1;
+      }
+      analyzerAnimFrame = requestAnimationFrame(draw);
+    })();
+  }
+
+  // Selector de sonido con confirmación
+  document.getElementById('sound-selector').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#sound-selector .btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSound = btn.dataset.sound;
+    showToast(`Sonido: ${btn.textContent.trim()}`);
+    if (tg) tg.HapticFeedback?.impactOccurred('light');
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(btn.dataset.panel).classList.add('active');
+    });
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  buildPiano();
+  renderScaleLibrary();
+  updateAllFx();
+  startAnalyzer();
+</script>
+</body>
+</html>
