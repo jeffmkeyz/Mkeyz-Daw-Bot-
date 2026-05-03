@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mkeyz Studio — Oyentes en Vivo</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --violet: #b388ff; --violet2: #d1b8ff; --green: #00e676;
@@ -36,7 +37,7 @@
             100% { transform: translateY(0) translateX(0) scale(1); opacity:0.5; }
         }
         .shooting-stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
-        .player, .stats-grid, .map-container, .chart-area, .btn-group, .custom-listeners, .profiles-stats, .antidetect-panel { position:relative; z-index:1; }
+        .player, .stats-grid, .map-area, .chart-area, .btn-group, .custom-listeners, .profiles-stats, .antidetect-panel { position:relative; z-index:1; }
         .player {
             background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:30px; padding:18px 20px 12px; margin-bottom:20px;
             border:1px solid rgba(179,136,255,0.3); box-shadow:var(--neon); display:flex; flex-direction:column; gap:12px;
@@ -84,26 +85,35 @@
         }
         .antidetect-label { font-size:0.65rem; color:var(--muted); }
         .antidetect-value { font-size:1rem; font-weight:700; color:var(--text); margin-top:4px; }
-        .map-container {
-            height:450px; margin:20px 0; background:#0a0a1e; border-radius:30px;
-            border:1px solid rgba(179,136,255,0.2); overflow:hidden; position:relative;
-            box-shadow:inset 0 0 80px rgba(0,0,0,0.8), 0 0 20px rgba(179,136,255,0.2);
-        }
-        .world-map { position:absolute; width:100%; height:100%; opacity:0.12; }
-        .listener-dot {
-            position:absolute; width:18px; height:18px; border-radius:50%;
-            background:#4a4f70; box-shadow:0 0 8px currentColor; cursor:pointer; z-index:2;
-            border:2px solid transparent;
-            transition: transform 0.2s, box-shadow 0.3s;
-        }
-        .listener-dot[data-profile="fiel"]:not(.inactive) { border-color: #00e676; box-shadow: 0 0 15px #00e676; }
-        .listener-dot[data-profile="explorador"]:not(.inactive) { border-color: #4fc3f7; box-shadow: 0 0 15px #4fc3f7; }
-        .listener-dot[data-profile="ocasional"]:not(.inactive) { border-color: #b388ff; box-shadow: 0 0 15px #b388ff; }
-        .listener-dot[data-profile="binge"]:not(.inactive) { border-color: #ff4d4d; box-shadow: 0 0 15px #ff4d4d; }
 
-        .listener-dot.active { box-shadow:0 0 20px currentColor, 0 0 35px currentColor; animation:dotPulse 2s infinite alternate; }
-        @keyframes dotPulse { 0% { transform:scale(1); } 100% { transform:scale(1.25); } }
-        .listener-dot.inactive { opacity: 0.7; }
+        .map-area {
+            margin: 20px 0;
+            border-radius: 30px;
+            overflow: hidden;
+            border: 1px solid rgba(179,136,255,0.2);
+            box-shadow: 0 0 20px rgba(179,136,255,0.2);
+        }
+        #mapid { height: 450px; width: 100%; z-index: 1; }
+        .leaflet-container { background: #0a0a1e; font-family: 'Inter', sans-serif; }
+        .leaflet-popup-content-wrapper {
+            background: rgba(20,15,35,0.95); color: var(--text);
+            border: 1px solid var(--violet); border-radius: 16px;
+            box-shadow: 0 0 20px var(--violet);
+        }
+        .leaflet-popup-tip { background: rgba(20,15,35,0.95); }
+        .filter-bar {
+            display: flex; gap: 10px; align-items: center; margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-bar select {
+            background: var(--card); color: var(--text); border: 1px solid var(--violet);
+            border-radius: 10px; padding: 6px 10px; font-size: 0.8rem; outline: none;
+        }
+        .filter-bar button {
+            background: var(--violet); border: none; padding: 8px 16px; border-radius: 20px;
+            font-weight: 700; cursor: pointer; color: #000; transition: var(--transition);
+        }
+        .filter-bar button:hover { background: var(--violet2); }
         .chart-area {
             background:var(--card); backdrop-filter:blur(10px); border-radius:24px; padding:16px;
             margin:20px 0; border:1px solid rgba(179,136,255,0.2); box-shadow:0 0 20px rgba(179,136,255,0.15);
@@ -156,7 +166,6 @@
         }
         .btn:disabled { opacity:0.4; pointer-events:none; transform: none; }
         .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1530; color:var(--violet2); padding:8px 18px; border-radius:50px; z-index:999; border:1px solid var(--violet); box-shadow:0 0 12px var(--violet); }
-        /* Barra de controles SVG */
         .controls-bar {
             display: flex; align-items: center; gap: 10px; margin: 10px 0;
             background: var(--card); padding: 12px 20px; border-radius: 50px;
@@ -187,16 +196,6 @@
             transform: translateY(-2px);
         }
         .controls-btn svg { width: 16px; height: 16px; fill: #000; }
-        /* Tooltip del mapa */
-        .dot-tooltip {
-            position:absolute; background:rgba(20,15,35,0.96); border:1px solid var(--violet);
-            border-radius:16px; padding:10px 14px; pointer-events:none; z-index:100;
-            opacity:0; transition:opacity 0.2s; white-space:nowrap; font-size:0.75rem;
-            color:var(--text); box-shadow:0 12px 28px rgba(0,0,0,0.8), 0 0 15px var(--violet);
-            backdrop-filter:blur(12px);
-        }
-        .dot-tooltip.visible { opacity:1; }
-        /* Modal mágico */
         .magic-modal {
             position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
             z-index: 300; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
@@ -246,8 +245,7 @@
             color: var(--text);
         }
         .context-menu {
-            position: absolute; z-index: 300;
-            background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
+            position: absolute; z-index: 1000; background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
             border-radius: 16px; padding: 8px 0; min-width: 180px;
             box-shadow: 0 0 20px var(--violet); backdrop-filter: blur(12px);
             display: none;
@@ -316,7 +314,16 @@
         </div>
     </div>
 
-    <!-- Barra de controles SVG rediseñada -->
+    <div class="filter-bar">
+        <select id="filterCountry"><option value="">🌍 Todos los países</option></select>
+        <select id="filterPlatform"><option value="">📱 Todas las plataformas</option></select>
+        <button id="heatmapToggle">🔥 Heatmap</button>
+    </div>
+
+    <div class="map-area">
+        <div id="mapid"></div>
+    </div>
+
     <div class="controls-bar">
         <div class="controls-label">
             <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
@@ -338,17 +345,6 @@
             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             Generar
         </button>
-    </div>
-
-    <div class="map-container" id="mapContainer">
-        <svg class="world-map" viewBox="0 0 1000 500"><rect width="1000" height="500" fill="#0d0a1e"/></svg>
-        <div class="dot-tooltip" id="dotTooltip"></div>
-        <div class="context-menu" id="contextMenu">
-            <div class="context-menu-item" data-profile="fiel">🔒 Fiel</div>
-            <div class="context-menu-item" data-profile="explorador">🔍 Explorador</div>
-            <div class="context-menu-item" data-profile="ocasional">🎲 Ocasional</div>
-            <div class="context-menu-item" data-profile="binge">🔥 Binge</div>
-        </div>
     </div>
 
     <div class="chart-area">
@@ -376,8 +372,12 @@
     </div>
 
     <div class="toast" id="toast"></div>
-
-    <!-- Modal Mágico de Resumen -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" data-profile="fiel">🔒 Fiel</div>
+        <div class="context-menu-item" data-profile="explorador">🔍 Explorador</div>
+        <div class="context-menu-item" data-profile="ocasional">🎲 Ocasional</div>
+        <div class="context-menu-item" data-profile="binge">🔥 Binge</div>
+    </div>
     <div class="magic-modal" id="magicModal">
         <div class="magic-box">
             <div class="magic-sparkles" id="magicSparkles"></div>
@@ -387,187 +387,329 @@
         </div>
     </div>
 
-<script>
-(function() {
-    // Esferas
-    const spheresContainer = document.getElementById('spheres');
-    for (let i = 0; i < 20; i++) {
-        const sphere = document.createElement('div');
-        sphere.className = 'sphere';
-        sphere.style.width = (Math.random() * 80 + 40) + 'px';
-        sphere.style.height = sphere.style.width;
-        sphere.style.left = Math.random() * 100 + '%';
-        sphere.style.top = Math.random() * 100 + '%';
-        sphere.style.animationDuration = (Math.random() * 20 + 15) + 's';
-        sphere.style.animationDelay = (Math.random() * 15) + 's';
-        spheresContainer.appendChild(sphere);
-    }
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
-    // Estrellas fugaces
-    const starsCanvas = document.getElementById('starsCanvas');
-    const starsCtx = starsCanvas.getContext('2d');
-    function resizeStarsCanvas() {
-        starsCanvas.width = window.innerWidth;
-        starsCanvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeStarsCanvas);
-    resizeStarsCanvas();
-    let stars = [];
-    for (let i = 0; i < 12; i++) {
-        stars.push({
-            x: Math.random() * starsCanvas.width,
-            y: Math.random() * starsCanvas.height * 0.5,
-            length: Math.random() * 80 + 40,
-            speed: Math.random() * 10 + 5,
-            opacity: Math.random() * 0.5 + 0.5,
-            reset() { this.x = Math.random() * starsCanvas.width; this.y = Math.random() * starsCanvas.height * 0.3; }
+    <script>
+    (function() {
+        // Esferas
+        const spheresContainer = document.getElementById('spheres');
+        for (let i = 0; i < 20; i++) {
+            const sphere = document.createElement('div');
+            sphere.className = 'sphere';
+            sphere.style.width = (Math.random() * 80 + 40) + 'px';
+            sphere.style.height = sphere.style.width;
+            sphere.style.left = Math.random() * 100 + '%';
+            sphere.style.top = Math.random() * 100 + '%';
+            sphere.style.animationDuration = (Math.random() * 20 + 15) + 's';
+            sphere.style.animationDelay = (Math.random() * 15) + 's';
+            spheresContainer.appendChild(sphere);
+        }
+
+        // Estrellas fugaces
+        const starsCanvas = document.getElementById('starsCanvas');
+        const starsCtx = starsCanvas.getContext('2d');
+        function resizeStarsCanvas() { starsCanvas.width = window.innerWidth; starsCanvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeStarsCanvas);
+        resizeStarsCanvas();
+        let stars = [];
+        for (let i = 0; i < 12; i++) {
+            stars.push({
+                x: Math.random() * starsCanvas.width,
+                y: Math.random() * starsCanvas.height * 0.5,
+                length: Math.random() * 80 + 40,
+                speed: Math.random() * 10 + 5,
+                opacity: Math.random() * 0.5 + 0.5,
+                reset() { this.x = Math.random() * starsCanvas.width; this.y = Math.random() * starsCanvas.height * 0.3; }
+            });
+        }
+        function drawStars() {
+            starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+            stars.forEach(star => {
+                star.x += star.speed;
+                star.y -= star.speed * 0.5;
+                if (star.x > starsCanvas.width + 100 || star.y < -100) star.reset();
+                starsCtx.beginPath();
+                starsCtx.moveTo(star.x, star.y);
+                starsCtx.lineTo(star.x - star.length, star.y + star.length * 0.5);
+                starsCtx.strokeStyle = `rgba(179,136,255,${star.opacity})`;
+                starsCtx.lineWidth = 2;
+                starsCtx.shadowColor = '#b388ff';
+                starsCtx.shadowBlur = 10;
+                starsCtx.stroke();
+            });
+            requestAnimationFrame(drawStars);
+        }
+        drawStars();
+
+        // Perfiles
+        const PROFILES = {
+            fiel: { name: "Fiel", icon: "🔒", color: "#00e676", activityProb: 0.8, myRadioProb: 0.7, trackChangeProb: 0.15, idleProb: 0.1, maxDailyPlays: 15, sessionLength: 5 },
+            explorador: { name: "Explorador", icon: "🔍", color: "#4fc3f7", activityProb: 0.6, myRadioProb: 0.3, trackChangeProb: 0.5, idleProb: 0.2, maxDailyPlays: 8, sessionLength: 3 },
+            ocasional: { name: "Ocasional", icon: "🎲", color: "#b388ff", activityProb: 0.3, myRadioProb: 0.4, trackChangeProb: 0.3, idleProb: 0.4, maxDailyPlays: 5, sessionLength: 2 },
+            binge: { name: "Binge", icon: "🔥", color: "#ff4d4d", activityProb: 0.9, myRadioProb: 0.9, trackChangeProb: 0.05, idleProb: 0.05, maxDailyPlays: 30, sessionLength: 8 }
+        };
+
+        const countryCoords = {
+            "Rep. Dominicana":{x:28,y:45}, "España":{x:45,y:32}, "Brasil":{x:32,y:62},
+            "México":{x:15,y:40}, "Francia":{x:48,y:30}, "Colombia":{x:25,y:55},
+            "Argentina":{x:28,y:80}, "Venezuela":{x:26,y:50}, "EE.UU.":{x:18,y:32},
+            "Perú":{x:22,y:62}, "Chile":{x:26,y:78}, "Ecuador":{x:22,y:58},
+            "Panamá":{x:26,y:48}, "Costa Rica":{x:24,y:46}, "Uruguay":{x:30,y:78},
+            "Paraguay":{x:30,y:70}, "Bolivia":{x:27,y:66}, "Nicaragua":{x:24,y:44},
+            "Guatemala":{x:22,y:42}, "Cuba":{x:24,y:38}, "Puerto Rico":{x:30,y:40},
+            "Honduras":{x:23,y:44}, "El Salvador":{x:21,y:44}, "Canadá":{x:22,y:22},
+            "Italia":{x:50,y:34}, "Japón":{x:85,y:36}, "Nigeria":{x:48,y:57},
+            "Alemania":{x:51,y:27}, "Reino Unido":{x:47,y:25}, "Corea del Sur":{x:83,y:38},
+            "Australia":{x:80,y:72}, "Sudáfrica":{x:53,y:75}, "India":{x:68,y:50}
+        };
+        const platforms = [
+            {name:"Spotify",color:"#b388ff"},{name:"Apple Music",color:"#e040fb"},
+            {name:"YouTube",color:"#ff4081"},{name:"Amazon Music",color:"#7c4dff"},
+            {name:"Deezer",color:"#aa66cc"},{name:"SoundCloud",color:"#ff8800"}
+        ];
+        const tracks = ["Dímelo tú","Bla Bla Bla","Fuego Fuego","Pla Pla Pla","Todo Pa' Ti","Ronca'íto","No Ta' En Na'","Tú Eres Mía","Vem Comigo","Yo Soy La Que Manda"];
+        const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael","Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria","Gabriel","Natalia","Mateo","Luciana","Samuel","Martina","Nicolás","Andrea","Hiroshi","Amara","Klaus","Oliver"];
+        const userAgents = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
+            "Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
+        ];
+        const resolutions = ["1920x1080","1366x768","390x844","412x915","1440x900"];
+        const languages = ["es-ES","es-MX","en-US","pt-BR","fr-FR","de-DE"];
+
+        let listeners = [], state = [];
+        let totalMyPlays = 0, totalOtherPlays = 0;
+        let data1D = null, data7D = null, data28D = null;
+        let currentView = '1D';
+        let simulationRunning = false;
+
+        // Mapa Leaflet
+        const map = L.map('mapid', {
+            center: [20, 0],
+            zoom: 2,
+            zoomControl: false,
+            attributionControl: false,
+            minZoom: 2,
+            maxZoom: 8,
+            worldCopyJump: true
         });
-    }
-    function drawStars() {
-        starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
-        stars.forEach(star => {
-            star.x += star.speed;
-            star.y -= star.speed * 0.5;
-            if (star.x > starsCanvas.width + 100 || star.y < -100) star.reset();
-            starsCtx.beginPath();
-            starsCtx.moveTo(star.x, star.y);
-            starsCtx.lineTo(star.x - star.length, star.y + star.length * 0.5);
-            starsCtx.strokeStyle = `rgba(179,136,255,${star.opacity})`;
-            starsCtx.lineWidth = 2;
-            starsCtx.shadowColor = '#b388ff';
-            starsCtx.shadowBlur = 10;
-            starsCtx.stroke();
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        let markersLayer = L.layerGroup().addTo(map);
+        let heatLayer = null;
+        let heatmapActive = false;
+        let movementInterval = null;
+
+        function pctToLatLng(px, py) {
+            const lat = 90 - py * 1.8;
+            const lng = px * 3.6 - 180;
+            return [lat, lng];
+        }
+
+        function createMarker(l, s, index) {
+            const latlng = pctToLatLng(l.x, l.y);
+            const marker = L.circleMarker(latlng, {
+                radius: 8,
+                fillColor: s.active ? l.color : '#555',
+                color: s.active ? PROFILES[l.profile].color : '#555',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            });
+            const popupContent = `
+                <div style="font-weight:700;color:var(--violet2)">${l.name}</div>
+                <div style="font-size:0.65rem;color:var(--muted)">${l.country} · ${l.device} · ${l.platform}</div>
+                <div style="font-size:0.65rem;color:${PROFILES[l.profile].color}">Perfil: ${PROFILES[l.profile].icon} ${PROFILES[l.profile].name}</div>
+                <div style="font-size:0.6rem;color:var(--muted)">UA: ${l.ua?.slice(0,30)}...</div>`;
+            marker.bindPopup(popupContent);
+            marker.on('contextmenu', (e) => {
+                L.DomEvent.preventDefault(e);
+                contextMenuTarget = index;
+                const menu = document.getElementById('contextMenu');
+                menu.style.left = e.originalEvent.clientX + 'px';
+                menu.style.top = e.originalEvent.clientY + 'px';
+                menu.classList.add('show');
+            });
+            marker.on('click', () => {
+                if (s.active) s.inMyRadio ? leaveRadio(index) : enterRadio(index);
+                else { s.active = true; updateStats(); renderDots(); }
+            });
+            return marker;
+        }
+
+        function renderDots() {
+            markersLayer.clearLayers();
+            state.forEach((s, i) => {
+                const l = listeners[i];
+                const countryFilter = document.getElementById('filterCountry').value;
+                const platformFilter = document.getElementById('filterPlatform').value;
+                if (countryFilter && l.country !== countryFilter) return;
+                if (platformFilter && l.platform !== platformFilter) return;
+                const marker = createMarker(l, s, i);
+                markersLayer.addLayer(marker);
+                l._marker = marker;
+            });
+            updateHeatmap();
+        }
+
+        function updateHeatmap() {
+            if (!heatmapActive) return;
+            if (heatLayer) map.removeLayer(heatLayer);
+            const points = listeners.map(l => pctToLatLng(l.x, l.y));
+            heatLayer = L.heatLayer(points, { radius: 25, blur: 15, maxZoom: 8, gradient: {0.4: '#b388ff', 0.65: '#7c4dff', 1: '#00e676'} }).addTo(map);
+        }
+
+        document.getElementById('heatmapToggle').addEventListener('click', function() {
+            heatmapActive = !heatmapActive;
+            this.classList.toggle('active', heatmapActive);
+            if (heatmapActive) updateHeatmap();
+            else if (heatLayer) map.removeLayer(heatLayer);
         });
-        requestAnimationFrame(drawStars);
-    }
-    drawStars();
 
-    // Perfiles
-    const PROFILES = {
-        fiel: { name: "Fiel", icon: "🔒", color: "#00e676", activityProb: 0.8, myRadioProb: 0.7, trackChangeProb: 0.15, idleProb: 0.1, maxDailyPlays: 15, sessionLength: 5 },
-        explorador: { name: "Explorador", icon: "🔍", color: "#4fc3f7", activityProb: 0.6, myRadioProb: 0.3, trackChangeProb: 0.5, idleProb: 0.2, maxDailyPlays: 8, sessionLength: 3 },
-        ocasional: { name: "Ocasional", icon: "🎲", color: "#b388ff", activityProb: 0.3, myRadioProb: 0.4, trackChangeProb: 0.3, idleProb: 0.4, maxDailyPlays: 5, sessionLength: 2 },
-        binge: { name: "Binge", icon: "🔥", color: "#ff4d4d", activityProb: 0.9, myRadioProb: 0.9, trackChangeProb: 0.05, idleProb: 0.05, maxDailyPlays: 30, sessionLength: 8 }
-    };
-
-    const countryCoords = {
-        "Rep. Dominicana":{x:28,y:45}, "España":{x:45,y:32}, "Brasil":{x:32,y:62},
-        "México":{x:15,y:40}, "Francia":{x:48,y:30}, "Colombia":{x:25,y:55},
-        "Argentina":{x:28,y:80}, "Venezuela":{x:26,y:50}, "EE.UU.":{x:18,y:32},
-        "Perú":{x:22,y:62}, "Chile":{x:26,y:78}, "Ecuador":{x:22,y:58},
-        "Panamá":{x:26,y:48}, "Costa Rica":{x:24,y:46}, "Uruguay":{x:30,y:78}
-    };
-    const platforms = [
-        {name:"Spotify",color:"#b388ff"},{name:"Apple Music",color:"#e040fb"},
-        {name:"YouTube",color:"#ff4081"},{name:"Deezer",color:"#aa66cc"}
-    ];
-    const tracks = ["Dímelo tú","Bla Bla Bla","Fuego Fuego","Pla Pla Pla","Todo Pa' Ti"];
-    const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael",
-        "Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria","Gabriel","Natalia"];
-
-    const userAgents = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
-    ];
-    const resolutions = ["1920x1080","1366x768","390x844","412x915"];
-    const languages = ["es-ES","es-MX","en-US","pt-BR"];
-
-    let listeners = [], state = [];
-    let totalMyPlays = 0, totalOtherPlays = 0;
-    let data1D = null, data7D = null, data28D = null;
-    let currentView = '1D';
-    let simulationRunning = false;
-
-    const canvas = document.getElementById('activityChart');
-    const ctx = canvas.getContext('2d');
-    const contextMenu = document.getElementById('contextMenu');
-    const dotTooltip = document.getElementById('dotTooltip');
-    let contextMenuTarget = null;
-    const magicModal = document.getElementById('magicModal');
-    const magicContent = document.getElementById('magicContent');
-    const magicSparkles = document.getElementById('magicSparkles');
-
-    function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 240; }
-    window.addEventListener('resize', () => { resizeCanvas(); drawChart(); });
-
-    function getActivityFactor(h) {
-        if (h>=7 && h<=9) return 1.4;
-        if (h>=12 && h<=14) return 1.2;
-        if (h>=19 && h<=22) return 1.5;
-        if (h>=0 && h<=5) return 0.3;
-        return 0.8;
-    }
-
-    function drawChart() {
-        const w = canvas.width, h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
-        const data = currentView === '1D' ? data1D : (currentView === '7D' ? data7D : data28D);
-        if (!data) { ctx.fillStyle = '#7a7e90'; ctx.font = '14px Inter'; ctx.textAlign = 'center'; ctx.fillText('Sin datos para esta vista', w/2, h/2); return; }
-        const { labels, activity, plays, otherPlays } = data;
-        const maxVal = Math.max(...activity, ...plays, ...otherPlays, 1);
-        const pad = { top:20, right:20, bottom:30, left:40 };
-        const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
-        const n = labels.length, stepX = cw / (n - 1);
-        ctx.strokeStyle = '#2a1f4a';
-        ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, h-pad.bottom); ctx.lineTo(w-pad.right, h-pad.bottom); ctx.stroke();
-        ctx.fillStyle = '#9a8fb8'; ctx.font = '9px Inter'; ctx.textAlign = 'center';
-        const step = n <= 7 ? 1 : (n <= 28 ? 7 : 5);
-        for (let i = 0; i < n; i += step) ctx.fillText(labels[i], pad.left + i*stepX, h-pad.bottom+15);
-        function line(arr, color, dash) {
-            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash || []);
-            ctx.beginPath();
-            for (let i = 0; i < n; i++) { const x = pad.left + i*stepX, y = h-pad.bottom - (arr[i]/maxVal)*ch; i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y); }
-            ctx.stroke(); ctx.setLineDash([]);
+        function populateFilters() {
+            const countrySelect = document.getElementById('filterCountry');
+            const platformSelect = document.getElementById('filterPlatform');
+            countrySelect.innerHTML = '<option value="">🌍 Todos los países</option>';
+            platformSelect.innerHTML = '<option value="">📱 Todas las plataformas</option>';
+            const countries = [...new Set(listeners.map(l => l.country))].sort();
+            countries.forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; countrySelect.appendChild(opt); });
+            const plats = [...new Set(listeners.map(l => l.platform))].sort();
+            plats.forEach(p => { const opt = document.createElement('option'); opt.value = p; opt.textContent = p; platformSelect.appendChild(opt); });
         }
-        line(activity, '#b388ff'); line(plays, '#00e676', [4,4]); line(otherPlays, '#4fc3f7', [2,4]);
-        ctx.fillStyle = '#9a8fb8'; ctx.font = '8px Inter'; ctx.textAlign = 'right'; ctx.fillText(maxVal, pad.left-5, pad.top+10);
-    }
 
-    function updateAntidetectIndicators() {
-        if (listeners.length === 0) {
-            document.getElementById('giniValue').textContent = '—';
-            document.getElementById('ratioPlays').textContent = '—';
-            document.getElementById('suspiciousPeaks').textContent = '0';
-            document.getElementById('bingePct').textContent = '0%';
-            return;
+        document.getElementById('filterCountry').addEventListener('change', renderDots);
+        document.getElementById('filterPlatform').addEventListener('change', renderDots);
+
+        function moveMarkers() {
+            listeners.forEach((l, i) => {
+                if (l._marker) {
+                    const newX = Math.min(95, Math.max(5, l.x + (Math.random() - 0.5) * 0.5));
+                    const newY = Math.min(95, Math.max(5, l.y + (Math.random() - 0.5) * 0.5));
+                    l.x = newX; l.y = newY;
+                    const latlng = pctToLatLng(newX, newY);
+                    l._marker.setLatLng(latlng);
+                }
+            });
+            updateHeatmap();
         }
-        const playsArray = state.map(s => s.dailyPlays || 0);
-        const total = playsArray.reduce((a,b)=>a+b,0);
-        let sum = 0;
-        for (let i = 0; i < playsArray.length; i++) for (let j = 0; j < playsArray.length; j++) sum += Math.abs(playsArray[i] - playsArray[j]);
-        const gini = total ? sum / (2 * playsArray.length * total) : 0;
-        document.getElementById('giniValue').textContent = gini.toFixed(2);
-        document.getElementById('ratioPlays').textContent = (total / listeners.length).toFixed(1);
-        let peaks = 0;
-        if (data1D && data1D.activity.length > 0) {
-            const avg = data1D.activity.reduce((a,b)=>a+b,0) / 24;
-            data1D.activity.forEach(v => { if (v > avg * 3 && v > 2) peaks++; });
+        if (movementInterval) clearInterval(movementInterval);
+        movementInterval = setInterval(moveMarkers, 3000);
+
+        // Resto de funciones del simulador
+        const canvas = document.getElementById('activityChart');
+        const ctx = canvas.getContext('2d');
+        const contextMenu = document.getElementById('contextMenu');
+        let contextMenuTarget = null;
+
+        function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 240; }
+        window.addEventListener('resize', () => { resizeCanvas(); drawChart(); });
+
+        function getActivityFactor(h) {
+            if (h>=7 && h<=9) return 1.4;
+            if (h>=12 && h<=14) return 1.2;
+            if (h>=19 && h<=22) return 1.5;
+            if (h>=0 && h<=5) return 0.3;
+            return 0.8;
         }
-        document.getElementById('suspiciousPeaks').textContent = peaks;
-        const bingeCount = listeners.filter(l => l.profile === 'binge').length;
-        document.getElementById('bingePct').textContent = ((bingeCount / listeners.length) * 100).toFixed(0) + '%';
-    }
 
-    function updateProfileStats() {
-        const counts = { fiel: 0, explorador: 0, ocasional: 0, binge: 0 };
-        listeners.forEach(l => counts[l.profile]++);
-        document.getElementById('stat-fiel').innerHTML = `<span>🔒</span> Fieles: ${counts.fiel}`;
-        document.getElementById('stat-explorador').innerHTML = `<span>🔍</span> Exploradores: ${counts.explorador}`;
-        document.getElementById('stat-ocasional').innerHTML = `<span>🎲</span> Ocasionales: ${counts.ocasional}`;
-        document.getElementById('stat-binge').innerHTML = `<span>🔥</span> Binge: ${counts.binge}`;
-    }
+        function drawChart() {
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+            const data = currentView === '1D' ? data1D : (currentView === '7D' ? data7D : data28D);
+            if (!data) {
+                ctx.fillStyle = '#7a7e90'; ctx.font = '14px Inter'; ctx.textAlign = 'center';
+                ctx.fillText('Sin datos para esta vista', w/2, h/2); return;
+            }
+            const { labels, activity, plays, otherPlays } = data;
+            const maxVal = Math.max(...activity, ...plays, ...otherPlays, 1);
+            const pad = { top:20, right:20, bottom:30, left:40 };
+            const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
+            const n = labels.length, stepX = cw / (n - 1);
+            ctx.strokeStyle = '#2a1f4a';
+            ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, h-pad.bottom); ctx.lineTo(w-pad.right, h-pad.bottom); ctx.stroke();
+            ctx.fillStyle = '#9a8fb8'; ctx.font = '9px Inter'; ctx.textAlign = 'center';
+            const step = n <= 7 ? 1 : (n <= 28 ? 7 : 5);
+            for (let i = 0; i < n; i += step) ctx.fillText(labels[i], pad.left + i*stepX, h-pad.bottom+15);
+            function line(arr, color, dash) {
+                ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash || []);
+                ctx.beginPath();
+                for (let i = 0; i < n; i++) { const x = pad.left + i*stepX, y = h-pad.bottom - (arr[i]/maxVal)*ch; i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y); }
+                ctx.stroke(); ctx.setLineDash([]);
+            }
+            line(activity, '#b388ff'); line(plays, '#00e676', [4,4]); line(otherPlays, '#4fc3f7', [2,4]);
+            ctx.fillStyle = '#9a8fb8'; ctx.font = '8px Inter'; ctx.textAlign = 'right'; ctx.fillText(maxVal, pad.left-5, pad.top+10);
+        }
 
-    function generateListeners() {
-        const count = parseInt(document.getElementById('listenerCount').value) || 10;
-        const profileKey = document.getElementById('profileSelect').value;
-        listeners = []; state = [];
-        for (let i = 0; i < count; i++) {
+        function updateAntidetectIndicators() {
+            if (listeners.length === 0) {
+                document.getElementById('giniValue').textContent = '—';
+                document.getElementById('ratioPlays').textContent = '—';
+                document.getElementById('suspiciousPeaks').textContent = '0';
+                document.getElementById('bingePct').textContent = '0%';
+                return;
+            }
+            const playsArray = state.map(s => s.dailyPlays || 0), total = playsArray.reduce((a,b)=>a+b,0);
+            let sum = 0;
+            for (let i = 0; i < playsArray.length; i++) for (let j = 0; j < playsArray.length; j++) sum += Math.abs(playsArray[i] - playsArray[j]);
+            const gini = total ? sum / (2 * playsArray.length * total) : 0;
+            document.getElementById('giniValue').textContent = gini.toFixed(2);
+            document.getElementById('ratioPlays').textContent = (total / listeners.length).toFixed(1);
+            let peaks = 0;
+            if (data1D && data1D.activity.length > 0) {
+                const avg = data1D.activity.reduce((a,b)=>a+b,0) / 24;
+                data1D.activity.forEach(v => { if (v > avg * 3 && v > 2) peaks++; });
+            }
+            document.getElementById('suspiciousPeaks').textContent = peaks;
+            const bingeCount = listeners.filter(l => l.profile === 'binge').length;
+            document.getElementById('bingePct').textContent = ((bingeCount / listeners.length) * 100).toFixed(0) + '%';
+        }
+
+        function updateProfileStats() {
+            const counts = { fiel: 0, explorador: 0, ocasional: 0, binge: 0 };
+            listeners.forEach(l => counts[l.profile]++);
+            document.getElementById('stat-fiel').innerHTML = `<span>🔒</span> Fieles: ${counts.fiel}`;
+            document.getElementById('stat-explorador').innerHTML = `<span>🔍</span> Exploradores: ${counts.explorador}`;
+            document.getElementById('stat-ocasional').innerHTML = `<span>🎲</span> Ocasionales: ${counts.ocasional}`;
+            document.getElementById('stat-binge').innerHTML = `<span>🔥</span> Binge: ${counts.binge}`;
+        }
+
+        function generateListeners() {
+            const count = parseInt(document.getElementById('listenerCount').value) || 10;
+            const profileKey = document.getElementById('profileSelect').value;
+            listeners = []; state = [];
+            for (let i = 0; i < count; i++) {
+                const c = Object.keys(countryCoords)[Math.floor(Math.random()*Object.keys(countryCoords).length)];
+                const coords = countryCoords[c];
+                const plat = platforms[Math.floor(Math.random()*platforms.length)];
+                const name = namePool[Math.floor(Math.random()*namePool.length)];
+                const device = ["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
+                const profile = profileKey === 'aleatorio' ? Object.keys(PROFILES)[Math.floor(Math.random()*4)] : profileKey;
+                const ua = userAgents[Math.floor(Math.random()*userAgents.length)];
+                const res = resolutions[Math.floor(Math.random()*resolutions.length)];
+                const lang = languages[Math.floor(Math.random()*languages.length)];
+                listeners.push({ name, country: c, device, platform: plat.name, color: plat.color,
+                    x: Math.min(95, Math.max(5, coords.x + Math.random()*4 - 2)),
+                    y: Math.min(95, Math.max(5, coords.y + Math.random()*4 - 2)),
+                    profile, ua, res, lang });
+                const p = PROFILES[profile];
+                state.push({ active: true, inMyRadio: false, trackTimeLeft: 0, otherTrackTimeLeft: 0,
+                    dailyPlays: 0, maxDailyPlays: p.maxDailyPlays, sessionRemaining: 0, profile: profile });
+            }
+            updateStats(); renderDots(); updateProfileStats(); updateAntidetectIndicators(); populateFilters();
+        }
+
+        function addListener() {
             const c = Object.keys(countryCoords)[Math.floor(Math.random()*Object.keys(countryCoords).length)];
             const coords = countryCoords[c];
             const plat = platforms[Math.floor(Math.random()*platforms.length)];
             const name = namePool[Math.floor(Math.random()*namePool.length)];
             const device = ["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
-            const profile = profileKey === 'aleatorio' ? Object.keys(PROFILES)[Math.floor(Math.random()*4)] : profileKey;
+            const profile = Object.keys(PROFILES)[Math.floor(Math.random()*4)];
             const ua = userAgents[Math.floor(Math.random()*userAgents.length)];
             const res = resolutions[Math.floor(Math.random()*resolutions.length)];
             const lang = languages[Math.floor(Math.random()*languages.length)];
@@ -578,262 +720,202 @@
             const p = PROFILES[profile];
             state.push({ active: true, inMyRadio: false, trackTimeLeft: 0, otherTrackTimeLeft: 0,
                 dailyPlays: 0, maxDailyPlays: p.maxDailyPlays, sessionRemaining: 0, profile: profile });
+            updateStats(); renderDots(); updateProfileStats(); updateAntidetectIndicators(); populateFilters();
         }
-        updateStats(); renderDots(); updateProfileStats(); updateAntidetectIndicators();
-    }
 
-    function addListener() {
-        const c = Object.keys(countryCoords)[Math.floor(Math.random()*Object.keys(countryCoords).length)];
-        const coords = countryCoords[c];
-        const plat = platforms[Math.floor(Math.random()*platforms.length)];
-        const name = namePool[Math.floor(Math.random()*namePool.length)];
-        const device = ["Android","iPhone","Laptop"][Math.floor(Math.random()*3)];
-        const profile = Object.keys(PROFILES)[Math.floor(Math.random()*4)];
-        const ua = userAgents[Math.floor(Math.random()*userAgents.length)];
-        const res = resolutions[Math.floor(Math.random()*resolutions.length)];
-        const lang = languages[Math.floor(Math.random()*languages.length)];
-        listeners.push({ name, country: c, device, platform: plat.name, color: plat.color,
-            x: Math.min(95, Math.max(5, coords.x + Math.random()*4 - 2)),
-            y: Math.min(95, Math.max(5, coords.y + Math.random()*4 - 2)),
-            profile, ua, res, lang });
-        const p = PROFILES[profile];
-        state.push({ active: true, inMyRadio: false, trackTimeLeft: 0, otherTrackTimeLeft: 0,
-            dailyPlays: 0, maxDailyPlays: p.maxDailyPlays, sessionRemaining: 0, profile: profile });
-        updateStats(); renderDots(); updateProfileStats(); updateAntidetectIndicators();
-    }
+        function changeProfile(index, newProfile) {
+            listeners[index].profile = newProfile;
+            state[index].profile = newProfile;
+            const p = PROFILES[newProfile];
+            state[index].maxDailyPlays = p.maxDailyPlays;
+            state[index].dailyPlays = 0;
+            renderDots(); updateProfileStats(); updateAntidetectIndicators();
+            showToast(`Perfil cambiado a ${PROFILES[newProfile].name}`);
+        }
 
-    function changeProfile(index, newProfile) {
-        listeners[index].profile = newProfile;
-        state[index].profile = newProfile;
-        const p = PROFILES[newProfile];
-        state[index].maxDailyPlays = p.maxDailyPlays;
-        state[index].dailyPlays = 0;
-        renderDots(); updateProfileStats(); updateAntidetectIndicators();
-        showToast(`Perfil cambiado a ${PROFILES[newProfile].name}`);
-    }
-
-    function renderDots() {
-        const map = document.getElementById('mapContainer');
-        map.querySelectorAll('.listener-dot').forEach(d => d.remove());
-        state.forEach((s, i) => {
-            const dot = document.createElement('div');
-            dot.className = `listener-dot ${s.active ? 'active' : 'inactive'}`;
-            dot.dataset.profile = listeners[i].profile;
-            dot.style.left = listeners[i].x + '%';
-            dot.style.top = listeners[i].y + '%';
-            dot.style.background = s.active ? listeners[i].color : '#555';
-            dot.style.color = s.active ? listeners[i].color : '#555';
-            dot.addEventListener('mouseenter', (e) => {
-                const l = listeners[i];
-                const p = PROFILES[l.profile];
-                dotTooltip.innerHTML = `<div style="font-weight:700;color:var(--violet2)">${l.name}</div>
-                    <div style="font-size:0.65rem;color:var(--muted)">${l.country} · ${l.device} · ${l.platform}</div>
-                    <div style="font-size:0.65rem;color:${p.color}">Perfil: ${p.icon} ${p.name}</div>
-                    <div style="font-size:0.6rem;color:var(--muted)">UA: ${l.ua?.slice(0,30)}...</div>`;
-                const rect = map.getBoundingClientRect();
-                dotTooltip.style.left = (e.clientX - rect.left + 15) + 'px';
-                dotTooltip.style.top = (e.clientY - rect.top - 50) + 'px';
-                dotTooltip.classList.add('visible');
-            });
-            dot.addEventListener('mouseleave', () => dotTooltip.classList.remove('visible'));
-            dot.addEventListener('click', () => {
-                if (s.active) s.inMyRadio ? leaveRadio(i) : enterRadio(i);
-                else { s.active = true; updateStats(); renderDots(); }
-            });
-            dot.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                contextMenuTarget = i;
-                const rect = map.getBoundingClientRect();
-                contextMenu.style.left = (e.clientX - rect.left) + 'px';
-                contextMenu.style.top = (e.clientY - rect.top) + 'px';
-                contextMenu.classList.add('show');
-            });
-            map.appendChild(dot);
+        document.getElementById('contextMenu').addEventListener('click', (e) => {
+            const item = e.target.closest('.context-menu-item');
+            if (item && contextMenuTarget !== null) { changeProfile(contextMenuTarget, item.dataset.profile); }
+            contextMenu.classList.remove('show'); contextMenuTarget = null;
         });
-    }
+        document.addEventListener('click', () => { contextMenu.classList.remove('show'); contextMenuTarget = null; });
 
-    document.getElementById('contextMenu').addEventListener('click', (e) => {
-        const item = e.target.closest('.context-menu-item');
-        if (item && contextMenuTarget !== null) { changeProfile(contextMenuTarget, item.dataset.profile); }
-        contextMenu.classList.remove('show'); contextMenuTarget = null;
-    });
-    document.addEventListener('click', () => { contextMenu.classList.remove('show'); contextMenuTarget = null; });
+        function enterRadio(i) {
+            const s = state[i]; const p = PROFILES[s.profile];
+            if (!s.active || s.dailyPlays >= s.maxDailyPlays) return;
+            s.inMyRadio = true; s.trackTimeLeft = 200 + Math.floor(Math.random()*50);
+            s.dailyPlays++; s.sessionRemaining = p.sessionLength - 1; totalMyPlays++;
+            updateStats(); renderDots(); updateAntidetectIndicators();
+        }
+        function leaveRadio(i) {
+            const s = state[i]; if (!s.inMyRadio) return;
+            s.inMyRadio = false; s.otherTrackTimeLeft = 200 + Math.floor(Math.random()*80);
+            updateStats(); renderDots();
+        }
 
-    function enterRadio(i) {
-        const s = state[i]; const p = PROFILES[s.profile];
-        if (!s.active || s.dailyPlays >= s.maxDailyPlays) return;
-        s.inMyRadio = true; s.trackTimeLeft = 200 + Math.floor(Math.random()*50);
-        s.dailyPlays++; s.sessionRemaining = p.sessionLength - 1; totalMyPlays++;
-        updateStats(); renderDots(); updateAntidetectIndicators();
-    }
-    function leaveRadio(i) {
-        const s = state[i]; if (!s.inMyRadio) return;
-        s.inMyRadio = false; s.otherTrackTimeLeft = 200 + Math.floor(Math.random()*80);
-        updateStats(); renderDots();
-    }
+        function updateStats() {
+            document.getElementById('totalPlays').textContent = totalMyPlays;
+            document.getElementById('totalOtherPlays').textContent = totalOtherPlays;
+            document.getElementById('uniqueListeners').textContent = listeners.length;
+            document.getElementById('activePlatform').textContent = state.filter(s => s.active).length;
+            document.getElementById('liveCount').textContent = state.filter(s => s.inMyRadio).length;
+            drawChart();
+        }
 
-    function updateStats() {
-        document.getElementById('totalPlays').textContent = totalMyPlays;
-        document.getElementById('totalOtherPlays').textContent = totalOtherPlays;
-        document.getElementById('uniqueListeners').textContent = listeners.length;
-        document.getElementById('activePlatform').textContent = state.filter(s => s.active).length;
-        document.getElementById('liveCount').textContent = state.filter(s => s.inMyRadio).length;
-        drawChart();
-    }
-
-    function simulateTick(factor, simA, simP, simO, index) {
-        state.forEach((s, i) => {
-            const p = PROFILES[s.profile];
-            if (!s.active) { if (Math.random() < p.activityProb * 0.1 * factor) s.active = true; return; }
-            if (s.inMyRadio) {
-                s.trackTimeLeft -= 30;
-                if (s.trackTimeLeft <= 0) {
-                    if (s.sessionRemaining > 0 && s.dailyPlays < s.maxDailyPlays) {
-                        if (Math.random() < 1 - p.trackChangeProb) {
-                            s.trackTimeLeft = 200 + Math.floor(Math.random()*50);
-                            s.dailyPlays++; s.sessionRemaining--; totalMyPlays++; simP[index]++;
+        function simulateTick(factor, simA, simP, simO, index) {
+            state.forEach((s, i) => {
+                const p = PROFILES[s.profile];
+                if (!s.active) { if (Math.random() < p.activityProb * 0.1 * factor) s.active = true; return; }
+                if (s.inMyRadio) {
+                    s.trackTimeLeft -= 30;
+                    if (s.trackTimeLeft <= 0) {
+                        if (s.sessionRemaining > 0 && s.dailyPlays < s.maxDailyPlays) {
+                            if (Math.random() < 1 - p.trackChangeProb) {
+                                s.trackTimeLeft = 200 + Math.floor(Math.random()*50);
+                                s.dailyPlays++; s.sessionRemaining--; totalMyPlays++; simP[index]++;
+                            } else { leaveRadio(i); }
                         } else { leaveRadio(i); }
-                    } else { leaveRadio(i); }
+                    }
+                } else {
+                    s.otherTrackTimeLeft -= 30;
+                    if (s.otherTrackTimeLeft <= 0) { s.otherTrackTimeLeft = 200 + Math.floor(Math.random()*80); totalOtherPlays++; simO[index]++; }
+                    if (s.dailyPlays < s.maxDailyPlays && Math.random() < p.myRadioProb * 0.1 * factor) { enterRadio(i); simP[index]++; }
                 }
-            } else {
-                s.otherTrackTimeLeft -= 30;
-                if (s.otherTrackTimeLeft <= 0) { s.otherTrackTimeLeft = 200 + Math.floor(Math.random()*80); totalOtherPlays++; simO[index]++; }
-                if (s.dailyPlays < s.maxDailyPlays && Math.random() < p.myRadioProb * 0.1 * factor) { enterRadio(i); simP[index]++; }
-            }
-            if (s.active && !s.inMyRadio && Math.random() < p.idleProb * 0.1) s.active = false;
-        });
-        simA[index] = Math.max(simA[index], state.filter(s => s.inMyRadio).length);
-    }
-
-    function runSimulation(days) {
-        const stepsPerDay = 2880, totalSteps = days * stepsPerDay;
-        const simA = [], simP = [], simO = [];
-        const daysCount = days === 1 ? 24 : days;
-        for (let i = 0; i < daysCount; i++) { simA.push(0); simP.push(0); simO.push(0); }
-        let step = 0;
-        simulationRunning = true;
-        document.querySelectorAll('.btn').forEach(b => b.disabled = true);
-        document.getElementById('progressWrapper').style.display = 'block';
-
-        function batch() {
-            const batchSize = 500;
-            const end = Math.min(step + batchSize, totalSteps);
-            for (let s = step; s < end; s++) {
-                const day = Math.floor(s / stepsPerDay);
-                const hour = Math.floor(((s % stepsPerDay) * 30) / 3600);
-                const index = days === 1 ? hour : day;
-                if (day > 0 && s % stepsPerDay === 0) {
-                    state.forEach(s => { s.dailyPlays = 0; const p = PROFILES[s.profile]; s.maxDailyPlays = p.maxDailyPlays; s.sessionRemaining = 0; if (s.inMyRadio) leaveRadio(state.indexOf(s)); });
-                }
-                simulateTick(getActivityFactor(hour), simA, simP, simO, index);
-            }
-            step = end;
-            document.getElementById('progressLabel').textContent = Math.round((step/totalSteps)*100) + '%';
-            document.getElementById('progressBarFill').style.width = (step/totalSteps)*100 + '%';
-            if (step < totalSteps) { setTimeout(batch, 0); }
-            else {
-                if (days === 1) data1D = { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: simA, plays: simP, otherPlays: simO };
-                else if (days === 7) { data1D = generate1DFromDaily(simA, simP, simO); data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA, plays: simP, otherPlays: simO }; }
-                else if (days === 28) {
-                    data1D = generate1DFromDaily(simA.slice(0,7), simP.slice(0,7), simO.slice(0,7));
-                    data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA.slice(0,7), plays: simP.slice(0,7), otherPlays: simO.slice(0,7) };
-                    data28D = { labels: Array.from({length:28}, (_,i)=>'D'+(i+1)), activity: simA, plays: simP, otherPlays: simO };
-                }
-                finishSimulation(days);
-            }
+                if (s.active && !s.inMyRadio && Math.random() < p.idleProb * 0.1) s.active = false;
+            });
+            simA[index] = Math.max(simA[index], state.filter(s => s.inMyRadio).length);
         }
-        batch();
-    }
 
-    function generate1DFromDaily(dailyA, dailyP, dailyO) {
-        const hourlyA = new Array(24).fill(0), hourlyP = new Array(24).fill(0), hourlyO = new Array(24).fill(0);
-        const totalA = dailyA.reduce((a,b)=>a+b,0), totalP = dailyP.reduce((a,b)=>a+b,0), totalO = dailyO.reduce((a,b)=>a+b,0);
-        for (let h=0; h<24; h++) { const f = getActivityFactor(h); hourlyA[h] = Math.round(totalA * f / 10); hourlyP[h] = Math.round(totalP * f / 10); hourlyO[h] = Math.round(totalO * f / 10); }
-        return { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: hourlyA, plays: hourlyP, otherPlays: hourlyO };
-    }
+        function runSimulation(days) {
+            const stepsPerDay = 2880, totalSteps = days * stepsPerDay;
+            const simA = [], simP = [], simO = [];
+            const daysCount = days === 1 ? 24 : days;
+            for (let i = 0; i < daysCount; i++) { simA.push(0); simP.push(0); simO.push(0); }
+            let step = 0;
+            simulationRunning = true;
+            document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+            document.getElementById('progressWrapper').style.display = 'block';
 
-    function showMagicModal(plays, other, oyentes, gini, ratio, peaks, bingePct) {
-        magicContent.innerHTML = `
-            <div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div>
-            <div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div>
-            <div class="magic-stat"><span>👥 Oyentes:</span><strong>${oyentes}</strong></div>
-            <div class="magic-stat"><span>📊 Gini:</span><strong>${gini}</strong></div>
-            <div class="magic-stat"><span>🔁 Ratio:</span><strong>${ratio}</strong></div>
-            <div class="magic-stat"><span>⚠️ Picos:</span><strong>${peaks}</strong></div>
-            <div class="magic-stat"><span>🔥 Binge:</span><strong>${bingePct}%</strong></div>`;
-        magicSparkles.innerHTML = '';
-        for (let i = 0; i < 20; i++) {
-            const s = document.createElement('div'); s.className = 'magic-sparkle';
-            s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%';
-            s.style.animationDelay = Math.random() * 1.5 + 's';
-            magicSparkles.appendChild(s);
+            function batch() {
+                const batchSize = 500;
+                const end = Math.min(step + batchSize, totalSteps);
+                for (let s = step; s < end; s++) {
+                    const day = Math.floor(s / stepsPerDay);
+                    const hour = Math.floor(((s % stepsPerDay) * 30) / 3600);
+                    const index = days === 1 ? hour : day;
+                    if (day > 0 && s % stepsPerDay === 0) {
+                        state.forEach(s => { s.dailyPlays = 0; const p = PROFILES[s.profile]; s.maxDailyPlays = p.maxDailyPlays; s.sessionRemaining = 0; if (s.inMyRadio) leaveRadio(state.indexOf(s)); });
+                    }
+                    simulateTick(getActivityFactor(hour), simA, simP, simO, index);
+                }
+                step = end;
+                document.getElementById('progressLabel').textContent = Math.round((step/totalSteps)*100) + '%';
+                document.getElementById('progressBarFill').style.width = (step/totalSteps)*100 + '%';
+                if (step < totalSteps) { setTimeout(batch, 0); }
+                else {
+                    if (days === 1) data1D = { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: simA, plays: simP, otherPlays: simO };
+                    else if (days === 7) { data1D = generate1DFromDaily(simA, simP, simO); data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA, plays: simP, otherPlays: simO }; }
+                    else if (days === 28) {
+                        data1D = generate1DFromDaily(simA.slice(0,7), simP.slice(0,7), simO.slice(0,7));
+                        data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA.slice(0,7), plays: simP.slice(0,7), otherPlays: simO.slice(0,7) };
+                        data28D = { labels: Array.from({length:28}, (_,i)=>'D'+(i+1)), activity: simA, plays: simP, otherPlays: simO };
+                    }
+                    finishSimulation(days);
+                }
+            }
+            batch();
         }
-        magicModal.classList.add('show');
-    }
 
-    function closeMagicModal() { magicModal.classList.remove('show'); }
+        function generate1DFromDaily(dailyA, dailyP, dailyO) {
+            const hourlyA = new Array(24).fill(0), hourlyP = new Array(24).fill(0), hourlyO = new Array(24).fill(0);
+            const totalA = dailyA.reduce((a,b)=>a+b,0), totalP = dailyP.reduce((a,b)=>a+b,0), totalO = dailyO.reduce((a,b)=>a+b,0);
+            for (let h=0; h<24; h++) { const f = getActivityFactor(h); hourlyA[h] = Math.round(totalA * f / 10); hourlyP[h] = Math.round(totalP * f / 10); hourlyO[h] = Math.round(totalO * f / 10); }
+            return { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: hourlyA, plays: hourlyP, otherPlays: hourlyO };
+        }
 
-    function finishSimulation(days) {
-        simulationRunning = false;
-        document.querySelectorAll('.btn').forEach(b => b.disabled = false);
-        document.getElementById('progressWrapper').style.display = 'none';
-        document.getElementById('view1D').disabled = false;
-        if (data7D) document.getElementById('view7D').disabled = false;
-        if (data28D) document.getElementById('view28D').disabled = false;
-        updateStats(); updateAntidetectIndicators();
-        setView('1D');
-        const plays = data1D ? data1D.plays.reduce((a,b)=>a+b,0) : totalMyPlays;
-        const other = data1D ? data1D.otherPlays.reduce((a,b)=>a+b,0) : totalOtherPlays;
-        const gini = document.getElementById('giniValue').textContent;
-        const ratio = document.getElementById('ratioPlays').textContent;
-        const peaks = document.getElementById('suspiciousPeaks').textContent;
-        const bingePct = document.getElementById('bingePct').textContent.replace('%','');
-        showMagicModal(plays, other, listeners.length, gini, ratio, peaks, bingePct);
-    }
+        function showMagicModal(plays, other, oyentes, gini, ratio, peaks, bingePct) {
+            document.getElementById('magicContent').innerHTML = `
+                <div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div>
+                <div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div>
+                <div class="magic-stat"><span>👥 Oyentes:</span><strong>${oyentes}</strong></div>
+                <div class="magic-stat"><span>📊 Gini:</span><strong>${gini}</strong></div>
+                <div class="magic-stat"><span>🔁 Ratio:</span><strong>${ratio}</strong></div>
+                <div class="magic-stat"><span>⚠️ Picos:</span><strong>${peaks}</strong></div>
+                <div class="magic-stat"><span>🔥 Binge:</span><strong>${bingePct}%</strong></div>`;
+            const sparklesContainer = document.getElementById('magicSparkles');
+            sparklesContainer.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const s = document.createElement('div'); s.className = 'magic-sparkle';
+                s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%';
+                s.style.animationDelay = Math.random() * 1.5 + 's';
+                sparklesContainer.appendChild(s);
+            }
+            document.getElementById('magicModal').classList.add('show');
+        }
 
-    function startSimulation(mode) {
-        if (simulationRunning) return;
-        if (listeners.length === 0) { alert('Añade oyentes primero'); return; }
-        if (mode === '1D') runSimulation(1); else if (mode === '7D') runSimulation(7); else if (mode === '28D') runSimulation(28);
-    }
+        function closeMagicModal() { document.getElementById('magicModal').classList.remove('show'); }
 
-    function setView(view) {
-        currentView = view;
-        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('view'+view).classList.add('active');
-        document.getElementById('chartTitle').textContent = '📊 Actividad (' + view + ')';
-        drawChart();
-    }
+        function finishSimulation(days) {
+            simulationRunning = false;
+            document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+            document.getElementById('progressWrapper').style.display = 'none';
+            document.getElementById('view1D').disabled = false;
+            if (data7D) document.getElementById('view7D').disabled = false;
+            if (data28D) document.getElementById('view28D').disabled = false;
+            updateStats(); updateAntidetectIndicators();
+            setView('1D');
+            const plays = data1D ? data1D.plays.reduce((a,b)=>a+b,0) : totalMyPlays;
+            const other = data1D ? data1D.otherPlays.reduce((a,b)=>a+b,0) : totalOtherPlays;
+            const gini = document.getElementById('giniValue').textContent;
+            const ratio = document.getElementById('ratioPlays').textContent;
+            const peaks = document.getElementById('suspiciousPeaks').textContent;
+            const bingePct = document.getElementById('bingePct').textContent.replace('%','');
+            showMagicModal(plays, other, listeners.length, gini, ratio, peaks, bingePct);
+        }
 
-    function resetAll() {
-        if (simulationRunning) return;
-        listeners = []; state = []; totalMyPlays = 0; totalOtherPlays = 0;
-        data1D = data7D = data28D = null;
-        document.getElementById('view1D').classList.add('active');
-        document.getElementById('view7D').classList.remove('active'); document.getElementById('view28D').classList.remove('active');
-        ['1D','7D','28D'].forEach(v => document.getElementById('view'+v).disabled = true);
-        document.getElementById('view1D').disabled = false;
-        document.getElementById('chartTitle').textContent = '📊 Actividad (1D)';
-        updateStats(); renderDots(); drawChart(); updateProfileStats(); updateAntidetectIndicators();
-    }
+        function startSimulation(mode) {
+            if (simulationRunning) return;
+            if (listeners.length === 0) { alert('Añade oyentes primero'); return; }
+            if (mode === '1D') runSimulation(1); else if (mode === '7D') runSimulation(7); else if (mode === '28D') runSimulation(28);
+        }
 
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg; toast.style.transform = 'translateX(-50%) translateY(0)';
-        setTimeout(() => toast.style.transform = 'translateX(-50%) translateY(80px)', 2000);
-    }
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('view'+view).classList.add('active');
+            document.getElementById('chartTitle').textContent = '📊 Actividad (' + view + ')';
+            drawChart();
+        }
 
-    window.addListener = addListener;
-    window.generateListeners = generateListeners;
-    window.startSimulation = startSimulation;
-    window.setView = setView;
-    window.resetAll = resetAll;
-    window.closeMagicModal = closeMagicModal;
+        function resetAll() {
+            if (simulationRunning) return;
+            listeners = []; state = []; totalMyPlays = 0; totalOtherPlays = 0;
+            data1D = data7D = data28D = null;
+            document.getElementById('view1D').classList.add('active');
+            document.getElementById('view7D').classList.remove('active'); document.getElementById('view28D').classList.remove('active');
+            ['1D','7D','28D'].forEach(v => document.getElementById('view'+v).disabled = true);
+            document.getElementById('view1D').disabled = false;
+            document.getElementById('chartTitle').textContent = '📊 Actividad (1D)';
+            updateStats(); renderDots(); drawChart(); updateProfileStats(); updateAntidetectIndicators();
+        }
 
-    document.getElementById('listenerCount').value = 10;
-    generateListeners();
-    resizeCanvas();
-})();
-</script>
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg; toast.style.transform = 'translateX(-50%) translateY(0)';
+            setTimeout(() => toast.style.transform = 'translateX(-50%) translateY(80px)', 2000);
+        }
+
+        window.addListener = addListener;
+        window.generateListeners = generateListeners;
+        window.startSimulation = startSimulation;
+        window.setView = setView;
+        window.resetAll = resetAll;
+        window.closeMagicModal = closeMagicModal;
+
+        document.getElementById('listenerCount').value = 10;
+        generateListeners();
+        resizeCanvas();
+    })();
+    </script>
 </body>
 </html>
