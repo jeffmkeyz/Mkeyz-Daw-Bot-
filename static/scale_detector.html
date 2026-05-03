@@ -10,13 +10,13 @@
             --violet: #b388ff; --violet2: #d1b8ff; --green: #00e676;
             --red: #ff4d4d; --blue: #4fc3f7; --orange: #ff9800;
             --text: #f0f3ff; --muted: #9a8fb8;
-            --card: rgba(20, 15, 35, 0.85); --radius: 14px;
+            --card: rgba(20, 15, 35, 0.85); --radius: 12px;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background: radial-gradient(circle at 30% 20%, #0a0e1a, #020408);
             color: var(--text); font-family: 'Inter', sans-serif;
-            min-height: 100vh; padding: 8px 8px calc(20px + env(safe-area-inset-bottom)); overflow-x: hidden;
+            min-height: 100vh; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); overflow-x: hidden;
             overscroll-behavior-y: contain;
         }
         .floating-spheres, .shooting-stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
@@ -25,225 +25,216 @@
             background: radial-gradient(circle at 30% 30%, rgba(179,136,255,0.5), rgba(100,60,200,0.15));
             box-shadow: 0 0 20px rgba(179,136,255,0.4); animation: floatSphere linear infinite; opacity:0.7;
         }
-        @keyframes floatSphere { 0%{transform:translateY(0) scale(1);opacity:.5} 50%{transform:translateY(-60px) scale(1.1);opacity:.8} 100%{transform:translateY(0) scale(1);opacity:.5} }
-        .player, .stats-grid, .audit-panel, .map-area, .chart-area, .btn-group, .custom-listeners, .profiles-stats, .antidetect-panel, .recommendations-panel, .persist-bar { position:relative; z-index:1; }
+        @keyframes floatSphere { 0%{transform:translateY(0) scale(1);opacity:.5} 50%{transform:translateY(-40px) scale(1.1);opacity:.8} 100%{transform:translateY(0) scale(1);opacity:.5} }
+
+        .main-scroll { max-height: 100vh; overflow-y: auto; padding-bottom: 8px; }
+
         .player {
-            background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:20px; padding:10px 14px; margin-bottom:10px;
-            border:1px solid rgba(179,136,255,0.3); box-shadow:0 0 10px var(--violet); display:flex; align-items:center; justify-content:center; gap:10px;
+            background: rgba(20,15,35,0.75); backdrop-filter:blur(25px); border-radius:16px; padding:8px 12px; margin-bottom:6px;
+            border:1px solid rgba(179,136,255,0.3); box-shadow:0 0 8px var(--violet); display:flex; align-items:center; justify-content:center; gap:8px;
         }
-        .album-art { width:48px; height:48px; border-radius:16px; background:linear-gradient(145deg, #2a1f4a, #1a123a); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        .visualizer { display:flex; gap:2px; align-items:flex-end; height:20px; }
-        .vbar { width:4px; border-radius:2px; background:var(--violet); animation:eqAnim 0.8s infinite alternate; }
-        .vbar:nth-child(1){height:8px} .vbar:nth-child(2){height:14px} .vbar:nth-child(3){height:10px} .vbar:nth-child(4){height:16px} .vbar:nth-child(5){height:8px}
+        .album-art { width:40px; height:40px; border-radius:12px; background:linear-gradient(145deg, #2a1f4a, #1a123a); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .visualizer { display:flex; gap:2px; align-items:flex-end; height:16px; }
+        .vbar { width:3px; border-radius:2px; background:var(--violet); animation:eqAnim 0.8s infinite alternate; }
+        .vbar:nth-child(1){height:6px} .vbar:nth-child(2){height:12px} .vbar:nth-child(3){height:9px} .vbar:nth-child(4){height:14px} .vbar:nth-child(5){height:7px}
         @keyframes eqAnim { 0%{transform:scaleY(0.5)} 100%{transform:scaleY(1.3)} }
         .track-info { text-align: center; }
         .track-name {
-            font-weight:800; font-size:1rem; letter-spacing:1px;
+            font-weight:800; font-size:0.85rem; letter-spacing:1px;
             background: linear-gradient(135deg, var(--violet2), #fff);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: bounce 2s infinite;
         }
-        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
-        .live-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(179,136,255,0.15); padding:3px 10px; border-radius:14px; font-size:0.65rem; color:var(--violet2); margin-top:4px; }
-        .live-badge .dot { width:6px; height:6px; border-radius:50%; background:var(--violet); animation:pulseDot 1.4s infinite; }
+        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+        .live-badge { display:inline-flex; align-items:center; gap:3px; background:rgba(179,136,255,0.15); padding:2px 8px; border-radius:12px; font-size:0.6rem; color:var(--violet2); margin-top:3px; }
+        .live-badge .dot { width:5px; height:5px; border-radius:50%; background:var(--violet); animation:pulseDot 1.4s infinite; }
         @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(100px,1fr)); gap:6px; margin:10px 0; }
-        .mini-stat { background:var(--card); backdrop-filter:blur(10px); border-radius:14px; padding:10px 8px; border:1px solid rgba(179,136,255,0.2); text-align:center; font-size:0.7rem; }
-        .mini-stat .value { font-family:'Orbitron',monospace; font-size:1rem; color:var(--violet2); text-shadow:0 0 8px var(--violet); }
 
-        /* Panel de Auditoría */
-        .audit-panel {
-            background: var(--card); border-radius: 16px; padding: 12px; margin: 10px 0;
-            border: 1px solid rgba(179,136,255,0.3); box-shadow: 0 0 20px rgba(179,136,255,0.2);
-        }
-        .audit-title { font-size:0.75rem; color:var(--violet2); text-align:center; margin-bottom:8px; font-weight:700; }
-        .risk-meter {
-            display: flex; align-items: center; gap: 10px; justify-content: center;
-            margin-bottom: 10px;
-        }
-        .risk-score { font-family: 'Orbitron', monospace; font-size: 2rem; font-weight: 800; }
-        .risk-status {
-            padding: 4px 14px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
-            text-align: center;
-        }
-        .risk-details { font-size: 0.65rem; color: var(--muted); text-align: center; margin-bottom: 8px; }
-        .audit-history {
-            background: rgba(0,0,0,0.3); border-radius: 10px; padding: 8px;
-            max-height: 120px; overflow-y: auto; font-size: 0.6rem; color: var(--muted);
-        }
-        .audit-entry {
-            display: flex; justify-content: space-between; padding: 4px 0;
-            border-bottom: 1px solid rgba(179,136,255,0.1);
-        }
-        .audit-entry:last-child { border-bottom: none; }
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin:6px 0; }
+        .mini-stat { background:var(--card); border-radius:10px; padding:8px 4px; border:1px solid rgba(179,136,255,0.2); text-align:center; font-size:0.6rem; }
+        .mini-stat .value { font-family:'Orbitron',monospace; font-size:0.85rem; color:var(--violet2); text-shadow:0 0 6px var(--violet); }
 
-        .profiles-stats { display:flex; flex-wrap:wrap; gap:4px; margin:6px 0; justify-content:center; font-size:0.7rem; }
-        .profile-stat { background:var(--card); padding:5px 12px; border-radius:14px; border:1px solid; display:flex; align-items:center; gap:4px; }
-        .antidetect-panel { background:var(--card); border-radius:14px; padding:10px; margin:10px 0; border:1px solid rgba(179,136,255,0.3); }
-        .antidetect-title { font-size:0.7rem; color:var(--violet2); margin-bottom:8px; text-align:center; }
-        .antidetect-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(110px,1fr)); gap:6px; }
-        .antidetect-item { background:rgba(0,0,0,0.3); border-radius:10px; padding:8px; border:1px solid rgba(255,255,255,0.1); text-align:center; }
-        .antidetect-label { font-size:0.6rem; color:var(--muted); }
-        .antidetect-value { font-size:0.85rem; font-weight:700; margin-top:2px; }
-        .recommendations-panel { background:var(--card); border-radius:14px; padding:10px; margin:10px 0; border:1px solid var(--violet); display:none; text-align:center; }
+        /* Auditoría compacta */
+        .audit-panel { background:var(--card); border-radius:12px; padding:8px; margin:6px 0; border:1px solid rgba(179,136,255,0.3); display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; }
+        .audit-score-wrap { text-align:center; }
+        .risk-score { font-family:'Orbitron',monospace; font-size:1.6rem; font-weight:800; transition: color 0.5s ease; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
+        .risk-status { padding:3px 12px; border-radius:14px; font-size:0.65rem; font-weight:700; transition: background 0.5s ease; }
+        .risk-details { font-size:0.6rem; color:var(--muted); text-align:center; }
+
+        .profiles-stats { display:flex; flex-wrap:wrap; gap:3px; margin:4px 0; justify-content:center; font-size:0.6rem; }
+        .profile-stat { background:var(--card); padding:3px 8px; border-radius:10px; border:1px solid; display:flex; align-items:center; gap:3px; }
+        .antidetect-panel { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.3); }
+        .antidetect-title { font-size:0.65rem; color:var(--violet2); margin-bottom:4px; text-align:center; }
+        .antidetect-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
+        .antidetect-item { background:rgba(0,0,0,0.3); border-radius:8px; padding:6px 4px; border:1px solid rgba(255,255,255,0.1); text-align:center; }
+        .antidetect-label { font-size:0.55rem; color:var(--muted); }
+        .antidetect-value { font-size:0.7rem; font-weight:700; margin-top:2px; }
+
+        .recommendations-panel { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid var(--violet); display:none; text-align:center; font-size:0.6rem; }
         .recommendations-panel.show { display:block; }
-        .rec-header { font-size:0.75rem; font-weight:700; color:var(--violet2); margin-bottom:6px; }
-        .rec-item { font-size:0.7rem; padding:6px 0; border-bottom:1px solid rgba(179,136,255,0.1); display:flex; gap:6px; align-items:flex-start; justify-content:center; }
-        .rec-item:last-child { border-bottom:none; }
-        .filter-bar { display:flex; gap:6px; align-items:center; justify-content:center; margin-bottom:6px; flex-wrap:wrap; }
-        .filter-bar select { background: var(--card); color: var(--text); border: 2px solid var(--violet); border-radius: 8px; padding: 6px 10px; font-size: 0.7rem; outline: none; box-shadow: 0 0 10px rgba(179,136,255,0.4); font-weight: 600; }
-        .filter-bar button { background: var(--violet); border: none; padding: 6px 12px; border-radius: 14px; font-weight: 700; font-size: 0.7rem; cursor: pointer; color: #000; box-shadow: 0 0 10px rgba(179,136,255,0.4); }
-        .map-area { margin:10px 0; border-radius:20px; overflow:hidden; border:1px solid rgba(179,136,255,0.2); }
-        #mapid { height:280px; width:100%; z-index:1; }
-        .leaflet-container { background:#0a0a1e; font-family:'Inter',sans-serif; }
-        .chart-area { background:var(--card); border-radius:14px; padding:10px; margin:10px 0; border:1px solid rgba(179,136,255,0.2); }
-        .chart-header { display:flex; flex-direction: column; align-items:center; gap:6px; margin-bottom:6px; }
-        .chart-title { font-size: 0.8rem; font-weight:800; text-transform: uppercase; letter-spacing:1px; color: #fff; text-shadow: 0 0 10px var(--violet), 0 0 20px var(--violet); background: linear-gradient(135deg, var(--violet2), #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 6px; }
-        .chart-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
-        .view-btns { display:flex; gap:4px; }
-        .view-btn { padding:5px 12px; font-size:0.65rem; font-weight:700; border:2px solid rgba(179,136,255,0.5); border-radius:14px; background:rgba(20,15,35,0.7); color:var(--text); cursor:pointer; }
+
+        .filter-bar { display:flex; gap:4px; align-items:center; justify-content:center; margin-bottom:4px; }
+        .filter-bar select { background:var(--card); color:var(--text); border:1px solid var(--violet); border-radius:6px; padding:4px 6px; font-size:0.6rem; }
+        .filter-bar button { background:var(--violet); border:none; padding:4px 10px; border-radius:10px; font-weight:700; font-size:0.6rem; cursor:pointer; color:#000; }
+
+        .map-area { margin:4px 0; border-radius:14px; overflow:hidden; border:1px solid rgba(179,136,255,0.2); }
+        #mapid { height:200px; width:100%; }
+        .leaflet-container { background:#0a0a1e; }
+
+        .chart-area { background:var(--card); border-radius:10px; padding:6px; margin:4px 0; border:1px solid rgba(179,136,255,0.2); }
+        .chart-header { display:flex; flex-direction:column; align-items:center; gap:4px; margin-bottom:4px; }
+        .chart-title { font-size:0.7rem; font-weight:800; color:#fff; text-shadow:0 0 6px var(--violet); }
+        .chart-controls { display:flex; gap:6px; align-items:center; }
+        .view-btns { display:flex; gap:3px; }
+        .view-btn { padding:3px 8px; font-size:0.6rem; font-weight:700; border:1px solid rgba(179,136,255,0.5); border-radius:10px; background:rgba(20,15,35,0.7); color:var(--text); cursor:pointer; }
         .view-btn.active { background:var(--violet); color:#000; border-color:var(--violet); }
-        canvas#activityChart { width:100%; height:180px; display:block; background:rgba(0,0,0,0.2); border-radius:10px; }
-        .chart-tooltip {
-            position: absolute; background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
-            border-radius: 10px; padding: 6px 10px; pointer-events: none; z-index: 50;
-            opacity: 0; transition: opacity 0.15s; font-size: 0.65rem; color: var(--text);
-            white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 8px var(--violet);
-        }
-        .chart-tooltip.visible { opacity: 1; }
-        .btn-group { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
-        .btn { background:var(--card); border:2px solid rgba(179,136,255,0.4); padding:8px 16px; border-radius:20px; font-weight:700; font-size:0.7rem; color:var(--text); cursor:pointer; transition:0.2s; }
-        .btn:hover { border-color:var(--violet); box-shadow:0 0 12px var(--violet); }
+        canvas#activityChart { width:100%; height:140px; display:block; background:rgba(0,0,0,0.2); border-radius:8px; }
+
+        .btn-group { display:flex; gap:4px; flex-wrap:wrap; justify-content:center; margin-top:4px; }
+        .btn { background:var(--card); border:1px solid rgba(179,136,255,0.4); padding:6px 12px; border-radius:14px; font-weight:700; font-size:0.6rem; color:var(--text); cursor:pointer; transition:0.2s; }
+        .btn:hover { border-color:var(--violet); box-shadow:0 0 8px var(--violet); }
         .btn.gold { background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000; }
         .btn:disabled { opacity:0.4; pointer-events:none; }
-        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1530; color:var(--violet2); padding:6px 14px; border-radius:20px; z-index:999; border:1px solid var(--violet); font-size:0.7rem; transition:transform 0.3s; }
-        .controls-bar { display:flex; align-items:center; gap:6px; margin:8px 0; background:var(--card); padding:8px 14px; border-radius:20px; border:1px solid rgba(179,136,255,0.4); justify-content:center; }
-        .controls-label { font-size:0.7rem; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:4px; }
-        .controls-label svg { width:16px; height:16px; fill:var(--violet); }
-        .scrubber-wrapper {
-            position: relative; width: 60px; height: 32px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.4); border: 1px solid var(--violet);
-            border-radius: 8px; overflow: hidden;
-            touch-action: none; user-select: none;
-        }
-        .scrubber-value { font-family: 'Orbitron', monospace; font-size: 0.9rem; color: var(--violet2); pointer-events: none; }
-        .scrubber-indicator { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: rgba(179,136,255,0.2); pointer-events: none; transition: width 0.1s; }
-        .controls-select { background:rgba(0,0,0,0.4); color:var(--text); border:1px solid var(--violet); border-radius:8px; padding:4px; font-size:0.7rem; }
-        .controls-btn { background:var(--violet); border:none; padding:6px 14px; border-radius:14px; font-weight:700; font-size:0.7rem; cursor:pointer; color:#000; display:flex; align-items:center; gap:4px; }
-        .persist-bar { display: flex; gap:6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; margin-bottom: 12px; }
-        .persist-bar .btn { font-size: 0.65rem; padding: 6px 10px; }
-        .scene-list { background: var(--card); border-radius: 10px; padding: 8px; margin: 6px 0; display: none; border: 1px solid var(--violet); max-height: 150px; overflow-y: auto; }
-        .scene-list.show { display: block; }
-        .scene-item { padding: 6px 10px; cursor: pointer; border-radius: 8px; font-size: 0.7rem; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
-        .scene-item:hover { background: rgba(179,136,255,0.2); }
-        .scene-item .delete-scene { color: var(--red); cursor: pointer; padding: 2px 6px; }
+
+        .controls-bar { display:flex; align-items:center; gap:4px; margin:4px 0; background:var(--card); padding:6px 10px; border-radius:14px; border:1px solid rgba(179,136,255,0.4); justify-content:center; }
+        .controls-label { font-size:0.6rem; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:3px; }
+        .controls-label svg { width:14px; height:14px; fill:var(--violet); }
+        .scrubber-wrapper { position:relative; width:50px; height:26px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); border:1px solid var(--violet); border-radius:6px; touch-action:none; user-select:none; }
+        .scrubber-value { font-family:'Orbitron',monospace; font-size:0.8rem; color:var(--violet2); pointer-events:none; }
+        .scrubber-indicator { position:absolute; left:0; top:0; height:100%; width:0%; background:rgba(179,136,255,0.2); pointer-events:none; transition:width 0.1s; }
+        .controls-select { background:rgba(0,0,0,0.4); color:var(--text); border:1px solid var(--violet); border-radius:6px; padding:3px; font-size:0.6rem; }
+        .controls-btn { background:var(--violet); border:none; padding:5px 10px; border-radius:10px; font-weight:700; font-size:0.6rem; cursor:pointer; color:#000; display:flex; align-items:center; gap:3px; }
+
+        .persist-bar { display:flex; gap:4px; flex-wrap:wrap; justify-content:center; margin-top:4px; }
+        .persist-bar .btn { font-size:0.6rem; padding:5px 8px; }
+
+        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1530; color:var(--violet2); padding:5px 12px; border-radius:14px; z-index:999; border:1px solid var(--violet); font-size:0.6rem; transition:transform 0.3s; }
+
         .magic-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:300; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); }
         .magic-modal.show { display:flex; }
-        .magic-box { background: linear-gradient(145deg, #1a1030, #0f0a22); border: 2px solid var(--violet); border-radius: 24px; padding: 20px; max-width: 360px; width: 90%; text-align: center; animation: magicIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 40px var(--violet), 0 0 80px rgba(179,136,255,0.6); position: relative; overflow: hidden; }
-        @keyframes magicIn { 0% { transform: scale(0.5) rotate(-5deg); opacity: 0; } 60% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
-        .magic-sparkles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .magic-sparkle { position: absolute; width: 6px; height: 6px; background: var(--violet2); border-radius: 50%; animation: sparkle 1.5s linear infinite; }
-        @keyframes sparkle { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-200px) scale(0); opacity: 0; } }
-        .magic-title { font-family: 'Orbitron', monospace; font-size: 1.2rem; color: #fff; text-shadow: 0 0 15px var(--violet); margin-bottom: 12px; }
-        .magic-stat { display: flex; justify-content: space-between; margin: 6px 0; font-size: 0.8rem; }
-        .context-menu { position: absolute; z-index: 1000; background: rgba(20,15,35,0.96); border: 1px solid var(--violet); border-radius: 12px; padding: 4px 0; min-width: 150px; box-shadow: 0 0 15px var(--violet); display: none; }
-        .context-menu.show { display: block; }
-        .context-menu-item { padding: 8px 12px; cursor: pointer; font-size: 0.7rem; color: var(--text); transition: background 0.2s; }
-        .context-menu-item:hover { background: rgba(179,136,255,0.2); }
+        .magic-box { background:linear-gradient(145deg,#1a1030,#0f0a22); border:2px solid var(--violet); border-radius:20px; padding:16px; max-width:320px; width:90%; text-align:center; animation:magicIn 0.6s ease; }
+        @keyframes magicIn { 0%{transform:scale(0.5) rotate(-5deg);opacity:0} 100%{transform:scale(1) rotate(0);opacity:1} }
+        .magic-title { font-family:'Orbitron',monospace; font-size:1rem; color:#fff; text-shadow:0 0 12px var(--violet); margin-bottom:10px; }
+        .magic-stat { display:flex; justify-content:space-between; margin:4px 0; font-size:0.7rem; }
+
+        .context-menu { position:absolute; z-index:1000; background:rgba(20,15,35,0.96); border:1px solid var(--violet); border-radius:10px; padding:3px 0; min-width:130px; box-shadow:0 0 12px var(--violet); display:none; }
+        .context-menu.show { display:block; }
+        .context-menu-item { padding:6px 10px; cursor:pointer; font-size:0.65rem; color:var(--text); }
+        .context-menu-item:hover { background:rgba(179,136,255,0.2); }
+
+        .chart-tooltip {
+            position: absolute; background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
+            border-radius: 8px; padding: 4px 8px; pointer-events: none; z-index: 50;
+            opacity: 0; transition: opacity 0.15s; font-size: 0.6rem; color: var(--text);
+            white-space: nowrap; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+        .chart-tooltip.visible { opacity: 1; }
     </style>
 </head>
 <body>
     <div class="floating-spheres" id="spheres"></div>
     <canvas class="shooting-stars" id="starsCanvas"></canvas>
-    <div class="player">
-        <div class="album-art"><div class="visualizer"><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div></div></div>
-        <div class="track-info">
-            <div class="track-name">🎛️ MKEYZ STUDIO</div>
-            <div class="live-badge"><div class="dot"></div><span id="liveCount">0</span> escuchándote</div>
-        </div>
-    </div>
-    <div class="stats-grid">
-        <div class="mini-stat"><div class="value" id="totalPlays">0</div><div class="label">🎵 Tus plays</div></div>
-        <div class="mini-stat"><div class="value" id="totalOtherPlays">0</div><div class="label">🎧 Otros plays</div></div>
-        <div class="mini-stat"><div class="value" id="uniqueListeners">0</div><div class="label">👥 Oyentes</div></div>
-        <div class="mini-stat"><div class="value" id="activePlatform">0</div><div class="label">🟢 Activos</div></div>
-    </div>
+    <div class="main-scroll">
 
-    <!-- Panel de Auditoría de Plataforma -->
-    <div class="audit-panel" id="auditPanel">
-        <div class="audit-title">🛡️ Auditoría de Plataforma</div>
-        <div class="risk-meter">
-            <div class="risk-score" id="riskScore">0%</div>
-            <div class="risk-status" id="riskStatus" style="background: #555;">—</div>
-        </div>
-        <div class="risk-details" id="riskDetails"></div>
-        <div class="audit-history" id="auditHistory">
-            <div style="text-align:center;color:var(--muted)">Historial de auditorías</div>
-        </div>
-    </div>
-
-    <div class="profiles-stats" id="profilesStats"></div>
-    <div class="antidetect-panel">
-        <div class="antidetect-title">🛡️ Indicadores Numéricos</div>
-        <div class="antidetect-grid">
-            <div class="antidetect-item"><span class="antidetect-label">Gini</span><div class="antidetect-value" id="giniValue">—</div></div>
-            <div class="antidetect-item"><span class="antidetect-label">Ratio</span><div class="antidetect-value" id="ratioPlays">—</div></div>
-            <div class="antidetect-item"><span class="antidetect-label">Picos</span><div class="antidetect-value" id="suspiciousPeaks">0</div></div>
-            <div class="antidetect-item"><span class="antidetect-label">Binge%</span><div class="antidetect-value" id="bingePct">0%</div></div>
-        </div>
-    </div>
-    <div class="recommendations-panel" id="recommendationsPanel">
-        <div class="rec-header">🧠 Recomendaciones</div>
-        <div id="recList"></div>
-    </div>
-    <div class="filter-bar">
-        <select id="filterCountry"><option value="">🌍 Todos los países</option></select>
-        <select id="filterPlatform"><option value="">📱 Plataforma</option></select>
-        <button id="heatmapToggle">🔥 Heatmap</button>
-    </div>
-    <div class="map-area"><div id="mapid"></div></div>
-    <div class="controls-bar">
-        <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Cantidad:</span>
-        <div class="scrubber-wrapper" id="scrubberWrapper">
-            <div class="scrubber-indicator" id="scrubberIndicator"></div>
-            <span class="scrubber-value" id="scrubberValue">10</span>
-        </div>
-        <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Perfil:</span>
-        <select id="profileSelect" class="controls-select"><option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option></select>
-        <button onclick="generateListeners()" class="controls-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Generar</button>
-    </div>
-    <div class="chart-area">
-        <div class="chart-header">
-            <div class="chart-title" id="chartTitle"><span class="icon">📊</span> Actividad (1D)</div>
-            <div class="chart-controls">
-                <div class="view-btns">
-                    <button class="view-btn active" id="view1D" onclick="setView('1D')">1D</button>
-                    <button class="view-btn" id="view7D" onclick="setView('7D')" disabled>7D</button>
-                    <button class="view-btn" id="view28D" onclick="setView('28D')" disabled>28D</button>
-                </div>
-                <button class="btn" id="normalizeBtn" onclick="toggleNormalize()" style="padding:5px 12px; font-size:0.65rem;">📊 Normalizar</button>
+        <div class="player">
+            <div class="album-art"><div class="visualizer"><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div></div></div>
+            <div class="track-info">
+                <div class="track-name">🎛️ MKEYZ STUDIO</div>
+                <div class="live-badge"><div class="dot"></div><span id="liveCount">0</span> escuchándote</div>
             </div>
         </div>
-        <canvas id="activityChart"></canvas>
-        <div class="chart-tooltip" id="chartTooltip"></div>
-        <div id="progressWrapper" style="display:none;text-align:center;margin:6px 0;"><span id="progressLabel">0%</span><div style="width:80%;height:4px;background:rgba(255,255,255,0.1);border-radius:3px;margin:4px auto;"><div id="progressBarFill" style="height:100%;width:0%;background:var(--violet);border-radius:3px;"></div></div></div>
+
+        <div class="stats-grid">
+            <div class="mini-stat"><div class="value" id="totalPlays">0</div><div class="label">🎵 Tus plays</div></div>
+            <div class="mini-stat"><div class="value" id="totalOtherPlays">0</div><div class="label">🎧 Otros plays</div></div>
+            <div class="mini-stat"><div class="value" id="uniqueListeners">0</div><div class="label">👥 Oyentes</div></div>
+            <div class="mini-stat"><div class="value" id="activePlatform">0</div><div class="label">🟢 Activos</div></div>
+        </div>
+
+        <!-- Auditoría compacta -->
+        <div class="audit-panel" id="auditPanel">
+            <div class="audit-score-wrap">
+                <div class="risk-score" id="riskScore">0%</div>
+                <div class="risk-status" id="riskStatus" style="background:#555;">—</div>
+            </div>
+            <div>
+                <div class="risk-details" id="riskDetails"></div>
+                <div style="font-size:0.6rem;color:var(--muted);margin-top:2px;" id="auditFlags"></div>
+            </div>
+        </div>
+
+        <div class="profiles-stats" id="profilesStats"></div>
+
+        <div class="antidetect-panel">
+            <div class="antidetect-title">🛡️ Indicadores</div>
+            <div class="antidetect-grid">
+                <div class="antidetect-item"><span class="antidetect-label">Gini</span><div class="antidetect-value" id="giniValue">—</div></div>
+                <div class="antidetect-item"><span class="antidetect-label">Ratio</span><div class="antidetect-value" id="ratioPlays">—</div></div>
+                <div class="antidetect-item"><span class="antidetect-label">Picos</span><div class="antidetect-value" id="suspiciousPeaks">0</div></div>
+                <div class="antidetect-item"><span class="antidetect-label">Binge%</span><div class="antidetect-value" id="bingePct">0%</div></div>
+            </div>
+        </div>
+
+        <div class="recommendations-panel" id="recommendationsPanel">
+            <div><strong>🧠 Recomendaciones</strong></div>
+            <div id="recList"></div>
+        </div>
+
+        <div class="filter-bar">
+            <select id="filterCountry"><option value="">🌍 Todos</option></select>
+            <select id="filterPlatform"><option value="">📱 Plataforma</option></select>
+            <button id="heatmapToggle">🔥 Heatmap</button>
+        </div>
+
+        <div class="map-area"><div id="mapid"></div></div>
+
+        <div class="controls-bar">
+            <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Cantidad:</span>
+            <div class="scrubber-wrapper" id="scrubberWrapper">
+                <div class="scrubber-indicator" id="scrubberIndicator"></div>
+                <span class="scrubber-value" id="scrubberValue">10</span>
+            </div>
+            <span class="controls-label"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Perfil:</span>
+            <select id="profileSelect" class="controls-select"><option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option></select>
+            <button onclick="generateListeners()" class="controls-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Generar</button>
+        </div>
+
+        <div class="chart-area">
+            <div class="chart-header">
+                <div class="chart-title" id="chartTitle">📊 Actividad (1D)</div>
+                <div class="chart-controls">
+                    <div class="view-btns">
+                        <button class="view-btn active" id="view1D" onclick="setView('1D')">1D</button>
+                        <button class="view-btn" id="view7D" onclick="setView('7D')" disabled>7D</button>
+                        <button class="view-btn" id="view28D" onclick="setView('28D')" disabled>28D</button>
+                    </div>
+                    <button class="btn" id="normalizeBtn" onclick="toggleNormalize()" style="padding:3px 8px;font-size:0.6rem;">📊 Normalizar</button>
+                </div>
+            </div>
+            <canvas id="activityChart"></canvas>
+            <div class="chart-tooltip" id="chartTooltip"></div>
+            <div id="progressWrapper" style="display:none;text-align:center;margin:4px 0;"><span id="progressLabel">0%</span><div style="width:80%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin:3px auto;"><div id="progressBarFill" style="height:100%;width:0%;background:var(--violet);border-radius:2px;"></div></div></div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn gold" onclick="addListener()">➕ Añadir</button>
+            <button class="btn" onclick="startSimulation('1D')">1 Día</button>
+            <button class="btn" onclick="startSimulation('7D')">7 Días</button>
+            <button class="btn" onclick="startSimulation('28D')">28 Días</button>
+            <button class="btn" onclick="resetAll()">🔄 Reset</button>
+        </div>
+
+        <div class="persist-bar">
+            <button class="btn" onclick="saveScene()">💾 Guardar</button>
+            <button class="btn" onclick="loadScene()">📂 Cargar</button>
+            <button class="btn" onclick="exportJSON()">📤 Exportar</button>
+            <button class="btn" onclick="importJSON()">📥 Importar</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+        </div>
+
     </div>
-    <div class="btn-group">
-        <button class="btn gold" onclick="addListener()">➕ Añadir</button>
-        <button class="btn" onclick="startSimulation('1D')">1 Día</button>
-        <button class="btn" onclick="startSimulation('7D')">7 Días</button>
-        <button class="btn" onclick="startSimulation('28D')">28 Días</button>
-        <button class="btn" onclick="resetAll()">🔄 Reset</button>
-    </div>
-    <div class="persist-bar">
-        <button class="btn" onclick="saveScene()">💾 Guardar</button>
-        <button class="btn" onclick="loadScene()">📂 Cargar</button>
-        <button class="btn" onclick="exportJSON()">📤 Exportar</button>
-        <button class="btn" onclick="importJSON()">📥 Importar</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
-    </div>
-    <div class="scene-list" id="sceneList"></div>
+
     <div class="toast" id="toast"></div>
     <div class="context-menu" id="contextMenu">
         <div class="context-menu-item" data-profile="fiel">🔒 Fiel</div>
@@ -253,12 +244,12 @@
     </div>
     <div class="magic-modal" id="magicModal">
         <div class="magic-box">
-            <div class="magic-sparkles" id="magicSparkles"></div>
             <div class="magic-title">✨ Simulación Completa ✨</div>
             <div id="magicContent"></div>
-            <button class="btn gold" style="width:100%; margin-top:12px" onclick="closeMagicModal()">Cerrar</button>
+            <button class="btn gold" style="width:100%;margin-top:10px" onclick="closeMagicModal()">Cerrar</button>
         </div>
     </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
     <script>
@@ -266,11 +257,11 @@
         const STORAGE_CURRENT = 'mkeyz_oyentes_current', STORAGE_SCENES = 'mkeyz_oyentes_scenes', STORAGE_AUDITS = 'mkeyz_oyentes_audits';
         // Esferas
         const spheresContainer = document.getElementById('spheres');
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < 12; i++) {
             const sphere = document.createElement('div');
-            sphere.className = 'sphere'; sphere.style.width = (Math.random() * 60 + 30) + 'px'; sphere.style.height = sphere.style.width;
+            sphere.className = 'sphere'; sphere.style.width = (Math.random() * 50 + 25) + 'px'; sphere.style.height = sphere.style.width;
             sphere.style.left = Math.random() * 100 + '%'; sphere.style.top = Math.random() * 100 + '%';
-            sphere.style.animationDuration = (Math.random() * 20 + 15) + 's';
+            sphere.style.animationDuration = (Math.random() * 15 + 10) + 's';
             spheresContainer.appendChild(sphere);
         }
         // Estrellas fugaces
@@ -278,10 +269,10 @@
         function resizeStars() { starsCanvas.width = window.innerWidth; starsCanvas.height = window.innerHeight; }
         window.addEventListener('resize', resizeStars); resizeStars();
         let stars = [];
-        for (let i = 0; i < 8; i++) stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height*0.4, len: 60+Math.random()*40, speed: 4+Math.random()*6, opacity: 0.4+Math.random()*0.4 });
+        for (let i = 0; i < 6; i++) stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height*0.3, len: 40+Math.random()*30, speed: 3+Math.random()*5, opacity: 0.3+Math.random()*0.4 });
         function drawStars() {
             starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
-            stars.forEach(s => { s.x += s.speed; s.y -= s.speed*0.5; if(s.x>starsCanvas.width+100||s.y<-100){s.x=Math.random()*starsCanvas.width; s.y=Math.random()*starsCanvas.height*0.3;} starsCtx.beginPath(); starsCtx.moveTo(s.x,s.y); starsCtx.lineTo(s.x-s.len,s.y+s.len*0.5); starsCtx.strokeStyle=`rgba(179,136,255,${s.opacity})`; starsCtx.lineWidth=2; starsCtx.shadowColor='#b388ff'; starsCtx.shadowBlur=8; starsCtx.stroke(); });
+            stars.forEach(s => { s.x += s.speed; s.y -= s.speed*0.4; if(s.x>starsCanvas.width+80||s.y<-80){s.x=Math.random()*starsCanvas.width; s.y=Math.random()*starsCanvas.height*0.2;} starsCtx.beginPath(); starsCtx.moveTo(s.x,s.y); starsCtx.lineTo(s.x-s.len,s.y+s.len*0.5); starsCtx.strokeStyle=`rgba(179,136,255,${s.opacity})`; starsCtx.lineWidth=1.5; starsCtx.shadowColor='#b388ff'; starsCtx.shadowBlur=6; starsCtx.stroke(); });
             requestAnimationFrame(drawStars);
         }
         drawStars();
@@ -293,23 +284,17 @@
             binge:{name:"Binge",icon:"🔥",color:"#ff4d4d",activity:0.9,myRadio:0.9,change:0.05,idle:0.05,max:30,session:8}
         };
         const countryCities = {
-            "Rep. Dominicana":[{name:"Santo Domingo",lat:18.48,lng:-69.93},{name:"Santiago",lat:19.45,lng:-70.7}],
-            "España":[{name:"Madrid",lat:40.42,lng:-3.70},{name:"Barcelona",lat:41.39,lng:2.16}],
-            "Brasil":[{name:"São Paulo",lat:-23.55,lng:-46.63},{name:"Río",lat:-22.91,lng:-43.17}],
-            "México":[{name:"CDMX",lat:19.43,lng:-99.13},{name:"Guadalajara",lat:20.66,lng:-103.35}],
-            "Francia":[{name:"París",lat:48.86,lng:2.35},{name:"Lyon",lat:45.76,lng:4.84}],
-            "Colombia":[{name:"Bogotá",lat:4.71,lng:-74.07},{name:"Medellín",lat:6.25,lng:-75.56}],
-            "Argentina":[{name:"Buenos Aires",lat:-34.60,lng:-58.38},{name:"Córdoba",lat:-31.42,lng:-64.18}],
-            "EE.UU.":[{name:"Nueva York",lat:40.71,lng:-74.01},{name:"Los Ángeles",lat:34.05,lng:-118.24}],
+            "Rep. Dominicana":[{name:"Santo Domingo",lat:18.48,lng:-69.93}], "España":[{name:"Madrid",lat:40.42,lng:-3.70}],
+            "Brasil":[{name:"São Paulo",lat:-23.55,lng:-46.63}], "México":[{name:"CDMX",lat:19.43,lng:-99.13}],
+            "Francia":[{name:"París",lat:48.86,lng:2.35}], "Colombia":[{name:"Bogotá",lat:4.71,lng:-74.07}],
+            "Argentina":[{name:"Buenos Aires",lat:-34.60,lng:-58.38}], "EE.UU.":[{name:"Nueva York",lat:40.71,lng:-74.01}],
             "Perú":[{name:"Lima",lat:-12.05,lng:-77.04}], "Chile":[{name:"Santiago",lat:-33.45,lng:-70.67}],
-            "Ecuador":[{name:"Quito",lat:-0.18,lng:-78.47}], "Canadá":[{name:"Toronto",lat:43.65,lng:-79.38}],
-            "Italia":[{name:"Roma",lat:41.90,lng:12.50}], "Japón":[{name:"Tokio",lat:35.68,lng:139.76}],
-            "Nigeria":[{name:"Lagos",lat:6.45,lng:3.40}], "Alemania":[{name:"Berlín",lat:52.52,lng:13.40}],
-            "Reino Unido":[{name:"Londres",lat:51.51,lng:-0.13}], "Corea del Sur":[{name:"Seúl",lat:37.57,lng:126.98}],
-            "Australia":[{name:"Sídney",lat:-33.87,lng:151.21}], "India":[{name:"Bombay",lat:19.08,lng:72.88}]
+            "Canadá":[{name:"Toronto",lat:43.65,lng:-79.38}], "Italia":[{name:"Roma",lat:41.90,lng:12.50}],
+            "Japón":[{name:"Tokio",lat:35.68,lng:139.76}], "Reino Unido":[{name:"Londres",lat:51.51,lng:-0.13}],
+            "Australia":[{name:"Sídney",lat:-33.87,lng:151.21}]
         };
         const platforms = [{name:"Spotify",color:"#b388ff"},{name:"Apple Music",color:"#e040fb"},{name:"YouTube",color:"#ff4081"},{name:"Deezer",color:"#aa66cc"}];
-        const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael","Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria"];
+        const namePool = ["Carlos","Ana","João","Luis","Marie","David","Sofía","Pedro","Emily","Rafael","Isabella","Andrés","Camila"];
         const userAgents = ["Mozilla/5.0 (Windows NT 10.0)","Mozilla/5.0 (iPhone)","Mozilla/5.0 (Android)"];
 
         let listeners = [], state = [], totalMyPlays = 0, totalOtherPlays = 0;
@@ -329,11 +314,11 @@
         let markersLayer = L.layerGroup().addTo(map), heatLayer = null, heatmapActive = false;
         const canvas = document.getElementById('activityChart'), ctx = canvas.getContext('2d');
         const contextMenu = document.getElementById('contextMenu'); let contextMenuTarget = null;
-        const magicModal = document.getElementById('magicModal'), magicContent = document.getElementById('magicContent'), magicSparkles = document.getElementById('magicSparkles');
+        const magicModal = document.getElementById('magicModal'), magicContent = document.getElementById('magicContent');
         const chartTooltip = document.getElementById('chartTooltip');
         let mouseChartX = -1;
 
-        function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 180; }
+        function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 140; }
         window.addEventListener('resize', () => { resizeCanvas(); drawChart(); });
         function getActivityFactor(h) { if(h>=7&&h<=9)return 1.4; if(h>=12&&h<=14)return 1.2; if(h>=19&&h<=22)return 1.5; if(h>=0&&h<=5)return 0.3; return 0.8; }
 
@@ -348,8 +333,8 @@
                 mouseChartX = idx;
                 chartTooltip.innerHTML = `<div style="color:#b388ff;">👥 Oyentes: ${data.activity[idx]}</div><div style="color:#00e676;">🎵 Mis plays: ${data.plays[idx]}</div><div style="color:#4fc3f7;">🎧 Otros plays: ${data.otherPlays[idx]}</div>`;
                 chartTooltip.classList.add('visible');
-                chartTooltip.style.left = (e.clientX - rect.left + 20) + 'px';
-                chartTooltip.style.top = (e.clientY - rect.top - 70) + 'px';
+                chartTooltip.style.left = (e.clientX - rect.left + 15) + 'px';
+                chartTooltip.style.top = (e.clientY - rect.top - 60) + 'px';
             } else { mouseChartX = -1; chartTooltip.classList.remove('visible'); }
             drawChart();
         });
@@ -368,18 +353,18 @@
                 activity = activity.map(v => v / maxA); plays = plays.map(v => v / maxP); otherPlays = otherPlays.map(v => v / maxO);
             }
             const maxVal = normalizedMode ? 1 : Math.max(...activity, ...plays, ...otherPlays, 1);
-            const pad={top:16,right:16,bottom:24,left:32},cw=w-pad.left-pad.right,ch=h-pad.top-pad.bottom,n=labels.length,stepX=cw/(n-1);
+            const pad={top:12,right:12,bottom:20,left:28},cw=w-pad.left-pad.right,ch=h-pad.top-pad.bottom,n=labels.length,stepX=cw/(n-1);
             ctx.strokeStyle='#2a1f4a'; ctx.beginPath(); ctx.moveTo(pad.left,pad.top); ctx.lineTo(pad.left,h-pad.bottom); ctx.lineTo(w-pad.right,h-pad.bottom); ctx.stroke();
-            ctx.fillStyle='#9a8fb8'; ctx.font='8px Inter'; ctx.textAlign='center';
+            ctx.fillStyle='#9a8fb8'; ctx.font='7px Inter'; ctx.textAlign='center';
             const step=n<=7?1:(n<=28?7:5);
-            for(let i=0;i<n;i+=step) ctx.fillText(labels[i],pad.left+i*stepX,h-pad.bottom+12);
-            function line(arr,color,dash){ ctx.strokeStyle=color; ctx.lineWidth=2; ctx.setLineDash(dash||[]); ctx.beginPath(); for(let i=0;i<n;i++){const x=pad.left+i*stepX,y=h-pad.bottom-(arr[i]/maxVal)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke(); ctx.setLineDash([]); }
+            for(let i=0;i<n;i+=step) ctx.fillText(labels[i],pad.left+i*stepX,h-pad.bottom+10);
+            function line(arr,color,dash){ ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.setLineDash(dash||[]); ctx.beginPath(); for(let i=0;i<n;i++){const x=pad.left+i*stepX,y=h-pad.bottom-(arr[i]/maxVal)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke(); ctx.setLineDash([]); }
             line(activity,'#b388ff'); line(plays,'#00e676',[4,4]); line(otherPlays,'#4fc3f7',[2,4]);
             if (mouseChartX >= 0 && mouseChartX < n) { const x = pad.left + mouseChartX * stepX; ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.setLineDash([2,4]); ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, h-pad.bottom); ctx.stroke(); ctx.setLineDash([]); }
         }
         function toggleNormalize() { normalizedMode = !normalizedMode; document.getElementById('normalizeBtn').textContent = normalizedMode ? '📊 Normalizado' : '📊 Normalizar'; drawChart(); }
 
-        // Auditoría de Plataforma
+        // Auditoría
         function runAudit() {
             const giniVal = parseFloat(document.getElementById('giniValue').textContent) || 0;
             const ratioVal = parseFloat(document.getElementById('ratioPlays').textContent) || 0;
@@ -389,65 +374,35 @@
 
             let riskScore = 0;
             const flags = [];
-
-            // Regla 1: Gini alto
             if (giniVal > 0.7) { riskScore += 40; flags.push("Gini > 0.7"); }
             else if (giniVal > 0.5) { riskScore += 20; flags.push("Gini > 0.5"); }
-
-            // Regla 2: Ratio plays/oyente
             if (ratioVal > 20) { riskScore += 30; flags.push("Ratio > 20"); }
             else if (ratioVal > 12) { riskScore += 15; flags.push("Ratio > 12"); }
-
-            // Regla 3: Picos sospechosos
             if (peaksVal >= 4) { riskScore += 20; flags.push("≥4 picos"); }
             else if (peaksVal >= 2) { riskScore += 10; flags.push("≥2 picos"); }
-
-            // Regla 4: Binge listeners
             if (bingeVal > 50) { riskScore += 20; flags.push("Binge > 50%"); }
             else if (bingeVal > 30) { riskScore += 10; flags.push("Binge > 30%"); }
-
-            // Regla 5: Pocos oyentes + muchos plays
             if (listenersCount < 10 && ratioVal > 10) { riskScore += 15; flags.push("Pocos oyentes + ratio alto"); }
-
             riskScore = Math.min(100, riskScore);
 
-            // Estado
             let status, statusColor;
             if (riskScore < 25) { status = "✅ Desapercibido"; statusColor = '#00e676'; }
             else if (riskScore < 55) { status = "⚠️ Aviso"; statusColor = '#ff9800'; }
-            else { status = "🚫 Riesgo de Baneo"; statusColor = '#ff4d4d'; }
+            else { status = "🚫 Riesgo Baneo"; statusColor = '#ff4d4d'; }
 
-            document.getElementById('riskScore').textContent = riskScore + '%';
-            document.getElementById('riskScore').style.color = statusColor;
+            const scoreEl = document.getElementById('riskScore');
+            scoreEl.textContent = riskScore + '%';
+            scoreEl.style.color = statusColor;
             const statusEl = document.getElementById('riskStatus');
-            statusEl.textContent = status; statusEl.style.background = statusColor;
-            document.getElementById('riskDetails').textContent = flags.length ? 'Flags: ' + flags.join(', ') : 'Sin flags activadas';
+            statusEl.textContent = status;
+            statusEl.style.background = statusColor;
+            document.getElementById('riskDetails').textContent = flags.length ? 'Flags: ' + flags.join(', ') : 'Sin flags';
+            document.getElementById('auditFlags').textContent = '';
 
-            // Guardar en historial
-            const entry = {
-                date: new Date().toLocaleString(),
-                riskScore, status, flags,
-                gini: giniVal, ratio: ratioVal, peaks: peaksVal, binge: bingeVal,
-                listeners: listenersCount
-            };
+            const entry = { date: new Date().toLocaleString(), riskScore, status, flags };
             auditHistory.unshift(entry);
-            if (auditHistory.length > 20) auditHistory.pop();
-            localStorage.setItem(STORAGE_AUDITS, JSON.stringify(auditHistory));
-            renderAuditHistory();
-        }
-
-        function renderAuditHistory() {
-            const div = document.getElementById('auditHistory');
-            if (!auditHistory.length) {
-                div.innerHTML = '<div style="text-align:center;color:var(--muted)">Sin historial</div>';
-                return;
-            }
-            div.innerHTML = auditHistory.map(e => `
-                <div class="audit-entry">
-                    <span>${e.date}</span>
-                    <span style="color:${e.riskScore < 25 ? '#00e676' : e.riskScore < 55 ? '#ff9800' : '#ff4d4d'}">${e.riskScore}% ${e.status}</span>
-                </div>
-            `).join('');
+            if (auditHistory.length > 15) auditHistory.pop();
+            try { localStorage.setItem(STORAGE_AUDITS, JSON.stringify(auditHistory)); } catch(e) {}
         }
 
         function updateIndicators() {
@@ -468,14 +423,14 @@
             const gini=parseFloat(document.getElementById('giniValue').textContent), ratio=parseFloat(document.getElementById('ratioPlays').textContent);
             const peaks=parseInt(document.getElementById('suspiciousPeaks').textContent), bingePct=parseInt(document.getElementById('bingePct').textContent);
             const recs=[];
-            if(gini>0.6) recs.push({icon:'📊',text:'Gini alto (>0.6). Añade oyentes ocasionales.'});
-            else if(gini>0.4) recs.push({icon:'📊',text:'Gini moderado. Vigila que no suba.'});
-            if(ratio>15) recs.push({icon:'🔁',text:'Ratio plays/oyente muy alto. Aumenta la base de oyentes.'});
-            if(peaks>=3) recs.push({icon:'⚠️',text:`${peaks} picos sospechosos. Distribuye mejor la actividad.`});
-            if(bingePct>40) recs.push({icon:'🔥',text:'Exceso de binge listeners. Convierte algunos en fieles.'});
-            if(!recs.length) recs.push({icon:'✅',text:'Indicadores saludables. Patrón natural.'});
-            list.innerHTML=recs.map(r=>`<div class="rec-item"><span>${r.icon}</span><span>${r.text}</span></div>`).join('');
-            panel.classList.add('show'); panel.style.borderColor=recs[0].icon==='✅'?'var(--green)':'var(--violet)';
+            if(gini>0.6) recs.push('📊 Gini alto. Añade oyentes ocasionales.');
+            else if(gini>0.4) recs.push('📊 Gini moderado. Vigila que no suba.');
+            if(ratio>15) recs.push('🔁 Ratio alto. Aumenta base de oyentes.');
+            if(peaks>=3) recs.push(`⚠️ ${peaks} picos. Distribuye actividad.`);
+            if(bingePct>40) recs.push('🔥 Exceso binge. Convierte en fieles.');
+            if(!recs.length) recs.push('✅ Indicadores saludables.');
+            list.innerHTML=recs.map(r=>`<div>${r}</div>`).join('');
+            panel.classList.add('show');
         }
         function updateProfileStats() {
             const counts={fiel:0,explorador:0,ocasional:0,binge:0}; listeners.forEach(l=>counts[l.profile]++);
@@ -487,7 +442,7 @@
         }
         function getRandomCity(country) { const cities=countryCities[country]||[{name:"Desconocido",lat:40.42,lng:-3.70}]; const c=cities[Math.floor(Math.random()*cities.length)]; return {name:c.name, lat:c.lat+(Math.random()-0.5)*0.1, lng:c.lng+(Math.random()-0.5)*0.1}; }
         function createMarker(l,s,index) {
-            const marker=L.circleMarker([l.lat,l.lng],{radius:7,fillColor:s.active?l.color:'#555',color:s.active?PROFILES[l.profile].color:'#555',weight:2,fillOpacity:0.8});
+            const marker=L.circleMarker([l.lat,l.lng],{radius:6,fillColor:s.active?l.color:'#555',color:s.active?PROFILES[l.profile].color:'#555',weight:1.5,fillOpacity:0.8});
             marker.bindPopup(`<b>${l.name}</b><br>${l.country} · ${l.city}<br>${l.platform} · ${PROFILES[l.profile].name}`);
             marker.on('contextmenu',e=>{L.DomEvent.preventDefault(e);contextMenuTarget=index;const menu=document.getElementById('contextMenu');menu.style.left=e.originalEvent.clientX+'px';menu.style.top=e.originalEvent.clientY+'px';menu.classList.add('show');});
             marker.on('click',()=>{if(s.active)s.inMyRadio?leaveRadio(index):enterRadio(index);else{s.active=true;updateStats();renderDots();}});
@@ -498,7 +453,7 @@
             state.forEach((s,i)=>{const l=listeners[i];if(document.getElementById('filterCountry').value&&l.country!==document.getElementById('filterCountry').value)return;if(document.getElementById('filterPlatform').value&&l.platform!==document.getElementById('filterPlatform').value)return;markersLayer.addLayer(createMarker(l,s,i));});
             if(heatmapActive) updateHeatmap();
         }
-        function updateHeatmap() { if(heatLayer) map.removeLayer(heatLayer); heatLayer=L.heatLayer(listeners.map(l=>[l.lat,l.lng]),{radius:20,blur:15,gradient:{0.2:'#ff00ff',0.4:'#b388ff',0.6:'#00e676',0.8:'#ffff00',1:'#ff0000'}}).addTo(map); }
+        function updateHeatmap() { if(heatLayer) map.removeLayer(heatLayer); heatLayer=L.heatLayer(listeners.map(l=>[l.lat,l.lng]),{radius:18,blur:12,gradient:{0.2:'#ff00ff',0.4:'#b388ff',0.6:'#00e676',0.8:'#ffff00',1:'#ff0000'}}).addTo(map); }
         document.getElementById('heatmapToggle').addEventListener('click',function(){heatmapActive=!heatmapActive; this.classList.toggle('active',heatmapActive); heatmapActive?updateHeatmap():heatLayer&&map.removeLayer(heatLayer);});
         function populateFilters() {
             const cs=document.getElementById('filterCountry'), ps=document.getElementById('filterPlatform');
@@ -577,7 +532,6 @@
         function gen1D(dA,dP,dO) { const hA=new Array(24).fill(0),hP=new Array(24).fill(0),hO=new Array(24).fill(0); const tA=dA.reduce((a,b)=>a+b,0),tP=dP.reduce((a,b)=>a+b,0),tO=dO.reduce((a,b)=>a+b,0); for(let h=0;h<24;h++){const f=getActivityFactor(h);hA[h]=Math.round(tA*f/10);hP[h]=Math.round(tP*f/10);hO[h]=Math.round(tO*f/10);} return {labels:Array.from({length:24},(_,i)=>i+'h'),activity:hA,plays:hP,otherPlays:hO}; }
         function showMagicModal(plays, other, oyentes, gini, ratio, peaks, bingePct) {
             magicContent.innerHTML = `<div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div><div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div><div class="magic-stat"><span>👥 Oyentes:</span><strong>${oyentes}</strong></div><div class="magic-stat"><span>📊 Gini:</span><strong>${gini}</strong></div><div class="magic-stat"><span>🔁 Ratio:</span><strong>${ratio}</strong></div><div class="magic-stat"><span>⚠️ Picos:</span><strong>${peaks}</strong></div><div class="magic-stat"><span>🔥 Binge:</span><strong>${bingePct}%</strong></div>`;
-            magicSparkles.innerHTML = ''; for (let i = 0; i < 20; i++) { const s = document.createElement('div'); s.className = 'magic-sparkle'; s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%'; s.style.animationDelay = Math.random() * 1.5 + 's'; magicSparkles.appendChild(s); }
             magicModal.classList.add('show');
         }
         function finishSimulation(days) {
@@ -591,20 +545,19 @@
             autoSaveCurrentState();
         }
         function startSimulation(mode) { if(simulationRunning)return; if(!listeners.length){alert('Añade oyentes');return;} runSimulation(mode==='1D'?1:mode==='7D'?7:28); }
-        function setView(v){currentView=v; document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); document.getElementById('view'+v).classList.add('active'); document.getElementById('chartTitle').innerHTML='<span class="icon">📊</span> Actividad ('+v+')'; drawChart();}
+        function setView(v){currentView=v; document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); document.getElementById('view'+v).classList.add('active'); document.getElementById('chartTitle').textContent='📊 Actividad ('+v+')'; drawChart();}
         function resetAll() { if(simulationRunning)return; listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; updateStats(); renderDots(); drawChart(); updateProfileStats(); updateIndicators(); }
         function closeMagicModal() { magicModal.classList.remove('show'); }
         function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.transform='translateX(-50%) translateY(0)'; setTimeout(()=>t.style.transform='translateX(-50%) translateY(80px)',2000); }
 
         // Persistencia
         function getCurrentData() { return { listeners: listeners.map(l => ({...l, _marker: undefined})), state: state.map(s => ({...s})), totalMyPlays, totalOtherPlays, data1D, data7D, data28D, timestamp: Date.now() }; }
-        function restoreData(data) { if (!data) return false; listeners = data.listeners.map(l => ({...l})); state = data.state.map(s => ({...s})); totalMyPlays = data.totalMyPlays || 0; totalOtherPlays = data.totalOtherPlays || 0; data1D = data.data1D || null; data7D = data.data7D || null; data28D = data.data28D || null; updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters(); if (data7D) document.getElementById('view7D').disabled = false; if (data28D) document.getElementById('view28D').disabled = false; document.getElementById('chartTitle').innerHTML='<span class="icon">📊</span> Actividad (1D)'; return true; }
+        function restoreData(data) { if (!data) return false; listeners = data.listeners.map(l => ({...l})); state = data.state.map(s => ({...s})); totalMyPlays = data.totalMyPlays || 0; totalOtherPlays = data.totalOtherPlays || 0; data1D = data.data1D || null; data7D = data.data7D || null; data28D = data.data28D || null; updateStats(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters(); if (data7D) document.getElementById('view7D').disabled = false; if (data28D) document.getElementById('view28D').disabled = false; return true; }
         function autoSaveCurrentState() { try { const data = getCurrentData(); localStorage.setItem(STORAGE_CURRENT, JSON.stringify(data)); } catch (e) {} }
         function loadSavedState() { try { const raw = localStorage.getItem(STORAGE_CURRENT); if (raw) { const data = JSON.parse(raw); if (data.listeners && data.listeners.length > 0) { restoreData(data); return true; } } } catch (e) {} return false; }
         function saveScene() { const name = prompt('Nombre de la escena:'); if (!name) return; const data = getCurrentData(); data.name = name; data.savedAt = new Date().toLocaleString(); try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); scenes.push(data); localStorage.setItem(STORAGE_SCENES, JSON.stringify(scenes)); showToast('Escena guardada: ' + name); } catch (e) { showToast('Error al guardar'); } }
-        function loadScene() { const listDiv = document.getElementById('sceneList'); try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); if (scenes.length === 0) { showToast('No hay escenas guardadas'); return; } listDiv.innerHTML = scenes.map((s, i) => `<div class="scene-item"><span onclick="loadSceneByIndex(${i})" style="flex:1">${s.name} (${s.listeners.length} oyentes, ${s.savedAt || ''})</span><span class="delete-scene" onclick="deleteScene(${i})">🗑️</span></div>`).join(''); listDiv.classList.add('show'); } catch (e) { showToast('Error al cargar escenas'); } }
-        function loadSceneByIndex(index) { try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); if (scenes[index]) { restoreData(scenes[index]); autoSaveCurrentState(); document.getElementById('sceneList').classList.remove('show'); showToast('Escena cargada'); } } catch (e) {} }
-        function deleteScene(index) { try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); scenes.splice(index, 1); localStorage.setItem(STORAGE_SCENES, JSON.stringify(scenes)); loadScene(); } catch (e) {} }
+        function loadScene() { const listDiv = document.getElementById('sceneList'); try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); if (scenes.length === 0) { showToast('No hay escenas guardadas'); return; } listDiv.innerHTML = scenes.map((s, i) => `<div style="padding:5px;border-bottom:1px solid var(--violet);cursor:pointer;" onclick="loadSceneByIndex(${i})">${s.name} (${s.listeners.length} oyentes, ${s.savedAt || ''})</div>`).join(''); listDiv.style.display='block'; } catch (e) { showToast('Error al cargar escenas'); } }
+        function loadSceneByIndex(index) { try { const scenes = JSON.parse(localStorage.getItem(STORAGE_SCENES) || '[]'); if (scenes[index]) { restoreData(scenes[index]); autoSaveCurrentState(); document.getElementById('sceneList').style.display='none'; showToast('Escena cargada'); } } catch (e) {} }
         async function exportJSON() {
             const data = getCurrentData(); const jsonStr = JSON.stringify(data, null, 2);
             try { const blob = new Blob([jsonStr], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'oyentes_mkeyz.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showToast('Archivo exportado'); }
@@ -614,10 +567,9 @@
         function handleImport(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.listeners && data.listeners.length > 0) { restoreData(data); autoSaveCurrentState(); showToast('Importado correctamente'); } else { showToast('Archivo no válido'); } } catch (ex) { showToast('Error al leer el archivo'); } }; reader.readAsText(file); event.target.value = ''; }
 
         window.addListener=addListener; window.generateListeners=generateListeners; window.startSimulation=startSimulation; window.setView=setView; window.resetAll=resetAll; window.closeMagicModal=closeMagicModal;
-        window.saveScene=saveScene; window.loadScene=loadScene; window.exportJSON=exportJSON; window.importJSON=importJSON; window.handleImport=handleImport; window.loadSceneByIndex=loadSceneByIndex; window.deleteScene=deleteScene; window.toggleNormalize=toggleNormalize;
+        window.saveScene=saveScene; window.loadScene=loadScene; window.exportJSON=exportJSON; window.importJSON=importJSON; window.handleImport=handleImport; window.loadSceneByIndex=loadSceneByIndex; window.toggleNormalize=toggleNormalize;
 
         resizeCanvas();
-        renderAuditHistory();
         if (!loadSavedState()) { generateListeners(); } else { resizeCanvas(); drawChart(); }
         setInterval(()=>{if(!simulationRunning)updateStats();},5000);
     })();
