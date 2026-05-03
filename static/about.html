@@ -63,36 +63,6 @@
             100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
         }
 
-        /* ── Estrellas fugaces ── */
-        .shooting-star {
-            position: fixed;
-            width: 2px;
-            height: 2px;
-            background: var(--gold);
-            border-radius: 50%;
-            box-shadow: 0 0 6px 2px var(--gold);
-            pointer-events: none;
-            z-index: 300;
-            animation: shoot 0.8s linear forwards;
-        }
-
-        .shooting-star::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 60px;
-            height: 1px;
-            background: linear-gradient(90deg, var(--gold), transparent);
-            transform: translateX(-100%);
-        }
-
-        @keyframes shoot {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            70% { opacity: 1; }
-            100% { transform: translate(300px, 150px) scale(0.2); opacity: 0; }
-        }
-
         /* ── Barra superior (tag + máquina de escribir) ── */
         .top-bar {
             position: relative;
@@ -133,11 +103,13 @@
         }
 
         .typewriter-text {
+            display: block;
+            text-align: center;
             font-size: 13px;
             color: rgba(240, 237, 232, 0.6);
             line-height: 1.5;
             min-height: 40px;
-            display: inline-block;
+            margin: 0 auto;
         }
 
         .typewriter-text .cursor {
@@ -674,16 +646,13 @@
     </style>
 </head>
 <body>
-    <!-- Polvo mágico -->
     <div class="magic-dust" id="magic-dust"></div>
 
-    <!-- Barra superior con tag y máquina de escribir -->
     <div class="top-bar">
         <div class="hero-tag">Disponible para colaboraciones</div>
         <div class="typewriter-text" id="typewriter-text"></div>
     </div>
 
-    <!-- Hero -->
     <div class="hero">
         <div class="hero-photo"></div>
         <div class="hero-grain"></div>
@@ -694,7 +663,6 @@
         <div class="scroll-hint">✦ desliza ✦</div>
     </div>
 
-    <!-- Marquee géneros -->
     <div class="genres-section">
         <div class="marquee-wrap">
             <div class="marquee-track">
@@ -706,7 +674,6 @@
                 <div class="marquee-item"><span class="dot"></span>Reggaeton</div>
                 <div class="marquee-item"><span class="dot"></span>Drill</div>
                 <div class="marquee-item"><span class="dot"></span>Dembow</div>
-                <!-- repetidos para loop -->
                 <div class="marquee-item"><span class="dot"></span>Pop Latino</div>
                 <div class="marquee-item"><span class="dot"></span>Trap</div>
                 <div class="marquee-item"><span class="dot"></span>Afrobeats</div>
@@ -719,7 +686,6 @@
         </div>
     </div>
 
-    <!-- Sobre mí -->
     <div class="about-section">
         <div class="section-label">Sobre mí</div>
         <div class="about-highlight">"Las melodías que no sabes cuándo entraron pero no puedes sacar de tu cabeza."</div>
@@ -729,13 +695,11 @@
         </div>
     </div>
 
-    <!-- Quote -->
     <div class="quote-section">
         <div class="quote-text">Lo que hago no es trabajo.<br>Es lo que <em>soy</em>.</div>
         <div class="quote-author">— Jeff Mkeyz</div>
     </div>
 
-    <!-- Redes y plataformas -->
     <section>
         <div class="section-label">Encuéntrame</div>
         <div class="section-title">Redes y plataformas</div>
@@ -779,7 +743,6 @@
         </div>
     </section>
 
-    <!-- Mi mundo (skills) -->
     <section>
         <div class="section-label">Lo que hago</div>
         <div class="section-title">Mi mundo</div>
@@ -829,7 +792,6 @@
         </div>
     </section>
 
-    <!-- CTA -->
     <div class="cta-section">
         <div class="cta-title">¿Listo para colaborar?</div>
         <div class="cta-sub">Explora el catálogo, prueba las herramientas<br>y conecta con la comunidad de artistas.</div>
@@ -841,12 +803,10 @@
         © 2026 JEFF MKEYZ · TODOS LOS DERECHOS RESERVADOS
     </div>
 
-    <!-- Botón volver arriba -->
     <div class="back-to-top" id="backToTop">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
     </div>
 
-    <!-- Contenedor de efectos visuales -->
     <div id="audio-viz"></div>
 
     <script>
@@ -858,7 +818,6 @@
             tg.setBackgroundColor("#060608");
         }
 
-        // ── Polvo mágico ──
         (function createDust() {
             const container = document.getElementById('magic-dust');
             for (let i = 0; i < 30; i++) {
@@ -875,21 +834,6 @@
             }
         })();
 
-        // ── Estrellas fugaces (aparecen cada 5-12s) ──
-        function createShootingStar() {
-            const star = document.createElement('div');
-            star.className = 'shooting-star';
-            const startX = Math.random() * window.innerWidth;
-            star.style.left = startX + 'px';
-            star.style.top = Math.random() * 100 + 'px';
-            document.body.appendChild(star);
-            setTimeout(() => star.remove(), 800);
-            // Programar siguiente estrella
-            setTimeout(createShootingStar, 5000 + Math.random() * 7000);
-        }
-        setTimeout(createShootingStar, 3000);
-
-        // ── Máquina de escribir ──
         const typewriterEl = document.getElementById('typewriter-text');
         const fullText = 'Productor musical independiente. Creo sonidos que trascienden géneros y fronteras.';
         let charIndex = 0;
@@ -899,12 +843,11 @@
                 charIndex++;
                 setTimeout(typeWriter, 40 + Math.random() * 30);
             } else {
-                typewriterEl.innerHTML = fullText; // quita el cursor al final
+                typewriterEl.innerHTML = fullText;
             }
         }
         setTimeout(typeWriter, 600);
 
-        // ── Botón volver arriba ──
         const backBtn = document.getElementById('backToTop');
         window.addEventListener('scroll', () => {
             if (window.scrollY > 400) {
@@ -917,21 +860,18 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // ── Efecto burst al tocar skills ──
         const NOTES = ["♪", "♫", "♩", "♬", "🎵", "🎶"];
         function burst(e, color) {
             const x = e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2;
             const y = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
             const viz = document.getElementById("audio-viz");
 
-            // Ripple
             const ripple = document.createElement("div");
             ripple.className = "ripple-circle";
             ripple.style.cssText = `left:${x - 20}px;top:${y - 20}px;width:40px;height:40px;border-color:${color}44;`;
             viz.appendChild(ripple);
             setTimeout(() => ripple.remove(), 1100);
 
-            // Notas
             const count = 4 + Math.floor(Math.random() * 3);
             for (let i = 0; i < count; i++) {
                 setTimeout(() => {
