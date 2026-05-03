@@ -1,326 +1,383 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Jeff Mkeyz — Productor · Cantautor</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jeff Mkeyz — Productor · Cantautor</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
 
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-:root {
-  --bg:     #060608;
-  --gold:   #f5c518;
-  --gold2:  #c9a84c;
-  --white:  #f0ede8;
-  --muted:  #5a5a72;
-  --border: #1a1a24;
-  --card:   #0d0d14;
-}
+        :root {
+            --bg:     #060608;
+            --gold:   #f5c518;
+            --gold2:  #c9a84c;
+            --white:  #f0ede8;
+            --muted:  #5a5a72;
+            --border: #1a1a24;
+            --card:   #0d0d14;
+        }
 
-html, body {
-  background: var(--bg);
-  color: var(--white);
-  font-family: 'Space Grotesk', sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
+        html, body {
+            background: var(--bg);
+            color: var(--white);
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-/* ── Polvo mágico ── */
-.magic-dust {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  overflow: hidden;
-}
-.dust-particle {
-  position: absolute;
-  width: 2px; height: 2px;
-  background: var(--gold);
-  border-radius: 50%;
-  opacity: 0;
-  animation: floatDust 6s infinite ease-in-out;
-}
-@keyframes floatDust {
-  0% { transform: translateY(0) scale(1); opacity: 0; }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.8; }
-  100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
-}
+        /* ── Polvo mágico ── */
+        .magic-dust {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            overflow: hidden;
+        }
+        .dust-particle {
+            position: absolute;
+            width: 2px; height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatDust 6s infinite ease-in-out;
+        }
+        @keyframes floatDust {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+        }
 
-/* ── HERO ── */
-.hero {
-  position: relative;
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  overflow: hidden;
-}
-.hero-photo {
-  position: absolute; inset: 0;
-  background: url('https://i.ibb.co/FbwPWzRC/Picsart-26-04-26-00-55-47-981.jpg') center top / cover no-repeat;
-  filter: brightness(0.55);
-  z-index: 0;
-}
-.hero-grain {
-  position: absolute; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none; z-index: 1;
-}
-.hero-gradient {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 70%;
-  background: linear-gradient(to top, var(--bg) 0%, rgba(6,6,8,0.7) 50%, transparent 100%);
-  z-index: 2;
-}
-.hero-content {
-  position: relative; z-index: 3;
-  padding: 24px 24px 32px;
-  text-align: center;
-}
-.hero-tag {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(245,197,24,0.12); border: 1px solid rgba(245,197,24,0.3);
-  border-radius: 100px; padding: 6px 14px; margin-bottom: 16px;
-  font-size: 11px; font-weight: 600; color: var(--gold); letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
-.hero-tag::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--gold); animation:blink 2s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        /* ── Estrellas fugaces ── */
+        .shooting-star {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 6px 2px var(--gold);
+            pointer-events: none;
+            z-index: 300;
+            animation: shoot 0.8s linear forwards;
+        }
+        .shooting-star::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+            transform: translateX(-100%);
+        }
+        @keyframes shoot {
+            0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+            70%  { opacity: 1; }
+            100% { transform: translate(300px, 150px) scale(0.2); opacity: 0; }
+        }
 
-.hero-name {
-  font-family: 'Syne', sans-serif;
-  font-size: 40px; font-weight: 800;
-  line-height: 1.1; letter-spacing: -1.5px;
-  margin-bottom: 12px;
-  white-space: nowrap;
-}
-.hero-name span { color: var(--gold); }
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            overflow: hidden;
+        }
+        .hero-photo {
+            position: absolute; inset: 0;
+            background: url('https://i.ibb.co/FbwPWzRC/Picsart-26-04-26-00-55-47-981.jpg') center top / cover no-repeat;
+            filter: brightness(0.55);
+            z-index: 0;
+        }
+        .hero-grain {
+            position: absolute; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 1;
+        }
+        .hero-gradient {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 70%;
+            background: linear-gradient(to top, var(--bg) 0%, rgba(6,6,8,0.7) 50%, transparent 100%);
+            z-index: 2;
+        }
+        .hero-content {
+            position: relative; z-index: 3;
+            padding: 24px 24px 32px;
+            text-align: center;
+        }
+        .hero-tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(245,197,24,0.12); border: 1px solid rgba(245,197,24,0.3);
+            border-radius: 100px; padding: 6px 14px; margin-bottom: 16px;
+            font-size: 11px; font-weight: 600; color: var(--gold); letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .hero-tag::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--gold); animation:blink 2s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-.hero-desc {
-  font-size: 13px; color: rgba(240,237,232,0.6);
-  line-height: 1.5; margin-bottom: 20px;
-}
+        .hero-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 40px; font-weight: 800;
+            line-height: 1.1; letter-spacing: -1.5px;
+            margin-bottom: 12px;
+            white-space: nowrap;
+        }
+        .hero-name span { color: var(--gold); }
 
-.hero-flags {
-  display: flex; gap: 8px; justify-content: center; align-items: center;
-  font-size: 20px; margin-bottom: 20px;
-}
-.hero-flags span { font-size: 11px; color: var(--muted); }
+        .hero-desc {
+            font-size: 13px;
+            color: rgba(240,237,232,0.6);
+            line-height: 1.5;
+            margin-bottom: 20px;
+            min-height: 40px;
+        }
+        .hero-desc .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 15px;
+            background: var(--gold);
+            margin-left: 2px;
+            vertical-align: middle;
+            animation: cursorBlink 0.8s infinite;
+        }
+        @keyframes cursorBlink {
+            0%,100%{ opacity:1; }
+            50%{ opacity:0; }
+        }
 
-.hero-stats {
-  display: flex; gap: 20px; justify-content: center;
-}
-.h-stat-n { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:var(--gold); line-height:1; }
-.h-stat-l { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+        .hero-flags {
+            display: flex; gap: 8px; justify-content: center; align-items: center;
+            font-size: 20px; margin-bottom: 20px;
+        }
+        .hero-flags span { font-size: 11px; color: var(--muted); }
 
-.scroll-hint {
-  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
-  z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 4px;
-  font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
-  animation: scrollBounce 2s ease-in-out infinite;
-}
-@keyframes scrollBounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+        .hero-stats {
+            display: flex; gap: 20px; justify-content: center;
+        }
+        .h-stat-n { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:var(--gold); line-height:1; }
+        .h-stat-l { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
 
-/* ── SECTIONS ── */
-section { padding: 24px 24px; position: relative; z-index: 1; text-align: center; }
-.section-label {
-  font-size: 10px; color: var(--gold); letter-spacing: 3px; text-transform: uppercase;
-  margin-bottom: 8px; font-weight: 600;
-}
-.section-title {
-  font-family:'Syne',sans-serif; font-size: 24px; font-weight: 800;
-  letter-spacing: -0.5px; line-height: 1.1; margin-bottom: 24px;
-}
+        .scroll-hint {
+            position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+            z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 4px;
+            font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+            animation: scrollBounce 2s ease-in-out infinite;
+        }
+        @keyframes scrollBounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
 
-/* ── GENRES MARQUEE ── */
-.genres-section {
-  padding: 0; overflow: hidden; border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border); background: var(--card);
-}
-.marquee-wrap { display: flex; overflow: hidden; }
-.marquee-track {
-  display: flex; gap: 0; flex-shrink: 0;
-  animation: marquee 12s linear infinite;
-}
-@keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-.marquee-item {
-  padding: 12px 20px; font-size: 12px; font-weight: 600; color: var(--muted);
-  border-right: 1px solid var(--border); white-space: nowrap;
-  display: flex; align-items: center; gap: 8px;
-}
-.marquee-item .dot { width:4px; height:4px; border-radius:50%; background:var(--gold); }
+        /* ── SECTIONS ── */
+        section { padding: 24px 24px; position: relative; z-index: 1; text-align: center; }
+        .section-label {
+            font-size: 10px; color: var(--gold); letter-spacing: 3px; text-transform: uppercase;
+            margin-bottom: 8px; font-weight: 600;
+        }
+        .section-title {
+            font-family:'Syne',sans-serif; font-size: 24px; font-weight: 800;
+            letter-spacing: -0.5px; line-height: 1.1; margin-bottom: 24px;
+        }
 
-/* ── ABOUT TEXT ── */
-.about-section { padding: 24px 24px; text-align: center; }
-.about-highlight {
-  font-family:'Syne',sans-serif; font-size:20px; font-weight:800;
-  color:var(--gold); line-height:1.3; margin-bottom:20px;
-  padding-left:16px; border-left:3px solid var(--gold); display: inline-block; text-align: left;
-}
-.about-text {
-  font-size: 14px; line-height: 1.7; color: rgba(240,237,232,0.7);
-  margin-bottom: 16px;
-}
+        /* ── GENRES MARQUEE ── */
+        .genres-section {
+            padding: 0; overflow: hidden; border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border); background: var(--card);
+        }
+        .marquee-wrap { display: flex; overflow: hidden; }
+        .marquee-track {
+            display: flex; gap: 0; flex-shrink: 0;
+            animation: marquee 12s linear infinite;
+        }
+        @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+        .marquee-item {
+            padding: 12px 20px; font-size: 12px; font-weight: 600; color: var(--muted);
+            border-right: 1px solid var(--border); white-space: nowrap;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .marquee-item .dot { width:4px; height:4px; border-radius:50%; background:var(--gold); }
 
-/* ── SKILLS GRID (2 columnas, ancho completo) ── */
-.skills-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 24px;
-}
-.skill-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 10px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-.skill-card:active { transform: scale(0.96); }
+        /* ── ABOUT TEXT ── */
+        .about-section { padding: 24px 24px; text-align: center; }
+        .about-highlight {
+            font-family:'Syne',sans-serif; font-size:20px; font-weight:800;
+            color:var(--gold); line-height:1.3; margin-bottom:20px;
+            padding-left:16px; border-left:3px solid var(--gold); display: inline-block; text-align: left;
+        }
+        .about-text {
+            font-size: 14px; line-height: 1.7; color: rgba(240,237,232,0.7);
+            margin-bottom: 16px;
+        }
 
-/* Brillo que llena todo el recuadro al tocar */
-.skill-card .glow-burst {
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  background: radial-gradient(circle at center, var(--accent, var(--gold)) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.2s;
-  z-index: 0;
-}
-.skill-card:active .glow-burst { opacity: 0.3; }
+        /* ── SKILLS GRID MODERNA ── */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .skill-card {
+            background: rgba(20, 20, 30, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 20px 14px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s, box-shadow 0.3s;
+            animation: cardFloatModern 4s ease-in-out infinite;
+        }
+        .skill-card:nth-child(1) { animation-delay: 0s; }
+        .skill-card:nth-child(2) { animation-delay: 0.2s; }
+        .skill-card:nth-child(3) { animation-delay: 0.4s; }
+        .skill-card:nth-child(4) { animation-delay: 0.6s; }
+        .skill-card:nth-child(5) { animation-delay: 0.8s; }
+        .skill-card:nth-child(6) { animation-delay: 1s; }
+        @keyframes cardFloatModern {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .skill-card:active {
+            transform: scale(0.95);
+            border-color: var(--accent, var(--gold));
+            box-shadow: 0 0 25px rgba(245, 197, 24, 0.2), inset 0 0 30px rgba(245, 197, 24, 0.05);
+        }
+        .skill-card .glow-burst {
+            position: absolute; inset: 0; border-radius: 20px;
+            background: radial-gradient(circle at center, var(--accent, var(--gold)) 0%, transparent 60%);
+            opacity: 0; transition: opacity 0.25s; z-index: 0;
+        }
+        .skill-card:active .glow-burst { opacity: 0.25; }
+        .skill-icon-wrap {
+            position: relative; z-index: 1;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 52px; height: 52px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            margin-bottom: 12px; transition: all 0.3s;
+        }
+        .skill-card:active .skill-icon-wrap {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.05);
+        }
+        .skill-icon { font-size: 26px; filter: drop-shadow(0 0 8px var(--accent, var(--gold))); }
+        .skill-name {
+            font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800;
+            color: var(--white); margin-bottom: 2px; position: relative; z-index: 1;
+        }
+        .skill-desc { font-size: 10px; color: var(--muted); line-height: 1.3; position: relative; z-index: 1; }
+        .skill-bar-wrap {
+            background: rgba(255, 255, 255, 0.06); border-radius: 100px;
+            height: 2px; margin-top: 10px; overflow: hidden; position: relative; z-index: 1;
+        }
+        .skill-bar {
+            height: 100%; border-radius: 100px;
+            background: linear-gradient(90deg, var(--accent, var(--gold)), #fff8dc);
+            box-shadow: 0 0 6px var(--accent, var(--gold));
+            animation: barGlow 1.8s ease forwards;
+        }
+        @keyframes barGlow { from { width: 0; opacity: 0.5; } to { opacity: 1; } }
 
-.skill-icon  { font-size: 28px; margin-bottom: 8px; display:block; position: relative; z-index: 1; }
-.skill-name  { font-family:'Syne',sans-serif; font-size: 12px; font-weight: 800; margin-bottom: 4px; color:var(--white); position: relative; z-index: 1; }
-.skill-desc  { font-size: 9px; color: var(--muted); line-height: 1.4; position: relative; z-index: 1; }
-.skill-bar-wrap { background:var(--border); border-radius:100px; height:3px; margin-top:8px; overflow:hidden; position: relative; z-index: 1; }
-.skill-bar { height:100%; border-radius:100px; background:var(--accent,var(--gold)); animation:barGrow 1.5s ease forwards; }
-@keyframes barGrow { from{width:0} }
+        /* ── REDES MINIMALISTAS CON PULSO ── */
+        .networks-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .network-circle {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            cursor: pointer; text-decoration: none; color: var(--white);
+        }
+        .network-icon {
+            width: 48px; height: 48px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            animation: networkPulse 2.5s infinite ease-in-out;
+        }
+        .network-circle:nth-child(1) .network-icon { animation-delay: 0s; }
+        .network-circle:nth-child(2) .network-icon { animation-delay: 0.3s; }
+        .network-circle:nth-child(3) .network-icon { animation-delay: 0.6s; }
+        .network-circle:nth-child(4) .network-icon { animation-delay: 0.9s; }
+        .network-circle:nth-child(5) .network-icon { animation-delay: 1.2s; }
+        .network-circle:nth-child(6) .network-icon { animation-delay: 1.5s; }
+        @keyframes networkPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.15); }
+            50% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+        }
+        .network-icon svg { width: 24px; height: 24px; fill: #fff; }
+        .network-name { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; }
 
-/* ── REDES MINIMALISTAS CON PULSO ── */
-.networks-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 8px;
-}
-.network-circle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--white);
-}
-.network-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  position: relative;
-  /* Efecto de pulso */
-  animation: networkPulse 2.5s infinite ease-in-out;
-}
-/* Diferentes delays para cada una */
-.network-circle:nth-child(1) .network-icon { animation-delay: 0s; }
-.network-circle:nth-child(2) .network-icon { animation-delay: 0.3s; }
-.network-circle:nth-child(3) .network-icon { animation-delay: 0.6s; }
-.network-circle:nth-child(4) .network-icon { animation-delay: 0.9s; }
-.network-circle:nth-child(5) .network-icon { animation-delay: 1.2s; }
-.network-circle:nth-child(6) .network-icon { animation-delay: 1.5s; }
+        /* ── QUOTE ── */
+        .quote-section {
+            padding: 24px 24px; background: linear-gradient(135deg, #0d0d14, var(--bg));
+            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        .quote-text { font-family:'Syne',sans-serif; font-size: 20px; font-weight: 800; line-height: 1.3; margin-bottom: 12px; }
+        .quote-text em { color: var(--gold); font-style: normal; }
+        .quote-author { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
 
-@keyframes networkPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.15); }
-  50% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(255,255,255,0); }
-}
+        /* ── CTA ── */
+        .cta-section { padding: 24px 24px; text-align: center; }
+        .cta-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; margin-bottom:8px; }
+        .cta-sub   { font-size:12px; color:var(--muted); margin-bottom:24px; line-height:1.5; }
+        .cta-btn {
+            display: block; width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--gold), #c9a84c);
+            border: none; border-radius: 14px;
+            font-family:'Syne',sans-serif; font-size: 14px; font-weight: 800;
+            color: #000; cursor: pointer; text-decoration: none;
+            transition: all 0.15s; margin-bottom: 10px;
+        }
+        .cta-btn:active { transform: scale(0.97); }
+        .cta-btn-outline {
+            display: block; width: 100%; padding: 14px;
+            background: transparent; border: 1px solid var(--border);
+            border-radius: 14px; font-size: 13px; font-weight: 600;
+            color: var(--muted); cursor: pointer; text-decoration: none;
+        }
 
-.network-name {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
+        .footer {
+            padding: 16px 24px; text-align: center;
+            border-top: 1px solid var(--border);
+            font-size: 10px; color: var(--muted); letter-spacing: 1px;
+        }
 
-/* ── QUOTE ── */
-.quote-section {
-  padding: 24px 24px;
-  background: linear-gradient(135deg, #0d0d14, var(--bg));
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  text-align: center;
-}
-.quote-text {
-  font-family:'Syne',sans-serif; font-size: 20px; font-weight: 800;
-  line-height: 1.3; color: var(--white); margin-bottom: 12px;
-}
-.quote-text em { color: var(--gold); font-style: normal; }
-.quote-author { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+        /* ── BOTÓN VOLVER ARRIBA ── */
+        .back-to-top {
+            position: fixed; bottom: 24px; right: 20px;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(20, 20, 30, 0.8); backdrop-filter: blur(10px);
+            border: 1px solid rgba(245,197,24,0.2);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 400; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+        .back-to-top.visible { opacity: 1; pointer-events: auto; }
+        .back-to-top:active { transform: scale(0.9); }
+        .back-to-top svg { width: 20px; height: 20px; stroke: var(--gold); }
 
-/* ── CTA ── */
-.cta-section {
-  padding: 24px 24px;
-  text-align: center;
-}
-.cta-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; margin-bottom:8px; }
-.cta-sub   { font-size:12px; color:var(--muted); margin-bottom:24px; line-height:1.5; }
-.cta-btn {
-  display: block; width: 100%; padding: 14px;
-  background: linear-gradient(135deg, var(--gold), #c9a84c);
-  border: none; border-radius: 14px;
-  font-family:'Syne',sans-serif; font-size: 14px; font-weight: 800;
-  color: #000; cursor: pointer; text-decoration: none;
-  transition: all 0.15s; margin-bottom: 10px;
-}
-.cta-btn:active { transform: scale(0.97); }
-.cta-btn-outline {
-  display: block; width: 100%; padding: 14px;
-  background: transparent; border: 1px solid var(--border);
-  border-radius: 14px; font-size: 13px; font-weight: 600;
-  color: var(--muted); cursor: pointer; text-decoration: none;
-  transition: all 0.15s;
-}
-
-.footer {
-  padding: 16px 24px; text-align: center;
-  border-top: 1px solid var(--border);
-  font-size: 10px; color: var(--muted); letter-spacing: 1px;
-}
-
-/* ── AUDIO VIZ ── */
-#audio-viz {
-  position:fixed; inset:0; pointer-events:none; z-index:200;
-  overflow:hidden;
-}
-.note-burst {
-  position:absolute; pointer-events:none;
-  font-size:18px; font-weight:900;
-  animation:noteBurst 1.5s ease-out forwards;
-  font-family:'Syne',sans-serif;
-}
-@keyframes noteBurst {
-  0%   { transform:scale(0) rotate(-20deg); opacity:1; }
-  40%  { transform:scale(1.4) rotate(10deg); opacity:1; }
-  100% { transform:scale(0.8) rotate(0deg) translateY(-60px); opacity:0; }
-}
-.ripple-circle {
-  position:absolute; border-radius:50%; border:2px solid;
-  pointer-events:none;
-  animation:rippleOut 1s ease-out forwards;
-}
-@keyframes rippleOut {
-  0%   { transform:scale(0); opacity:0.8; }
-  100% { transform:scale(3); opacity:0; }
-}
-</style>
+        /* ── AUDIO VIZ ── */
+        #audio-viz { position:fixed; inset:0; pointer-events:none; z-index:200; overflow:hidden; }
+        .note-burst {
+            position:absolute; pointer-events:none; font-size:18px; font-weight:900;
+            animation:noteBurst 1.5s ease-out forwards; font-family:'Syne',sans-serif;
+        }
+        @keyframes noteBurst {
+            0%   { transform:scale(0) rotate(-20deg); opacity:1; }
+            40%  { transform:scale(1.4) rotate(10deg); opacity:1; }
+            100% { transform:scale(0.8) rotate(0deg) translateY(-60px); opacity:0; }
+        }
+        .ripple-circle {
+            position:absolute; border-radius:50%; border:2px solid;
+            pointer-events:none; animation:rippleOut 1s ease-out forwards;
+        }
+        @keyframes rippleOut {
+            0%   { transform:scale(0); opacity:0.8; }
+            100% { transform:scale(3); opacity:0; }
+        }
+    </style>
 </head>
 <body>
 
@@ -328,348 +385,266 @@ section { padding: 24px 24px; position: relative; z-index: 1; text-align: center
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-photo"></div>
-  <div class="hero-grain"></div>
-  <div class="hero-gradient"></div>
-  <div class="hero-content">
-    <div class="hero-tag">Disponible para colaboraciones</div>
-    <div class="hero-name">Jeff <span>Mkeyz</span></div>
-    <div class="hero-desc">Productor musical independiente. Creo sonidos que trascienden géneros y fronteras.</div>
-    <div class="hero-flags">🇩🇴 <span>·</span> 🇪🇸</div>
-    <div class="hero-stats">
-      <div><div class="h-stat-n">100+</div><div class="h-stat-l">Beats</div></div>
-      <div><div class="h-stat-n">4</div><div class="h-stat-l">Géneros</div></div>
-      <div><div class="h-stat-n">∞</div><div class="h-stat-l">Visión</div></div>
+    <div class="hero-photo"></div>
+    <div class="hero-grain"></div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+        <div class="hero-tag">Disponible para colaboraciones</div>
+        <div class="hero-name">Jeff <span>Mkeyz</span></div>
+        <div class="hero-desc" id="hero-desc"></div>
+        <div class="hero-flags">🇩🇴 <span>·</span> 🇪🇸</div>
+        <div class="hero-stats">
+            <div><div class="h-stat-n">100+</div><div class="h-stat-l">Beats</div></div>
+            <div><div class="h-stat-n">4</div><div class="h-stat-l">Géneros</div></div>
+            <div><div class="h-stat-n">∞</div><div class="h-stat-l">Visión</div></div>
+        </div>
     </div>
-  </div>
-  <div class="scroll-hint">✦ desliza ✦</div>
+    <div class="scroll-hint">✦ desliza ✦</div>
 </div>
 
 <!-- GENRES MARQUEE -->
 <div class="genres-section">
-  <div class="marquee-wrap">
-    <div class="marquee-track">
-      <div class="marquee-item"><span class="dot"></span>Pop Latino</div>
-      <div class="marquee-item"><span class="dot"></span>Trap</div>
-      <div class="marquee-item"><span class="dot"></span>Afrobeats</div>
-      <div class="marquee-item"><span class="dot"></span>Lo-Fi</div>
-      <div class="marquee-item"><span class="dot"></span>R&B</div>
-      <div class="marquee-item"><span class="dot"></span>Reggaeton</div>
-      <div class="marquee-item"><span class="dot"></span>Drill</div>
-      <div class="marquee-item"><span class="dot"></span>Dembow</div>
-      <div class="marquee-item"><span class="dot"></span>Pop Latino</div>
-      <div class="marquee-item"><span class="dot"></span>Trap</div>
-      <div class="marquee-item"><span class="dot"></span>Afrobeats</div>
-      <div class="marquee-item"><span class="dot"></span>Lo-Fi</div>
-      <div class="marquee-item"><span class="dot"></span>R&B</div>
-      <div class="marquee-item"><span class="dot"></span>Reggaeton</div>
-      <div class="marquee-item"><span class="dot"></span>Drill</div>
-      <div class="marquee-item"><span class="dot"></span>Dembow</div>
+    <div class="marquee-wrap">
+        <div class="marquee-track">
+            <div class="marquee-item"><span class="dot"></span>Pop Latino</div>
+            <div class="marquee-item"><span class="dot"></span>Trap</div>
+            <div class="marquee-item"><span class="dot"></span>Afrobeats</div>
+            <div class="marquee-item"><span class="dot"></span>Lo-Fi</div>
+            <div class="marquee-item"><span class="dot"></span>R&B</div>
+            <div class="marquee-item"><span class="dot"></span>Reggaeton</div>
+            <div class="marquee-item"><span class="dot"></span>Drill</div>
+            <div class="marquee-item"><span class="dot"></span>Dembow</div>
+            <div class="marquee-item"><span class="dot"></span>Pop Latino</div>
+            <div class="marquee-item"><span class="dot"></span>Trap</div>
+            <div class="marquee-item"><span class="dot"></span>Afrobeats</div>
+            <div class="marquee-item"><span class="dot"></span>Lo-Fi</div>
+            <div class="marquee-item"><span class="dot"></span>R&B</div>
+            <div class="marquee-item"><span class="dot"></span>Reggaeton</div>
+            <div class="marquee-item"><span class="dot"></span>Drill</div>
+            <div class="marquee-item"><span class="dot"></span>Dembow</div>
+        </div>
     </div>
-  </div>
 </div>
 
 <!-- ABOUT -->
 <div class="about-section">
-  <div class="section-label">Sobre mí</div>
-  <div class="about-highlight">"Las melodías que no sabes cuándo entraron pero no puedes sacar de tu cabeza."</div>
-  <div class="about-text">
-    Soy <strong>Jeff Mkeyz</strong>, productor y cantante de República Dominicana. Lo mío son las melodías — esas que no sabes cuándo entraron pero no puedes sacar de tu cabeza.
-    Llevo años haciendo esto y sigue siendo lo que más disfruto.
-  </div>
+    <div class="section-label">Sobre mí</div>
+    <div class="about-highlight">"Las melodías que no sabes cuándo entraron pero no puedes sacar de tu cabeza."</div>
+    <div class="about-text">
+        Soy <strong>Jeff Mkeyz</strong>, productor y cantante de República Dominicana. Lo mío son las melodías — esas que no sabes cuándo entraron pero no puedes sacar de tu cabeza.
+        Llevo años haciendo esto y sigue siendo lo que más disfruto.
+    </div>
 </div>
-
-<!-- ── SKILLS MODERNAS ── -->
-<style>
-/* Grid de 2 columnas */
-.skills-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-/* Tarjeta vidrio */
-.skill-card {
-  background: rgba(20, 20, 30, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 20px;
-  padding: 20px 14px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s, box-shadow 0.3s;
-  animation: cardFloatModern 4s ease-in-out infinite;
-}
-
-/* Flotación suave y escalonada */
-.skill-card:nth-child(1) { animation-delay: 0s; }
-.skill-card:nth-child(2) { animation-delay: 0.2s; }
-.skill-card:nth-child(3) { animation-delay: 0.4s; }
-.skill-card:nth-child(4) { animation-delay: 0.6s; }
-.skill-card:nth-child(5) { animation-delay: 0.8s; }
-.skill-card:nth-child(6) { animation-delay: 1s; }
-
-@keyframes cardFloatModern {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-.skill-card:active {
-  transform: scale(0.95);
-  border-color: var(--accent, var(--gold));
-  box-shadow: 0 0 25px rgba(245, 197, 24, 0.2), inset 0 0 30px rgba(245, 197, 24, 0.05);
-}
-
-/* Brillo interno al tocar */
-.skill-card .glow-burst {
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  background: radial-gradient(circle at center, var(--accent, var(--gold)) 0%, transparent 60%);
-  opacity: 0;
-  transition: opacity 0.25s;
-  z-index: 0;
-}
-.skill-card:active .glow-burst {
-  opacity: 0.25;
-}
-
-/* Icono con círculo brillante */
-.skill-icon-wrap {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.03);
-  margin-bottom: 12px;
-  transition: all 0.3s;
-}
-.skill-card:active .skill-icon-wrap {
-  background: rgba(255, 255, 255, 0.08);
-  transform: scale(1.05);
-}
-.skill-icon {
-  font-size: 26px;
-  filter: drop-shadow(0 0 8px var(--accent, var(--gold)));
-}
-
-/* Textos */
-.skill-name {
-  font-family: 'Syne', sans-serif;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--white);
-  margin-bottom: 2px;
-  position: relative;
-  z-index: 1;
-  letter-spacing: -0.3px;
-}
-.skill-desc {
-  font-size: 10px;
-  color: var(--muted);
-  line-height: 1.3;
-  position: relative;
-  z-index: 1;
-  opacity: 0.8;
-}
-
-/* Barra de progreso minimalista */
-.skill-bar-wrap {
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 100px;
-  height: 2px;
-  margin-top: 10px;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-}
-.skill-bar {
-  height: 100%;
-  border-radius: 100px;
-  background: linear-gradient(90deg, var(--accent, var(--gold)), #fff8dc);
-  box-shadow: 0 0 6px var(--accent, var(--gold));
-  animation: barGlow 1.8s ease forwards;
-}
-@keyframes barGlow {
-  from { width: 0; opacity: 0.5; }
-  to { opacity: 1; }
-}
-</style>
-
-<!-- ── HTML de la sección ── -->
-<section>
-  <div class="section-label">Lo que hago</div>
-  <div class="section-title">Mi mundo</div>
-  <div class="skills-grid">
-    <div class="skill-card" style="--accent:#f5c518" onclick="burst(event,'#f5c518')">
-      <div class="glow-burst"></div>
-      <div class="skill-icon-wrap">
-        <span class="skill-icon">🎛️</span>
-      </div>
-      <div class="skill-name">Producción</div>
-      <div class="skill-desc">Ritmo y melodía</div>
-      <div class="skill-bar-wrap"><div class="skill-bar" style="width:95%"></div></div>
-    </div>
-    <div class="skill-card" style="--accent:#ff4d4d" onclick="burst(event,'#ff4d4d')">
-      <div class="glow-burst"></div>
-      <div class="skill-icon-wrap">
-        <span class="skill-icon">🎤</span>
-      </div>
-      <div class="skill-name">Cantautor</div>
-      <div class="skill-desc">Escribo lo que siento</div>
-      <div class="skill-bar-wrap"><div class="skill-bar" style="width:88%"></div></div>
-    </div>
-    <div class="skill-card" style="--accent:#00e676" onclick="burst(event,'#00e676')">
-      <div class="glow-burst"></div>
-      <div class="skill-icon-wrap">
-        <span class="skill-icon">🎚️</span>
-      </div>
-      <div class="skill-name">Mezcla</div>
-      <div class="skill-desc">Cada detalle importa</div>
-      <div class="skill-bar-wrap"><div class="skill-bar" style="width:90%"></div></div>
-    </div>
-    <div class="skill-card" style="--accent:#4fc3f7" onclick="burst(event,'#4fc3f7')">
-      <div class="glow-burst"></div>
-      <div class="skill-icon-wrap">
-        <span class="skill-icon">📱</span>
-      </div>
-      <div class="skill-name">Contenido</div>
-      <div class="skill-desc">Presencia digital</div>
-      <div class="skill-bar-wrap"><div class="skill-bar" style="width:82%"></div></div>
-    </div>
-    <div class="skill-card" style="--accent:#9c27b0" onclick="burst(event,'#9c27b0')">
-      <div class="glow-burst"></div>
-      <div class="skill-icon-wrap">
-        <span class="skill-icon">🌍</span>
-      </div>
-      <div class="skill-name">Distribución</div>
-      <div class="skill-desc">Spotify, Apple…</div>
-      <div class="skill-bar-wrap"><div class="skill-bar" style="width:97%"></div></div>
-    </div>
-    <div class="skill-card" style="--accent:#ff9800" onclick="burst(event,'#ff9800')">
-      <div class="glow-burst"></div>
-      <div class="skill-icon-wrap">
-        <span class="skill-icon">💼</span>
-      </div>
-      <div class="skill-name">Negocio</div>
-      <div class="skill-desc">El arte tiene valor</div>
-      <div class="skill-bar-wrap"><div class="skill-bar" style="width:80%"></div></div>
-    </div>
-  </div>
-</section>
 
 <!-- QUOTE -->
 <div class="quote-section">
-  <div class="quote-text">Lo que hago no es trabajo.<br>Es lo que <em>soy</em>.</div>
-  <div class="quote-author">— Jeff Mkeyz</div>
+    <div class="quote-text">Lo que hago no es trabajo.<br>Es lo que <em>soy</em>.</div>
+    <div class="quote-author">— Jeff Mkeyz</div>
 </div>
 
-<!-- REDES MINIMALISTAS -->
+<!-- REDES MINIMALISTAS (ahora antes de Mi mundo) -->
 <section>
-  <div class="section-label">Encuéntrame</div>
-  <div class="section-title">Redes y plataformas</div>
-  <div class="networks-grid">
-    <a class="network-circle" href="https://beatstars.com/jeffmkeyz" target="_blank">
-      <div class="network-icon" style="background:#ff6b35;">🛍️</div>
-      <div class="network-name">BeatStars</div>
-    </a>
-    <a class="network-circle" href="https://open.spotify.com/intl-es/artist/1PTk2yExL9jgOUPYEjWF1E" target="_blank">
-      <div class="network-icon" style="background:#1db954;">🎵</div>
-      <div class="network-name">Spotify</div>
-    </a>
-    <a class="network-circle" href="https://instagram.com/jeffmkeyzx" target="_blank">
-      <div class="network-icon" style="background:linear-gradient(135deg,#e1306c,#f77737);">📸</div>
-      <div class="network-name">Instagram</div>
-    </a>
-    <a class="network-circle" href="https://tiktok.com/@jeffmkeyz" target="_blank">
-      <div class="network-icon" style="background:#000;">🎬</div>
-      <div class="network-name">TikTok</div>
-    </a>
-    <a class="network-circle" href="https://youtube.com/@jeffmkeyz" target="_blank">
-      <div class="network-icon" style="background:#ff0000;">▶️</div>
-      <div class="network-name">YouTube</div>
-    </a>
-    <a class="network-circle" href="https://t.me/jeffmkeyzx" target="_blank">
-      <div class="network-icon" style="background:#0088cc;">✈️</div>
-      <div class="network-name">Telegram</div>
-    </a>
-  </div>
+    <div class="section-label">Encuéntrame</div>
+    <div class="section-title">Redes y plataformas</div>
+    <div class="networks-grid">
+        <a class="network-circle" href="https://beatstars.com/jeffmkeyz" target="_blank">
+            <div class="network-icon" style="background:#ff6b35;">
+                <svg viewBox="0 0 24 24"><path d="M12 3v10.5c0 1.93-1.57 3.5-3.5 3.5S5 15.43 5 13.5 6.57 10 8.5 10c.17 0 .33.02.5.04V7.04C8.83 7.01 8.67 7 8.5 7 4.91 7 2 9.91 2 13.5S4.91 20 8.5 20s6.5-2.91 6.5-6.5V6.34c1.17.75 2.54 1.16 4 1.16V4c-1.48 0-2.83-.62-3.79-1.61L12 3z"/></svg>
+            </div>
+            <div class="network-name">BeatStars</div>
+        </a>
+        <a class="network-circle" href="https://open.spotify.com/intl-es/artist/1PTk2yExL9jgOUPYEjWF1E" target="_blank">
+            <div class="network-icon" style="background:#1db954;">
+                <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.52 17.34c-.24.36-.72.48-1.08.24-2.94-1.8-6.66-2.22-11.04-1.2-.42.12-.84-.18-.96-.6-.12-.42.18-.84.6-.96 4.8-1.08 8.94-.6 12.24 1.44.42.24.54.72.24 1.08zm1.44-3.24c-.3.48-.9.6-1.38.3-3.36-2.1-8.52-2.7-12.48-1.5-.48.18-1.02-.12-1.2-.6-.18-.48.12-1.02.6-1.2 4.56-1.38 10.2-.72 14.16 1.74.48.3.6.9.3 1.26zm.12-3.36C15.6 8.4 8.4 8.1 4.8 9.3c-.6.18-1.2-.18-1.38-.78-.18-.6.18-1.2.78-1.38 4.2-1.38 12-1.08 16.2 1.8.54.36.72 1.02.36 1.56-.3.48-.96.66-1.5.3z"/></svg>
+            </div>
+            <div class="network-name">Spotify</div>
+        </a>
+        <a class="network-circle" href="https://instagram.com/jeffmkeyzx" target="_blank">
+            <div class="network-icon" style="background:linear-gradient(135deg,#e1306c,#f77737);">
+                <svg viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4c0 3.2-2.6 5.8-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8C2 4.6 4.6 2 7.8 2zm-.2 2C5.6 4 4 5.6 4 7.6v8.8C4 18.4 5.6 20 7.6 20h8.8c2 0 3.6-1.6 3.6-3.6V7.6C20 5.6 18.4 4 16.4 4H7.6zm10.8 2.5c.7 0 1.1.5 1.1 1.1s-.5 1.1-1.1 1.1-1.1-.5-1.1-1.1.5-1.1 1.1-1.1zM12 7c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5 2.2-5 5-5zm0 2c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"/></svg>
+            </div>
+            <div class="network-name">Instagram</div>
+        </a>
+        <a class="network-circle" href="https://tiktok.com/@jeffmkeyz" target="_blank">
+            <div class="network-icon" style="background:#000;">
+                <svg viewBox="0 0 24 24"><path d="M12.53.02C13.84 0 15.14.01 16.44 0c.05 2.1.1 4.2.15 6.3.5.1 1 .2 1.5.3 1.4.3 2.7.9 3.7 1.8.7.6 1.3 1.4 1.6 2.3.3.9.4 1.9.2 2.8-.3 1.5-1.2 2.8-2.5 3.6-1.3.8-2.9 1-4.4.9-1.8-.2-3.6-1-4.6-2.6-.9-1.4-1.1-3.1-.8-4.7.1-.5.3-1 .5-1.5v5.7c0 .8-.2 1.6-.6 2.3-.7 1.2-2 2-3.4 2.2-1.8.3-3.8-.4-4.9-1.9-1.1-1.5-1.2-3.6-.4-5.2.8-1.5 2.3-2.5 4-2.8.5-.1 1-.1 1.5-.1v3.5c-.3 0-.7 0-1 .1-.8.2-1.5.7-1.8 1.5-.3.8-.2 1.8.3 2.5.5.7 1.3 1.2 2.1 1.3.8.1 1.7-.2 2.2-.8.5-.6.7-1.3.7-2.1V.02h.02z"/></svg>
+            </div>
+            <div class="network-name">TikTok</div>
+        </a>
+        <a class="network-circle" href="https://youtube.com/@jeffmkeyz" target="_blank">
+            <div class="network-icon" style="background:#ff0000;">
+                <svg viewBox="0 0 24 24"><path d="M23.5 6.19c-.27-1.06-1.07-1.9-2.12-2.17C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.38.52C1.57 4.29.77 5.13.5 6.19.5 6.19 0 7.92 0 12s.5 5.81.5 5.81c.27 1.06 1.07 1.9 2.12 2.17C4.48 20.5 12 20.5 12 20.5s7.52 0 9.38-.52c1.05-.27 1.85-1.11 2.12-2.17.5-1.62.5-5.81.5-5.81s0-5.81-.5-5.81zM9.54 15.02V8.98L15.82 12l-6.28 3.02z"/></svg>
+            </div>
+            <div class="network-name">YouTube</div>
+        </a>
+        <a class="network-circle" href="https://t.me/jeffmkeyzx" target="_blank">
+            <div class="network-icon" style="background:#0088cc;">
+                <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.57 8.22l-1.82 8.58c-.13.62-.5.77-1.02.48l-2.82-2.08-1.36 1.31c-.15.15-.28.27-.57.27l.2-2.87 5.23-4.72c.23-.2-.05-.32-.35-.12l-6.46 4.07-2.78-.87c-.6-.19-.62-.6.13-.9l10.87-4.19c.5-.2.93.3.77.9z"/></svg>
+            </div>
+            <div class="network-name">Telegram</div>
+        </a>
+    </div>
+</section>
+
+<!-- SKILLS (Mi mundo ahora después de redes) -->
+<section>
+    <div class="section-label">Lo que hago</div>
+    <div class="section-title">Mi mundo</div>
+    <div class="skills-grid">
+        <div class="skill-card" style="--accent:#f5c518" onclick="burst(event,'#f5c518')">
+            <div class="glow-burst"></div>
+            <div class="skill-icon-wrap"><span class="skill-icon">🎛️</span></div>
+            <div class="skill-name">Producción</div>
+            <div class="skill-desc">Ritmo y melodía</div>
+            <div class="skill-bar-wrap"><div class="skill-bar" style="width:95%"></div></div>
+        </div>
+        <div class="skill-card" style="--accent:#ff4d4d" onclick="burst(event,'#ff4d4d')">
+            <div class="glow-burst"></div>
+            <div class="skill-icon-wrap"><span class="skill-icon">🎤</span></div>
+            <div class="skill-name">Cantautor</div>
+            <div class="skill-desc">Escribo lo que siento</div>
+            <div class="skill-bar-wrap"><div class="skill-bar" style="width:88%"></div></div>
+        </div>
+        <div class="skill-card" style="--accent:#00e676" onclick="burst(event,'#00e676')">
+            <div class="glow-burst"></div>
+            <div class="skill-icon-wrap"><span class="skill-icon">🎚️</span></div>
+            <div class="skill-name">Mezcla</div>
+            <div class="skill-desc">Cada detalle importa</div>
+            <div class="skill-bar-wrap"><div class="skill-bar" style="width:90%"></div></div>
+        </div>
+        <div class="skill-card" style="--accent:#4fc3f7" onclick="burst(event,'#4fc3f7')">
+            <div class="glow-burst"></div>
+            <div class="skill-icon-wrap"><span class="skill-icon">📱</span></div>
+            <div class="skill-name">Contenido</div>
+            <div class="skill-desc">Presencia digital</div>
+            <div class="skill-bar-wrap"><div class="skill-bar" style="width:82%"></div></div>
+        </div>
+        <div class="skill-card" style="--accent:#9c27b0" onclick="burst(event,'#9c27b0')">
+            <div class="glow-burst"></div>
+            <div class="skill-icon-wrap"><span class="skill-icon">🌍</span></div>
+            <div class="skill-name">Distribución</div>
+            <div class="skill-desc">Spotify, Apple…</div>
+            <div class="skill-bar-wrap"><div class="skill-bar" style="width:97%"></div></div>
+        </div>
+        <div class="skill-card" style="--accent:#ff9800" onclick="burst(event,'#ff9800')">
+            <div class="glow-burst"></div>
+            <div class="skill-icon-wrap"><span class="skill-icon">💼</span></div>
+            <div class="skill-name">Negocio</div>
+            <div class="skill-desc">El arte tiene valor</div>
+            <div class="skill-bar-wrap"><div class="skill-bar" style="width:80%"></div></div>
+        </div>
+    </div>
 </section>
 
 <!-- CTA -->
 <div class="cta-section">
-  <div class="cta-title">¿Listo para colaborar?</div>
-  <div class="cta-sub">Explora el catálogo, prueba las herramientas<br>y conecta con la comunidad de artistas.</div>
-  <a class="cta-btn" href="https://t.me/MkeyzDAWbot">🎛️ Abrir Mkeyz Studio Bot</a>
-  <a class="cta-btn-outline" href="https://beatstars.com/jeffmkeyz">🛍️ Ver beats en BeatStars</a>
+    <div class="cta-title">¿Listo para colaborar?</div>
+    <div class="cta-sub">Explora el catálogo, prueba las herramientas<br>y conecta con la comunidad de artistas.</div>
+    <a class="cta-btn" href="https://t.me/MkeyzDAWbot">🎛️ Abrir Mkeyz Studio Bot</a>
+    <a class="cta-btn-outline" href="https://beatstars.com/jeffmkeyz">🛍️ Ver beats en BeatStars</a>
 </div>
 
 <div class="footer">
-  © 2026 JEFF MKEYZ · TODOS LOS DERECHOS RESERVADOS
+    © 2026 JEFF MKEYZ · TODOS LOS DERECHOS RESERVADOS
+</div>
+
+<!-- Botón volver arriba -->
+<div class="back-to-top" id="backToTop">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
 </div>
 
 <div id="audio-viz"></div>
 
 <script>
-const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#060608"); tg.setBackgroundColor("#060608"); }
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#060608"); tg.setBackgroundColor("#060608"); }
 
-// Polvo mágico
-(function createDust() {
-  const container = document.getElementById('magic-dust');
-  for (let i = 0; i < 30; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'dust-particle';
-    const size = Math.random() * 3 + 1;
-    particle.style.width = size + 'px';
-    particle.style.height = size + 'px';
-    particle.style.left = Math.random() * 100 + '%';
-    particle.style.top = Math.random() * 100 + '%';
-    particle.style.animationDelay = Math.random() * 6 + 's';
-    particle.style.animationDuration = (Math.random() * 6 + 4) + 's';
-    container.appendChild(particle);
-  }
-})();
+    // Polvo mágico
+    (function createDust() {
+        const container = document.getElementById('magic-dust');
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'dust-particle';
+            const size = Math.random() * 3 + 1;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 6 + 's';
+            particle.style.animationDuration = (Math.random() * 6 + 4) + 's';
+            container.appendChild(particle);
+        }
+    })();
 
-// Efecto burst al tocar skill cards
-const NOTES = ["♪","♫","♩","♬","🎵","🎶"];
-function burst(e, color) {
-  const x = e.clientX || e.touches?.[0]?.clientX || window.innerWidth/2;
-  const y = e.clientY || e.touches?.[0]?.clientY || window.innerHeight/2;
-  const viz = document.getElementById("audio-viz");
+    // Estrellas fugaces aleatorias
+    function createShootingStar() {
+        const star = document.createElement('div');
+        star.className = 'shooting-star';
+        const startX = Math.random() * window.innerWidth;
+        star.style.left = startX + 'px';
+        star.style.top = Math.random() * 100 + 'px';
+        document.body.appendChild(star);
+        setTimeout(() => star.remove(), 800);
+        setTimeout(createShootingStar, 5000 + Math.random() * 7000);
+    }
+    setTimeout(createShootingStar, 3000);
 
-  const ripple = document.createElement("div");
-  ripple.className = "ripple-circle";
-  ripple.style.cssText = `left:${x-20}px;top:${y-20}px;width:40px;height:40px;border-color:${color}44;`;
-  viz.appendChild(ripple);
-  setTimeout(() => ripple.remove(), 1100);
+    // Máquina de escribir en hero-desc
+    const heroDesc = document.getElementById('hero-desc');
+    const fullText = 'Productor musical independiente. Creo sonidos que trascienden géneros y fronteras.';
+    let i = 0;
+    function typeWriter() {
+        if (i < fullText.length) {
+            heroDesc.innerHTML = fullText.substring(0, i + 1) + '<span class="cursor"></span>';
+            i++;
+            setTimeout(typeWriter, 40 + Math.random() * 30);
+        } else {
+            heroDesc.innerHTML = fullText;
+        }
+    }
+    setTimeout(typeWriter, 500);
 
-  const count = 4 + Math.floor(Math.random() * 3);
-  for (let i = 0; i < count; i++) {
-    setTimeout(() => {
-      const note = document.createElement("div");
-      note.className = "note-burst";
-      const angle  = (Math.random() * 360);
-      const dist   = 15 + Math.random() * 40;
-      const nx     = x + Math.cos(angle * Math.PI/180) * dist;
-      const ny     = y + Math.sin(angle * Math.PI/180) * dist;
-      note.textContent = NOTES[Math.floor(Math.random() * NOTES.length)];
-      note.style.cssText = `left:${nx}px;top:${ny}px;color:${color};font-size:${14+Math.random()*10}px;`;
-      viz.appendChild(note);
-      setTimeout(() => note.remove(), 1600);
-    }, i * 50);
-  }
+    // Botón volver arriba
+    const backBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) backBtn.classList.add('visible');
+        else backBtn.classList.remove('visible');
+    });
+    backBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 
-  if (tg) tg.HapticFeedback?.impactOccurred("light");
-}
+    // Efecto burst al tocar skill cards
+    const NOTES = ["♪","♫","♩","♬","🎵","🎶"];
+    function burst(e, color) {
+        const x = e.clientX || e.touches?.[0]?.clientX || window.innerWidth/2;
+        const y = e.clientY || e.touches?.[0]?.clientY || window.innerHeight/2;
+        const viz = document.getElementById("audio-viz");
+
+        const ripple = document.createElement("div");
+        ripple.className = "ripple-circle";
+        ripple.style.cssText = `left:${x-20}px;top:${y-20}px;width:40px;height:40px;border-color:${color}44;`;
+        viz.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 1100);
+
+        const count = 4 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+                const note = document.createElement("div");
+                note.className = "note-burst";
+                const angle  = (Math.random() * 360);
+                const dist   = 15 + Math.random() * 40;
+                const nx     = x + Math.cos(angle * Math.PI/180) * dist;
+                const ny     = y + Math.sin(angle * Math.PI/180) * dist;
+                note.textContent = NOTES[Math.floor(Math.random() * NOTES.length)];
+                note.style.cssText = `left:${nx}px;top:${ny}px;color:${color};font-size:${14+Math.random()*10}px;`;
+                viz.appendChild(note);
+                setTimeout(() => note.remove(), 1600);
+            }, i * 50);
+        }
+
+        if (tg) tg.HapticFeedback?.impactOccurred("light");
+    }
 </script>
 </body>
 </html>
