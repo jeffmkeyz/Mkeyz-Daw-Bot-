@@ -74,8 +74,10 @@
 
         .btn { background:var(--card); border:1px solid rgba(179,136,255,0.4); padding:6px 12px; border-radius:14px; font-weight:700; font-size:0.6rem; color:var(--text); cursor:pointer; }
         .btn.gold { background:linear-gradient(135deg,var(--violet),#7c4dff); border:none; color:#000; }
+        /* 🔥 NUEVO: estilo para el botón Regenerar */
+        .btn.regenerate { background:linear-gradient(135deg, #ff9800, #ff5722); color:#000; border:none; padding:6px 14px; font-weight:800; letter-spacing:0.5px; box-shadow:0 0 10px rgba(255,152,0,0.5); }
 
-        .controls-bar { display:flex; align-items:center; gap:4px; margin:4px 0; background:var(--card); padding:6px 10px; border-radius:14px; border:1px solid rgba(179,136,255,0.4); justify-content:center; }
+        .controls-bar { display:flex; align-items:center; gap:4px; margin:4px 0; background:var(--card); padding:6px 10px; border-radius:14px; border:1px solid rgba(179,136,255,0.4); justify-content:center; flex-wrap:wrap; }
         .scrubber-wrapper { position:relative; width:50px; height:26px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); border:1px solid var(--violet); border-radius:6px; touch-action:none; user-select:none; }
         .scrubber-value { font-family:'Orbitron',monospace; font-size:0.8rem; color:var(--violet2); pointer-events:none; }
 
@@ -173,12 +175,12 @@
 
         <div class="controls-bar">
             <span style="font-size:0.7rem;">Cantidad:</span>
-            <div class="scrubber-wrapper" id="scrubberWrapper"><span class="scrubber-value" id="scrubberValue">5</span></div>
+            <div class="scrubber-wrapper" id="scrubberWrapper"><span class="scrubber-value" id="scrubberValue">0</span></div>
             <select id="profileSelect" style="background:var(--card);color:var(--text);border:1px solid var(--violet);border-radius:6px;padding:4px;font-size:0.7rem;">
                 <option value="aleatorio">🎲 Aleatorio</option><option value="fiel">🔒 Fiel</option><option value="explorador">🔍 Explorador</option><option value="ocasional">🎲 Ocasional</option><option value="binge">🔥 Binge</option>
             </select>
             <button class="btn" onclick="addListeners()">➕ Sumar</button>
-            <button class="btn" onclick="generateListeners()">🔄 Regenerar</button>
+            <button class="btn regenerate" onclick="generateListeners()">🔄 Regenerar</button>
         </div>
 
         <div class="chart-area">
@@ -297,26 +299,54 @@
             });
         }
 
+        // 🔥 CORRECCIÓN 5: Función auxiliar para filtrar oyentes según los select
+        function getFilteredListeners() {
+            const countryFilter = document.getElementById('filterCountry').value;
+            const platformFilter = document.getElementById('filterPlatform').value;
+            return listeners.filter(l => {
+                if (countryFilter && l.country !== countryFilter) return false;
+                if (platformFilter && l.platform !== platformFilter) return false;
+                return true;
+            });
+        }
+
         function renderDots() {
             markersLayer.clearLayers();
-            state.forEach((s,i)=>{
-                const l=listeners[i];
-                if(document.getElementById('filterCountry').value && l.country!==document.getElementById('filterCountry').value) return;
-                if(document.getElementById('filterPlatform').value && l.platform!==document.getElementById('filterPlatform').value) return;
+            for (let i = 0; i < listeners.length; i++) {
+                const l = listeners[i];
+                const s = state[i];
+                if (document.getElementById('filterCountry').value && l.country !== document.getElementById('filterCountry').value) continue;
+                if (document.getElementById('filterPlatform').value && l.platform !== document.getElementById('filterPlatform').value) continue;
                 const marker = L.circleMarker([l.lat,l.lng],{radius:6,fillColor:s.active?l.color:'#555',color:s.active?PROFILES[l.profile].color:'#555'});
                 marker.bindPopup(`<b>${l.name}</b><br>${l.country} · ${l.city}<br>${l.platform} · ${PROFILES[l.profile].name}<br>IP: ${l.currentIP}`);
                 markersLayer.addLayer(marker);
-            });
+            }
             if(heatmapActive) updateHeatmap();
         }
-        function updateHeatmap() { if(heatLayer) map.removeLayer(heatLayer); heatLayer = L.heatLayer(listeners.map(l=>[l.lat,l.lng]),{radius:18,blur:12,gradient:{0.2:'#ff00ff',0.4:'#b388ff',0.6:'#00e676',0.8:'#ffff00',1:'#ff0000'}}).addTo(map); }
+
+        function updateHeatmap() {
+            if(heatLayer) map.removeLayer(heatLayer);
+            const countryFilter = document.getElementById('filterCountry').value;
+            const platformFilter = document.getElementById('filterPlatform').value;
+            const filtered = listeners.filter(l => {
+                if (countryFilter && l.country !== countryFilter) return false;
+                if (platformFilter && l.platform !== platformFilter) return false;
+                return true;
+            });
+            heatLayer = L.heatLayer(filtered.map(l=>[l.lat,l.lng]),{radius:18,blur:12,gradient:{0.2:'#ff00ff',0.4:'#b388ff',0.6:'#00e676',0.8:'#ffff00',1:'#ff0000'}}).addTo(map);
+        }
 
         // ---------- CHART ----------
         const canvas = document.getElementById('activityChart'), ctx = canvas.getContext('2d');
         function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 140; }
-        window.addEventListener('resize', ()=>{ resizeCanvas(); drawChart(); });
+        window.addEventListener('resize', ()=>{
+            resizeCanvas();
+            drawChart();
+            map.invalidateSize();
+        });
         function drawChart() {
-            const w=canvas.width, h=canvas.height; ctx.clearRect(0,0,w,h);
+            const w=canvas.width, h=canvas.height;
+            ctx.clearRect(0,0,w,h);
             const data = currentView==='1D'?data1D:(currentView==='7D'?data7D:data28D);
             if(!data) return;
             let {activity, plays, otherPlays} = data;
@@ -373,7 +403,6 @@
                 if(s.active && !s.inMyRadio && Math.random()<p.idle*0.1) s.active=false;
             });
             simA[index]=Math.max(simA[index], state.filter(s=>s.inMyRadio).length);
-            artistCountEstimate = Math.min(totalOtherPlays, Math.ceil(listeners.length * 1.5));
         }
 
         function runSimulation(days, callback) {
@@ -636,47 +665,93 @@
 
         // ---------- BUTTONS ----------
         function addListeners() {
-            const count=parseInt(document.getElementById('scrubberValue').textContent)||5;
+            const count=parseInt(document.getElementById('scrubberValue').textContent)||0;
+            if (count <= 0) {
+                showToast('Selecciona una cantidad > 0 para añadir');
+                return;
+            }
             const profileKey=document.getElementById('profileSelect').value;
             for(let i=0;i<count;i++) addListenerWithProfile(profileKey==='aleatorio'?Object.keys(PROFILES)[Math.floor(Math.random()*4)]:profileKey);
             updateStats(); renderDots(); updateProfileStats(); updateIndicators();
         }
-        function generateListeners() { listeners=[]; state=[]; addListeners(); }
+        // 🔥 CORRECCIÓN: generateListeners ahora respeta el scrubber (incluido 0)
+        function generateListeners() {
+            // Reseteo completo
+            listeners = [];
+            state = [];
+            totalMyPlays = 0;
+            totalOtherPlays = 0;
+            data1D = data7D = data28D = null;
+            artistCountEstimate = 0;
+            // Leer cantidad del scrubber
+            const count = parseInt(document.getElementById('scrubberValue').textContent) || 0;
+            if (count > 0) {
+                const profileKey = document.getElementById('profileSelect').value;
+                for (let i = 0; i < count; i++) {
+                    addListenerWithProfile(profileKey === 'aleatorio' ? Object.keys(PROFILES)[Math.floor(Math.random() * 4)] : profileKey);
+                }
+                showToast(`Regenerados ${count} oyentes`);
+            } else {
+                showToast('Panel reseteado (0 oyentes)');
+            }
+            updateStats(); 
+            renderDots(); 
+            updateProfileStats(); 
+            updateIndicators();
+        }
         function addListener() { addListeners(); }
         function safeMode() {
             if(!listeners.length) return;
             let changed=0;
             listeners.forEach((l,i)=>{ if(l.profile==='binge'){ listeners[i].profile='fiel'; state[i].profile='fiel'; changed++; } });
-            updateStats(); renderDots(); updateProfileStats(); updateIndicators(); showToast(`🛡️ Modo Seguro (${changed} cambios)`);
+            updateStats(); renderDots(); updateProfileStats(); updateIndicators();
+            showToast(`🛡️ Modo Seguro (${changed} cambios)`);
         }
-        function resetAll() { listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; artistCountEstimate=0; updateStats(); renderDots(); updateProfileStats(); updateIndicators(); }
+        function resetAll() {
+            listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; artistCountEstimate=0;
+            updateStats(); renderDots(); updateProfileStats(); updateIndicators();
+        }
 
         function updateStats() {
             document.getElementById('totalPlays').textContent=totalMyPlays;
             document.getElementById('totalOtherPlays').textContent=totalOtherPlays;
             document.getElementById('uniqueListeners').textContent=listeners.length;
             document.getElementById('activePlatform').textContent=state.filter(s=>s.active).length;
+            if (totalOtherPlays > 0) {
+                artistCountEstimate = Math.min(totalOtherPlays, Math.ceil(listeners.length * 1.5));
+            } else {
+                artistCountEstimate = listeners.length > 0 ? Math.ceil(listeners.length * 1.2) : 0;
+            }
             document.getElementById('artistCount').textContent = artistCountEstimate;
+            populateFilters();
             drawChart();
         }
 
-        // Scrubber
-        const scrubberValueEl=document.getElementById('scrubberValue'); let scrubberCurrent=5;
+        // 🔥 Scrubber ahora permite 0
+        const scrubberValueEl=document.getElementById('scrubberValue');
+        let scrubberCurrent = 0; // Inicia en 0
+        scrubberValueEl.textContent = scrubberCurrent;
         document.getElementById('scrubberWrapper').addEventListener('pointerdown',e=>{
             const startY=e.clientY, startVal=scrubberCurrent;
-            const onMove=(ev)=>{ scrubberCurrent=Math.min(100,Math.max(1,startVal+Math.round((startY-ev.clientY)/10))); scrubberValueEl.textContent=scrubberCurrent; };
+            const onMove=(ev)=>{
+                scrubberCurrent=Math.min(100, Math.max(0, startVal + Math.round((startY - ev.clientY) / 10)));
+                scrubberValueEl.textContent=scrubberCurrent;
+            };
             const onUp=()=>{ window.removeEventListener('pointermove',onMove); window.removeEventListener('pointerup',onUp); };
             window.addEventListener('pointermove',onMove); window.addEventListener('pointerup',onUp);
         });
-        scrubberValueEl.textContent=scrubberCurrent;
 
         document.getElementById('heatmapToggle').addEventListener('click',()=>{ heatmapActive=!heatmapActive; if(heatmapActive) updateHeatmap(); else if(heatLayer) map.removeLayer(heatLayer); });
 
         function populateFilters() {
             const cs=document.getElementById('filterCountry'), ps=document.getElementById('filterPlatform');
+            const currentCountry = cs.value;
+            const currentPlatform = ps.value;
             cs.innerHTML='<option value="">🌍 Todos</option>'; ps.innerHTML='<option value="">📱 Plataforma</option>';
             [...new Set(listeners.map(l=>l.country))].sort().forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; cs.appendChild(o); });
             [...new Set(listeners.map(l=>l.platform))].sort().forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; ps.appendChild(o); });
+            if ([...cs.options].some(o => o.value === currentCountry)) cs.value = currentCountry;
+            if ([...ps.options].some(o => o.value === currentPlatform)) ps.value = currentPlatform;
         }
         document.getElementById('filterCountry').addEventListener('change',renderDots);
         document.getElementById('filterPlatform').addEventListener('change',renderDots);
@@ -690,8 +765,13 @@
         window.generatePlan=generatePlan; window.executePlan=executePlan;
         window.closeMagicModal=closeMagicModal;
 
-        // Init
-        resizeCanvas(); generateListeners(); renderDots(); updateProfileStats(); updateIndicators(); populateFilters();
+        // Init – ahora sin generar oyentes automáticamente
+        resizeCanvas();
+        updateStats(); // Mostrar ceros
+        renderDots(); // Mapa vacío
+        updateProfileStats();
+        updateIndicators();
+        // populateFilters ya se llama en updateStats
         setInterval(()=>{ if(!simulationRunning) updateStats(); },5000);
     })();
     </script>
