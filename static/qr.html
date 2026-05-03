@@ -1,345 +1,613 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Mkeyz Studio — Compartir</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-:root {
-  --bg:#0a0a0a; --card:#111; --border:#1f1f1f;
-  --gold:#f5c518; --text:#fff; --muted:#555;
-}
-body {
-  background:var(--bg); color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
-  padding:16px; padding-bottom:60px; min-height:100vh;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Mkeyz Studio · Compartir</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --bg: #05050a;
+            --card: #0f0f15;
+            --card2: #16161f;
+            --border: #252535;
+            --gold: #f5b81b;
+            --text: #ffffff;
+            --text2: #a0a0b8;
+            --muted: #5a5a72;
+        }
 
-.header { text-align:center; padding:16px 0 24px; }
-.header h1 {
-  font-size:22px; font-weight:900;
-  background:linear-gradient(135deg,#fff,var(--gold));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  margin-bottom:4px;
-}
-.header p { font-size:13px; color:var(--muted); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
 
-/* ── QR CARD ── */
-#qr-card {
-  background:linear-gradient(160deg,#1a0a2e 0%,#080808 100%);
-  border:1px solid #2a2a2a; border-radius:24px;
-  padding:28px 20px; text-align:center;
-  margin-bottom:20px; position:relative; overflow:hidden;
-}
-#qr-card::before {
-  content:''; position:absolute; top:-40px; right:-40px;
-  width:160px; height:160px; opacity:0.07;
-  background:radial-gradient(circle,var(--gold),transparent);
-  border-radius:50%;
-}
-#qr-card::after {
-  content:''; position:absolute; bottom:-40px; left:-40px;
-  width:120px; height:120px; opacity:0.05;
-  background:radial-gradient(circle,#9c27b0,transparent);
-  border-radius:50%;
-}
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            padding: 20px 16px 80px;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image:
+                radial-gradient(ellipse at 20% 20%, rgba(108, 92, 231, 0.08) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 80%, rgba(245, 184, 27, 0.06) 0%, transparent 55%);
+            background-attachment: fixed;
+        }
 
-.qr-logo {
-  font-size:13px; font-weight:800; color:var(--muted);
-  letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;
-}
+        .container {
+            max-width: 420px;
+            width: 100%;
+        }
 
-#qr-box {
-  display:inline-flex; align-items:center; justify-content:center;
-  background:#fff; border-radius:16px; padding:14px;
-  position:relative; z-index:1; margin-bottom:20px;
-}
-#qr-box canvas, #qr-box img { display:block; border-radius:4px; }
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            animation: fadeDown 0.7s ease;
+        }
+        .header .icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 8px rgba(245,184,27,0.4));
+        }
+        .header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 0%, var(--gold) 70%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+        .header p {
+            font-size: 13px;
+            color: var(--text2);
+            letter-spacing: 0.2px;
+        }
 
-.qr-url {
-  font-size:14px; font-weight:700; color:var(--gold);
-  margin-bottom:6px; position:relative; z-index:1;
-}
-.qr-sub {
-  font-size:12px; color:var(--muted);
-  position:relative; z-index:1;
-}
+        .qr-card {
+            background: radial-gradient(circle at 30% 0%, #1e1a30 0%, #0c0c14 100%);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 30px 20px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6);
+            position: relative;
+            overflow: hidden;
+        }
+        .qr-card::before, .qr-card::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .qr-card::before {
+            top: -60px; right: -60px;
+            width: 180px; height: 180px;
+            background: radial-gradient(circle, rgba(245,184,27,0.12) 0%, transparent 70%);
+        }
+        .qr-card::after {
+            bottom: -30px; left: -30px;
+            width: 120px; height: 120px;
+            background: radial-gradient(circle, rgba(108,92,231,0.1) 0%, transparent 70%);
+        }
 
-/* Wave decoration */
-.wave-dec {
-  display:flex; gap:3px; align-items:flex-end;
-  justify-content:center; margin-top:16px; opacity:0.5;
-}
-.wave-dec span {
-  width:3px; border-radius:2px; background:var(--gold);
-  animation:waveDec 0.8s ease-in-out infinite alternate;
-}
-.wave-dec span:nth-child(1){height:6px;  animation-delay:0s}
-.wave-dec span:nth-child(2){height:12px; animation-delay:0.1s}
-.wave-dec span:nth-child(3){height:8px;  animation-delay:0.2s}
-.wave-dec span:nth-child(4){height:16px; animation-delay:0.15s}
-.wave-dec span:nth-child(5){height:10px; animation-delay:0.05s}
-.wave-dec span:nth-child(6){height:14px; animation-delay:0.25s}
-.wave-dec span:nth-child(7){height:7px;  animation-delay:0.3s}
-@keyframes waveDec { from{transform:scaleY(0.4)} to{transform:scaleY(1)} }
+        .qr-logo {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
 
-/* ── ACTION BUTTONS ── */
-.section-title {
-  font-size:11px; color:var(--muted); text-transform:uppercase;
-  letter-spacing:1px; margin-bottom:10px; margin-top:20px;
-}
+        .qr-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 12px;
+            position: relative;
+            z-index: 1;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            margin-bottom: 18px;
+        }
+        .qr-wrapper:active { transform: scale(0.96); }
+        .qr-wrapper canvas, .qr-wrapper img {
+            display: block;
+            border-radius: 6px;
+            pointer-events: none;
+        }
 
-.btn-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
-.btn {
-  padding:16px 10px; border:none; border-radius:16px;
-  font-size:14px; font-weight:800; cursor:pointer;
-  transition:all 0.15s; display:flex; align-items:center;
-  justify-content:center; gap:8px;
-}
-.btn:active { transform:scale(0.97); }
-.btn-gold     { background:linear-gradient(135deg,var(--gold),#ff8c00); color:#000; }
-.btn-dark     { background:#1a1a1a; color:#fff; border:1px solid #2a2a2a; }
-.btn-full {
-  width:100%; padding:16px; border:none; border-radius:16px;
-  font-size:15px; font-weight:800; cursor:pointer; transition:all 0.15s;
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  margin-bottom:10px;
-}
-.btn-full:active { transform:scale(0.97); }
-.btn-telegram { background:linear-gradient(135deg,#0088cc,#006699); color:#fff; }
-.btn-copy-link { background:#1a1a1a; color:#fff; border:1px solid #2a2a2a; }
+        .download-hint {
+            font-size: 10px;
+            color: var(--muted);
+            margin: -8px 0 12px;
+            opacity: 0.7;
+            position: relative;
+            z-index: 1;
+        }
 
-/* ── STATS ── */
-.stats-grid {
-  display:grid; grid-template-columns:repeat(3,1fr);
-  gap:8px; margin-bottom:16px;
-}
-.stat-card {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:14px; padding:14px; text-align:center;
-}
-.stat-n { font-size:20px; font-weight:900; color:var(--gold); }
-.stat-l { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:3px; }
+        .qr-url {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 6px;
+            z-index: 1;
+            position: relative;
+        }
+        .qr-sub {
+            font-size: 12px;
+            color: var(--text2);
+            z-index: 1;
+            position: relative;
+        }
 
-/* ── THEME SELECTOR ── */
-.theme-row { display:flex; gap:8px; margin-bottom:16px; }
-.theme-dot {
-  width:36px; height:36px; border-radius:50%; cursor:pointer;
-  border:2px solid transparent; transition:all 0.15s; flex-shrink:0;
-}
-.theme-dot.active { border-color:#fff; transform:scale(1.15); }
-.theme-dot:active { transform:scale(0.93); }
+        .wave-dec {
+            display: flex;
+            gap: 4px;
+            align-items: flex-end;
+            justify-content: center;
+            margin-top: 18px;
+            opacity: 0.4;
+            z-index: 1;
+            position: relative;
+        }
+        .wave-dec span {
+            width: 3px;
+            border-radius: 3px;
+            background: var(--gold);
+            animation: waveDec 0.85s ease-in-out infinite alternate;
+        }
+        .wave-dec span:nth-child(1) { height: 7px; animation-delay: 0s; }
+        .wave-dec span:nth-child(2) { height: 14px; animation-delay: 0.1s; }
+        .wave-dec span:nth-child(3) { height: 9px; animation-delay: 0.2s; }
+        .wave-dec span:nth-child(4) { height: 18px; animation-delay: 0.15s; }
+        .wave-dec span:nth-child(5) { height: 11px; animation-delay: 0.05s; }
+        .wave-dec span:nth-child(6) { height: 16px; animation-delay: 0.25s; }
+        .wave-dec span:nth-child(7) { height: 8px; animation-delay: 0.3s; }
+        @keyframes waveDec {
+            from { transform: scaleY(0.35); }
+            to { transform: scaleY(1); }
+        }
 
-/* ── SIZE SELECTOR ── */
-.size-row { display:flex; gap:8px; margin-bottom:16px; }
-.size-btn {
-  flex:1; padding:10px; border-radius:12px; font-size:12px; font-weight:700;
-  background:var(--card); color:var(--muted); border:1px solid var(--border);
-  cursor:pointer; transition:all 0.2s; text-align:center;
-}
-.size-btn.active { background:#1a1500; color:var(--gold); border-color:#f5c51866; }
+        .section-title {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 20px 0 10px;
+            font-weight: 700;
+            padding-left: 4px;
+        }
 
-/* ── TOAST ── */
-.toast {
-  position:fixed; bottom:24px; left:50%;
-  transform:translateX(-50%) translateY(80px);
-  background:#fff; color:#000; padding:12px 20px; border-radius:100px;
-  font-size:14px; font-weight:700; z-index:9999;
-  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.5);
-}
-.toast.show { transform:translateX(-50%) translateY(0); }
+        /* Theme dots - CORREGIDO sin recorte cuadrado */
+        .theme-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .theme-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+            position: relative;
+            background-clip: padding-box;
+            /* Eliminamos box-shadow global y usamos uno interno para que no se vea cuadrado */
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.1);
+        }
+        .theme-dot.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 3px #ffffff, 0 0 20px rgba(255,255,255,0.5);
+        }
+        .theme-dot:active {
+            transform: scale(0.9);
+        }
+        .theme-dot.bounce {
+            animation: dotBounce 0.4s ease;
+        }
+        @keyframes dotBounce {
+            0%   { transform: scale(1); }
+            30%  { transform: scale(1.3); }
+            50%  { transform: scale(0.9); }
+            70%  { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
 
-/* ── OVERLAY ── */
-.overlay {
-  display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,0.8); z-index:9998;
-  align-items:center; justify-content:center; flex-direction:column; gap:12px;
-}
-.overlay.show { display:flex; }
-.spinner {
-  width:36px; height:36px; border:3px solid #333;
-  border-top-color:var(--gold); border-radius:50%;
-  animation:spin 0.8s linear infinite;
-}
-@keyframes spin { to{transform:rotate(360deg)} }
-.overlay-text { color:#fff; font-size:14px; font-weight:600; }
-</style>
+        .size-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .size-btn {
+            flex: 1;
+            padding: 12px 6px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 700;
+            background: var(--card2);
+            color: var(--text2);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .size-btn.active {
+            background: #1a1500;
+            color: var(--gold);
+            border-color: rgba(245,184,27,0.5);
+            box-shadow: 0 0 14px rgba(245,184,27,0.1);
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        .btn-full:active { transform: scale(0.97); }
+        .btn-telegram {
+            background: linear-gradient(135deg, #0088cc 0%, #005f8c 100%);
+            color: #fff;
+            box-shadow: 0 8px 18px rgba(0,136,204,0.25);
+        }
+        .btn-copy {
+            background: var(--card2);
+            color: #fff;
+            border: 1px solid var(--border);
+        }
+        .btn-download {
+            background: linear-gradient(135deg, #2d2d3a 0%, #1a1a25 100%);
+            color: #fff;
+            border: 1px solid var(--border);
+            margin-bottom: 4px;
+        }
+        .btn-download .icon { font-size: 18px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 16px 0;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 8px;
+            text-align: center;
+        }
+        .stat-n {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--gold);
+        }
+        .stat-l {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-top: 4px;
+        }
+
+        .info-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px;
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.7;
+            margin-top: 20px;
+        }
+        .info-box strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        .info-box .highlight {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #fff;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 14px;
+            font-weight: 700;
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            white-space: nowrap;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .overlay.show { display: flex; }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid #2a2a3a;
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .overlay-text { color: #fff; font-size: 14px; font-weight: 600; }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeDown 0.6s ease both; }
+        .fade-in:nth-child(1) { animation-delay: 0.05s; }
+        .fade-in:nth-child(2) { animation-delay: 0.1s; }
+        .fade-in:nth-child(3) { animation-delay: 0.15s; }
+        .fade-in:nth-child(4) { animation-delay: 0.2s; }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header fade-in">
+            <div class="icon">🎛️</div>
+            <h1>Mkeyz Studio</h1>
+            <p>Comparte el estudio musical con otros artistas</p>
+        </div>
 
-<div class="header">
-  <h1>🎛️ Mkeyz Studio</h1>
-  <p>Comparte el bot con otros artistas</p>
-</div>
+        <div class="qr-card fade-in">
+            <div class="qr-logo">MKEYZ STUDIO BOT</div>
+            <div class="qr-wrapper" id="qr-wrapper" title="Toca para descargar el QR con logo">
+                <div id="qr-box"></div>
+            </div>
+            <div class="download-hint">📸 Toca el QR para guardarlo (con logo)</div>
+            <div class="qr-url">t.me/MkeyzDAWbot</div>
+            <div class="qr-sub">Escanea para acceder al estudio</div>
+            <div class="wave-dec">
+                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span>
+            </div>
+        </div>
 
-<!-- QR CARD -->
-<div id="qr-card">
-  <div class="qr-logo">MKEYZ STUDIO BOT</div>
-  <div id="qr-box"></div>
-  <div class="qr-url">t.me/MkeyzDAWbot</div>
-  <div class="qr-sub">Escanea para acceder al estudio</div>
-  <div class="wave-dec">
-    <span></span><span></span><span></span><span></span>
-    <span></span><span></span><span></span>
-  </div>
-</div>
+        <div class="section-title fade-in">🎨 Color del QR</div>
+        <div class="theme-row fade-in" id="theme-row"></div>
 
-<!-- THEME -->
-<div class="section-title">Color del QR</div>
-<div class="theme-row" id="theme-row"></div>
+        <div class="section-title fade-in">📐 Tamaño</div>
+        <div class="size-row fade-in">
+            <div class="size-btn active" onclick="setSize(180, this)">Pequeño<br><span style="font-size:10px;opacity:0.5">180×180</span></div>
+            <div class="size-btn" onclick="setSize(220, this)">Mediano<br><span style="font-size:10px;opacity:0.5">220×220</span></div>
+            <div class="size-btn" onclick="setSize(280, this)">Grande<br><span style="font-size:10px;opacity:0.5">280×280</span></div>
+        </div>
 
-<!-- SIZE -->
-<div class="section-title">Tamaño</div>
-<div class="size-row">
-  <div class="size-btn active" onclick="setSize(180,this)">Pequeño<br><span style="font-size:10px;opacity:0.5">180px</span></div>
-  <div class="size-btn" onclick="setSize(240,this)">Mediano<br><span style="font-size:10px;opacity:0.5">240px</span></div>
-  <div class="size-btn" onclick="setSize(300,this)">Grande<br><span style="font-size:10px;opacity:0.5">300px</span></div>
-</div>
+        <div class="section-title fade-in">🚀 Compartir</div>
+        <button class="btn-full btn-telegram fade-in" onclick="shareToTelegram()">✈️ Compartir por Telegram</button>
+        <button class="btn-full btn-copy fade-in" onclick="copyLink()">🔗 Copiar enlace del bot</button>
+        <button class="btn-full btn-download fade-in" onclick="downloadQR()">💾 Descargar QR con logo (PNG)</button>
 
-<!-- ACTIONS -->
-<div class="section-title">Compartir</div>
-<button class="btn-full btn-telegram" onclick="shareToTelegram()">✈️ Compartir por Telegram</button>
-<button class="btn-full btn-copy-link" onclick="copyLink()">🔗 Copiar enlace del bot</button>
+        <div class="section-title fade-in">📊 El bot en números</div>
+        <div class="stats-grid fade-in">
+            <div class="stat-card"><div class="stat-n">10+</div><div class="stat-l">Herramientas</div></div>
+            <div class="stat-card"><div class="stat-n">3</div><div class="stat-l">Planes</div></div>
+            <div class="stat-card"><div class="stat-n">∞</div><div class="stat-l">Usos</div></div>
+        </div>
 
+        <div class="info-box fade-in">
+            <strong>🎛️ ¿Qué es Mkeyz Studio?</strong>
+            El primer estudio musical dentro de Telegram.<br>
+            DAW · Analizador · Chord Generator · Voice Studio · Beat Battle · Reto Semanal y mucho más.<br>
+            <span class="highlight">Hecho por Jeff Mkeyz 🇩🇴🇪🇸</span>
+        </div>
+    </div>
 
+    <div class="overlay" id="overlay">
+        <div class="spinner"></div>
+        <div class="overlay-text" id="overlay-text">Generando...</div>
+    </div>
+    <div class="toast" id="toast"></div>
 
-<!-- STATS -->
-<div class="section-title">El bot en números</div>
-<div class="stats-grid">
-  <div class="stat-card">
-    <div class="stat-n">10+</div>
-    <div class="stat-l">Herramientas</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-n">3</div>
-    <div class="stat-l">Planes</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-n">∞</div>
-    <div class="stat-l">Usos</div>
-  </div>
-</div>
+    <script>
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            tg.setHeaderColor("#05050a");
+            tg.setBackgroundColor("#05050a");
+        }
 
-<!-- INFO -->
-<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;font-size:13px;color:var(--muted);line-height:1.8">
-  <div style="color:var(--text);font-weight:700;margin-bottom:8px">🎛️ ¿Qué es Mkeyz Studio?</div>
-  El primer estudio musical dentro de Telegram.<br>
-  DAW · Analizador · Chord Generator · Voice Studio · Beat Battle · Reto Semanal y mucho más.<br>
-  <span style="color:var(--gold)">Hecho por Jeff Mkeyz 🇩🇴🇪🇸</span>
-</div>
+        const BOT_URL = "https://t.me/MkeyzDAWbot";
+        let currentSize = 180;
+        let currentColor = "#f5b81b";
+        let qrInstance = null;
 
-<div class="overlay" id="overlay">
-  <div class="spinner"></div>
-  <div class="overlay-text" id="overlay-text">Generando...</div>
-</div>
-<div class="toast" id="toast"></div>
+        // Precargar logo
+        const logoImg = new Image();
+        logoImg.src = "logo.png"; // Asegúrate de que el archivo se llame logo.png
 
-<script>
-const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0a0a0a"); tg.setBackgroundColor("#0a0a0a"); }
+        const THEMES = [
+            { qr: "#f5b81b", label: "Gold", dot: "linear-gradient(135deg, #000, #f5b81b)" },
+            { qr: "#a78bfa", label: "Purple", dot: "linear-gradient(135deg, #1a0040, #a78bfa)" },
+            { qr: "#00e676", label: "Neon", dot: "linear-gradient(135deg, #000d00, #00e676)" },
+            { qr: "#4fc3f7", label: "Blue", dot: "linear-gradient(135deg, #000a1a, #4fc3f7)" },
+            { qr: "#ff4d4d", label: "Red", dot: "linear-gradient(135deg, #0d0000, #ff4d4d)" },
+            { qr: "#000000", label: "Negro", dot: "linear-gradient(135deg, #fff, #000)" },
+        ];
 
-const BOT_URL = "https://t.me/MkeyzDAWbot";
-let currentSize  = 180;
-let currentColor = "#000000";
-let qrInstance   = null;
+        const themeRow = document.getElementById("theme-row");
+        THEMES.forEach((t, i) => {
+            const dot = document.createElement("div");
+            dot.className = "theme-dot" + (i === 0 ? " active" : "");
+            dot.style.background = t.dot;
+            dot.title = t.label;
+            dot.setAttribute("aria-label", t.label);
+            dot.onclick = () => {
+                document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
+                dot.classList.add("active");
+                currentColor = t.qr;
+                generateQR();
+                if (tg) tg.HapticFeedback?.impactOccurred("light");
+                dot.classList.remove("bounce");
+                void dot.offsetWidth;
+                dot.classList.add("bounce");
+                setTimeout(() => dot.classList.remove("bounce"), 400);
+            };
+            themeRow.appendChild(dot);
+        });
 
-const THEMES = [
-  { color:"#000000", bg:"#f5c518", label:"Gold" },
-  { color:"#1a0040", bg:"#a78bfa", label:"Purple" },
-  { color:"#000d00", bg:"#00e676", label:"Neon" },
-  { color:"#000a1a", bg:"#4fc3f7", label:"Blue" },
-  { color:"#0d0000", bg:"#ff4d4d", label:"Red" },
-  { color:"#000000", bg:"#ffffff", label:"White" },
-];
+        function setSize(size, btn) {
+            document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentSize = size;
+            generateQR();
+            if (tg) tg.HapticFeedback?.impactOccurred("light");
+        }
 
-// Build theme selector
-const themeRow = document.getElementById("theme-row");
-THEMES.forEach((t, i) => {
-  const dot = document.createElement("div");
-  dot.className = "theme-dot" + (i === 0 ? " active" : "");
-  dot.style.background = `linear-gradient(135deg,${t.color},${t.bg})`;
-  dot.title = t.label;
-  dot.onclick = () => {
-    document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
-    dot.classList.add("active");
-    currentColor = t.bg;
-    generateQR();
-    if (tg) tg.HapticFeedback?.impactOccurred("light");
-  };
-  themeRow.appendChild(dot);
-});
+        function generateQR() {
+            const box = document.getElementById("qr-box");
+            box.innerHTML = "";
+            qrInstance = new QRCode(box, {
+                text: BOT_URL,
+                width: currentSize,
+                height: currentSize,
+                colorDark: currentColor,
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H,
+            });
+            setTimeout(() => overlayLogo(), 50);
+        }
 
-function setSize(size, btn) {
-  document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  currentSize = size;
-  generateQR();
-  if (tg) tg.HapticFeedback?.impactOccurred("light");
-}
+        function overlayLogo() {
+            const canvas = document.querySelector("#qr-box canvas");
+            if (!canvas || !logoImg.complete || logoImg.naturalWidth === 0) {
+                setTimeout(overlayLogo, 100);
+                return;
+            }
+            const ctx = canvas.getContext("2d");
+            const size = currentSize;
+            const logoSize = size * 0.22;
+            const x = (size - logoSize) / 2;
+            const y = (size - logoSize) / 2;
 
-function generateQR() {
-  const box = document.getElementById("qr-box");
-  box.innerHTML = "";
-  qrInstance = new QRCode(box, {
-    text: BOT_URL,
-    width:  currentSize,
-    height: currentSize,
-    colorDark:  currentColor,
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.H,
-  });
-}
+            // Fondo blanco circular detrás del logo
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, logoSize/2 + 3, 0, Math.PI * 2);
+            ctx.fill();
 
+            // Dibujar logo
+            ctx.drawImage(logoImg, x, y, logoSize, logoSize);
 
+            // Sombra ligera
+            ctx.strokeStyle = "rgba(0,0,0,0.15)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, logoSize/2 + 2, 0, Math.PI * 2);
+            ctx.stroke();
+        }
 
-function shareToTelegram() {
-  const msg = `🎛️ *Mkeyz Studio Bot*\n\n¡El primer estudio musical dentro de Telegram!\n\n🎵 Graba · 🎹 Chords · 🥁 Beat Battle\n📊 Analizador · 🎚️ DAW y mucho más.\n\n👉 ${BOT_URL}`;
-  if (tg) {
-    tg.switchInlineQuery(BOT_URL, ["users","groups","channels"]);
-  } else {
-    const url = `https://t.me/share/url?url=${encodeURIComponent(BOT_URL)}&text=${encodeURIComponent("🎛️ Mkeyz Studio — El estudio musical dentro de Telegram")}`;
-    window.open(url, "_blank");
-  }
-  showToast("✅ Compartiendo...");
-}
+        function downloadQR() {
+            const canvas = document.querySelector("#qr-box canvas");
+            if (!canvas) {
+                showToast("⚠️ Genera el QR primero");
+                return;
+            }
+            const link = document.createElement("a");
+            link.download = "MkeyzStudio_QR.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+            showToast("✅ QR descargado");
+            if (tg) tg.HapticFeedback?.impactOccurred("medium");
+        }
 
-function copyLink() {
-  navigator.clipboard?.writeText(BOT_URL)
-    .then(() => showToast("✅ Enlace copiado"))
-    .catch(() => {
-      const ta = document.createElement("textarea");
-      ta.value = BOT_URL;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      showToast("✅ Enlace copiado");
-    });
-  if (tg) tg.HapticFeedback?.impactOccurred("light");
-}
+        document.getElementById("qr-wrapper").addEventListener("click", (e) => {
+            e.stopPropagation();
+            downloadQR();
+        });
 
+        function shareToTelegram() {
+            const text = "🎛️ Mkeyz Studio — Estudio musical en Telegram";
+            if (tg && tg.openLink) {
+                tg.openLink(`https://t.me/share/url?url=${encodeURIComponent(BOT_URL)}&text=${encodeURIComponent(text)}`);
+            } else {
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(BOT_URL)}&text=${encodeURIComponent(text)}`, "_blank");
+            }
+            showToast("✅ Abriendo Telegram...");
+            if (tg) tg.HapticFeedback?.impactOccurred("light");
+        }
 
+        function copyLink() {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(BOT_URL).then(() => showToast("✅ Enlace copiado")).catch(fallbackCopy);
+            } else {
+                fallbackCopy();
+            }
+            if (tg) tg.HapticFeedback?.impactOccurred("light");
+        }
 
-function showOverlay(text) {
-  document.getElementById("overlay-text").textContent = text;
-  document.getElementById("overlay").classList.add("show");
-}
-function hideOverlay() { document.getElementById("overlay").classList.remove("show"); }
+        function fallbackCopy() {
+            const ta = document.createElement("textarea");
+            ta.value = BOT_URL;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            showToast("✅ Enlace copiado");
+        }
 
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2500);
-}
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            clearTimeout(t._timeout);
+            t._timeout = setTimeout(() => t.classList.remove("show"), 2500);
+        }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// Init
-generateQR();
-</script>
+        // Inicialización cuando el logo esté listo
+        logoImg.onload = () => generateQR();
+        if (logoImg.complete) generateQR();
+    </script>
 </body>
 </html>
