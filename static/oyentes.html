@@ -132,41 +132,55 @@
         .btn.gold { background:linear-gradient(135deg, var(--violet), #7c4dff); border:none; color:#000; }
         .btn:disabled { opacity:0.4; pointer-events:none; }
         .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1530; color:var(--violet2); padding:8px 18px; border-radius:50px; z-index:999; }
-        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:200; }
-        .modal-overlay.show { display:flex; }
-        .modal-box { background:#1e1835; border-radius:32px; padding:28px; border:2px solid var(--violet); max-width:380px; width:90%; text-align:center; }
-        .progress-wrapper { display:none; text-align:center; margin:10px 0; }
-        .progress-bar-bg { width:80%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin:0 auto; }
-        .progress-bar-fill { height:100%; width:0%; background:var(--violet); border-radius:3px; }
-        .custom-listeners {
-            display: flex; align-items: center; gap: 10px; margin: 10px 0;
-            background: var(--card); padding: 12px 20px; border-radius: 50px;
-            border: 1px solid rgba(179,136,255,0.3);
+        /* Modal mágico */
+        .magic-modal {
+            position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+            z-index: 300; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
         }
-        .custom-listeners input {
-            width: 70px; background: transparent; border: none; color: var(--violet2);
-            font-family: 'Orbitron', monospace; font-size: 1rem; text-align: center; outline: none;
+        .magic-modal.show { display: flex; }
+        .magic-box {
+            background: linear-gradient(145deg, #1a1030, #0f0a22);
+            border: 2px solid var(--violet);
+            border-radius: 32px;
+            padding: 28px 24px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            animation: magicIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 40px var(--violet), 0 0 80px rgba(179,136,255,0.6);
+            position: relative;
+            overflow: hidden;
         }
-        .custom-listeners select {
-            background: var(--card); color: var(--text); border: 1px solid var(--violet); border-radius: 10px; padding: 5px;
+        @keyframes magicIn {
+            0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+            60% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
         }
-        .custom-listeners button {
-            background: var(--violet); border: none; padding: 8px 16px; border-radius: 20px;
-            font-weight: 700; cursor: pointer;
+        .magic-sparkles {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
         }
-        .context-menu {
-            position: absolute; z-index: 300;
-            background: rgba(20,15,35,0.96); border: 1px solid var(--violet);
-            border-radius: 16px; padding: 8px 0; min-width: 180px;
-            box-shadow: 0 0 20px var(--violet); backdrop-filter: blur(12px);
-            display: none;
+        .magic-sparkle {
+            position: absolute; width: 6px; height: 6px;
+            background: var(--violet2); border-radius: 50%;
+            animation: sparkle 1.5s linear infinite;
         }
-        .context-menu.show { display: block; }
-        .context-menu-item {
-            padding: 10px 16px; cursor: pointer; font-size: 0.8rem; color: var(--text);
-            transition: background 0.2s;
+        @keyframes sparkle {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-200px) scale(0); opacity: 0; }
         }
-        .context-menu-item:hover { background: rgba(179,136,255,0.2); }
+        .magic-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: #fff;
+            text-shadow: 0 0 20px var(--violet), 0 0 40px var(--violet);
+            margin-bottom: 16px;
+        }
+        .magic-stat {
+            display: flex; justify-content: space-between;
+            margin: 8px 0; font-size: 0.9rem;
+            color: var(--text);
+        }
     </style>
 </head>
 <body>
@@ -203,7 +217,6 @@
         <div class="profile-stat" id="stat-binge" style="border-color:#ff4d4d"><span>🔥</span> Binge: 0</div>
     </div>
 
-    <!-- Panel de indicadores antidetect -->
     <div class="antidetect-panel">
         <div class="antidetect-title">🛡️ Indicadores Antidetect</div>
         <div class="antidetect-grid">
@@ -275,6 +288,16 @@
     </div>
 
     <div class="toast" id="toast"></div>
+
+    <!-- Modal Mágico de Resumen -->
+    <div class="magic-modal" id="magicModal">
+        <div class="magic-box">
+            <div class="magic-sparkles" id="magicSparkles"></div>
+            <div class="magic-title">✨ Simulación Completa ✨</div>
+            <div id="magicContent"></div>
+            <button class="btn gold" style="width:100%; margin-top:16px;" onclick="closeMagicModal()">Cerrar</button>
+        </div>
+    </div>
 
 <script>
 (function() {
@@ -383,7 +406,6 @@
         "Isabella","Andrés","Camila","Diego","Valeria","Leonardo","Victoria","Gabriel","Natalia",
         "Mateo","Luciana","Samuel","Martina","Nicolás","Andrea","Hiroshi","Amara","Klaus","Oliver"];
 
-    // Huellas digitales simuladas
     const userAgents = [
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
@@ -403,6 +425,9 @@
     const ctx = canvas.getContext('2d');
     const contextMenu = document.getElementById('contextMenu');
     let contextMenuTarget = null;
+    const magicModal = document.getElementById('magicModal');
+    const magicContent = document.getElementById('magicContent');
+    const magicSparkles = document.getElementById('magicSparkles');
 
     function resizeCanvas() {
         canvas.width = canvas.parentElement.clientWidth;
@@ -465,7 +490,6 @@
             document.getElementById('bingePct').textContent = '0%';
             return;
         }
-        // Gini
         const playsArray = state.map(s => s.dailyPlays || 0);
         const total = playsArray.reduce((a,b)=>a+b,0);
         let sum = 0;
@@ -476,23 +500,16 @@
         }
         const gini = total ? sum / (2 * playsArray.length * total) : 0;
         document.getElementById('giniValue').textContent = gini.toFixed(2);
-
-        // Ratio plays/oyente
         const ratio = total / listeners.length;
         document.getElementById('ratioPlays').textContent = ratio.toFixed(1);
-
-        // Picos sospechosos (usando datos de la última simulación si existen)
         let peaks = 0;
         if (data1D && data1D.activity.length > 0) {
             const avg = data1D.activity.reduce((a,b)=>a+b,0) / 24;
             data1D.activity.forEach(v => { if (v > avg * 3 && v > 2) peaks++; });
         }
         document.getElementById('suspiciousPeaks').textContent = peaks;
-
-        // Binge listeners porcentaje
         const bingeCount = listeners.filter(l => l.profile === 'binge').length;
-        const bingePct = ((bingeCount / listeners.length) * 100).toFixed(0);
-        document.getElementById('bingePct').textContent = bingePct + '%';
+        document.getElementById('bingePct').textContent = ((bingeCount / listeners.length) * 100).toFixed(0) + '%';
     }
 
     function updateProfileStats() {
@@ -705,7 +722,7 @@
                         s.dailyPlays = 0;
                         const p = PROFILES[s.profile];
                         s.maxDailyPlays = p.maxDailyPlays;
-                        s.sessionRemaining = 0;  // reinicio corregido
+                        s.sessionRemaining = 0;
                         if (s.inMyRadio) leaveRadio(state.indexOf(s));
                     });
                 }
@@ -727,7 +744,7 @@
                     data7D = { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], activity: simA.slice(0,7), plays: simP.slice(0,7), otherPlays: simO.slice(0,7) };
                     data28D = { labels: Array.from({length:28}, (_,i)=>'D'+(i+1)), activity: simA, plays: simP, otherPlays: simO };
                 }
-                finishSimulation();
+                finishSimulation(days);
             }
         }
         batch();
@@ -745,7 +762,34 @@
         return { labels: Array.from({length:24}, (_,i)=>i+'h'), activity: hourlyA, plays: hourlyP, otherPlays: hourlyO };
     }
 
-    function finishSimulation() {
+    function showMagicModal(plays, other, oyentes, gini, ratio, peaks, bingePct, periodLabel) {
+        magicContent.innerHTML = `
+            <div class="magic-stat"><span>🎵 Tus plays:</span><strong>${plays}</strong></div>
+            <div class="magic-stat"><span>🎧 Otros plays:</span><strong>${other}</strong></div>
+            <div class="magic-stat"><span>👥 Oyentes:</span><strong>${oyentes}</strong></div>
+            <div class="magic-stat"><span>📊 Gini:</span><strong>${gini}</strong></div>
+            <div class="magic-stat"><span>🔁 Ratio:</span><strong>${ratio}</strong></div>
+            <div class="magic-stat"><span>⚠️ Picos:</span><strong>${peaks}</strong></div>
+            <div class="magic-stat"><span>🔥 Binge:</span><strong>${bingePct}%</strong></div>
+        `;
+        // Generar sparkles aleatorios
+        magicSparkles.innerHTML = '';
+        for (let i = 0; i < 20; i++) {
+            const s = document.createElement('div');
+            s.className = 'magic-sparkle';
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 100 + '%';
+            s.style.animationDelay = Math.random() * 1.5 + 's';
+            magicSparkles.appendChild(s);
+        }
+        magicModal.classList.add('show');
+    }
+
+    function closeMagicModal() {
+        magicModal.classList.remove('show');
+    }
+
+    function finishSimulation(days) {
         simulationRunning = false;
         document.querySelectorAll('.btn').forEach(b => b.disabled = false);
         document.getElementById('progressWrapper').style.display = 'none';
@@ -754,6 +798,15 @@
         if (data28D) document.getElementById('view28D').disabled = false;
         updateStats(); updateAntidetectIndicators();
         setView('1D');
+
+        const plays = data1D ? data1D.plays.reduce((a,b)=>a+b,0) : totalMyPlays;
+        const other = data1D ? data1D.otherPlays.reduce((a,b)=>a+b,0) : totalOtherPlays;
+        const gini = document.getElementById('giniValue').textContent;
+        const ratio = document.getElementById('ratioPlays').textContent;
+        const peaks = document.getElementById('suspiciousPeaks').textContent;
+        const bingePct = document.getElementById('bingePct').textContent.replace('%','');
+        const periodLabel = days === 1 ? '1 Día' : (days === 7 ? '7 Días' : '28 Días');
+        showMagicModal(plays, other, listeners.length, gini, ratio, peaks, bingePct, periodLabel);
     }
 
     function startSimulation(mode) {
@@ -797,6 +850,7 @@
     window.startSimulation = startSimulation;
     window.setView = setView;
     window.resetAll = resetAll;
+    window.closeMagicModal = closeMagicModal;
 
     document.getElementById('listenerCount').value = 10;
     generateListeners();
