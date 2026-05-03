@@ -32,7 +32,7 @@
         }
         @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
 
-        .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin:6px 0; }
+        .stats-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:4px; margin:6px 0; }
         .mini-stat { background:var(--card); border-radius:10px; padding:8px 4px; border:1px solid rgba(179,136,255,0.2); text-align:center; font-size:0.6rem; }
         .mini-stat .value { font-family:'Orbitron',monospace; font-size:0.85rem; color:var(--violet2); text-shadow:0 0 6px var(--violet); }
 
@@ -224,6 +224,7 @@
         <div class="mini-stat"><div class="value" id="uniqueListeners">0</div><div class="label">👥 Oyentes</div></div>
         <div class="mini-stat"><div class="value" id="activePlatform">0</div><div class="label">🟢 Activos</div></div>
         <div class="mini-stat"><div class="value" id="artistCount">0</div><div class="label">🎼 Artistas</div></div>
+        <div class="mini-stat"><div class="value" id="myShare">0%</div><div class="label">🎯 Mi share</div></div>
     </div>
 
     <div class="audit-panel">
@@ -702,6 +703,7 @@
             document.getElementById('verdictBox').innerHTML='';
             document.getElementById('ruleList').innerHTML='';
             resetTooltips();
+            updateMyShare(0,0);
             return;
         }
         const arr=state.map(s=>s.dailyPlays), total=arr.reduce((a,b)=>a+b,0);
@@ -716,6 +718,7 @@
         document.getElementById('bingePct').textContent=bingePct+'%';
 
         updateMetricTooltips(gini, ratio, peaks, bingePct);
+        updateMyShare(totalMyPlays, totalOtherPlays);
 
         let riskScore=0;
         if(gini>0.7) riskScore+=40; else if(gini>0.5) riskScore+=20;
@@ -730,6 +733,12 @@
         document.getElementById('riskDetails').textContent = riskScore<25?'Sin flags':(riskScore<55?'Precaución':'Posible baneo');
         analyzeRecommendations(gini,ratio,peaks,bingePct);
         runPlatformAudit(gini,ratio,peaks,bingePct);
+    }
+
+    function updateMyShare(my, other) {
+        const total = my + other;
+        let pct = total === 0 ? 0 : Math.round((my / total) * 100);
+        document.getElementById('myShare').textContent = pct + '%';
     }
 
     function resetTooltips() {
@@ -995,7 +1004,7 @@
     }
     function closeMagicModal() { document.getElementById('magicModal').style.display = 'none'; }
 
-    // ---------- BUTTONS ----------
+    // ---------- BUTTONS (con confirmación para reset y regenerar) ----------
     function addListeners() {
         const count=parseInt(document.getElementById('scrubberValue').textContent)||0;
         if (count <= 0) { showToast('Cantidad debe ser > 0'); return; }
@@ -1004,6 +1013,7 @@
         updateStats(); updateProfileStats(); updateIndicators();
     }
     function generateListeners() {
+        if (!confirm('¿Seguro que quieres regenerar? Se perderán todos los datos actuales.')) return;
         listeners = []; state = []; totalMyPlays = 0; totalOtherPlays = 0;
         data1D = data7D = data28D = null; artistCountEstimate = 0;
         const count = parseInt(document.getElementById('scrubberValue').textContent) || 0;
@@ -1029,6 +1039,7 @@
         showToast(`🛡️ Modo Seguro (${changed} cambios)`);
     }
     function resetAll() {
+        if (!confirm('¿Seguro que quieres hacer un reset completo? Se borrará todo.')) return;
         listeners=[]; state=[]; totalMyPlays=0; totalOtherPlays=0; data1D=data7D=data28D=null; artistCountEstimate=0;
         updateStats(); updateProfileStats(); updateIndicators();
         updateBubbleParticles();
@@ -1046,6 +1057,7 @@
             artistCountEstimate = listeners.length > 0 ? Math.ceil(listeners.length * 1.2) : 0;
         }
         document.getElementById('artistCount').textContent = artistCountEstimate;
+        updateMyShare(totalMyPlays, totalOtherPlays);
         populateFilters();
         drawChart();
     }
