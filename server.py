@@ -224,6 +224,10 @@ def serve_about():
 def serve_views():
     return send_from_directory("static", "views_tracker.html")
 
+@app.route("/oyentes")
+def serve_oyentes():
+    return send_from_directory("static", "oyentes.html")
+
 # ── Views Tracker — persistencia por usuario ───────────────
 
 def _ensure_views_table(cur):
