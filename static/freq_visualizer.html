@@ -33,194 +33,143 @@
             min-height: 100vh;
         }
 
-        .container {
-            max-width: 420px;
-            margin: 0 auto;
-        }
+        .container { max-width: 420px; margin: 0 auto; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
+        .header { text-align: center; margin-bottom: 20px; }
         .header h1 {
-            font-size: 24px;
-            font-weight: 800;
+            font-size: 24px; font-weight: 800;
             background: linear-gradient(135deg, #fff, var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 6px;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
         }
-        .header p {
-            font-size: 13px;
-            color: var(--muted);
-        }
+        .header p { font-size: 13px; color: var(--muted); }
 
         .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 18px; padding: 18px; margin-bottom: 14px;
         }
 
         .section-title {
-            font-size: 11px;
-            color: var(--gold);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 12px;
-            font-weight: 700;
+            font-size: 11px; color: var(--gold); text-transform: uppercase;
+            letter-spacing: 2px; margin-bottom: 12px; font-weight: 700;
         }
 
-        .input-row {
-            display: flex;
-            gap: 8px;
-            align-items: flex-end;
-            flex-wrap: wrap;
+        .template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .template-card {
+            background: #111118; border: 1px solid var(--border);
+            border-radius: 14px; padding: 12px; cursor: pointer;
+            transition: all 0.2s; position: relative;
+        }
+        .template-card:active { transform: scale(0.97); border-color: var(--gold); }
+        .template-card.active { border-color: var(--gold); box-shadow: 0 0 12px rgba(245,197,24,0.15); }
+        .template-card .template-icon { font-size: 22px; }
+        .template-card .template-name { font-weight: 700; font-size: 13px; margin: 4px 0 2px; }
+        .template-card .template-info { font-size: 10px; color: var(--muted); }
+        .template-card .template-badge {
+            position: absolute; top: 8px; right: 8px;
+            background: var(--gold); color: #000; font-size: 9px; font-weight: 800;
+            border-radius: 6px; padding: 2px 6px;
         }
 
-        .input-group {
-            margin-bottom: 16px;
-            flex: 1;
-            min-width: 120px;
-        }
+        .input-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .input-group { margin-bottom: 14px; flex: 1; min-width: 100px; }
+        .input-group label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
 
-        .input-group label {
-            display: block;
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 6px;
-            font-weight: 600;
+        select {
+            width: 100%; padding: 10px 12px; background: #111118;
+            border: 1px solid var(--border); border-radius: 10px;
+            color: var(--text); font-size: 13px; font-weight: 500;
+            outline: none; -webkit-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23f5c518' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center;
         }
-
-        input, select {
-            width: 100%;
-            padding: 12px 14px;
-            background: #111118;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 14px;
-            font-weight: 500;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-        }
+        select:focus { border-color: var(--gold); }
 
         input[type=number] {
-            background-image: none;
+            width: 100%; padding: 10px 12px; background: #111118;
+            border: 1px solid var(--border); border-radius: 10px;
+            color: var(--text); font-size: 13px; font-weight: 500;
+            outline: none; -moz-appearance: textfield;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number]:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(245,197,24,0.3);
         }
 
-        input:focus, select:focus {
-            border-color: var(--gold);
+        .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .toggle-row span { font-size: 11px; color: var(--muted); }
+        .switch {
+            position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0;
         }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background: #2a2a3a; border-radius: 22px; transition: 0.3s;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background: #fff; border-radius: 50%; transition: 0.3s;
+        }
+        input:checked + .slider { background: var(--gold); }
+        input:checked + .slider:before { transform: translateX(18px); }
 
         .btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            margin-top: 8px;
+            display: block; width: 100%; padding: 12px; border: none; border-radius: 12px;
+            font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+            margin-top: 8px; color: #fff;
         }
-        .btn:active { opacity: 0.8; }
-        .btn-accent {
-            background: var(--accent);
-            color: #fff;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--gold);
-        }
-
-        .country-list {
-            font-size: 10px;
-            color: var(--muted);
-            margin-top: 4px;
-            line-height: 1.4;
-        }
+        .btn:active { transform: scale(0.97); opacity: 0.9; }
+        .btn-accent { background: var(--accent); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--gold); }
 
         .result-box {
             background: linear-gradient(135deg, #1a1a24, #0d0d14);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 18px;
-            margin-top: 16px;
-            text-align: center;
+            border: 1px solid var(--border); border-radius: 16px;
+            padding: 16px; margin-bottom: 14px; text-align: center;
+            animation: fadeIn 0.3s;
         }
-        .result-label {
-            font-size: 11px;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 6px;
-        }
+        @keyframes fadeIn { from { opacity: 0.7; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .result-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
         .result-amount {
-            font-size: 36px;
-            font-weight: 900;
-            color: var(--green);
-            line-height: 1;
-            margin-bottom: 4px;
+            font-size: 32px; font-weight: 900; color: var(--green);
+            line-height: 1; margin-bottom: 4px;
+            animation: gentlePulse 2s ease-in-out infinite;
         }
-        .result-detail {
-            font-size: 12px;
-            color: var(--muted);
-            line-height: 1.5;
-        }
+        @keyframes gentlePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
+        .result-detail { font-size: 11px; color: var(--muted); line-height: 1.5; }
+        .net-profit { font-size: 14px; font-weight: 700; margin-top: 6px; }
+        .profit-positive { color: var(--green); }
+        .profit-negative { color: #ff4444; }
 
-        .toggle-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .toggle-row span {
-            font-size: 12px;
-            color: var(--muted);
-        }
-        .toggle-row input[type=checkbox] {
-            width: 20px;
-            height: 20px;
-            accent-color: var(--gold);
-        }
-
-        .mode-switch {
-            display: flex;
-            background: #111118;
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 16px;
-            gap: 4px;
+        .mode-selector {
+            display: flex; background: #111118; border-radius: 12px; padding: 4px; margin-bottom: 14px; gap: 4px;
         }
         .mode-btn {
-            flex: 1;
-            padding: 8px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            cursor: pointer;
-            color: var(--muted);
-            transition: all 0.2s;
+            flex: 1; padding: 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
+            text-align: center; cursor: pointer; color: var(--muted); transition: all 0.2s;
         }
-        .mode-btn.active {
-            background: var(--accent);
-            color: #fff;
+        .mode-btn.active { background: var(--accent); color: #fff; }
+
+        .savings-badge {
+            background: rgba(0,200,83,0.15); color: var(--green); border-radius: 8px;
+            padding: 6px 10px; font-size: 10px; font-weight: 600; margin-top: 8px;
+            text-align: center;
         }
 
-        .explanation {
-            font-size: 11px;
-            color: var(--muted);
-            background: #111118;
-            padding: 10px;
-            border-radius: 10px;
-            margin: 12px 0;
-            line-height: 1.5;
+        .file-distribution {
+            background: #111118; border-radius: 12px; padding: 12px; margin-top: 10px;
+            font-size: 10px; color: var(--muted); line-height: 1.6;
+        }
+        .file-distribution strong { color: var(--gold); }
+
+        .strategy-note {
+            background: rgba(245,197,24,0.08); border-left: 3px solid var(--gold);
+            padding: 10px 12px; border-radius: 8px; font-size: 10px;
+            color: var(--muted); margin-bottom: 14px;
         }
     </style>
 </head>
@@ -228,257 +177,427 @@
     <div class="container">
         <div class="header">
             <h1>💰 Simulador Rapidgator</h1>
-            <p>Fácil e intuitivo · Ganancias reales</p>
+            <p>Plantillas inteligentes · Máximo ahorro · Pago semanal</p>
         </div>
 
-        <!-- Selector de modo -->
-        <div class="mode-switch">
-            <div class="mode-btn active" onclick="switchMode('simple')">📊 Modo simple</div>
-            <div class="mode-btn" onclick="switchMode('advanced')">⚙️ Avanzado</div>
+        <div class="strategy-note">
+            💡 Con un solo VPS y varios perfiles de navegador (Multi‑Perfil) puedes conseguir muchas más descargas diarias. ¡Aumenta tus ganancias sin disparar los costes!
         </div>
 
-        <!-- MODO SIMPLE -->
-        <div id="simple-mode">
-            <div class="card">
-                <div class="section-title">🖥️ Configuración rápida</div>
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Nº de servidores</label>
-                        <input type="number" id="simple-vps" value="1" min="1">
-                    </div>
-                    <div class="input-group">
-                        <label>Nº de archivos</label>
-                        <input type="number" id="simple-files" value="20" min="1">
-                    </div>
+        <!-- PLANTILLAS -->
+        <div class="card">
+            <div class="section-title">📋 Plantillas predefinidas</div>
+            <div class="template-grid" id="templateGrid">
+                <div class="template-card active" data-template="beginner">
+                    <span class="template-badge">Diaria</span>
+                    <div class="template-icon">🟢</div>
+                    <div class="template-name">Principiante</div>
+                    <div class="template-info">Multi‑Perfil · 30 perfiles</div>
                 </div>
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Grupo de países</label>
-                        <select id="simple-group">
-                            <option value="I">I (EE.UU., Alemania, España…)</option>
-                            <option value="II">II (Japón, Italia, Suecia…)</option>
-                            <option value="III">III (México, Brasil, Argentina…)</option>
-                            <option value="IV">IV (Resto del mundo)</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Tamaño medio</label>
-                        <select id="simple-size">
-                            <option value="0">1 – 50 MB</option>
-                            <option value="1">50 – 100 MB</option>
-                            <option value="2">100 – 250 MB</option>
-                            <option value="3">250 – 500 MB</option>
-                            <option value="4">500 – 1000 MB</option>
-                            <option value="5">&gt; 1000 MB</option>
-                        </select>
-                    </div>
+                <div class="template-card" data-template="intermediate">
+                    <span class="template-badge">Diaria</span>
+                    <div class="template-icon">🟡</div>
+                    <div class="template-name">Intermedio</div>
+                    <div class="template-info">5 VPS · 20 archivos</div>
                 </div>
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Descargas/IP/día</label>
-                        <input type="number" id="simple-limit" value="2" min="1">
-                    </div>
-                    <div class="input-group">
-                        <label>Rotaciones IP/día</label>
-                        <input type="number" id="simple-rotations" value="0" min="0">
-                    </div>
+                <div class="template-card" data-template="advanced">
+                    <span class="template-badge">Diaria</span>
+                    <div class="template-icon">🟠</div>
+                    <div class="template-name">Avanzado</div>
+                    <div class="template-info">15 VPS · 50 archivos</div>
                 </div>
-                <div class="explanation">
-                    💡 <strong>¿Cómo se calcula?</strong><br>
-                    Cada servidor puede hacer <span id="exp-limit">2</span> descargas por IP.
-                    Si rotas IP <span id="exp-rotations">0</span> veces al día, cada servidor consigue <span id="exp-per-server">2</span> descargas diarias.
-                    Con <span id="exp-vps">1</span> servidores, el total disponible es <strong><span id="exp-total-downloads">2</span> descargas/día</strong>.
-                    Esas descargas se reparten entre <span id="exp-files">20</span> archivos.
+                <div class="template-card" data-template="aggressive">
+                    <span class="template-badge">Diaria</span>
+                    <div class="template-icon">🔴</div>
+                    <div class="template-name">Agresivo</div>
+                    <div class="template-info">30 VPS · 100 archivos</div>
                 </div>
-                <button class="btn btn-accent" onclick="calcularSimple()">🔄 Calcular ganancias</button>
+            </div>
+            <button class="btn btn-outline" id="reset-btn" style="margin-top:12px;">🔄 Reiniciar a Principiante</button>
+        </div>
+
+        <!-- RESULTADO (siempre visible) -->
+        <div class="result-box" id="result-box">
+            <div class="result-label">Ganancia bruta diaria</div>
+            <div class="result-amount" id="result-amount">$0.00</div>
+            <div class="result-detail" id="result-detail"></div>
+            <div class="net-profit" id="net-profit"></div>
+            <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="weekly-profit"></div>
+        </div>
+
+        <!-- CONFIGURACIÓN -->
+        <div class="card">
+            <div class="section-title">⚙️ Configuración</div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Grupo de países</label>
+                    <select id="simple-group">
+                        <option value="I" selected>I (EE.UU., Alemania, España…)</option>
+                        <option value="II">II (Japón, Italia, Suecia…)</option>
+                        <option value="III">III (México, Brasil, Argentina…)</option>
+                        <option value="IV">IV (Resto del mundo)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Tamaño medio</label>
+                    <select id="simple-size">
+                        <option value="0">1 – 50 MB</option>
+                        <option value="1">50 – 100 MB</option>
+                        <option value="2" selected>100 – 250 MB</option>
+                        <option value="3">250 – 500 MB</option>
+                        <option value="4">500 – 1000 MB</option>
+                        <option value="5">&gt; 1000 MB</option>
+                    </select>
+                </div>
+            </div>
+            <div class="toggle-row">
+                <span>Patrones antidetect</span>
+                <label class="switch">
+                    <input type="checkbox" id="antidetect-simple">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="toggle-row">
+                <span>Rotar IP</span>
+                <label class="switch">
+                    <input type="checkbox" id="enable-rotation-simple" checked>
+                    <span class="slider"></span>
+                </label>
             </div>
 
-            <!-- Resultado simple -->
-            <div class="result-box" id="simple-result" style="display:none">
-                <div class="result-label">Ganancia diaria estimada</div>
-                <div class="result-amount" id="simple-total">$0.00</div>
-                <div class="result-detail" id="simple-detail"></div>
+            <!-- SELECCIÓN DE MODO -->
+            <div class="section-title" style="margin-top:16px;">🖥️ Modo de operación</div>
+            <div class="mode-selector" id="modeSelector">
+                <div class="mode-btn active" data-mode="multi-vps">🏢 Multi‑VPS</div>
+                <div class="mode-btn" data-mode="multi-profile">👤 Multi‑Perfil</div>
             </div>
-        </div>
 
-        <!-- MODO AVANZADO (oculto por defecto) -->
-        <div id="advanced-mode" style="display:none">
-            <!-- Aquí se inserta el HTML avanzado que ya tenías (resumido para no repetir demasiado) -->
-            <div class="card">
-                <div class="section-title">🖥️ Emulación de VPS</div>
+            <!-- MODO MULTI-VPS -->
+            <div id="multi-vps-fields">
                 <div class="input-row">
                     <div class="input-group">
                         <label>Nº de VPS</label>
-                        <input type="number" id="vpsCount" value="1" min="1">
+                        <input type="number" id="vps-count" value="1" min="1">
                     </div>
                     <div class="input-group">
                         <label>Descargas/IP/día</label>
-                        <input type="number" id="dailyLimitPerIP" value="2" min="1">
+                        <input type="number" id="vps-limit" value="2" min="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODO MULTI-PERFIL (oculto por defecto) -->
+            <div id="multi-profile-fields" style="display:none;">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Perfiles simultáneos</label>
+                        <input type="number" id="profile-count" value="30" min="1">
                     </div>
                     <div class="input-group">
-                        <label>Rotaciones IP/día</label>
-                        <input type="number" id="ipRotations" value="0" min="0">
+                        <label>Descargas/perfil/día</label>
+                        <input type="number" id="profile-limit" value="2" min="1">
                     </div>
                 </div>
-                <div class="toggle-row">
-                    <span>¿Cada VPS puede cambiar de IP?</span>
-                    <input type="checkbox" id="enableRotation" checked>
-                </div>
-                <div style="background:#111118;border-radius:12px;padding:12px;text-align:center;font-size:16px;font-weight:700;color:var(--gold);margin-bottom:8px;">
-                    Descargas diarias estimadas: <span id="estimatedDownloads">0</span>
-                </div>
-                <button class="btn btn-accent" onclick="applyDownloads()">⬇️ Usar estas descargas</button>
-            </div>
-
-            <div class="card">
-                <div class="section-title">📦 Diversificar tráfico</div>
-                <div class="toggle-row">
-                    <span>Activar patrones antidetect</span>
-                    <input type="checkbox" id="antidetect" onchange="updateAntidetect()">
-                </div>
-                <div id="antidetect-info" style="font-size:10px;color:var(--muted);margin-bottom:10px;display:none">
-                    ⏱️ Tiempos aleatorios · 🖥️ User‑Agent rotativo · 📉 Descargas desiguales
-                </div>
-                <div id="files-container"></div>
-                <button class="btn btn-outline" onclick="addFile()">＋ Agregar archivo</button>
-            </div>
-
-            <div class="card">
-                <div class="section-title">🌍 Grupo de países</div>
                 <div class="input-group">
-                    <label>Selecciona el grupo</label>
-                    <select id="group">
-                        <option value="I">I — EE.UU., Alemania, España…</option>
-                        <option value="II">II — Japón, Italia, Suecia…</option>
-                        <option value="III">III — México, Brasil, Argentina…</option>
-                        <option value="IV">IV — Resto del mundo</option>
-                    </select>
-                    <div class="country-list" id="countryList"></div>
+                    <label>Rotaciones IP/día</label>
+                    <input type="number" id="profile-rotations" value="2" min="0">
                 </div>
             </div>
 
-            <div class="result-box">
-                <div class="result-label">Ganancia estimada</div>
-                <div class="result-amount" id="total">$0.00</div>
-                <div class="result-detail" id="detail">---</div>
-            </div>
-
-            <div class="card">
-                <div class="section-title">👥 Ingresos por referidos (10%)</div>
+            <!-- Costos operativos -->
+            <div class="section-title" style="margin-top:16px;">💸 Costos operativos</div>
+            <div class="input-row">
                 <div class="input-group">
-                    <label>Ganancias de tus referidos</label>
-                    <input type="number" id="referralEarnings" value="0" min="0" step="0.01">
+                    <label>VPS ($/mes)</label>
+                    <input type="number" id="vps-cost" value="15" min="0" step="0.01">
                 </div>
-                <div style="font-size:14px;text-align:center;margin-top:8px">
-                    Tu comisión: <strong style="color:var(--gold)" id="referralCommission">$0.00</strong>
+                <div class="input-group">
+                    <label>Proxy/IP ($/mes)</label>
+                    <input type="number" id="proxy-cost" value="0" min="0" step="0.01">
                 </div>
             </div>
+            <div class="input-group" id="profile-vps-cost-group" style="display:none;">
+                <label>Coste del VPS multi‑perfil ($/mes)</label>
+                <input type="number" id="profile-vps-cost" value="20" min="0" step="0.01">
+            </div>
+
+            <div class="file-distribution" id="distribution-box">
+                <strong>🗂️ Organización automática de carpetas</strong><br>
+                <span id="distribution-text"></span>
+            </div>
+
+            <div class="savings-badge" id="savings-badge" style="display:none;"></div>
+
+            <button class="btn btn-accent" id="export-btn">📥 Exportar configuración (JSON)</button>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram?.WebApp;
         if (tg) {
-            tg.ready();
-            tg.expand();
-            tg.setHeaderColor("#05050a");
-            tg.setBackgroundColor("#05050a");
+            tg.ready(); tg.expand();
+            tg.setHeaderColor("#05050a"); tg.setBackgroundColor("#05050a");
         }
 
-        // ---------- DATOS RAPIDGATOR ----------
         const rates = {
             I:   [0.1, 3, 5, 6, 7, 10],
             II:  [0.1, 1, 3, 3, 4, 5],
             III: [0.1, 1, 1.5, 2, 2.5, 3],
             IV:  [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
         };
+        const sizeLabels = ["1-50 MB","50-100 MB","100-250 MB","250-500 MB","500-1000 MB",">1 GB"];
 
-        const sizeLabels = [
-            "1 – 50 MB", "50 – 100 MB", "100 – 250 MB", "250 – 500 MB", "500 – 1000 MB", "> 1000 MB"
-        ];
+        const templates = {
+            beginner: {
+                vps: 1, files: 5, group: 'I', size: 2, limit: 2, rotations: 0, enableRot: true,
+                distribution: {0:1, 1:2, 2:2},
+                mode: 'multi-profile', profiles: 30, profileLimit: 2, profileRotations: 2
+            },
+            intermediate: {
+                vps: 5, files: 20, group: 'I', size: 2, limit: 2, rotations: 2, enableRot: true,
+                distribution: {0:5, 1:10, 2:5},
+                mode: 'multi-vps', profiles: 5, profileLimit: 2, profileRotations: 2
+            },
+            advanced: {
+                vps: 15, files: 50, group: 'I', size: 3, limit: 3, rotations: 3, enableRot: true,
+                distribution: {1:10, 2:20, 3:15, 4:5},
+                mode: 'multi-vps', profiles: 15, profileLimit: 3, profileRotations: 3
+            },
+            aggressive: {
+                vps: 30, files: 100, group: 'I', size: 4, limit: 3, rotations: 4, enableRot: true,
+                distribution: {2:30, 3:40, 4:20, 5:10},
+                mode: 'multi-vps', profiles: 30, profileLimit: 3, profileRotations: 4
+            }
+        };
 
-        // ---------- MODO SIMPLE ----------
-        function actualizarExplicacion() {
-            const vps = parseInt(document.getElementById('simple-vps').value) || 1;
-            const limit = parseInt(document.getElementById('simple-limit').value) || 2;
-            const rotations = parseInt(document.getElementById('simple-rotations').value) || 0;
-            const files = parseInt(document.getElementById('simple-files').value) || 1;
+        // DOM
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        const multiVpsFields = document.getElementById('multi-vps-fields');
+        const multiProfileFields = document.getElementById('multi-profile-fields');
+        const vpsCountInput = document.getElementById('vps-count');
+        const vpsLimitInput = document.getElementById('vps-limit');
+        const profileCountInput = document.getElementById('profile-count');
+        const profileLimitInput = document.getElementById('profile-limit');
+        const profileRotInput = document.getElementById('profile-rotations');
+        const groupSelect = document.getElementById('simple-group');
+        const sizeSelect = document.getElementById('simple-size');
+        const antidetectCheck = document.getElementById('antidetect-simple');
+        const enableRotCheck = document.getElementById('enable-rotation-simple');
+        const resultAmount = document.getElementById('result-amount');
+        const resultDetail = document.getElementById('result-detail');
+        const netProfitEl = document.getElementById('net-profit');
+        const weeklyProfitEl = document.getElementById('weekly-profit');
+        const distributionBox = document.getElementById('distribution-box');
+        const distributionText = document.getElementById('distribution-text');
+        const vpsCostInput = document.getElementById('vps-cost');
+        const proxyCostInput = document.getElementById('proxy-cost');
+        const profileVpsCostGroup = document.getElementById('profile-vps-cost-group');
+        const profileVpsCostInput = document.getElementById('profile-vps-cost');
+        const savingsBadge = document.getElementById('savings-badge');
+        const exportBtn = document.getElementById('export-btn');
+        const resetBtn = document.getElementById('reset-btn');
 
-            const perServer = limit * (1 + rotations);
-            const total = vps * perServer;
+        let currentMode = 'multi-profile'; // empezamos en multi-perfil
+        let currentDistribution = {};
+        let lastCalc = {};
 
-            document.getElementById('exp-limit').textContent = limit;
-            document.getElementById('exp-rotations').textContent = rotations;
-            document.getElementById('exp-per-server').textContent = perServer;
-            document.getElementById('exp-vps').textContent = vps;
-            document.getElementById('exp-total-downloads').textContent = total;
-            document.getElementById('exp-files').textContent = files;
+        function setMode(mode) {
+            currentMode = mode;
+            modeBtns.forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            if (mode === 'multi-vps') {
+                multiVpsFields.style.display = 'block';
+                multiProfileFields.style.display = 'none';
+                profileVpsCostGroup.style.display = 'none';
+            } else {
+                multiVpsFields.style.display = 'none';
+                multiProfileFields.style.display = 'block';
+                profileVpsCostGroup.style.display = 'block';
+            }
+            updateCalculations();
         }
 
-        // Asignar eventos para actualizar explicación en tiempo real
-        ['simple-vps','simple-limit','simple-rotations','simple-files'].forEach(id => {
-            document.getElementById(id).addEventListener('input', actualizarExplicacion);
-        });
-        actualizarExplicacion();
+        modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
 
-        window.calcularSimple = function() {
-            const vps = parseInt(document.getElementById('simple-vps').value) || 1;
-            const limit = parseInt(document.getElementById('simple-limit').value) || 2;
-            const rotations = parseInt(document.getElementById('simple-rotations').value) || 0;
-            const files = parseInt(document.getElementById('simple-files').value) || 1;
-            const group = document.getElementById('simple-group').value;
-            const sizeIndex = parseInt(document.getElementById('simple-size').value);
+        function applyTemplate(templateName) {
+            const t = templates[templateName];
+            vpsCountInput.value = t.vps;
+            vpsLimitInput.value = t.limit;
+            profileCountInput.value = t.profiles || t.vps;
+            profileLimitInput.value = t.profileLimit || t.limit;
+            profileRotInput.value = t.profileRotations || t.rotations;
+            groupSelect.value = t.group;
+            sizeSelect.value = t.size;
+            enableRotCheck.checked = t.enableRot;
+            antidetectCheck.checked = false;
+            currentDistribution = {...t.distribution};
+            setMode(t.mode || 'multi-vps');
+            updateCalculations();
+        }
 
-            const perServer = limit * (1 + rotations);
-            const totalDownloads = vps * perServer;
-            const downloadsPerFile = Math.floor(totalDownloads / files);
-            const remainder = totalDownloads % files;
-
-            const rate = rates[group][sizeIndex];
-            // Calcular ganancia: cada archivo tiene downloadsPerFile descargas, el primero recibe las sobrantes
-            let totalGanancia = 0;
-            for (let i = 0; i < files; i++) {
-                let descargas = downloadsPerFile + (i < remainder ? 1 : 0);
-                totalGanancia += (descargas / 1000) * rate;
+        function updateDistributionDisplay() {
+            if (!currentDistribution || Object.keys(currentDistribution).length === 0) {
+                distributionBox.style.display = 'none';
+                return;
             }
+            let totalFiles = Object.values(currentDistribution).reduce((a,b)=>a+b,0);
+            let html = `<strong>Total archivos:</strong> ${totalFiles}<br>`;
+            for (let [sizeIdx, count] of Object.entries(currentDistribution)) {
+                html += `📁 ${sizeLabels[sizeIdx]}: ${count} archivos<br>`;
+            }
+            distributionText.innerHTML = html;
+            distributionBox.style.display = 'block';
+        }
 
-            document.getElementById('simple-total').textContent = `$${totalGanancia.toFixed(2)}`;
-            document.getElementById('simple-detail').innerHTML = `
-                Descargas totales: ${totalDownloads}<br>
-                Repartidas en ${files} archivos (~${downloadsPerFile} desc/archivo)<br>
-                Tarifa del grupo ${group} (${sizeLabels[sizeIndex]}): $${rate}/1000 descargas
-            `;
-            document.getElementById('simple-result').style.display = 'block';
+        function updateCalculations() {
+            const group = groupSelect.value;
+            const antidetect = antidetectCheck.checked;
 
-            if (tg) tg.HapticFeedback?.impactOccurred("light");
-            actualizarExplicacion();
-        };
-
-        // ---------- CAMBIO DE MODO ----------
-        window.switchMode = function(mode) {
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            if (mode === 'simple') {
-                document.querySelector('.mode-btn:nth-child(1)').classList.add('active');
-                document.getElementById('simple-mode').style.display = 'block';
-                document.getElementById('advanced-mode').style.display = 'none';
+            let totalDl = 0;
+            let entityCount = 0;
+            if (currentMode === 'multi-vps') {
+                const vps = parseInt(vpsCountInput.value) || 1;
+                const limit = parseInt(vpsLimitInput.value) || 2;
+                const rotUsed = enableRotCheck.checked ? 0 : 0;
+                totalDl = vps * limit * (1 + rotUsed);
+                entityCount = vps;
             } else {
-                document.querySelector('.mode-btn:nth-child(2)').classList.add('active');
-                document.getElementById('simple-mode').style.display = 'none';
-                document.getElementById('advanced-mode').style.display = 'block';
-                // Inicializar avanzado si es necesario
-                if (typeof updateVPSEstimate === 'function') updateVPSEstimate();
-                if (typeof calcularGanancias === 'function') calcularGanancias();
+                const profiles = parseInt(profileCountInput.value) || 1;
+                const limitPerProfile = parseInt(profileLimitInput.value) || 2;
+                const profRot = enableRotCheck.checked ? (parseInt(profileRotInput.value) || 0) : 0;
+                totalDl = profiles * limitPerProfile * (1 + profRot);
+                entityCount = 1;
             }
-        };
 
-        // ---------- MODO AVANZADO (CÓDIGO PREVIO) ----------
-        // (Se incluye todo el código anterior, resumido aquí por brevedad, pero en el HTML final debe ir completo)
-        // ...
-        // NOTA: Aquí iría el código del modo avanzado tal como estaba en la versión anterior.
-        // Por razones de espacio, lo resumo, pero debes incluirlo completo.
+            if (antidetect) {
+                totalDl = Math.round(totalDl * (0.85 + Math.random() * 0.15));
+            }
 
-        // Inicialización mínima
-        document.getElementById('countryList').textContent = "EE.UU., Alemania, España, Francia...";
+            let gananciaTotal = 0;
+            let detalleHtml = '';
+
+            if (currentDistribution && Object.keys(currentDistribution).length > 0) {
+                const totalFiles = Object.values(currentDistribution).reduce((a,b)=>a+b,0);
+                let descargasAsignadas = 0;
+                const entries = Object.entries(currentDistribution);
+                entries.forEach(([sizeIdx, count], index) => {
+                    const rate = rates[group][parseInt(sizeIdx)];
+                    let dlForThisGroup = Math.round(totalDl * count / totalFiles);
+                    if (index === entries.length-1) {
+                        dlForThisGroup = totalDl - descargasAsignadas;
+                    } else {
+                        descargasAsignadas += dlForThisGroup;
+                    }
+                    const ganancia = (dlForThisGroup / 1000) * rate;
+                    gananciaTotal += ganancia;
+                    detalleHtml += `📁 ${sizeLabels[sizeIdx]} (${count} archivos): ${dlForThisGroup} descargas → $${ganancia.toFixed(2)}<br>`;
+                });
+                detalleHtml += `<strong>Total bruto: $${gananciaTotal.toFixed(2)}</strong>`;
+            }
+
+            // Costes
+            const vpsCostPerMonth = parseFloat(vpsCostInput.value) || 0;
+            const proxyCostPerMonth = parseFloat(proxyCostInput.value) || 0;
+
+            let totalVpsCost = 0;
+            let totalProxyCost = 0;
+            let savings = 0;
+            let multiVpsCost = 0;
+
+            if (currentMode === 'multi-vps') {
+                const vps = parseInt(vpsCountInput.value) || 1;
+                const rotUsed = enableRotCheck.checked ? 0 : 0;
+                totalVpsCost = vps * vpsCostPerMonth;
+                totalProxyCost = vps * (1 + rotUsed) * proxyCostPerMonth;
+                multiVpsCost = totalVpsCost + totalProxyCost;
+            } else {
+                const profVpsCost = parseFloat(profileVpsCostInput.value) || 20;
+                totalVpsCost = profVpsCost;
+                const profiles = parseInt(profileCountInput.value) || 1;
+                const profRot = enableRotCheck.checked ? (parseInt(profileRotInput.value) || 0) : 0;
+                totalProxyCost = profiles * (1 + profRot) * proxyCostPerMonth;
+                multiVpsCost = (profiles * vpsCostPerMonth) + (profiles * (1 + profRot) * proxyCostPerMonth);
+                savings = multiVpsCost - (totalVpsCost + totalProxyCost);
+            }
+
+            const dailyCost = (totalVpsCost + totalProxyCost) / 30;
+            const netProfit = gananciaTotal - dailyCost;
+
+            resultAmount.textContent = `$${gananciaTotal.toFixed(2)}`;
+            resultDetail.innerHTML = detalleHtml;
+
+            if (vpsCostPerMonth > 0 || proxyCostPerMonth > 0) {
+                netProfitEl.innerHTML = `
+                    <div style="margin-top:6px;font-size:11px;color:var(--muted)">
+                        💰 Coste diario: $${dailyCost.toFixed(2)}<br>
+                        (Infra: $${totalVpsCost.toFixed(2)}/mes | Proxies: $${totalProxyCost.toFixed(2)}/mes)
+                    </div>
+                    <div class="${netProfit >= 0 ? 'profit-positive' : 'profit-negative'}" style="margin-top:4px;">
+                        📈 Beneficio neto: $${netProfit.toFixed(2)}/día
+                    </div>
+                `;
+            }
+            weeklyProfitEl.textContent = `💵 Ganancia semanal estimada: $${(gananciaTotal * 7).toFixed(2)}`;
+
+            if (currentMode === 'multi-profile' && savings > 0) {
+                savingsBadge.style.display = 'block';
+                savingsBadge.innerHTML = `💡 Ahorras $${savings.toFixed(2)}/mes vs usar ${parseInt(profileCountInput.value) || 1} servidores individuales`;
+            } else {
+                savingsBadge.style.display = 'none';
+            }
+
+            updateDistributionDisplay();
+
+            lastCalc = {
+                mode: currentMode,
+                group,
+                size: parseInt(sizeSelect.value),
+                antidetect,
+                distribution: currentDistribution,
+                costs: { vpsPerMonth: vpsCostPerMonth, proxyPerMonth: proxyCostPerMonth },
+                results: { totalDownloads: totalDl, grossDaily: gananciaTotal, dailyCost, netDaily: netProfit }
+            };
+        }
+
+        // Reiniciar
+        resetBtn.addEventListener('click', () => {
+            applyTemplate('beginner');
+            if (tg) tg.HapticFeedback?.impactOccurred("light");
+        });
+
+        exportBtn.addEventListener('click', () => {
+            const dataStr = JSON.stringify(lastCalc, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'rapidgator-config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            if (tg) tg.HapticFeedback?.impactOccurred("medium");
+        });
+
+        // Eventos
+        [vpsCountInput, vpsLimitInput, profileCountInput, profileLimitInput, profileRotInput,
+         vpsCostInput, proxyCostInput, profileVpsCostInput].forEach(el =>
+            el.addEventListener('input', updateCalculations)
+        );
+        groupSelect.addEventListener('change', updateCalculations);
+        sizeSelect.addEventListener('change', updateCalculations);
+        enableRotCheck.addEventListener('change', updateCalculations);
+        antidetectCheck.addEventListener('change', updateCalculations);
+
+        document.querySelectorAll('.template-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                applyTemplate(card.dataset.template);
+                if (tg) tg.HapticFeedback?.impactOccurred("light");
+            });
+        });
+
+        // Inicializar con plantilla principiante (multi-perfil)
+        applyTemplate('beginner');
     </script>
 </body>
 </html>
