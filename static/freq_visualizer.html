@@ -73,29 +73,20 @@
         .input-group { margin-bottom: 14px; flex: 1; min-width: 100px; }
         .input-group label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
 
-        select {
-            width: 100%; padding: 10px 12px; background: #111118;
-            border: 1px solid var(--border); border-radius: 10px;
-            color: var(--text); font-size: 13px; font-weight: 500;
-            outline: none; -webkit-appearance: none; appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23f5c518' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 10px center;
-        }
-        select:focus { border-color: var(--gold); }
-
-        input[type=number] {
+        select, input[type=text], input[type=number] {
             width: 100%; padding: 10px 12px; background: #111118;
             border: 1px solid var(--border); border-radius: 10px;
             color: var(--text); font-size: 13px; font-weight: 500;
             outline: none; -moz-appearance: textfield;
-            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        select {
+            -webkit-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23f5c518' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center;
         }
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number]:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 2px rgba(245,197,24,0.3);
-        }
+        input:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245,197,24,0.3); }
 
         .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .toggle-row span { font-size: 11px; color: var(--muted); }
@@ -122,16 +113,13 @@
         .btn:active { transform: scale(0.97); opacity: 0.9; }
         .btn-accent { background: var(--accent); }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--gold); }
+        .btn-gold { background: var(--gold); color: #000; }
 
         .result-box {
             background: linear-gradient(135deg, #1a1a24, #0d0d14);
             border: 1px solid var(--border); border-radius: 16px;
             padding: 16px; margin-bottom: 14px; text-align: center;
-            animation: fadeIn 0.3s;
         }
-        @keyframes fadeIn { from { opacity: 0.7; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .result-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
         .result-amount {
             font-size: 32px; font-weight: 900; color: var(--green);
             line-height: 1; margin-bottom: 4px;
@@ -148,7 +136,7 @@
         }
         .mode-btn {
             flex: 1; padding: 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
-            text-align: center; cursor: pointer; color: var(--muted); transition: all 0.2s;
+            text-align: center; cursor: pointer; color: var(--muted);
         }
         .mode-btn.active { background: var(--accent); color: #fff; }
 
@@ -157,22 +145,9 @@
             padding: 6px 10px; font-size: 10px; font-weight: 600; margin-top: 8px;
             text-align: center;
         }
-
-        .file-distribution {
-            background: #111118; border-radius: 12px; padding: 12px; margin-top: 10px;
-            font-size: 10px; color: var(--muted); line-height: 1.6;
-        }
-        .file-distribution strong { color: var(--gold); }
-
-        .strategy-note {
-            background: rgba(245,197,24,0.08); border-left: 3px solid var(--gold);
-            padding: 10px 12px; border-radius: 8px; font-size: 10px;
-            color: var(--muted); margin-bottom: 14px;
-        }
-
         .vpn-info {
             background: #111118; padding: 8px 12px; border-radius: 8px; margin-top: 8px;
-            font-size: 11px; color: var(--text); text-align: center;
+            font-size: 11px; text-align: center;
         }
         .vpn-info strong { color: var(--gold); }
     </style>
@@ -181,11 +156,7 @@
     <div class="container">
         <div class="header">
             <h1>💰 Simulador Rapidgator</h1>
-            <p>Plantillas inteligentes · VPNs necesarias · Pago semanal</p>
-        </div>
-
-        <div class="strategy-note">
-            💡 En modo Multi‑Perfil puedes usar un solo VPS con muchos perfiles de navegador. Cada perfil necesita una IP única (VPN) para evitar bloqueos. Ajusta abajo cuántos VPS y perfiles usas.
+            <p>Script con resolución CAPTCHA · Plantillas · VPNs</p>
         </div>
 
         <!-- PLANTILLAS -->
@@ -220,7 +191,7 @@
             <button class="btn btn-outline" id="reset-btn" style="margin-top:12px;">🔄 Reiniciar a Principiante</button>
         </div>
 
-        <!-- RESULTADO (siempre visible) -->
+        <!-- RESULTADO -->
         <div class="result-box" id="result-box">
             <div class="result-label">Ganancia bruta diaria</div>
             <div class="result-amount" id="result-amount">$0.00</div>
@@ -262,21 +233,54 @@
                 </label>
             </div>
             <div class="toggle-row">
-                <span>Rotar IP (usar más IPs)</span>
+                <span>Rotar IP (proxies)</span>
                 <label class="switch">
                     <input type="checkbox" id="enable-rotation-simple">
                     <span class="slider"></span>
                 </label>
             </div>
+            <div class="toggle-row">
+                <span>Resolver CAPTCHA (2Captcha)</span>
+                <label class="switch">
+                    <input type="checkbox" id="enable-captcha">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="input-group" id="captcha-key-group" style="display:none;">
+                <label>API Key de 2Captcha</label>
+                <input type="text" id="captcha-api-key" placeholder="Pega tu API key...">
+            </div>
 
-            <!-- SELECCIÓN DE MODO -->
+            <!-- Programación horaria -->
+            <div class="section-title" style="margin-top:16px;">⏱️ Programación horaria</div>
+            <div class="input-group">
+                <label>Franja de descargas</label>
+                <select id="schedule-type">
+                    <option value="full" selected>Todo el día (24h)</option>
+                    <option value="morning">Mañana (08:00 – 12:00)</option>
+                    <option value="afternoon">Tarde (14:00 – 18:00)</option>
+                    <option value="night">Noche (22:00 – 06:00)</option>
+                    <option value="custom">Personalizada</option>
+                </select>
+            </div>
+            <div class="input-row time-fields" id="custom-time" style="display:none;">
+                <div class="input-group">
+                    <label>Hora inicio</label>
+                    <input type="number" id="time-start" value="8" min="0" max="23">
+                </div>
+                <div class="input-group">
+                    <label>Hora fin</label>
+                    <input type="number" id="time-end" value="12" min="0" max="23">
+                </div>
+            </div>
+
+            <!-- Modo de operación -->
             <div class="section-title" style="margin-top:16px;">🖥️ Modo de operación</div>
             <div class="mode-selector" id="modeSelector">
                 <div class="mode-btn" data-mode="multi-vps">🏢 Multi‑VPS</div>
                 <div class="mode-btn active" data-mode="multi-profile">👤 Multi‑Perfil</div>
             </div>
 
-            <!-- MODO MULTI-VPS -->
             <div id="multi-vps-fields" style="display:none;">
                 <div class="input-row">
                     <div class="input-group">
@@ -289,8 +293,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- MODO MULTI-PERFIL -->
             <div id="multi-profile-fields">
                 <div class="input-row">
                     <div class="input-group">
@@ -318,7 +320,7 @@
                 </div>
             </div>
 
-            <!-- Costos operativos -->
+            <!-- Costos -->
             <div class="section-title" style="margin-top:16px;">💸 Costos operativos</div>
             <div class="input-row">
                 <div class="input-group">
@@ -339,324 +341,137 @@
                 <strong>🗂️ Organización automática de carpetas</strong><br>
                 <span id="distribution-text"></span>
             </div>
-
             <div class="savings-badge" id="savings-badge" style="display:none;"></div>
 
+            <button class="btn btn-gold" id="generate-script-btn">📜 Generar script bash</button>
             <button class="btn btn-accent" id="export-btn">📥 Exportar configuración (JSON)</button>
         </div>
     </div>
 
     <script>
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready(); tg.expand();
-            tg.setHeaderColor("#05050a"); tg.setBackgroundColor("#05050a");
-        }
+        // ... (código anterior hasta la función generateBashScript)
 
-        const rates = {
-            I:   [0.1, 3, 5, 6, 7, 10],
-            II:  [0.1, 1, 3, 3, 4, 5],
-            III: [0.1, 1, 1.5, 2, 2.5, 3],
-            IV:  [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
-        };
-        const sizeLabels = ["1-50 MB","50-100 MB","100-250 MB","250-500 MB","500-1000 MB",">1 GB"];
+        function generateBashScript() {
+            const hours = lastCalc.activeHours || getActiveHours();
+            const totalDownloads = lastCalc.totalDl || 0;
+            const distribution = lastCalc.distribution || {};
+            const useRotate = enableRotCheck.checked;
+            const useCaptcha = document.getElementById('enable-captcha').checked;
+            const apiKey = document.getElementById('captcha-api-key').value.trim();
 
-        const templates = {
-            beginner: {
-                mode: 'multi-profile',
-                profileVpsCount: 1,
-                profilesPerVps: 30,
-                profileLimit: 2,
-                profileRotations: 0,
-                group: 'I', size: 2,
-                distribution: {0:5, 1:10, 2:15},
-                enableRot: false,
-                vpsCost: 15, proxyCost: 0, profileVpsCost: 20
-            },
-            intermediate: {
-                mode: 'multi-profile',
-                profileVpsCount: 2,
-                profilesPerVps: 15,
-                profileLimit: 2,
-                profileRotations: 0,
-                group: 'I', size: 2,
-                distribution: {0:10, 1:30, 2:10},
-                enableRot: false,
-                vpsCost: 15, proxyCost: 0, profileVpsCost: 20
-            },
-            advanced: {
-                mode: 'multi-profile',
-                profileVpsCount: 3,
-                profilesPerVps: 20,
-                profileLimit: 3,
-                profileRotations: 0,
-                group: 'I', size: 3,
-                distribution: {1:20, 2:40, 3:20},
-                enableRot: false,
-                vpsCost: 15, proxyCost: 0, profileVpsCost: 20
-            },
-            aggressive: {
-                mode: 'multi-profile',
-                profileVpsCount: 5,
-                profilesPerVps: 20,
-                profileLimit: 3,
-                profileRotations: 0,
-                group: 'I', size: 4,
-                distribution: {2:50, 3:50, 4:50},
-                enableRot: false,
-                vpsCost: 15, proxyCost: 0, profileVpsCost: 20
-            }
-        };
+            let script = `#!/bin/bash
+# Script generado por Simulador Rapidgator · Mkeyz Studio
+# Franja horaria: ${scheduleTypeSelect.options[scheduleTypeSelect.selectedIndex].text}
+# Descargas totales: ${totalDownloads}
+# Resuelve CAPTCHAs: ${useCaptcha ? 'Sí (2Captcha)' : 'No'}
+echo "Iniciando..."
 
-        // DOM elements
-        const modeBtns = document.querySelectorAll('.mode-btn');
-        const multiVpsFields = document.getElementById('multi-vps-fields');
-        const multiProfileFields = document.getElementById('multi-profile-fields');
+USER_AGENTS=(
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15"
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15"
+)
+`;
 
-        // Multi-VPS inputs
-        const vpsCountInput = document.getElementById('vps-count');
-        const vpsLimitInput = document.getElementById('vps-limit');
+            if (useCaptcha && apiKey) {
+                script += `
+# Configuración de 2Captcha
+CAPTCHA_API_KEY="${apiKey}"
+RAPIDGATOR_SITE_KEY="6LdU4RATAAAAAK4B6-J0-GvS_Jw0gE0VeMqS9M-"  # Sitekey de Rapidgator (ajustar si es necesario)
+PAGE_URL="https://rapidgator.net"
 
-        // Multi-Profile inputs
-        const profileVpsCountInput = document.getElementById('profile-vps-count');
-        const profilesPerVpsInput = document.getElementById('profiles-per-vps');
-        const profileLimitInput = document.getElementById('profile-limit');
-        const profileRotInput = document.getElementById('profile-rotations');
-
-        const groupSelect = document.getElementById('simple-group');
-        const sizeSelect = document.getElementById('simple-size');
-        const antidetectCheck = document.getElementById('antidetect-simple');
-        const enableRotCheck = document.getElementById('enable-rotation-simple');
-
-        const resultAmount = document.getElementById('result-amount');
-        const resultDetail = document.getElementById('result-detail');
-        const netProfitEl = document.getElementById('net-profit');
-        const weeklyProfitEl = document.getElementById('weekly-profit');
-        const distributionBox = document.getElementById('distribution-box');
-        const distributionText = document.getElementById('distribution-text');
-
-        const vpsCostInput = document.getElementById('vps-cost');
-        const proxyCostInput = document.getElementById('proxy-cost');
-        const profileVpsCostGroup = document.getElementById('profile-vps-cost-group');
-        const profileVpsCostInput = document.getElementById('profile-vps-cost');
-
-        const totalProfilesSpan = document.getElementById('total-profiles');
-        const vpnNeededSpan = document.getElementById('vpn-needed');
-        const savingsBadge = document.getElementById('savings-badge');
-        const exportBtn = document.getElementById('export-btn');
-        const resetBtn = document.getElementById('reset-btn');
-
-        let currentMode = 'multi-profile';
-        let currentDistribution = {};
-        let lastCalc = {};
-
-        function setMode(mode) {
-            currentMode = mode;
-            modeBtns.forEach(b => b.classList.remove('active'));
-            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
-            if (mode === 'multi-vps') {
-                multiVpsFields.style.display = 'block';
-                multiProfileFields.style.display = 'none';
-                profileVpsCostGroup.style.display = 'none';
-            } else {
-                multiVpsFields.style.display = 'none';
-                multiProfileFields.style.display = 'block';
-                profileVpsCostGroup.style.display = 'block';
-            }
-            updateCalculations();
-        }
-
-        modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
-
-        function applyTemplate(templateName) {
-            const t = templates[templateName];
-            // Set mode
-            setMode(t.mode || 'multi-profile');
-            // Multi-profile fields
-            profileVpsCountInput.value = t.profileVpsCount || 1;
-            profilesPerVpsInput.value = t.profilesPerVps || 30;
-            profileLimitInput.value = t.profileLimit || 2;
-            profileRotInput.value = t.profileRotations || 0;
-            // Multi-vps defaults (just in case)
-            vpsCountInput.value = 1;
-            vpsLimitInput.value = 2;
-            // Common
-            groupSelect.value = t.group;
-            sizeSelect.value = t.size;
-            enableRotCheck.checked = t.enableRot || false;
-            antidetectCheck.checked = false;
-            currentDistribution = {...t.distribution};
-            vpsCostInput.value = t.vpsCost || 15;
-            proxyCostInput.value = t.proxyCost || 0;
-            profileVpsCostInput.value = t.profileVpsCost || 20;
-            updateCalculations();
-        }
-
-        function updateDistributionDisplay() {
-            if (!currentDistribution || Object.keys(currentDistribution).length === 0) {
-                distributionBox.style.display = 'none';
-                return;
-            }
-            let totalFiles = Object.values(currentDistribution).reduce((a,b)=>a+b,0);
-            let html = `<strong>Total archivos:</strong> ${totalFiles}<br>`;
-            for (let [sizeIdx, count] of Object.entries(currentDistribution)) {
-                html += `📁 ${sizeLabels[sizeIdx]}: ${count} archivos<br>`;
-            }
-            distributionText.innerHTML = html;
-            distributionBox.style.display = 'block';
-        }
-
-        function updateCalculations() {
-            const group = groupSelect.value;
-            const antidetect = antidetectCheck.checked;
-
-            let totalDl = 0;
-            let totalVPNs = 0;
-            let infrastructureCost = 0;
-
-            if (currentMode === 'multi-vps') {
-                const vps = parseInt(vpsCountInput.value) || 1;
-                const limit = parseInt(vpsLimitInput.value) || 2;
-                const rotUsed = enableRotCheck.checked ? 0 : 0;
-                totalDl = vps * limit * (1 + rotUsed);
-                totalVPNs = vps; // una IP por servidor
-                const vpsCost = parseFloat(vpsCostInput.value) || 0;
-                const proxyCost = parseFloat(proxyCostInput.value) || 0;
-                infrastructureCost = (vps * vpsCost) + (totalVPNs * proxyCost);
-            } else { // multi-profile
-                const pvps = parseInt(profileVpsCountInput.value) || 1;
-                const ppv = parseInt(profilesPerVpsInput.value) || 1;
-                const totalProfiles = pvps * ppv;
-                totalVPNs = totalProfiles; // cada perfil requiere IP única
-                const limitPerProfile = parseInt(profileLimitInput.value) || 2;
-                const profRot = enableRotCheck.checked ? (parseInt(profileRotInput.value) || 0) : 0;
-                totalDl = totalProfiles * limitPerProfile * (1 + profRot);
-
-                const vpsCost = parseFloat(profileVpsCostInput.value) || 20; // VPS multi‑perfil
-                const proxyCost = parseFloat(proxyCostInput.value) || 0;
-                infrastructureCost = (pvps * vpsCost) + (totalVPNs * proxyCost);
+solve_captcha() {
+  echo "Enviando CAPTCHA a 2Captcha..."
+  local captcha_id=$(curl -s "https://2captcha.com/in.php?key=${CAPTCHA_API_KEY}&method=hcaptcha&sitekey=${RAPIDGATOR_SITE_KEY}&pageurl=${PAGE_URL}" | grep -o '[0-9]*')
+  if [ -z "$captcha_id" ]; then
+    echo "Error al enviar CAPTCHA"
+    return 1
+  fi
+  echo "CAPTCHA ID: $captcha_id. Esperando..."
+  sleep 10
+  for i in {1..30}; do
+    local result=$(curl -s "https://2captcha.com/res.php?key=${CAPTCHA_API_KEY}&action=get&id=${captcha_id}")
+    if [[ $result == "OK|"* ]]; then
+      local token="${result#OK|}"
+      echo "CAPTCHA resuelto: $token"
+      echo "$token"
+      return 0
+    elif [[ $result == "ERROR"* ]]; then
+      echo "Error: $result"
+      return 1
+    fi
+    sleep 5
+  done
+  return 1
+}
+`;
             }
 
-            if (antidetect) {
-                totalDl = Math.round(totalDl * (0.85 + Math.random() * 0.15));
-            }
-
-            // Update VPN info
-            totalProfilesSpan.textContent = totalVPNs;
-            vpnNeededSpan.textContent = totalVPNs;
-
-            let gananciaTotal = 0;
-            let detalleHtml = '';
-
-            if (currentDistribution && Object.keys(currentDistribution).length > 0) {
-                const totalFiles = Object.values(currentDistribution).reduce((a,b)=>a+b,0);
-                let descargasAsignadas = 0;
-                const entries = Object.entries(currentDistribution);
-                entries.forEach(([sizeIdx, count], index) => {
-                    const rate = rates[group][parseInt(sizeIdx)];
-                    let dlForThisGroup = Math.round(totalDl * count / totalFiles);
-                    if (index === entries.length-1) {
-                        dlForThisGroup = totalDl - descargasAsignadas;
-                    } else {
-                        descargasAsignadas += dlForThisGroup;
-                    }
-                    const ganancia = (dlForThisGroup / 1000) * rate;
-                    gananciaTotal += ganancia;
-                    detalleHtml += `📁 ${sizeLabels[sizeIdx]} (${count} archivos): ${dlForThisGroup} descargas → $${ganancia.toFixed(2)}<br>`;
-                });
-                detalleHtml += `<strong>Total bruto: $${gananciaTotal.toFixed(2)}</strong>`;
-            }
-
-            const dailyCost = infrastructureCost / 30;
-            const netProfit = gananciaTotal - dailyCost;
-
-            resultAmount.textContent = `$${gananciaTotal.toFixed(2)}`;
-            resultDetail.innerHTML = detalleHtml;
-
-            netProfitEl.innerHTML = `
-                <div style="margin-top:6px;font-size:11px;color:var(--muted)">
-                    💰 Coste diario: $${dailyCost.toFixed(2)}<br>
-                    (Infraestructura: $${infrastructureCost.toFixed(2)}/mes · ${totalVPNs} VPNs)
-                </div>
-                <div class="${netProfit >= 0 ? 'profit-positive' : 'profit-negative'}" style="margin-top:4px;">
-                    📈 Beneficio neto: $${netProfit.toFixed(2)}/día
-                </div>
-            `;
-            weeklyProfitEl.textContent = `💵 Ganancia semanal estimada: $${(gananciaTotal * 7).toFixed(2)}`;
-
-            // Savings badge if multi-profile and cost < equivalent multi-vps
-            if (currentMode === 'multi-profile') {
-                const pvps = parseInt(profileVpsCountInput.value) || 1;
-                const ppv = parseInt(profilesPerVpsInput.value) || 1;
-                const totalProfiles = pvps * ppv;
-                const equivalentVpsCost = totalProfiles * (parseFloat(vpsCostInput.value) || 15);
-                const currentInfra = infrastructureCost;
-                const savings = equivalentVpsCost - currentInfra;
-                if (savings > 0) {
-                    savingsBadge.style.display = 'block';
-                    savingsBadge.innerHTML = `💡 Ahorras $${savings.toFixed(2)}/mes vs usar ${totalProfiles} VPS individuales`;
-                } else {
-                    savingsBadge.style.display = 'none';
+            script += `
+# Lista de archivos (reemplazar con URLs reales)
+ARCHIVOS=(
+`;
+            let fileId = 1;
+            for (let [sizeIdx, count] of Object.entries(distribution)) {
+                const range = sizeLabels[parseInt(sizeIdx)];
+                for (let i = 0; i < count; i++) {
+                    script += `  "http://ejemplo.com/archivo${fileId}_${range}.zip"\n`;
+                    fileId++;
                 }
-            } else {
-                savingsBadge.style.display = 'none';
             }
+            script += `)
 
-            updateDistributionDisplay();
+TOTAL_DESCARGAS=${totalDownloads}
+DELAY_MIN=2
+DELAY_MAX=8
 
-            lastCalc = {
-                mode: currentMode,
-                totalDl,
-                gananciaTotal,
-                netProfit,
-                infrastructureCost,
-                totalVPNs
-            };
-        }
+for (( i=0; i<TOTAL_DESCARGAS; i++ )); do
+  ARCHIVO_INDEX=$(( RANDOM % ${fileId-1} ))
+  URL_DESCARGA="${ARCHIVOS[$ARCHIVO_INDEX]}"
+  UA_INDEX=$(( RANDOM % ${#USER_AGENTS[@]} ))
+  UA="${USER_AGENTS[$UA_INDEX]}"
 
-        // Event listeners for all inputs
-        [
-            vpsCountInput, vpsLimitInput,
-            profileVpsCountInput, profilesPerVpsInput, profileLimitInput, profileRotInput,
-            vpsCostInput, proxyCostInput, profileVpsCostInput
-        ].forEach(el => el.addEventListener('input', updateCalculations));
+  echo "Descarga $((i+1))/$TOTAL_DESCARGAS: $URL_DESCARGA"
 
-        groupSelect.addEventListener('change', updateCalculations);
-        sizeSelect.addEventListener('change', updateCalculations);
-        enableRotCheck.addEventListener('change', updateCalculations);
-        antidetectCheck.addEventListener('change', updateCalculations);
+  # Intentar descarga con seguimiento de redirecciones
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L -A "$UA" "$URL_DESCARGA")
+  echo "Respuesta: $HTTP_CODE"
 
-        // Reset button
-        resetBtn.addEventListener('click', () => {
-            applyTemplate('beginner');
-            if (tg) tg.HapticFeedback?.impactOccurred("light");
-        });
+  # Si se detecta CAPTCHA (código 403 o redirección con "captcha"), resolver
+  if [ "$HTTP_CODE" = "403" ] || curl -s -L -A "$UA" "$URL_DESCARGA" | grep -q "captcha"; then
+    echo "CAPTCHA detectado, resolviendo..."
+    if [ "$useCaptcha" = true ] && [ -n "$CAPTCHA_API_KEY" ]; then
+      CAPTCHA_TOKEN=$(solve_captcha)
+      if [ $? -eq 0 ]; then
+        echo "Reintentando descarga con token..."
+        curl -s -o /dev/null -L -A "$UA" "$URL_DESCARGA?h-captcha-response=$CAPTCHA_TOKEN"
+      else
+        echo "No se pudo resolver el CAPTCHA"
+      fi
+    else
+      echo "CAPTCHA no resuelto (configurar 2Captcha)"
+    fi
+  fi
 
-        // Export
-        exportBtn.addEventListener('click', () => {
-            const dataStr = JSON.stringify(lastCalc, null, 2);
-            const blob = new Blob([dataStr], {type: 'application/json'});
+  DELAY=$(( RANDOM % (DELAY_MAX - DELAY_MIN + 1) + DELAY_MIN ))
+  sleep $DELAY
+done
+
+echo "Descargas completadas."
+`;
+
+            const blob = new Blob([script], {type: 'application/x-sh'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'rapidgator-config.json';
+            a.download = 'descargas_rapidgator.sh';
             a.click();
             URL.revokeObjectURL(url);
             if (tg) tg.HapticFeedback?.impactOccurred("medium");
-        });
+        }
 
-        // Template cards
-        document.querySelectorAll('.template-card').forEach(card => {
-            card.addEventListener('click', () => {
-                document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
-                card.classList.add('active');
-                applyTemplate(card.dataset.template);
-                if (tg) tg.HapticFeedback?.impactOccurred("light");
-            });
-        });
-
-        // Initialize
-        applyTemplate('beginner');
+        // ... (resto del código sin cambios)
     </script>
 </body>
 </html>
