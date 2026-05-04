@@ -432,4 +432,342 @@
         const profileLimitInput = document.getElementById('profile-limit');
         const profileRotInput = document.getElementById('profile-rotations');
 
-        const group
+        const groupSelect = document.getElementById('simple-group');
+        const sizeSelect = document.getElementById('simple-size');
+        const antidetectCheck = document.getElementById('antidetect-simple');
+        const enableRotCheck = document.getElementById('enable-rotation-simple');
+        const enableCaptchaCheck = document.getElementById('enable-captcha');
+        const captchaKeyGroup = document.getElementById('captcha-key-group');
+        const captchaApiKeyInput = document.getElementById('captcha-api-key');
+
+        const scheduleTypeSelect = document.getElementById('schedule-type');
+        const customTimeDiv = document.getElementById('custom-time');
+        const timeStartInput = document.getElementById('time-start');
+        const timeEndInput = document.getElementById('time-end');
+
+        const resultAmount = document.getElementById('result-amount');
+        const resultDetail = document.getElementById('result-detail');
+        const netProfitEl = document.getElementById('net-profit');
+        const weeklyProfitEl = document.getElementById('weekly-profit');
+        const distributionBox = document.getElementById('distribution-box');
+        const distributionText = document.getElementById('distribution-text');
+
+        const vpsCostInput = document.getElementById('vps-cost');
+        const proxyCostInput = document.getElementById('proxy-cost');
+        const profileVpsCostGroup = document.getElementById('profile-vps-cost-group');
+        const profileVpsCostInput = document.getElementById('profile-vps-cost');
+
+        const totalProfilesSpan = document.getElementById('total-profiles');
+        const vpnNeededSpan = document.getElementById('vpn-needed');
+        const savingsBadge = document.getElementById('savings-badge');
+        const exportBtn = document.getElementById('export-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const generateScriptBtn = document.getElementById('generate-script-btn');
+
+        let currentMode = 'multi-profile';
+        let currentDistribution = {};
+        let lastCalc = {};
+
+        // Captcha toggle
+        enableCaptchaCheck.addEventListener('change', () => {
+            captchaKeyGroup.style.display = enableCaptchaCheck.checked ? 'block' : 'none';
+        });
+
+        // Schedule toggle
+        scheduleTypeSelect.addEventListener('change', () => {
+            customTimeDiv.style.display = scheduleTypeSelect.value === 'custom' ? 'flex' : 'none';
+            updateCalculations();
+        });
+
+        function getActiveHours() {
+            const type = scheduleTypeSelect.value;
+            if (type === 'full') return 24;
+            if (type === 'morning') return 4;
+            if (type === 'afternoon') return 4;
+            if (type === 'night') return 8;
+            if (type === 'custom') {
+                let start = parseInt(timeStartInput.value) || 0;
+                let end = parseInt(timeEndInput.value) || 0;
+                if (end <= start) end += 24;
+                return Math.max(1, end - start);
+            }
+            return 24;
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            modeBtns.forEach(b => b.classList.remove('active'));
+            document.querySelector(`.mode-btn[data-mode="${mode}"]`).classList.add('active');
+            multiVpsFields.style.display = mode === 'multi-vps' ? 'block' : 'none';
+            multiProfileFields.style.display = mode === 'multi-profile' ? 'block' : 'none';
+            profileVpsCostGroup.style.display = mode === 'multi-profile' ? 'block' : 'none';
+            updateCalculations();
+        }
+
+        modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+
+        function applyTemplate(templateName) {
+            const t = templates[templateName];
+            setMode(t.mode);
+            profileVpsCountInput.value = t.profileVpsCount || 1;
+            profilesPerVpsInput.value = t.profilesPerVps || 30;
+            profileLimitInput.value = t.profileLimit || 2;
+            profileRotInput.value = t.profileRotations || 0;
+            vpsCountInput.value = 1;
+            vpsLimitInput.value = 2;
+            groupSelect.value = t.group;
+            sizeSelect.value = t.size;
+            enableRotCheck.checked = t.enableRot || false;
+            antidetectCheck.checked = false;
+            currentDistribution = {...t.distribution};
+            vpsCostInput.value = t.vpsCost || 15;
+            proxyCostInput.value = t.proxyCost || 0;
+            profileVpsCostInput.value = t.profileVpsCost || 20;
+            scheduleTypeSelect.value = t.schedule || 'full';
+            customTimeDiv.style.display = t.schedule === 'custom' ? 'flex' : 'none';
+            timeStartInput.value = t.timeStart || 8;
+            timeEndInput.value = t.timeEnd || 12;
+            updateCalculations();
+        }
+
+        function updateDistributionDisplay() {
+            if (!currentDistribution || Object.keys(currentDistribution).length === 0) {
+                distributionBox.style.display = 'none';
+                return;
+            }
+            let totalFiles = Object.values(currentDistribution).reduce((a,b)=>a+b,0);
+            let html = `<strong>Total archivos:</strong> ${totalFiles}<br>`;
+            for (let [sizeIdx, count] of Object.entries(currentDistribution)) {
+                html += `📁 ${sizeLabels[sizeIdx]}: ${count} archivos<br>`;
+            }
+            distributionText.innerHTML = html;
+            distributionBox.style.display = 'block';
+        }
+
+        function updateCalculations() {
+            const group = groupSelect.value;
+            const antidetect = antidetectCheck.checked;
+            const activeHours = getActiveHours();
+
+            let totalDl = 0;
+            let totalVPNs = 0;
+            let infrastructureCost = 0;
+
+            if (currentMode === 'multi-vps') {
+                const vps = parseInt(vpsCountInput.value) || 1;
+                const limit = parseInt(vpsLimitInput.value) || 2;
+                totalDl = vps * limit;
+                totalVPNs = vps;
+                const vpsCost = parseFloat(vpsCostInput.value) || 0;
+                const proxyCost = parseFloat(proxyCostInput.value) || 0;
+                infrastructureCost = (vps * vpsCost) + (totalVPNs * proxyCost);
+            } else {
+                const pvps = parseInt(profileVpsCountInput.value) || 1;
+                const ppv = parseInt(profilesPerVpsInput.value) || 1;
+                const totalProfiles = pvps * ppv;
+                totalVPNs = totalProfiles;
+                const limitPerProfile = parseInt(profileLimitInput.value) || 2;
+                totalDl = totalProfiles * limitPerProfile;
+                const vpsCost = parseFloat(profileVpsCostInput.value) || 20;
+                const proxyCost = parseFloat(proxyCostInput.value) || 0;
+                infrastructureCost = (pvps * vpsCost) + (totalVPNs * proxyCost);
+            }
+
+            totalDl = Math.round(totalDl * (activeHours / 24));
+            if (antidetect) totalDl = Math.round(totalDl * (0.85 + Math.random() * 0.15));
+
+            totalProfilesSpan.textContent = totalVPNs;
+            vpnNeededSpan.textContent = totalVPNs;
+
+            let gananciaTotal = 0;
+            let detalleHtml = '';
+            const totalFiles = Object.values(currentDistribution).reduce((a,b)=>a+b,0) || 1;
+
+            if (Object.keys(currentDistribution).length > 0) {
+                let descargasAsignadas = 0;
+                const entries = Object.entries(currentDistribution);
+                entries.forEach(([sizeIdx, count], index) => {
+                    const rate = rates[group][parseInt(sizeIdx)];
+                    let dlForThisGroup = Math.round(totalDl * count / totalFiles);
+                    if (index === entries.length-1) {
+                        dlForThisGroup = totalDl - descargasAsignadas;
+                    } else {
+                        descargasAsignadas += dlForThisGroup;
+                    }
+                    const ganancia = (dlForThisGroup / 1000) * rate;
+                    gananciaTotal += ganancia;
+                    detalleHtml += `📁 ${sizeLabels[sizeIdx]} (${count} archivos): ${dlForThisGroup} descargas → $${ganancia.toFixed(2)}<br>`;
+                });
+            }
+
+            const dailyCost = infrastructureCost / 30;
+            const netProfit = gananciaTotal - dailyCost;
+
+            resultAmount.textContent = `$${gananciaTotal.toFixed(2)}`;
+            resultDetail.innerHTML = detalleHtml + `<strong>Total bruto: $${gananciaTotal.toFixed(2)}</strong>`;
+
+            netProfitEl.innerHTML = `
+                <div style="margin-top:6px;font-size:11px;color:var(--muted)">
+                    💰 Coste diario: $${dailyCost.toFixed(2)} (${activeHours}h activas)<br>
+                    (Infraestructura: $${infrastructureCost.toFixed(2)}/mes · ${totalVPNs} VPNs)
+                </div>
+                <div class="${netProfit >= 0 ? 'profit-positive' : 'profit-negative'}" style="margin-top:4px;">
+                    📈 Beneficio neto: $${netProfit.toFixed(2)}/día
+                </div>
+            `;
+            weeklyProfitEl.textContent = `💵 Ganancia semanal estimada: $${(gananciaTotal * 7).toFixed(2)}`;
+
+            if (currentMode === 'multi-profile') {
+                const totalProfiles = parseInt(profileVpsCountInput.value || 1) * parseInt(profilesPerVpsInput.value || 1);
+                const equivalentVpsCost = totalProfiles * (parseFloat(vpsCostInput.value) || 15);
+                const savings = equivalentVpsCost - infrastructureCost;
+                if (savings > 0) {
+                    savingsBadge.style.display = 'block';
+                    savingsBadge.innerHTML = `💡 Ahorras $${savings.toFixed(2)}/mes vs usar ${totalProfiles} VPS individuales`;
+                } else {
+                    savingsBadge.style.display = 'none';
+                }
+            } else {
+                savingsBadge.style.display = 'none';
+            }
+
+            updateDistributionDisplay();
+            lastCalc = { mode: currentMode, totalDl, gananciaTotal, netProfit, infrastructureCost, totalVPNs, activeHours, distribution: currentDistribution };
+        }
+
+        function generateBashScript() {
+            const hours = lastCalc.activeHours || 24;
+            const totalDownloads = lastCalc.totalDl || 0;
+            const distribution = lastCalc.distribution || {};
+            const useCaptcha = enableCaptchaCheck.checked;
+            const apiKey = captchaApiKeyInput.value.trim();
+
+            // Interpolación segura: las variables Bash se escapan con \$ para que JS no las procese
+            let script = `#!/bin/bash
+# Script generado por Simulador Rapidgator · Mkeyz Studio
+# Descargas totales: ${totalDownloads} | Horas activas: ${hours}
+echo "Iniciando..."
+
+USER_AGENTS=(
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15"
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15"
+)
+`;
+
+            if (useCaptcha && apiKey) {
+                script += `
+# Resolución automática de CAPTCHA (2Captcha)
+CAPTCHA_API_KEY="${apiKey}"
+RAPIDGATOR_SITE_KEY="6LdU4RATAAAAAK4B6-J0-GvS_Jw0gE0VeMqS9M-"
+PAGE_URL="https://rapidgator.net"
+
+solve_captcha() {
+  echo "Enviando CAPTCHA..."
+  local captcha_id=\$(curl -s "https://2captcha.com/in.php?key=\${CAPTCHA_API_KEY}&method=hcaptcha&sitekey=\${RAPIDGATOR_SITE_KEY}&pageurl=\${PAGE_URL}" | grep -o '[0-9]*')
+  [ -z "\$captcha_id" ] && return 1
+  echo "ID: \$captcha_id"
+  sleep 10
+  for i in \$(seq 1 30); do
+    local result=\$(curl -s "https://2captcha.com/res.php?key=\${CAPTCHA_API_KEY}&action=get&id=\${captcha_id}")
+    if [[ "\$result" == "OK|"* ]]; then
+      echo "\${result#OK|}"
+      return 0
+    fi
+    sleep 5
+  done
+  return 1
+}
+`;
+            }
+
+            script += `
+ARCHIVOS=(
+`;
+            let fileId = 1;
+            for (let [sizeIdx, count] of Object.entries(distribution)) {
+                const range = sizeLabels[parseInt(sizeIdx)];
+                for (let i = 0; i < count; i++) {
+                    script += `  "http://ejemplo.com/archivo${fileId}_${range}.zip"\n`;
+                    fileId++;
+                }
+            }
+            script += `)
+
+TOTAL_DESCARGAS=${totalDownloads}
+for (( i=0; i<TOTAL_DESCARGAS; i++ )); do
+  URL="\${ARCHIVOS[\$(( RANDOM % ${fileId-1} ))]}"
+  UA="\${USER_AGENTS[\$(( RANDOM % 4 ))]}"
+  echo "[\$((i+1))/\$TOTAL_DESCARGAS] \$URL"
+
+  HTTP_CODE=\$(curl -s -o /dev/null -w "%{http_code}" -L -A "\$UA" "\$URL")
+  if [ "\$HTTP_CODE" = "403" ] || curl -s -L -A "\$UA" "\$URL" | grep -q "captcha"; then
+    echo "CAPTCHA detectado"
+    if [ "${useCaptcha}" = "true" ] && [ -n "\$CAPTCHA_API_KEY" ]; then
+      TOKEN=\$(solve_captcha)
+      if [ \$? -eq 0 ]; then
+        curl -s -o /dev/null -L -A "\$UA" "\$URL?h-captcha-response=\$TOKEN"
+        echo "Resuelto con token"
+      fi
+    fi
+  fi
+
+  sleep \$(( RANDOM % 7 + 2 ))
+done
+echo "Completadas \$TOTAL_DESCARGAS descargas."
+`;
+
+            const blob = new Blob([script], {type: 'application/x-sh'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'descargas_rapidgator.sh';
+            a.click();
+            URL.revokeObjectURL(url);
+            if (tg) tg.HapticFeedback?.impactOccurred("medium");
+        }
+
+        // Event listeners for all inputs
+        [vpsCountInput, vpsLimitInput, profileVpsCountInput, profilesPerVpsInput, profileLimitInput, profileRotInput,
+         vpsCostInput, proxyCostInput, profileVpsCostInput, timeStartInput, timeEndInput].forEach(el =>
+            el.addEventListener('input', updateCalculations)
+        );
+        groupSelect.addEventListener('change', updateCalculations);
+        sizeSelect.addEventListener('change', updateCalculations);
+        enableRotCheck.addEventListener('change', updateCalculations);
+        antidetectCheck.addEventListener('change', updateCalculations);
+
+        resetBtn.addEventListener('click', () => {
+            applyTemplate('beginner');
+            if (tg) tg.HapticFeedback?.impactOccurred("light");
+        });
+
+        exportBtn.addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(lastCalc, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'rapidgator-config.json'; a.click();
+            URL.revokeObjectURL(url);
+            if (tg) tg.HapticFeedback?.impactOccurred("medium");
+        });
+
+        generateScriptBtn.addEventListener('click', () => {
+            generateBashScript();
+            if (tg) tg.HapticFeedback?.impactOccurred("heavy");
+        });
+
+        document.querySelectorAll('.template-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                applyTemplate(card.dataset.template);
+                if (tg) tg.HapticFeedback?.impactOccurred("light");
+            });
+        });
+
+        // Inicializar con la plantilla por defecto
+        applyTemplate('beginner');
+    </script>
+</body>
+</html>
