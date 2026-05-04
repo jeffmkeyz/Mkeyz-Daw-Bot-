@@ -150,13 +150,18 @@
             font-size: 11px; text-align: center;
         }
         .vpn-info strong { color: var(--gold); }
+        .file-distribution {
+            background: #111118; border-radius: 12px; padding: 12px; margin-top: 10px;
+            font-size: 10px; color: var(--muted); line-height: 1.6;
+        }
+        .file-distribution strong { color: var(--gold); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>💰 Simulador Rapidgator</h1>
-            <p>Script con resolución CAPTCHA · Plantillas · VPNs</p>
+            <p>Script con CAPTCHA · Plantillas · VPNs</p>
         </div>
 
         <!-- PLANTILLAS -->
@@ -263,7 +268,7 @@
                     <option value="custom">Personalizada</option>
                 </select>
             </div>
-            <div class="input-row time-fields" id="custom-time" style="display:none;">
+            <div class="input-row" id="custom-time" style="display:none;">
                 <div class="input-group">
                     <label>Hora inicio</label>
                     <input type="number" id="time-start" value="8" min="0" max="23">
@@ -349,129 +354,82 @@
     </div>
 
     <script>
-        // ... (código anterior hasta la función generateBashScript)
-
-        function generateBashScript() {
-            const hours = lastCalc.activeHours || getActiveHours();
-            const totalDownloads = lastCalc.totalDl || 0;
-            const distribution = lastCalc.distribution || {};
-            const useRotate = enableRotCheck.checked;
-            const useCaptcha = document.getElementById('enable-captcha').checked;
-            const apiKey = document.getElementById('captcha-api-key').value.trim();
-
-            let script = `#!/bin/bash
-# Script generado por Simulador Rapidgator · Mkeyz Studio
-# Franja horaria: ${scheduleTypeSelect.options[scheduleTypeSelect.selectedIndex].text}
-# Descargas totales: ${totalDownloads}
-# Resuelve CAPTCHAs: ${useCaptcha ? 'Sí (2Captcha)' : 'No'}
-echo "Iniciando..."
-
-USER_AGENTS=(
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15"
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
-  "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15"
-)
-`;
-
-            if (useCaptcha && apiKey) {
-                script += `
-# Configuración de 2Captcha
-CAPTCHA_API_KEY="${apiKey}"
-RAPIDGATOR_SITE_KEY="6LdU4RATAAAAAK4B6-J0-GvS_Jw0gE0VeMqS9M-"  # Sitekey de Rapidgator (ajustar si es necesario)
-PAGE_URL="https://rapidgator.net"
-
-solve_captcha() {
-  echo "Enviando CAPTCHA a 2Captcha..."
-  local captcha_id=$(curl -s "https://2captcha.com/in.php?key=${CAPTCHA_API_KEY}&method=hcaptcha&sitekey=${RAPIDGATOR_SITE_KEY}&pageurl=${PAGE_URL}" | grep -o '[0-9]*')
-  if [ -z "$captcha_id" ]; then
-    echo "Error al enviar CAPTCHA"
-    return 1
-  fi
-  echo "CAPTCHA ID: $captcha_id. Esperando..."
-  sleep 10
-  for i in {1..30}; do
-    local result=$(curl -s "https://2captcha.com/res.php?key=${CAPTCHA_API_KEY}&action=get&id=${captcha_id}")
-    if [[ $result == "OK|"* ]]; then
-      local token="${result#OK|}"
-      echo "CAPTCHA resuelto: $token"
-      echo "$token"
-      return 0
-    elif [[ $result == "ERROR"* ]]; then
-      echo "Error: $result"
-      return 1
-    fi
-    sleep 5
-  done
-  return 1
-}
-`;
-            }
-
-            script += `
-# Lista de archivos (reemplazar con URLs reales)
-ARCHIVOS=(
-`;
-            let fileId = 1;
-            for (let [sizeIdx, count] of Object.entries(distribution)) {
-                const range = sizeLabels[parseInt(sizeIdx)];
-                for (let i = 0; i < count; i++) {
-                    script += `  "http://ejemplo.com/archivo${fileId}_${range}.zip"\n`;
-                    fileId++;
-                }
-            }
-            script += `)
-
-TOTAL_DESCARGAS=${totalDownloads}
-DELAY_MIN=2
-DELAY_MAX=8
-
-for (( i=0; i<TOTAL_DESCARGAS; i++ )); do
-  ARCHIVO_INDEX=$(( RANDOM % ${fileId-1} ))
-  URL_DESCARGA="${ARCHIVOS[$ARCHIVO_INDEX]}"
-  UA_INDEX=$(( RANDOM % ${#USER_AGENTS[@]} ))
-  UA="${USER_AGENTS[$UA_INDEX]}"
-
-  echo "Descarga $((i+1))/$TOTAL_DESCARGAS: $URL_DESCARGA"
-
-  # Intentar descarga con seguimiento de redirecciones
-  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L -A "$UA" "$URL_DESCARGA")
-  echo "Respuesta: $HTTP_CODE"
-
-  # Si se detecta CAPTCHA (código 403 o redirección con "captcha"), resolver
-  if [ "$HTTP_CODE" = "403" ] || curl -s -L -A "$UA" "$URL_DESCARGA" | grep -q "captcha"; then
-    echo "CAPTCHA detectado, resolviendo..."
-    if [ "$useCaptcha" = true ] && [ -n "$CAPTCHA_API_KEY" ]; then
-      CAPTCHA_TOKEN=$(solve_captcha)
-      if [ $? -eq 0 ]; then
-        echo "Reintentando descarga con token..."
-        curl -s -o /dev/null -L -A "$UA" "$URL_DESCARGA?h-captcha-response=$CAPTCHA_TOKEN"
-      else
-        echo "No se pudo resolver el CAPTCHA"
-      fi
-    else
-      echo "CAPTCHA no resuelto (configurar 2Captcha)"
-    fi
-  fi
-
-  DELAY=$(( RANDOM % (DELAY_MAX - DELAY_MIN + 1) + DELAY_MIN ))
-  sleep $DELAY
-done
-
-echo "Descargas completadas."
-`;
-
-            const blob = new Blob([script], {type: 'application/x-sh'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'descargas_rapidgator.sh';
-            a.click();
-            URL.revokeObjectURL(url);
-            if (tg) tg.HapticFeedback?.impactOccurred("medium");
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready(); tg.expand();
+            tg.setHeaderColor("#05050a"); tg.setBackgroundColor("#05050a");
         }
 
-        // ... (resto del código sin cambios)
-    </script>
-</body>
-</html>
+        const rates = {
+            I:   [0.1, 3, 5, 6, 7, 10],
+            II:  [0.1, 1, 3, 3, 4, 5],
+            III: [0.1, 1, 1.5, 2, 2.5, 3],
+            IV:  [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+        };
+        const sizeLabels = ["1-50 MB","50-100 MB","100-250 MB","250-500 MB","500-1000 MB",">1 GB"];
+
+        const templates = {
+            beginner: {
+                mode: 'multi-profile',
+                profileVpsCount: 1,
+                profilesPerVps: 30,
+                profileLimit: 2,
+                profileRotations: 0,
+                group: 'I', size: 2,
+                distribution: {0:5, 1:10, 2:15},
+                enableRot: false,
+                vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
+                schedule: 'full', timeStart: 8, timeEnd: 12
+            },
+            intermediate: {
+                mode: 'multi-profile',
+                profileVpsCount: 2,
+                profilesPerVps: 15,
+                profileLimit: 2,
+                profileRotations: 0,
+                group: 'I', size: 2,
+                distribution: {0:10, 1:30, 2:10},
+                enableRot: false,
+                vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
+                schedule: 'full', timeStart: 8, timeEnd: 12
+            },
+            advanced: {
+                mode: 'multi-profile',
+                profileVpsCount: 3,
+                profilesPerVps: 20,
+                profileLimit: 3,
+                profileRotations: 0,
+                group: 'I', size: 3,
+                distribution: {1:20, 2:40, 3:20},
+                enableRot: false,
+                vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
+                schedule: 'full', timeStart: 8, timeEnd: 12
+            },
+            aggressive: {
+                mode: 'multi-profile',
+                profileVpsCount: 5,
+                profilesPerVps: 20,
+                profileLimit: 3,
+                profileRotations: 0,
+                group: 'I', size: 4,
+                distribution: {2:50, 3:50, 4:50},
+                enableRot: false,
+                vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
+                schedule: 'full', timeStart: 8, timeEnd: 12
+            }
+        };
+
+        // DOM elements
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        const multiVpsFields = document.getElementById('multi-vps-fields');
+        const multiProfileFields = document.getElementById('multi-profile-fields');
+
+        const vpsCountInput = document.getElementById('vps-count');
+        const vpsLimitInput = document.getElementById('vps-limit');
+
+        const profileVpsCountInput = document.getElementById('profile-vps-count');
+        const profilesPerVpsInput = document.getElementById('profiles-per-vps');
+        const profileLimitInput = document.getElementById('profile-limit');
+        const profileRotInput = document.getElementById('profile-rotations');
+
+        const groupSelect = document.
