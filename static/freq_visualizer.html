@@ -19,9 +19,7 @@
         }
 
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -171,17 +169,23 @@
             padding: 10px 12px; border-radius: 8px; font-size: 10px;
             color: var(--muted); margin-bottom: 14px;
         }
+
+        .vpn-info {
+            background: #111118; padding: 8px 12px; border-radius: 8px; margin-top: 8px;
+            font-size: 11px; color: var(--text); text-align: center;
+        }
+        .vpn-info strong { color: var(--gold); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>💰 Simulador Rapidgator</h1>
-            <p>Plantillas inteligentes · Máximo ahorro · Pago semanal</p>
+            <p>Plantillas inteligentes · VPNs necesarias · Pago semanal</p>
         </div>
 
         <div class="strategy-note">
-            💡 Con un solo VPS y varios perfiles de navegador (Multi‑Perfil) puedes conseguir muchas más descargas diarias. ¡Aumenta tus ganancias sin disparar los costes!
+            💡 En modo Multi‑Perfil puedes usar un solo VPS con muchos perfiles de navegador. Cada perfil necesita una IP única (VPN) para evitar bloqueos. Ajusta abajo cuántos VPS y perfiles usas.
         </div>
 
         <!-- PLANTILLAS -->
@@ -192,25 +196,25 @@
                     <span class="template-badge">Diaria</span>
                     <div class="template-icon">🟢</div>
                     <div class="template-name">Principiante</div>
-                    <div class="template-info">Multi‑Perfil · 30 perfiles</div>
+                    <div class="template-info">1 VPS · 30 perfiles</div>
                 </div>
                 <div class="template-card" data-template="intermediate">
                     <span class="template-badge">Diaria</span>
                     <div class="template-icon">🟡</div>
                     <div class="template-name">Intermedio</div>
-                    <div class="template-info">5 VPS · 20 archivos</div>
+                    <div class="template-info">2 VPS · 15 perf c/u</div>
                 </div>
                 <div class="template-card" data-template="advanced">
                     <span class="template-badge">Diaria</span>
                     <div class="template-icon">🟠</div>
                     <div class="template-name">Avanzado</div>
-                    <div class="template-info">15 VPS · 50 archivos</div>
+                    <div class="template-info">3 VPS · 20 perf c/u</div>
                 </div>
                 <div class="template-card" data-template="aggressive">
                     <span class="template-badge">Diaria</span>
                     <div class="template-icon">🔴</div>
                     <div class="template-name">Agresivo</div>
-                    <div class="template-info">30 VPS · 100 archivos</div>
+                    <div class="template-info">5 VPS · 20 perf c/u</div>
                 </div>
             </div>
             <button class="btn btn-outline" id="reset-btn" style="margin-top:12px;">🔄 Reiniciar a Principiante</button>
@@ -258,9 +262,9 @@
                 </label>
             </div>
             <div class="toggle-row">
-                <span>Rotar IP</span>
+                <span>Rotar IP (usar más IPs)</span>
                 <label class="switch">
-                    <input type="checkbox" id="enable-rotation-simple" checked>
+                    <input type="checkbox" id="enable-rotation-simple">
                     <span class="slider"></span>
                 </label>
             </div>
@@ -268,12 +272,12 @@
             <!-- SELECCIÓN DE MODO -->
             <div class="section-title" style="margin-top:16px;">🖥️ Modo de operación</div>
             <div class="mode-selector" id="modeSelector">
-                <div class="mode-btn active" data-mode="multi-vps">🏢 Multi‑VPS</div>
-                <div class="mode-btn" data-mode="multi-profile">👤 Multi‑Perfil</div>
+                <div class="mode-btn" data-mode="multi-vps">🏢 Multi‑VPS</div>
+                <div class="mode-btn active" data-mode="multi-profile">👤 Multi‑Perfil</div>
             </div>
 
             <!-- MODO MULTI-VPS -->
-            <div id="multi-vps-fields">
+            <div id="multi-vps-fields" style="display:none;">
                 <div class="input-row">
                     <div class="input-group">
                         <label>Nº de VPS</label>
@@ -286,21 +290,31 @@
                 </div>
             </div>
 
-            <!-- MODO MULTI-PERFIL (oculto por defecto) -->
-            <div id="multi-profile-fields" style="display:none;">
+            <!-- MODO MULTI-PERFIL -->
+            <div id="multi-profile-fields">
                 <div class="input-row">
                     <div class="input-group">
-                        <label>Perfiles simultáneos</label>
-                        <input type="number" id="profile-count" value="30" min="1">
+                        <label>Nº de VPS</label>
+                        <input type="number" id="profile-vps-count" value="1" min="1">
                     </div>
+                    <div class="input-group">
+                        <label>Perfiles por VPS</label>
+                        <input type="number" id="profiles-per-vps" value="30" min="1">
+                    </div>
+                </div>
+                <div class="input-row">
                     <div class="input-group">
                         <label>Descargas/perfil/día</label>
                         <input type="number" id="profile-limit" value="2" min="1">
                     </div>
+                    <div class="input-group">
+                        <label>Rotaciones IP/día</label>
+                        <input type="number" id="profile-rotations" value="0" min="0">
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label>Rotaciones IP/día</label>
-                    <input type="number" id="profile-rotations" value="2" min="0">
+                <div class="vpn-info" id="vpn-info">
+                    🔐 <strong>Total perfiles:</strong> <span id="total-profiles">30</span> · 
+                    <strong>VPNs necesarias:</strong> <span id="vpn-needed">30</span>
                 </div>
             </div>
 
@@ -312,11 +326,11 @@
                     <input type="number" id="vps-cost" value="15" min="0" step="0.01">
                 </div>
                 <div class="input-group">
-                    <label>Proxy/IP ($/mes)</label>
+                    <label>VPN/Proxy ($/mes)</label>
                     <input type="number" id="proxy-cost" value="0" min="0" step="0.01">
                 </div>
             </div>
-            <div class="input-group" id="profile-vps-cost-group" style="display:none;">
+            <div class="input-group" id="profile-vps-cost-group">
                 <label>Coste del VPS multi‑perfil ($/mes)</label>
                 <input type="number" id="profile-vps-cost" value="20" min="0" step="0.01">
             </div>
@@ -349,55 +363,90 @@
 
         const templates = {
             beginner: {
-                vps: 1, files: 5, group: 'I', size: 2, limit: 2, rotations: 0, enableRot: true,
-                distribution: {0:1, 1:2, 2:2},
-                mode: 'multi-profile', profiles: 30, profileLimit: 2, profileRotations: 2
+                mode: 'multi-profile',
+                profileVpsCount: 1,
+                profilesPerVps: 30,
+                profileLimit: 2,
+                profileRotations: 0,
+                group: 'I', size: 2,
+                distribution: {0:5, 1:10, 2:15},
+                enableRot: false,
+                vpsCost: 15, proxyCost: 0, profileVpsCost: 20
             },
             intermediate: {
-                vps: 5, files: 20, group: 'I', size: 2, limit: 2, rotations: 2, enableRot: true,
-                distribution: {0:5, 1:10, 2:5},
-                mode: 'multi-vps', profiles: 5, profileLimit: 2, profileRotations: 2
+                mode: 'multi-profile',
+                profileVpsCount: 2,
+                profilesPerVps: 15,
+                profileLimit: 2,
+                profileRotations: 0,
+                group: 'I', size: 2,
+                distribution: {0:10, 1:30, 2:10},
+                enableRot: false,
+                vpsCost: 15, proxyCost: 0, profileVpsCost: 20
             },
             advanced: {
-                vps: 15, files: 50, group: 'I', size: 3, limit: 3, rotations: 3, enableRot: true,
-                distribution: {1:10, 2:20, 3:15, 4:5},
-                mode: 'multi-vps', profiles: 15, profileLimit: 3, profileRotations: 3
+                mode: 'multi-profile',
+                profileVpsCount: 3,
+                profilesPerVps: 20,
+                profileLimit: 3,
+                profileRotations: 0,
+                group: 'I', size: 3,
+                distribution: {1:20, 2:40, 3:20},
+                enableRot: false,
+                vpsCost: 15, proxyCost: 0, profileVpsCost: 20
             },
             aggressive: {
-                vps: 30, files: 100, group: 'I', size: 4, limit: 3, rotations: 4, enableRot: true,
-                distribution: {2:30, 3:40, 4:20, 5:10},
-                mode: 'multi-vps', profiles: 30, profileLimit: 3, profileRotations: 4
+                mode: 'multi-profile',
+                profileVpsCount: 5,
+                profilesPerVps: 20,
+                profileLimit: 3,
+                profileRotations: 0,
+                group: 'I', size: 4,
+                distribution: {2:50, 3:50, 4:50},
+                enableRot: false,
+                vpsCost: 15, proxyCost: 0, profileVpsCost: 20
             }
         };
 
-        // DOM
+        // DOM elements
         const modeBtns = document.querySelectorAll('.mode-btn');
         const multiVpsFields = document.getElementById('multi-vps-fields');
         const multiProfileFields = document.getElementById('multi-profile-fields');
+
+        // Multi-VPS inputs
         const vpsCountInput = document.getElementById('vps-count');
         const vpsLimitInput = document.getElementById('vps-limit');
-        const profileCountInput = document.getElementById('profile-count');
+
+        // Multi-Profile inputs
+        const profileVpsCountInput = document.getElementById('profile-vps-count');
+        const profilesPerVpsInput = document.getElementById('profiles-per-vps');
         const profileLimitInput = document.getElementById('profile-limit');
         const profileRotInput = document.getElementById('profile-rotations');
+
         const groupSelect = document.getElementById('simple-group');
         const sizeSelect = document.getElementById('simple-size');
         const antidetectCheck = document.getElementById('antidetect-simple');
         const enableRotCheck = document.getElementById('enable-rotation-simple');
+
         const resultAmount = document.getElementById('result-amount');
         const resultDetail = document.getElementById('result-detail');
         const netProfitEl = document.getElementById('net-profit');
         const weeklyProfitEl = document.getElementById('weekly-profit');
         const distributionBox = document.getElementById('distribution-box');
         const distributionText = document.getElementById('distribution-text');
+
         const vpsCostInput = document.getElementById('vps-cost');
         const proxyCostInput = document.getElementById('proxy-cost');
         const profileVpsCostGroup = document.getElementById('profile-vps-cost-group');
         const profileVpsCostInput = document.getElementById('profile-vps-cost');
+
+        const totalProfilesSpan = document.getElementById('total-profiles');
+        const vpnNeededSpan = document.getElementById('vpn-needed');
         const savingsBadge = document.getElementById('savings-badge');
         const exportBtn = document.getElementById('export-btn');
         const resetBtn = document.getElementById('reset-btn');
 
-        let currentMode = 'multi-profile'; // empezamos en multi-perfil
+        let currentMode = 'multi-profile';
         let currentDistribution = {};
         let lastCalc = {};
 
@@ -421,17 +470,25 @@
 
         function applyTemplate(templateName) {
             const t = templates[templateName];
-            vpsCountInput.value = t.vps;
-            vpsLimitInput.value = t.limit;
-            profileCountInput.value = t.profiles || t.vps;
-            profileLimitInput.value = t.profileLimit || t.limit;
-            profileRotInput.value = t.profileRotations || t.rotations;
+            // Set mode
+            setMode(t.mode || 'multi-profile');
+            // Multi-profile fields
+            profileVpsCountInput.value = t.profileVpsCount || 1;
+            profilesPerVpsInput.value = t.profilesPerVps || 30;
+            profileLimitInput.value = t.profileLimit || 2;
+            profileRotInput.value = t.profileRotations || 0;
+            // Multi-vps defaults (just in case)
+            vpsCountInput.value = 1;
+            vpsLimitInput.value = 2;
+            // Common
             groupSelect.value = t.group;
             sizeSelect.value = t.size;
-            enableRotCheck.checked = t.enableRot;
+            enableRotCheck.checked = t.enableRot || false;
             antidetectCheck.checked = false;
             currentDistribution = {...t.distribution};
-            setMode(t.mode || 'multi-vps');
+            vpsCostInput.value = t.vpsCost || 15;
+            proxyCostInput.value = t.proxyCost || 0;
+            profileVpsCostInput.value = t.profileVpsCost || 20;
             updateCalculations();
         }
 
@@ -454,24 +511,39 @@
             const antidetect = antidetectCheck.checked;
 
             let totalDl = 0;
-            let entityCount = 0;
+            let totalVPNs = 0;
+            let infrastructureCost = 0;
+
             if (currentMode === 'multi-vps') {
                 const vps = parseInt(vpsCountInput.value) || 1;
                 const limit = parseInt(vpsLimitInput.value) || 2;
                 const rotUsed = enableRotCheck.checked ? 0 : 0;
                 totalDl = vps * limit * (1 + rotUsed);
-                entityCount = vps;
-            } else {
-                const profiles = parseInt(profileCountInput.value) || 1;
+                totalVPNs = vps; // una IP por servidor
+                const vpsCost = parseFloat(vpsCostInput.value) || 0;
+                const proxyCost = parseFloat(proxyCostInput.value) || 0;
+                infrastructureCost = (vps * vpsCost) + (totalVPNs * proxyCost);
+            } else { // multi-profile
+                const pvps = parseInt(profileVpsCountInput.value) || 1;
+                const ppv = parseInt(profilesPerVpsInput.value) || 1;
+                const totalProfiles = pvps * ppv;
+                totalVPNs = totalProfiles; // cada perfil requiere IP única
                 const limitPerProfile = parseInt(profileLimitInput.value) || 2;
                 const profRot = enableRotCheck.checked ? (parseInt(profileRotInput.value) || 0) : 0;
-                totalDl = profiles * limitPerProfile * (1 + profRot);
-                entityCount = 1;
+                totalDl = totalProfiles * limitPerProfile * (1 + profRot);
+
+                const vpsCost = parseFloat(profileVpsCostInput.value) || 20; // VPS multi‑perfil
+                const proxyCost = parseFloat(proxyCostInput.value) || 0;
+                infrastructureCost = (pvps * vpsCost) + (totalVPNs * proxyCost);
             }
 
             if (antidetect) {
                 totalDl = Math.round(totalDl * (0.85 + Math.random() * 0.15));
             }
+
+            // Update VPN info
+            totalProfilesSpan.textContent = totalVPNs;
+            vpnNeededSpan.textContent = totalVPNs;
 
             let gananciaTotal = 0;
             let detalleHtml = '';
@@ -495,53 +567,37 @@
                 detalleHtml += `<strong>Total bruto: $${gananciaTotal.toFixed(2)}</strong>`;
             }
 
-            // Costes
-            const vpsCostPerMonth = parseFloat(vpsCostInput.value) || 0;
-            const proxyCostPerMonth = parseFloat(proxyCostInput.value) || 0;
-
-            let totalVpsCost = 0;
-            let totalProxyCost = 0;
-            let savings = 0;
-            let multiVpsCost = 0;
-
-            if (currentMode === 'multi-vps') {
-                const vps = parseInt(vpsCountInput.value) || 1;
-                const rotUsed = enableRotCheck.checked ? 0 : 0;
-                totalVpsCost = vps * vpsCostPerMonth;
-                totalProxyCost = vps * (1 + rotUsed) * proxyCostPerMonth;
-                multiVpsCost = totalVpsCost + totalProxyCost;
-            } else {
-                const profVpsCost = parseFloat(profileVpsCostInput.value) || 20;
-                totalVpsCost = profVpsCost;
-                const profiles = parseInt(profileCountInput.value) || 1;
-                const profRot = enableRotCheck.checked ? (parseInt(profileRotInput.value) || 0) : 0;
-                totalProxyCost = profiles * (1 + profRot) * proxyCostPerMonth;
-                multiVpsCost = (profiles * vpsCostPerMonth) + (profiles * (1 + profRot) * proxyCostPerMonth);
-                savings = multiVpsCost - (totalVpsCost + totalProxyCost);
-            }
-
-            const dailyCost = (totalVpsCost + totalProxyCost) / 30;
+            const dailyCost = infrastructureCost / 30;
             const netProfit = gananciaTotal - dailyCost;
 
             resultAmount.textContent = `$${gananciaTotal.toFixed(2)}`;
             resultDetail.innerHTML = detalleHtml;
 
-            if (vpsCostPerMonth > 0 || proxyCostPerMonth > 0) {
-                netProfitEl.innerHTML = `
-                    <div style="margin-top:6px;font-size:11px;color:var(--muted)">
-                        💰 Coste diario: $${dailyCost.toFixed(2)}<br>
-                        (Infra: $${totalVpsCost.toFixed(2)}/mes | Proxies: $${totalProxyCost.toFixed(2)}/mes)
-                    </div>
-                    <div class="${netProfit >= 0 ? 'profit-positive' : 'profit-negative'}" style="margin-top:4px;">
-                        📈 Beneficio neto: $${netProfit.toFixed(2)}/día
-                    </div>
-                `;
-            }
+            netProfitEl.innerHTML = `
+                <div style="margin-top:6px;font-size:11px;color:var(--muted)">
+                    💰 Coste diario: $${dailyCost.toFixed(2)}<br>
+                    (Infraestructura: $${infrastructureCost.toFixed(2)}/mes · ${totalVPNs} VPNs)
+                </div>
+                <div class="${netProfit >= 0 ? 'profit-positive' : 'profit-negative'}" style="margin-top:4px;">
+                    📈 Beneficio neto: $${netProfit.toFixed(2)}/día
+                </div>
+            `;
             weeklyProfitEl.textContent = `💵 Ganancia semanal estimada: $${(gananciaTotal * 7).toFixed(2)}`;
 
-            if (currentMode === 'multi-profile' && savings > 0) {
-                savingsBadge.style.display = 'block';
-                savingsBadge.innerHTML = `💡 Ahorras $${savings.toFixed(2)}/mes vs usar ${parseInt(profileCountInput.value) || 1} servidores individuales`;
+            // Savings badge if multi-profile and cost < equivalent multi-vps
+            if (currentMode === 'multi-profile') {
+                const pvps = parseInt(profileVpsCountInput.value) || 1;
+                const ppv = parseInt(profilesPerVpsInput.value) || 1;
+                const totalProfiles = pvps * ppv;
+                const equivalentVpsCost = totalProfiles * (parseFloat(vpsCostInput.value) || 15);
+                const currentInfra = infrastructureCost;
+                const savings = equivalentVpsCost - currentInfra;
+                if (savings > 0) {
+                    savingsBadge.style.display = 'block';
+                    savingsBadge.innerHTML = `💡 Ahorras $${savings.toFixed(2)}/mes vs usar ${totalProfiles} VPS individuales`;
+                } else {
+                    savingsBadge.style.display = 'none';
+                }
             } else {
                 savingsBadge.style.display = 'none';
             }
@@ -550,21 +606,33 @@
 
             lastCalc = {
                 mode: currentMode,
-                group,
-                size: parseInt(sizeSelect.value),
-                antidetect,
-                distribution: currentDistribution,
-                costs: { vpsPerMonth: vpsCostPerMonth, proxyPerMonth: proxyCostPerMonth },
-                results: { totalDownloads: totalDl, grossDaily: gananciaTotal, dailyCost, netDaily: netProfit }
+                totalDl,
+                gananciaTotal,
+                netProfit,
+                infrastructureCost,
+                totalVPNs
             };
         }
 
-        // Reiniciar
+        // Event listeners for all inputs
+        [
+            vpsCountInput, vpsLimitInput,
+            profileVpsCountInput, profilesPerVpsInput, profileLimitInput, profileRotInput,
+            vpsCostInput, proxyCostInput, profileVpsCostInput
+        ].forEach(el => el.addEventListener('input', updateCalculations));
+
+        groupSelect.addEventListener('change', updateCalculations);
+        sizeSelect.addEventListener('change', updateCalculations);
+        enableRotCheck.addEventListener('change', updateCalculations);
+        antidetectCheck.addEventListener('change', updateCalculations);
+
+        // Reset button
         resetBtn.addEventListener('click', () => {
             applyTemplate('beginner');
             if (tg) tg.HapticFeedback?.impactOccurred("light");
         });
 
+        // Export
         exportBtn.addEventListener('click', () => {
             const dataStr = JSON.stringify(lastCalc, null, 2);
             const blob = new Blob([dataStr], {type: 'application/json'});
@@ -577,16 +645,7 @@
             if (tg) tg.HapticFeedback?.impactOccurred("medium");
         });
 
-        // Eventos
-        [vpsCountInput, vpsLimitInput, profileCountInput, profileLimitInput, profileRotInput,
-         vpsCostInput, proxyCostInput, profileVpsCostInput].forEach(el =>
-            el.addEventListener('input', updateCalculations)
-        );
-        groupSelect.addEventListener('change', updateCalculations);
-        sizeSelect.addEventListener('change', updateCalculations);
-        enableRotCheck.addEventListener('change', updateCalculations);
-        antidetectCheck.addEventListener('change', updateCalculations);
-
+        // Template cards
         document.querySelectorAll('.template-card').forEach(card => {
             card.addEventListener('click', () => {
                 document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
@@ -596,7 +655,7 @@
             });
         });
 
-        // Inicializar con plantilla principiante (multi-perfil)
+        // Initialize
         applyTemplate('beginner');
     </script>
 </body>
