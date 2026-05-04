@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Simulador Rapidgator · Mkeyz Studio</title>
+    <title>sunana · panel de control</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -73,12 +73,13 @@
         .input-group { margin-bottom: 14px; flex: 1; min-width: 100px; }
         .input-group label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
 
-        select, input[type=text], input[type=number] {
+        select, input[type=text], input[type=number], textarea {
             width: 100%; padding: 10px 12px; background: #111118;
             border: 1px solid var(--border); border-radius: 10px;
             color: var(--text); font-size: 13px; font-weight: 500;
             outline: none; -moz-appearance: textfield;
         }
+        textarea { resize: vertical; min-height: 80px; }
         select {
             -webkit-appearance: none; appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23f5c518' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
@@ -86,7 +87,7 @@
         }
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245,197,24,0.3); }
+        input:focus, select:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245,197,24,0.3); }
 
         .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .toggle-row span { font-size: 11px; color: var(--muted); }
@@ -155,13 +156,42 @@
             font-size: 10px; color: var(--muted); line-height: 1.6;
         }
         .file-distribution strong { color: var(--gold); }
+
+        .proxy-results {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 10px;
+        }
+        .proxy-entry {
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .proxy-entry.live { color: var(--green); }
+        .proxy-entry.dead { color: #ff4444; }
+
+        .plan-list {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .plan-item {
+            background: #111118;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        .plan-item.active { border-color: var(--gold); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>💰 Simulador Rapidgator</h1>
-            <p>Script con CAPTCHA · Plantillas · VPNs</p>
+            <h1>🌐 sunana</h1>
+            <p>panel de control · harrys · canchas · pam · vite</p>
         </div>
 
         <!-- PLANTILLAS -->
@@ -196,7 +226,7 @@
             <button class="btn btn-outline" id="reset-btn" style="margin-top:12px;">🔄 Reiniciar a Principiante</button>
         </div>
 
-        <!-- RESULTADO (siempre visible) -->
+        <!-- RESULTADO -->
         <div class="result-box" id="result-box">
             <div class="result-label">Ganancia bruta diaria</div>
             <div class="result-amount" id="result-amount">$0.00</div>
@@ -207,7 +237,7 @@
 
         <!-- CONFIGURACIÓN -->
         <div class="card">
-            <div class="section-title">⚙️ Configuración</div>
+            <div class="section-title">⚙️ sunana (simulación)</div>
             <div class="input-row">
                 <div class="input-group">
                     <label>Grupo de países</label>
@@ -238,14 +268,14 @@
                 </label>
             </div>
             <div class="toggle-row">
-                <span>Rotar IP (proxies)</span>
+                <span>Rotar IP (pam)</span>
                 <label class="switch">
                     <input type="checkbox" id="enable-rotation-simple">
                     <span class="slider"></span>
                 </label>
             </div>
             <div class="toggle-row">
-                <span>Resolver CAPTCHA (2Captcha)</span>
+                <span>Resolver cancha (2Captcha)</span>
                 <label class="switch">
                     <input type="checkbox" id="enable-captcha">
                     <span class="slider"></span>
@@ -254,6 +284,10 @@
             <div class="input-group" id="captcha-key-group" style="display:none;">
                 <label>API Key de 2Captcha</label>
                 <input type="text" id="captcha-api-key" placeholder="Pega tu API key...">
+            </div>
+            <div class="input-group" id="captcha-cost-group" style="display:none;">
+                <label>Coste por cancha ($)</label>
+                <input type="number" id="captcha-cost" value="0.002" min="0" step="0.0001">
             </div>
 
             <!-- Programación horaria -->
@@ -312,16 +346,28 @@
                 <div class="input-row">
                     <div class="input-group">
                         <label>Descargas/perfil/día</label>
-                        <input type="number" id="profile-limit" value="2" min="1">
+                        <input type="number" id="profile-limit" value="5" min="1">
                     </div>
                     <div class="input-group">
                         <label>Rotaciones IP/día</label>
                         <input type="number" id="profile-rotations" value="0" min="0">
                     </div>
                 </div>
+                <!-- VITE multi‑IP -->
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>IPs por cuenta vite</label>
+                        <input type="number" id="vite-ips-per-account" value="10" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label>Coste cuenta vite ($/mes)</label>
+                        <input type="number" id="vite-account-cost" value="12" min="0" step="0.01">
+                    </div>
+                </div>
                 <div class="vpn-info" id="vpn-info">
                     🔐 <strong>Total perfiles:</strong> <span id="total-profiles">30</span> · 
-                    <strong>VPNs necesarias:</strong> <span id="vpn-needed">30</span>
+                    <strong>IPs necesarias:</strong> <span id="ips-needed">30</span><br>
+                    <strong>Cuentas vite necesarias:</strong> <span id="vite-accounts-needed">3</span>
                 </div>
             </div>
 
@@ -333,7 +379,7 @@
                     <input type="number" id="vps-cost" value="15" min="0" step="0.01">
                 </div>
                 <div class="input-group">
-                    <label>VPN/Proxy ($/mes)</label>
+                    <label>Vite/Pam ($/mes)</label>
                     <input type="number" id="proxy-cost" value="0" min="0" step="0.01">
                 </div>
             </div>
@@ -348,8 +394,34 @@
             </div>
             <div class="savings-badge" id="savings-badge" style="display:none;"></div>
 
-            <button class="btn btn-gold" id="generate-script-btn">📜 Generar script bash</button>
+            <!-- Guardado de planes -->
+            <div class="section-title" style="margin-top:16px;">💾 Planes guardados</div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Nombre del plan</label>
+                    <input type="text" id="plan-name" placeholder="ej. Plan agresivo nocturno">
+                </div>
+            </div>
+            <button class="btn btn-outline" id="save-plan-btn">💾 Guardar plan actual</button>
+            <div class="plan-list" id="plan-list"></div>
+
+            <button class="btn btn-gold" id="generate-script-btn">📜 Generar harry (script)</button>
             <button class="btn btn-accent" id="export-btn">📥 Exportar configuración (JSON)</button>
+        </div>
+
+        <!-- Probador de Pam (proxies) -->
+        <div class="card">
+            <div class="section-title">🧪 Probador de pam</div>
+            <div class="input-group">
+                <label>Lista de pam (uno por línea, IP:puerto)</label>
+                <textarea id="proxy-list" placeholder="192.168.1.1:8080
+10.0.0.1:3128
+..."></textarea>
+            </div>
+            <button class="btn btn-accent" id="test-proxies-btn">Probar pam (simulación)</button>
+            <button class="btn btn-outline" id="download-proxy-test-btn" style="margin-top:4px;">📥 Descargar script test_pam.sh</button>
+            <div class="proxy-results" id="proxy-results"></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:6px;">* La prueba real debe ejecutarse en tu VPS con el script descargado.</div>
         </div>
     </div>
 
@@ -371,51 +443,39 @@
         const templates = {
             beginner: {
                 mode: 'multi-profile',
-                profileVpsCount: 1,
-                profilesPerVps: 30,
-                profileLimit: 2,
-                profileRotations: 0,
+                profileVpsCount: 1, profilesPerVps: 30, profileLimit: 5, profileRotations: 0,
                 group: 'I', size: 2,
                 distribution: {0:5, 1:10, 2:15},
-                enableRot: false,
-                vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
-                schedule: 'full', timeStart: 8, timeEnd: 12
+                enableRot: false, vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
+                schedule: 'full', timeStart: 8, timeEnd: 12,
+                viteIpsPerAccount: 10, viteAccountCost: 12
             },
             intermediate: {
                 mode: 'multi-profile',
-                profileVpsCount: 2,
-                profilesPerVps: 15,
-                profileLimit: 2,
-                profileRotations: 0,
+                profileVpsCount: 2, profilesPerVps: 15, profileLimit: 5, profileRotations: 0,
                 group: 'I', size: 2,
                 distribution: {0:10, 1:30, 2:10},
-                enableRot: false,
-                vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
-                schedule: 'full', timeStart: 8, timeEnd: 12
+                enableRot: false, vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
+                schedule: 'full', timeStart: 8, timeEnd: 12,
+                viteIpsPerAccount: 10, viteAccountCost: 12
             },
             advanced: {
                 mode: 'multi-profile',
-                profileVpsCount: 3,
-                profilesPerVps: 20,
-                profileLimit: 3,
-                profileRotations: 0,
+                profileVpsCount: 3, profilesPerVps: 20, profileLimit: 6, profileRotations: 0,
                 group: 'I', size: 3,
                 distribution: {1:20, 2:40, 3:20},
-                enableRot: false,
-                vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
-                schedule: 'full', timeStart: 8, timeEnd: 12
+                enableRot: false, vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
+                schedule: 'full', timeStart: 8, timeEnd: 12,
+                viteIpsPerAccount: 10, viteAccountCost: 12
             },
             aggressive: {
                 mode: 'multi-profile',
-                profileVpsCount: 5,
-                profilesPerVps: 20,
-                profileLimit: 3,
-                profileRotations: 0,
+                profileVpsCount: 5, profilesPerVps: 20, profileLimit: 8, profileRotations: 0,
                 group: 'I', size: 4,
                 distribution: {2:50, 3:50, 4:50},
-                enableRot: false,
-                vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
-                schedule: 'full', timeStart: 8, timeEnd: 12
+                enableRot: false, vpsCost: 15, proxyCost: 0, profileVpsCost: 20,
+                schedule: 'full', timeStart: 8, timeEnd: 12,
+                viteIpsPerAccount: 10, viteAccountCost: 12
             }
         };
 
@@ -423,15 +483,14 @@
         const modeBtns = document.querySelectorAll('.mode-btn');
         const multiVpsFields = document.getElementById('multi-vps-fields');
         const multiProfileFields = document.getElementById('multi-profile-fields');
-
         const vpsCountInput = document.getElementById('vps-count');
         const vpsLimitInput = document.getElementById('vps-limit');
-
         const profileVpsCountInput = document.getElementById('profile-vps-count');
         const profilesPerVpsInput = document.getElementById('profiles-per-vps');
         const profileLimitInput = document.getElementById('profile-limit');
         const profileRotInput = document.getElementById('profile-rotations');
-
+        const viteIpsInput = document.getElementById('vite-ips-per-account');
+        const viteCostInput = document.getElementById('vite-account-cost');
         const groupSelect = document.getElementById('simple-group');
         const sizeSelect = document.getElementById('simple-size');
         const antidetectCheck = document.getElementById('antidetect-simple');
@@ -439,41 +498,49 @@
         const enableCaptchaCheck = document.getElementById('enable-captcha');
         const captchaKeyGroup = document.getElementById('captcha-key-group');
         const captchaApiKeyInput = document.getElementById('captcha-api-key');
-
+        const captchaCostGroup = document.getElementById('captcha-cost-group');
+        const captchaCostInput = document.getElementById('captcha-cost');
         const scheduleTypeSelect = document.getElementById('schedule-type');
         const customTimeDiv = document.getElementById('custom-time');
         const timeStartInput = document.getElementById('time-start');
         const timeEndInput = document.getElementById('time-end');
-
         const resultAmount = document.getElementById('result-amount');
         const resultDetail = document.getElementById('result-detail');
         const netProfitEl = document.getElementById('net-profit');
         const weeklyProfitEl = document.getElementById('weekly-profit');
         const distributionBox = document.getElementById('distribution-box');
         const distributionText = document.getElementById('distribution-text');
-
         const vpsCostInput = document.getElementById('vps-cost');
         const proxyCostInput = document.getElementById('proxy-cost');
         const profileVpsCostGroup = document.getElementById('profile-vps-cost-group');
         const profileVpsCostInput = document.getElementById('profile-vps-cost');
-
         const totalProfilesSpan = document.getElementById('total-profiles');
-        const vpnNeededSpan = document.getElementById('vpn-needed');
+        const ipsNeededSpan = document.getElementById('ips-needed');
+        const viteAccountsSpan = document.getElementById('vite-accounts-needed');
         const savingsBadge = document.getElementById('savings-badge');
         const exportBtn = document.getElementById('export-btn');
         const resetBtn = document.getElementById('reset-btn');
         const generateScriptBtn = document.getElementById('generate-script-btn');
+        const proxyListTextarea = document.getElementById('proxy-list');
+        const testProxiesBtn = document.getElementById('test-proxies-btn');
+        const downloadProxyTestBtn = document.getElementById('download-proxy-test-btn');
+        const proxyResultsDiv = document.getElementById('proxy-results');
+        const savePlanBtn = document.getElementById('save-plan-btn');
+        const planNameInput = document.getElementById('plan-name');
+        const planListDiv = document.getElementById('plan-list');
 
         let currentMode = 'multi-profile';
         let currentDistribution = {};
         let lastCalc = {};
 
-        // Captcha toggle
+        // Captcha toggles
         enableCaptchaCheck.addEventListener('change', () => {
             captchaKeyGroup.style.display = enableCaptchaCheck.checked ? 'block' : 'none';
+            captchaCostGroup.style.display = enableCaptchaCheck.checked ? 'block' : 'none';
+            updateCalculations();
         });
 
-        // Schedule toggle
+        // Schedule
         scheduleTypeSelect.addEventListener('change', () => {
             customTimeDiv.style.display = scheduleTypeSelect.value === 'custom' ? 'flex' : 'none';
             updateCalculations();
@@ -511,8 +578,10 @@
             setMode(t.mode);
             profileVpsCountInput.value = t.profileVpsCount || 1;
             profilesPerVpsInput.value = t.profilesPerVps || 30;
-            profileLimitInput.value = t.profileLimit || 2;
+            profileLimitInput.value = t.profileLimit || 5;
             profileRotInput.value = t.profileRotations || 0;
+            viteIpsInput.value = t.viteIpsPerAccount || 10;
+            viteCostInput.value = t.viteAccountCost || 12;
             vpsCountInput.value = 1;
             vpsLimitInput.value = 2;
             groupSelect.value = t.group;
@@ -550,34 +619,36 @@
             const activeHours = getActiveHours();
 
             let totalDl = 0;
-            let totalVPNs = 0;
+            let totalProfiles = 0;
             let infrastructureCost = 0;
 
             if (currentMode === 'multi-vps') {
                 const vps = parseInt(vpsCountInput.value) || 1;
                 const limit = parseInt(vpsLimitInput.value) || 2;
                 totalDl = vps * limit;
-                totalVPNs = vps;
+                totalProfiles = vps;
                 const vpsCost = parseFloat(vpsCostInput.value) || 0;
                 const proxyCost = parseFloat(proxyCostInput.value) || 0;
-                infrastructureCost = (vps * vpsCost) + (totalVPNs * proxyCost);
+                infrastructureCost = (vps * vpsCost) + (totalProfiles * proxyCost);
             } else {
                 const pvps = parseInt(profileVpsCountInput.value) || 1;
                 const ppv = parseInt(profilesPerVpsInput.value) || 1;
-                const totalProfiles = pvps * ppv;
-                totalVPNs = totalProfiles;
-                const limitPerProfile = parseInt(profileLimitInput.value) || 2;
+                totalProfiles = pvps * ppv;
+                const limitPerProfile = parseInt(profileLimitInput.value) || 5;
                 totalDl = totalProfiles * limitPerProfile;
                 const vpsCost = parseFloat(profileVpsCostInput.value) || 20;
-                const proxyCost = parseFloat(proxyCostInput.value) || 0;
-                infrastructureCost = (pvps * vpsCost) + (totalVPNs * proxyCost);
+                const ipsPerAccount = parseInt(viteIpsInput.value) || 10;
+                const viteAccountCost = parseFloat(viteCostInput.value) || 12;
+                const accountsNeeded = Math.ceil(totalProfiles / ipsPerAccount);
+                infrastructureCost = (pvps * vpsCost) + (accountsNeeded * viteAccountCost);
+                viteAccountsSpan.textContent = accountsNeeded;
+                ipsNeededSpan.textContent = totalProfiles;
             }
 
             totalDl = Math.round(totalDl * (activeHours / 24));
             if (antidetect) totalDl = Math.round(totalDl * (0.85 + Math.random() * 0.15));
 
-            totalProfilesSpan.textContent = totalVPNs;
-            vpnNeededSpan.textContent = totalVPNs;
+            totalProfilesSpan.textContent = totalProfiles;
 
             let gananciaTotal = 0;
             let detalleHtml = '';
@@ -600,7 +671,15 @@
                 });
             }
 
-            const dailyCost = infrastructureCost / 30;
+            let dailyCost = infrastructureCost / 30;
+            let captchaCostTotal = 0;
+            if (enableCaptchaCheck.checked) {
+                const tasaCancha = 0.3;
+                const captchasEstimados = Math.round(totalDl * tasaCancha);
+                const captchaUnitCost = parseFloat(captchaCostInput.value) || 0;
+                captchaCostTotal = captchasEstimados * captchaUnitCost;
+                dailyCost += captchaCostTotal;
+            }
             const netProfit = gananciaTotal - dailyCost;
 
             resultAmount.textContent = `$${gananciaTotal.toFixed(2)}`;
@@ -609,7 +688,8 @@
             netProfitEl.innerHTML = `
                 <div style="margin-top:6px;font-size:11px;color:var(--muted)">
                     💰 Coste diario: $${dailyCost.toFixed(2)} (${activeHours}h activas)<br>
-                    (Infraestructura: $${infrastructureCost.toFixed(2)}/mes · ${totalVPNs} VPNs)
+                    (Infraestructura: $${infrastructureCost.toFixed(2)}/mes · ${totalProfiles} vite)
+                    ${captchaCostTotal > 0 ? `<br>🧩 Canchas estimadas: $${captchaCostTotal.toFixed(2)}/día` : ''}
                 </div>
                 <div class="${netProfit >= 0 ? 'profit-positive' : 'profit-negative'}" style="margin-top:4px;">
                     📈 Beneficio neto: $${netProfit.toFixed(2)}/día
@@ -618,7 +698,6 @@
             weeklyProfitEl.textContent = `💵 Ganancia semanal estimada: $${(gananciaTotal * 7).toFixed(2)}`;
 
             if (currentMode === 'multi-profile') {
-                const totalProfiles = parseInt(profileVpsCountInput.value || 1) * parseInt(profilesPerVpsInput.value || 1);
                 const equivalentVpsCost = totalProfiles * (parseFloat(vpsCostInput.value) || 15);
                 const savings = equivalentVpsCost - infrastructureCost;
                 if (savings > 0) {
@@ -632,9 +711,10 @@
             }
 
             updateDistributionDisplay();
-            lastCalc = { mode: currentMode, totalDl, gananciaTotal, netProfit, infrastructureCost, totalVPNs, activeHours, distribution: currentDistribution };
+            lastCalc = { mode: currentMode, totalDl, gananciaTotal, netProfit, infrastructureCost, totalProfiles, activeHours, distribution: currentDistribution };
         }
 
+        // Generar harry (script)
         function generateBashScript() {
             const hours = lastCalc.activeHours || 24;
             const totalDownloads = lastCalc.totalDl || 0;
@@ -642,11 +722,10 @@
             const useCaptcha = enableCaptchaCheck.checked;
             const apiKey = captchaApiKeyInput.value.trim();
 
-            // Interpolación segura: las variables Bash se escapan con \$ para que JS no las procese
             let script = `#!/bin/bash
-# Script generado por Simulador Rapidgator · Mkeyz Studio
-# Descargas totales: ${totalDownloads} | Horas activas: ${hours}
-echo "Iniciando..."
+# Harry generado por sunana
+# Descargas: ${totalDownloads} | Horas activas: ${hours}
+echo "Iniciando harry..."
 
 USER_AGENTS=(
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -658,13 +737,12 @@ USER_AGENTS=(
 
             if (useCaptcha && apiKey) {
                 script += `
-# Resolución automática de CAPTCHA (2Captcha)
 CAPTCHA_API_KEY="${apiKey}"
 RAPIDGATOR_SITE_KEY="6LdU4RATAAAAAK4B6-J0-GvS_Jw0gE0VeMqS9M-"
 PAGE_URL="https://rapidgator.net"
 
 solve_captcha() {
-  echo "Enviando CAPTCHA..."
+  echo "Enviando cancha..."
   local captcha_id=\$(curl -s "https://2captcha.com/in.php?key=\${CAPTCHA_API_KEY}&method=hcaptcha&sitekey=\${RAPIDGATOR_SITE_KEY}&pageurl=\${PAGE_URL}" | grep -o '[0-9]*')
   [ -z "\$captcha_id" ] && return 1
   echo "ID: \$captcha_id"
@@ -703,7 +781,7 @@ for (( i=0; i<TOTAL_DESCARGAS; i++ )); do
 
   HTTP_CODE=\$(curl -s -o /dev/null -w "%{http_code}" -L -A "\$UA" "\$URL")
   if [ "\$HTTP_CODE" = "403" ] || curl -s -L -A "\$UA" "\$URL" | grep -q "captcha"; then
-    echo "CAPTCHA detectado"
+    echo "cancha detectada"
     if [ "${useCaptcha}" = "true" ] && [ -n "\$CAPTCHA_API_KEY" ]; then
       TOKEN=\$(solve_captcha)
       if [ \$? -eq 0 ]; then
@@ -715,24 +793,122 @@ for (( i=0; i<TOTAL_DESCARGAS; i++ )); do
 
   sleep \$(( RANDOM % 7 + 2 ))
 done
-echo "Completadas \$TOTAL_DESCARGAS descargas."
+echo "Harry completado."
 `;
 
             const blob = new Blob([script], {type: 'application/x-sh'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'descargas_rapidgator.sh';
+            a.download = 'harry.sh';
             a.click();
             URL.revokeObjectURL(url);
             if (tg) tg.HapticFeedback?.impactOccurred("medium");
         }
 
-        // Event listeners for all inputs
-        [vpsCountInput, vpsLimitInput, profileVpsCountInput, profilesPerVpsInput, profileLimitInput, profileRotInput,
-         vpsCostInput, proxyCostInput, profileVpsCostInput, timeStartInput, timeEndInput].forEach(el =>
-            el.addEventListener('input', updateCalculations)
-        );
+        // Probar pam (simulación visual)
+        testProxiesBtn.addEventListener('click', () => {
+            const list = proxyListTextarea.value.trim();
+            if (!list) {
+                proxyResultsDiv.innerHTML = '<span style="color:#ff4444;">⚠️ Pega una lista de pam primero.</span>';
+                return;
+            }
+            const lines = list.split('\n').filter(l => l.trim());
+            proxyResultsDiv.innerHTML = 'Probando...';
+            setTimeout(() => {
+                let html = '';
+                lines.forEach(line => {
+                    const isLive = Math.random() > 0.3;
+                    html += `<div class="proxy-entry ${isLive ? 'live' : 'dead'}">${line} ${isLive ? '✅ vivo' : '❌ muerto'}</div>`;
+                });
+                proxyResultsDiv.innerHTML = html;
+            }, 800);
+        });
+
+        // Descargar script de prueba real de pam
+        downloadProxyTestBtn.addEventListener('click', () => {
+            const list = proxyListTextarea.value.trim();
+            const proxies = list ? list.split('\n').filter(l => l.trim()) : ['192.168.1.1:8080'];
+            let script = `#!/bin/bash
+# Script para probar pam (proxies) en sunana
+echo "Probando ${proxies.length} pam..."
+
+for proxy in ${proxies.map(p => `"${p}"`).join(' ')}; do
+  echo "Probando \$proxy..."
+  curl -s --max-time 5 -x "\$proxy" http://httpbin.org/ip >/dev/null && echo "\$proxy ✅ vivo" || echo "\$proxy ❌ muerto"
+done
+`;
+            const blob = new Blob([script], {type: 'application/x-sh'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'test_pam.sh';
+            a.click();
+            URL.revokeObjectURL(url);
+            if (tg) tg.HapticFeedback?.impactOccurred("light");
+        });
+
+        // Guardado de planes
+        function loadPlans() {
+            const plans = JSON.parse(localStorage.getItem('sunana_plans') || '{}');
+            planListDiv.innerHTML = '';
+            Object.keys(plans).forEach(name => {
+                const item = document.createElement('div');
+                item.className = 'plan-item';
+                item.textContent = name;
+                item.onclick = () => {
+                    const plan = plans[name];
+                    // Restaurar campos básicos
+                    for (let [key, value] of Object.entries(plan)) {
+                        if (key === '_distribution') {
+                            currentDistribution = value;
+                            continue;
+                        }
+                        const el = document.getElementById(key);
+                        if (el) el.value = value;
+                    }
+                    updateCalculations();
+                };
+                planListDiv.appendChild(item);
+            });
+        }
+
+        savePlanBtn.addEventListener('click', () => {
+            const name = planNameInput.value.trim();
+            if (!name) return;
+            const plans = JSON.parse(localStorage.getItem('sunana_plans') || '{}');
+            const currentPlan = {};
+            // IDs de todos los inputs que queremos guardar
+            const idsToSave = [
+                'simple-group', 'simple-size', 'schedule-type',
+                'vps-cost', 'proxy-cost', 'profile-vps-cost',
+                'profile-vps-count', 'profiles-per-vps', 'profile-limit',
+                'profile-rotations', 'vite-ips-per-account', 'vite-account-cost',
+                'vps-count', 'vps-limit',
+                'enable-rotation-simple', 'antidetect-simple', 'enable-captcha',
+                'captcha-api-key', 'captcha-cost',
+                'time-start', 'time-end'
+            ];
+            idsToSave.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) currentPlan[id] = (el.type === 'checkbox') ? el.checked : el.value;
+            });
+            currentPlan['_distribution'] = currentDistribution;
+            plans[name] = currentPlan;
+            localStorage.setItem('sunana_plans', JSON.stringify(plans));
+            loadPlans();
+            planNameInput.value = '';
+            if (tg) tg.HapticFeedback?.impactOccurred("light");
+        });
+
+        // Event listeners para actualización automática
+        const inputsToWatch = [
+            vpsCountInput, vpsLimitInput, profileVpsCountInput, profilesPerVpsInput,
+            profileLimitInput, profileRotInput, viteIpsInput, viteCostInput,
+            vpsCostInput, proxyCostInput, profileVpsCostInput,
+            timeStartInput, timeEndInput, captchaCostInput
+        ];
+        inputsToWatch.forEach(el => el.addEventListener('input', updateCalculations));
         groupSelect.addEventListener('change', updateCalculations);
         sizeSelect.addEventListener('change', updateCalculations);
         enableRotCheck.addEventListener('change', updateCalculations);
@@ -747,7 +923,7 @@ echo "Completadas \$TOTAL_DESCARGAS descargas."
             const blob = new Blob([JSON.stringify(lastCalc, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = 'rapidgator-config.json'; a.click();
+            a.href = url; a.download = 'sunana_config.json'; a.click();
             URL.revokeObjectURL(url);
             if (tg) tg.HapticFeedback?.impactOccurred("medium");
         });
@@ -766,8 +942,9 @@ echo "Completadas \$TOTAL_DESCARGAS descargas."
             });
         });
 
-        // Inicializar con la plantilla por defecto
+        // Inicializar
         applyTemplate('beginner');
+        loadPlans();
     </script>
 </body>
 </html>
