@@ -1,101 +1,33 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>MKEYZ Launch Center</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MKEYZ · Simulador de Audiencia</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      font-family: 'Montserrat', system-ui, sans-serif;
     }
-
     body {
-      font-family: 'Montserrat', sans-serif;
-      background: #050505;
-      color: white;
-      overflow-x: hidden;
+      background: #05050a;
+      color: #fff;
       min-height: 100vh;
-      position: relative;
-    }
-
-    .bg {
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(circle at top left, rgba(0,255,170,0.18), transparent 35%),
-        radial-gradient(circle at bottom right, rgba(255,0,140,0.18), transparent 35%),
-        #050505;
-      z-index: -2;
-    }
-
-    .grid {
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-      animation: moveGrid 12s linear infinite;
-      z-index: -1;
-      opacity: 0.5;
-    }
-
-    @keyframes moveGrid {
-      from { transform: translateY(0px); }
-      to { transform: translateY(40px); }
-    }
-
-    .floating {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(10px);
-      opacity: 0.5;
-      animation: float 8s infinite ease-in-out;
-      z-index: -1;
-    }
-
-    .one {
-      width: 200px;
-      height: 200px;
-      background: #00ffaa;
-      top: 10%;
-      left: 8%;
-    }
-
-    .two {
-      width: 240px;
-      height: 240px;
-      background: #ff008c;
-      bottom: 10%;
-      right: 8%;
-      animation-delay: 2s;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-30px); }
-    }
-
-    .container {
-      max-width: 520px;
-      margin: 0 auto;
       padding: 20px 12px 40px;
-      position: relative;
-      z-index: 2;
+      display: flex;
+      justify-content: center;
     }
-
+    .container {
+      max-width: 650px;
+      width: 100%;
+    }
     .header {
       text-align: center;
       margin-bottom: 24px;
     }
-
     .header .brand {
       font-size: 28px;
       font-weight: 900;
@@ -104,759 +36,494 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       letter-spacing: 1px;
-      margin-bottom: 4px;
     }
-
-    .header .tagline {
-      font-size: 11px;
-      color: rgba(255,255,255,0.55);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
     .card {
-      background: rgba(15, 15, 20, 0.75);
+      background: rgba(15, 15, 20, 0.8);
       backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 20px;
       padding: 18px;
       margin-bottom: 18px;
-      position: relative;
-      transition: all 0.3s;
     }
-
-    .card:hover {
-      border-color: rgba(0,255,170,0.2);
-      box-shadow: 0 8px 28px rgba(0,255,170,0.08);
-    }
-
     .section-title {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: rgba(0,255,170,0.9);
-      margin-bottom: 14px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-
-    .stat-mini {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 14px;
-      padding: 12px 6px;
-      text-align: center;
-    }
-
-    .stat-mini .number {
-      font-size: 22px;
-      font-weight: 900;
       color: #00ffaa;
-    }
-
-    .stat-mini .label {
-      font-size: 9px;
-      color: rgba(255,255,255,0.5);
-      margin-top: 4px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .spotify-metric-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
       margin-bottom: 14px;
     }
-
-    .spotify-metric {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 12px;
-      padding: 10px;
-      text-align: center;
-    }
-
-    .spotify-metric .value {
-      font-size: 20px;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .spotify-metric .label {
-      font-size: 8px;
-      color: rgba(255,255,255,0.5);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .growth {
-      font-size: 9px;
-      font-weight: 600;
-      margin-top: 2px;
-    }
-
-    .growth.up { color: #00ffaa; }
-    .growth.down { color: #ff008c; }
-
-    .chart-container {
-      position: relative;
-      height: 200px;
-      width: 100%;
-      margin: 14px 0;
-    }
-
-    .spotify-edit-form {
-      display: flex;
-      gap: 6px;
-      margin: 10px 0;
-    }
-
-    .spotify-edit-form input {
-      flex: 1;
-      padding: 10px 12px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      color: #fff;
-      font-size: 12px;
-      outline: none;
-    }
-
-    .spotify-history {
-      font-size: 10px;
-      color: rgba(255,255,255,0.5);
-    }
-
-    .spotify-history ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 6px;
-    }
-
-    .spotify-history li {
-      margin-bottom: 3px;
-      padding: 4px 6px;
-      background: rgba(255,255,255,0.02);
-      border-radius: 6px;
-    }
-
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 12px 18px;
+      padding: 10px 16px;
       border: none;
       border-radius: 12px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.25s;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-    }
-
-    .btn-primary {
       background: linear-gradient(90deg, #00ffaa, #00c3ff);
       color: #000;
     }
-
-    .btn-secondary {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.2);
-      color: #fff;
-    }
-
-    .btn-sm {
-      padding: 8px 12px;
-      font-size: 10px;
-      border-radius: 10px;
-    }
-
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,255,170,0.25);
+      box-shadow: 0 6px 20px rgba(0, 255, 170, 0.25);
     }
-
-    .input-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-
-    .input-group {
-      flex: 1;
-      min-width: 90px;
-      margin-bottom: 8px;
-    }
-
-    .input-group label {
-      display: block;
+    .btn-sm {
+      padding: 6px 12px;
       font-size: 10px;
-      color: rgba(255,255,255,0.5);
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      border-radius: 8px;
     }
-
-    input, select, textarea {
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+    input, select {
       width: 100%;
       padding: 10px 12px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
       color: #fff;
       font-size: 13px;
       outline: none;
+      margin-bottom: 8px;
     }
-
-    textarea { resize: vertical; min-height: 50px; }
-
-    input:focus, select:focus, textarea:focus {
+    input:focus, select:focus {
       border-color: #00ffaa;
-      box-shadow: 0 0 0 2px rgba(0,255,170,0.2);
+      box-shadow: 0 0 0 2px rgba(0, 255, 170, 0.2);
     }
-
-    .pipeline-row {
+    .row {
       display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      scrollbar-width: none;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
     }
-
-    .pipeline-row::-webkit-scrollbar { display: none; }
-
-    .slot-card {
-      flex: 0 0 120px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 12px 8px;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.3s;
+    .row > div {
+      flex: 1;
+      min-width: 90px;
     }
-
-    .slot-card.active {
-      border-color: #00ffaa;
-      box-shadow: 0 0 14px rgba(0,255,170,0.2);
+    .label {
+      font-size: 10px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
     }
-
-    .slot-week { font-size: 8px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1.5px; }
-    .slot-date { font-size: 9px; color: rgba(255,255,255,0.6); margin: 6px 0; }
-    .slot-title { font-weight: 700; font-size: 12px; }
-    .slot-empty { color: rgba(255,255,255,0.3); }
-    .slot-status { font-size: 8px; padding: 3px 8px; border-radius: 12px; display: inline-block; margin-top: 6px; }
-    .slot-status.ready { background: rgba(0,255,170,0.2); color: #00ffaa; }
-    .slot-status.draft { background: rgba(255,255,255,0.1); color: #ccc; }
-
-    .song-list {
-      max-height: 300px;
-      overflow-y: auto;
-      margin-top: 10px;
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 8px;
+      margin: 12px 0;
     }
-
-    .song-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.07);
+    .kpi-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
       border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 10px;
+      padding: 12px 6px;
+      text-align: center;
+    }
+    .kpi-box .val {
+      font-size: 20px;
+      font-weight: 900;
+      color: #00ffaa;
+    }
+    .kpi-box .lab {
+      font-size: 8px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    .preset-grid {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+    .preset-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 11px;
       cursor: pointer;
       transition: 0.2s;
     }
-
-    .song-card:hover { border-color: #00ffaa; }
-
-    .song-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .song-title {
-      font-weight: 700;
-      font-size: 15px;
-    }
-
-    .song-genre {
-      font-size: 9px;
-      background: rgba(0,255,170,0.15);
-      color: #00ffaa;
-      padding: 3px 8px;
-      border-radius: 12px;
-    }
-
-    .song-status {
-      font-size: 9px;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-weight: 600;
-    }
-
-    .status-draft { background: rgba(255,255,255,0.08); color: #aaa; }
-    .status-mix { background: rgba(0,200,255,0.15); color: #00c3ff; }
-    .status-master { background: rgba(255,0,140,0.15); color: #ff008c; }
-    .status-ready { background: rgba(0,255,170,0.2); color: #00ffaa; }
-
-    .meta-tag {
-      font-size: 8px;
-      padding: 2px 8px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #ccc;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      margin: 2px;
-    }
-
-    .meta-tag.done {
-      background: rgba(0,255,170,0.15);
+    .preset-chip.active {
+      background: rgba(0, 255, 170, 0.15);
       border-color: #00ffaa;
       color: #00ffaa;
-      text-decoration: line-through;
     }
-
-    .setup-panel {
-      background: rgba(0,0,0,0.9);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(0,255,170,0.3);
-      border-radius: 24px;
-      padding: 20px;
-      margin: 16px 0;
-      position: relative;
-      animation: fadeIn 0.3s;
+    canvas {
+      width: 100%;
+      height: auto;
+      max-height: 350px;
+      margin: 12px 0;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0.7; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0px); }
+    .hidden {
+      display: none !important;
     }
-
-    .close-btn {
-      position: absolute;
-      top: 14px;
-      right: 18px;
-      background: none;
-      border: none;
+    .note {
+      font-size: 10px;
+      color: #888;
+      margin: 4px 0;
+    }
+    .slider-container {
+      margin: 8px 0;
+    }
+    .slider-container input[type="range"] {
+      width: 100%;
+      margin: 4px 0;
+    }
+    .scenario-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      margin: 4px 0;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 6px 8px;
+      text-align: right;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .comparison-table th {
+      text-align: left;
       color: #aaa;
-      font-size: 20px;
-      cursor: pointer;
     }
-
-    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <div class="bg"></div>
-  <div class="grid"></div>
-  <div class="floating one"></div>
-  <div class="floating two"></div>
-
   <div class="container">
     <div class="header">
       <div class="brand">MKEYZ</div>
-      <div class="tagline">Launch Center · Jeff Mkeyz</div>
+      <div style="font-size:11px;color:#aaa;letter-spacing:1px;">Simulador de Audiencia · Proyecciones claras</div>
     </div>
 
-    <!-- STATS COMPACTAS -->
-    <div class="stats-grid">
-      <div class="stat-mini"><div class="number" id="stat-total-songs">0</div><div class="label">Canciones</div></div>
-      <div class="stat-mini"><div class="number" id="stat-ready">0</div><div class="label">Listas</div></div>
-      <div class="stat-mini"><div class="number" id="stat-this-week">—</div><div class="label">Este domingo</div></div>
-    </div>
-
-    <!-- SPOTIFY CARD -->
-    <div class="card" id="spotify-card">
-      <div class="section-title">📊 Spotify Analytics</div>
-      <div class="spotify-metric-row" id="spotify-kpis"></div>
-      <div class="chart-container">
-        <canvas id="spotifyChart"></canvas>
-      </div>
-      <div class="spotify-edit-form">
-        <input type="month" id="spotify-month" placeholder="YYYY-MM">
-        <input type="number" id="spotify-listeners" placeholder="Oyentes">
-        <button class="btn btn-primary btn-sm" id="add-spotify-data">Actualizar</button>
-      </div>
-      <div class="spotify-history" id="spotify-history"></div>
-    </div>
-
-    <!-- HORARIOS -->
+    <!-- CARGA DE CSV -->
     <div class="card">
-      <div class="section-title">🕒 Horarios óptimos</div>
-      <div class="horario-table" id="horario-table" style="display: grid; grid-template-columns: repeat(3,1fr); gap: 5px;"></div>
-      <div id="horario-editor" style="display:none; margin-top:12px;">
-        <div class="input-row">
-          <select id="edit-dia">
-            <option value="Lunes">Lunes</option><option value="Martes">Martes</option><option value="Miércoles">Miércoles</option><option value="Jueves">Jueves</option><option value="Viernes">Viernes</option><option value="Sábado">Sábado</option><option value="Domingo">Domingo</option>
-          </select>
-          <input type="text" id="edit-hora" placeholder="11:00">
-        </div>
-        <button class="btn btn-primary btn-sm" id="save-horario-btn">Guardar</button>
-        <button class="btn btn-secondary btn-sm" id="reset-horarios-btn">Restaurar</button>
-      </div>
+      <div class="section-title">📂 Datos históricos</div>
+      <input type="file" id="csvInput" accept=".csv">
+      <p class="note">Sube tu archivo CSV con las columnas: date,listeners,streams,saves,followers (o con los nombres exactos de tu archivo). Si no subes nada, se usarán datos de ejemplo.</p>
+      <div class="kpi-grid" id="actualKPI"></div>
     </div>
 
-    <!-- PIPELINE -->
+    <!-- SIMULADOR -->
     <div class="card">
-      <div class="section-title">📅 Próximos 4 domingos</div>
-      <div class="pipeline-row" id="pipeline-container"></div>
-      <div class="waterfall-preview" style="margin-top:10px; font-size:10px; color:rgba(255,255,255,0.5);" id="waterfall-preview"></div>
-    </div>
-
-    <!-- BOTONES -->
-    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-      <button class="btn btn-primary" id="show-new-song-btn">Nueva canción</button>
-      <button class="btn btn-secondary" id="toggle-library-btn">Biblioteca</button>
-    </div>
-
-    <!-- NUEVA CANCIÓN -->
-    <div class="card hidden" id="new-song-card">
-      <div class="section-title">🎵 Nueva canción</div>
-      <label>Nombre</label><input type="text" id="song-name" placeholder="ej. Movimiento">
-      <div class="input-row">
-        <div class="input-group"><label>Género</label><input type="text" id="song-genre" placeholder="Trap"></div>
-        <div class="input-group"><label>Estado</label>
-          <select id="song-status">
-            <option value="draft">Borrador</option><option value="mix">Mezcla</option><option value="master">Master</option><option value="ready">Listo</option>
-          </select>
+      <div class="section-title">🎛️ Escenarios de crecimiento</div>
+      <div class="preset-grid" id="presetsContainer">
+        <span class="preset-chip active" data-growth="5">🐢 +5% mensual</span>
+        <span class="preset-chip" data-growth="10">🚀 +10% mensual</span>
+        <span class="preset-chip" data-growth="20">🔥 +20% mensual</span>
+        <span class="preset-chip" data-growth="custom">✏️ Personalizado</span>
+      </div>
+      <div id="customGrowthPanel" class="hidden row">
+        <div>
+          <div class="label">Crecimiento mensual (%)</div>
+          <input type="number" id="customGrowth" value="15" step="1" min="0" max="100">
+        </div>
+        <div>
+          <div class="label">Meses a proyectar</div>
+          <input type="number" id="projectionMonths" value="6" step="1" min="1" max="24">
         </div>
       </div>
-      <label>Fecha (domingo)</label><input type="date" id="song-date">
-      <div style="margin-top:10px; cursor:pointer; color:#00ffaa; font-size:11px;" id="advanced-toggle">+ Metadatos</div>
-      <div id="advanced-fields" style="display:none;">
-        <div class="input-row">
-          <div class="input-group"><label>BPM</label><input type="number" id="song-bpm" placeholder="90"></div>
-          <div class="input-group"><label>Key</label><input type="text" id="song-key" placeholder="Am"></div>
-        </div>
-        <div class="input-row">
-          <div class="input-group"><label>Duración</label><input type="text" id="song-duration" placeholder="3:24"></div>
-          <div class="input-group"><label>ISRC</label><input type="text" id="song-isrc"></div>
-        </div>
-        <div class="input-group"><label>Tags</label><input type="text" id="song-tags" placeholder="melancolía, barrio"></div>
-        <div class="input-group"><label>Portada URL</label><input type="text" id="song-cover"></div>
+      <div class="scenario-checkbox">
+        <input type="checkbox" id="compareMode" checked> <label for="compareMode">Mostrar todos los escenarios activos a la vez</label>
       </div>
-      <button class="btn btn-primary" id="add-song-btn" style="margin-top:12px;">Agregar canción</button>
-    </div>
-
-    <!-- BIBLIOTECA -->
-    <div class="card hidden" id="library-card">
-      <div class="section-title">📚 Biblioteca</div>
-      <div class="song-list" id="songs-container"></div>
-    </div>
-
-    <!-- SETUP PANEL -->
-    <div id="setup-panel" class="setup-panel hidden">
-      <button class="close-btn" onclick="closeSetup()">✕</button>
-      <div class="section-title">🚀 Setup automático</div>
-      <div id="setup-content"></div>
-      <button class="btn btn-primary" id="copy-setup-btn" style="margin-top:12px;">Copiar plan</button>
+      <canvas id="projectionChart"></canvas>
+      <div class="kpi-grid" id="simKPI"></div>
+      <details>
+        <summary style="color:#00ffaa; cursor:pointer; font-size:12px;">📊 Tabla comparativa</summary>
+        <div style="overflow-x:auto;">
+          <table class="comparison-table" id="comparisonTable"></table>
+        </div>
+      </details>
     </div>
   </div>
 
   <script>
     (() => {
-      const tg = window.Telegram?.WebApp;
-      if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#050505"); tg.setBackgroundColor("#050505"); }
+      // ---------- DATOS EMBEBIDOS (MUESTRA) ----------
+      const embeddedCSV = `date,listeners,monthly listeners,monthly active listeners,super listeners,streams,playlist adds,saves,followers
+2024-01-01,84,2590,218,21,710,0,7,260
+2024-01-02,77,2520,216,21,554,1,2,261
+2024-05-04,55,928,440,8,68,0,11,131
+2024-05-05,56,941,443,8,67,1,8,131`;
 
-      const STORAGE_KEY = 'mkeyz_launch_v3';
-      const ARTIST_KEY = 'mkeyz_artist_name';
-      const SPOTIFY_KEY = 'mkeyz_spotify_v3';
-      const HORARIOS_KEY = 'mkeyz_horarios_v3';
+      let rawData = [];
+      let monthlyData = [];  // { month, avgListeners, totalStreams, totalSaves, followers }
 
-      let songs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      let artistName = localStorage.getItem(ARTIST_KEY) || 'Jeff Mkeyz';
-      let spotifyData = JSON.parse(localStorage.getItem(SPOTIFY_KEY) || '[]');
-      let horarios = JSON.parse(localStorage.getItem(HORARIOS_KEY) || 'null') || [
-        { dia: 'Miércoles', hora: '11:00', tipo: 'Redes' },
-        { dia: 'Viernes', hora: '07:00', tipo: 'Video' },
-        { dia: 'Jueves', hora: '17:00', tipo: 'Lyric' },
-        { dia: 'Sábado', hora: '10:00', tipo: 'Reels' },
-        { dia: 'Martes', hora: '14:00', tipo: 'Post' },
-        { dia: 'Domingo', hora: '12:00', tipo: 'Lanzamiento' }
-      ];
-
-      if (spotifyData.length === 0) {
-        const now = new Date();
-        const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-        const prev = new Date(now.getFullYear(), now.getMonth()-1, 1);
-        const prevStr = `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}`;
-        spotifyData = [
-          { month: prevStr, listeners: 664, streams: 1098, active: 298, new: 128, supers: 3 },
-          { month: thisMonth, listeners: 941, streams: 1955, active: 443, new: 267, supers: 8 }
-        ];
-        localStorage.setItem(SPOTIFY_KEY, JSON.stringify(spotifyData));
-      }
-
-      const tasksDefault = [
-        { name: 'Grabar voces', done: false },
-        { name: 'Mezcla', done: false },
-        { name: 'Master', done: false },
-        { name: 'Crear portada', done: false },
-        { name: 'Subir a distribuidora', done: false },
-        { name: 'Pitch Spotify', done: false },
-        { name: 'Programar fecha', done: false }
-      ];
-
-      const contentTemplates = [
-        { name: 'Video Lyric', daysBefore: -3, time: '17:00', platform: 'YouTube / TikTok' },
-        { name: 'Videoclip Oficial', daysBefore: 0, time: '12:00', platform: 'YouTube' },
-        { name: 'Post Instagram', daysBefore: 0, time: '11:00', platform: 'Instagram' },
-        { name: 'Stories', daysBefore: 0, time: '20:00', platform: 'Instagram / Facebook' },
-        { name: 'TikTok / Reel', daysBefore: 1, time: '19:00', platform: 'TikTok' },
-        { name: 'Responder comentarios', daysBefore: 1, time: '10:00', platform: 'Todas' }
-      ];
-
-      songs = songs.map(s => {
-        if (!s.id) s.id = Date.now() + Math.random();
-        if (!s.tasks) s.tasks = JSON.parse(JSON.stringify(tasksDefault));
-        if (!s.contentTasks) s.contentTasks = generateContentTasks(s.date);
-        if (!s.artist) s.artist = artistName;
-        return s;
-      });
-      saveSongs();
-
-      function saveSongs() { localStorage.setItem(STORAGE_KEY, JSON.stringify(songs)); }
-      function saveHorarios() { localStorage.setItem(HORARIOS_KEY, JSON.stringify(horarios)); }
-      function saveSpotify() { localStorage.setItem(SPOTIFY_KEY, JSON.stringify(spotifyData)); }
-
-      function generateContentTasks(dateStr) {
-        if (!dateStr) return [];
-        return contentTemplates.map(t => {
-          let d = new Date(dateStr + 'T00:00:00');
-          d.setDate(d.getDate() + t.daysBefore);
-          return { name: t.name, done: false, targetDate: d.toISOString().split('T')[0], targetTime: t.time, platform: t.platform };
-        });
-      }
-
-      function getNextSunday() {
-        const d = new Date();
-        d.setDate(d.getDate() + (7 - d.getDay()) % 7);
-        return d;
-      }
-
-      // ------- RENDER -------
-      function renderSpotify() {
-        const sorted = [...spotifyData].sort((a,b) => a.month.localeCompare(b.month));
-        const curr = sorted[sorted.length-1] || {};
-        const prev = sorted[sorted.length-2] || {};
-        const calc = (cur, pre) => pre ? ((cur-pre)/pre*100).toFixed(1) : 0;
-
-        document.getElementById('spotify-kpis').innerHTML = [
-          ['Oyentes', curr.listeners||0, calc(curr.listeners, prev.listeners)],
-          ['Streams', curr.streams||0, calc(curr.streams, prev.streams)],
-          ['Activos', curr.active||0, calc(curr.active, prev.active)],
-          ['Nuevos', curr.new||0, calc(curr.new, prev.new)],
-          ['Supers', curr.supers||0, calc(curr.supers, prev.supers)]
-        ].map(([l,v,g]) => `
-          <div class="spotify-metric">
-            <div class="value">${v.toLocaleString()}</div>
-            <div class="label">${l}</div>
-            <div class="growth ${g>=0?'up':'down'}">${g>0?'↑':g<0?'↓':''} ${Math.abs(g)}%</div>
-          </div>`).join('');
-
-        if (window._chart) window._chart.destroy();
-        const ctx = document.getElementById('spotifyChart').getContext('2d');
-        window._chart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: sorted.map(d => d.month),
-            datasets: [
-              { label: 'Oyentes', data: sorted.map(d=>d.listeners), borderColor: '#00ffaa', backgroundColor: 'rgba(0,255,170,0.1)', tension: 0.3, fill: true },
-              { label: 'Streams', data: sorted.map(d=>d.streams), borderColor: '#ff008c', backgroundColor: 'rgba(255,0,140,0.1)', tension: 0.3, fill: true }
-            ]
-          },
-          options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: '#222' }, ticks: { color: '#aaa' } }, x: { grid: { display: false }, ticks: { color: '#aaa' } } }, plugins: { legend: { labels: { color: '#ccc' } } } }
-        });
-
-        document.getElementById('spotify-history').innerHTML = `<strong>Historial</strong><ul>${sorted.slice().reverse().map(d => `<li>${d.month}: ${d.listeners} oyentes | ${d.streams} streams</li>`).join('')}</ul>`;
-      }
-
-      function renderHorarios() {
-        document.getElementById('horario-table').innerHTML = horarios.map(h => `
-          <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:6px; text-align:center;">
-            <strong style="color:#00ffaa;">${h.dia}</strong><br>${h.hora}<br><span style="font-size:8px;opacity:0.6;">${h.tipo}</span>
-          </div>`).join('');
-      }
-
-      function renderPipeline() {
-        const sundays = [];
-        const cur = getNextSunday();
-        for (let i=0; i<4; i++) {
-          const d = new Date(cur); d.setDate(d.getDate() + i*7);
-          sundays.push(d);
+      // ---------- PARSEO DE CSV ----------
+      function parseCSV(text) {
+        const lines = text.trim().split('\n');
+        if (lines.length < 2) return [];
+        const headers = lines[0].split(',').map(h => h.trim());
+        const data = [];
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',');
+          if (cols.length < headers.length) continue;
+          const row = {};
+          headers.forEach((h, idx) => {
+            row[h] = cols[idx]?.trim();
+          });
+          if (row.date) data.push(row);
         }
-        const assigned = new Array(4).fill(null);
-        songs.forEach(song => {
-          if (!song.date) return;
-          const d = new Date(song.date + 'T00:00:00');
-          const idx = sundays.findIndex(s => s.getDate()===d.getDate() && s.getMonth()===d.getMonth() && s.getFullYear()===d.getFullYear());
-          if (idx!==-1 && !assigned[idx]) assigned[idx] = song;
+        return data;
+      }
+
+      function processData(data) {
+        const monthlyMap = new Map();
+        data.forEach(r => {
+          const month = r.date.substring(0, 7);
+          if (!monthlyMap.has(month)) {
+            monthlyMap.set(month, {
+              month,
+              listeners: [],
+              streams: 0,
+              saves: 0,
+              followers: 0,
+              days: 0
+            });
+          }
+          const m = monthlyMap.get(month);
+          const listeners = parseInt(r['listeners']) || 0;
+          const streams = parseInt(r['streams']) || 0;
+          const saves = parseInt(r['saves']) || 0;
+          const followers = parseInt(r['followers']) || 0;
+          m.listeners.push(listeners);
+          m.streams += streams;
+          m.saves += saves;
+          m.days++;
+          if (followers > 0) m.followers = followers; // último valor del mes
         });
 
-        document.getElementById('pipeline-container').innerHTML = sundays.map((d,i) => {
-          const song = assigned[i];
-          return `
-            <div class="slot-card ${song ? 'active' : ''}" onclick="${song ? `openSetup(${songs.indexOf(song)})` : `assignToSlot(${i})`}">
-              <div class="slot-week">Semana ${i+1}</div>
-              <div class="slot-date">${d.toLocaleDateString('es-ES',{day:'numeric',month:'short'})}</div>
-              <div class="slot-title ${!song ? 'slot-empty' : ''}">${song ? escapeHtml(song.name) : '—'}</div>
-              ${song ? `<div class="slot-status ${song.status==='ready'?'ready':'draft'}">${song.status==='ready'?'Listo':'Pendiente'}</div>` : ''}
-            </div>`;
-        }).join('');
-
-        const active = assigned.filter(Boolean);
-        document.getElementById('waterfall-preview').innerHTML = active.length 
-          ? `<strong>Waterfall:</strong> ${active.map(s=>escapeHtml(s.name)).join(' → ')}`
-          : 'Asigna canciones a domingos para crear waterfall.';
+        return Array.from(monthlyMap.values()).map(m => ({
+          month: m.month,
+          avgListeners: Math.round(m.listeners.reduce((a,b) => a+b, 0) / m.days),
+          totalStreams: m.streams,
+          totalSaves: m.saves,
+          followers: m.followers
+        })).sort((a, b) => a.month.localeCompare(b.month));
       }
 
-      function renderLibrary() {
-        const c = document.getElementById('songs-container');
-        if (!songs.length) { c.innerHTML = '<p style="color:#aaa; text-align:center;">No hay canciones aún.</p>'; return; }
-        c.innerHTML = songs.map((s,i) => `
-          <div class="song-card" onclick="openSetup(${i})">
-            <div class="song-header">
-              <div><div class="song-title">${escapeHtml(s.name)}</div><div style="font-size:10px;opacity:0.7;">${s.artist}</div></div>
-              <div><span class="song-genre">${escapeHtml(s.genre||'---')}</span> <span class="song-status status-${s.status}">${s.status}</span></div>
-            </div>
-            <div style="margin:6px 0;">${s.tasks.map((t,ti)=>`<span class="meta-tag ${t.done?'done':''}" onclick="event.stopPropagation();toggleTask(${i},${ti})">${t.done?'✓':'○'} ${t.name}</span>`).join('')}</div>
-            <div style="font-size:9px;opacity:0.7;">${(s.contentTasks||[]).slice(0,3).map(ct=>`${ct.done?'✓':'○'} ${ct.name}`).join(' · ')}</div>
-            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();deleteSong(${i})" style="margin-top:6px;">Eliminar</button>
-          </div>`).join('');
-
-        document.getElementById('stat-total-songs').textContent = songs.length;
-        document.getElementById('stat-ready').textContent = songs.filter(s=>s.status==='ready').length;
-        const thisSun = getNextSunday();
-        const thisWeek = songs.find(s=>s.date && new Date(s.date).toDateString()===thisSun.toDateString());
-        document.getElementById('stat-this-week').textContent = thisWeek ? escapeHtml(thisWeek.name) : '—';
-      }
-
-      window.toggleTask = (si,ti) => { songs[si].tasks[ti].done = !songs[si].tasks[ti].done; saveSongs(); renderLibrary(); };
-      window.deleteSong = (i) => { if (confirm('Eliminar?')) { songs.splice(i,1); saveSongs(); renderAll(); } };
-      window.assignToSlot = (idx) => {
-        const sundays = [];
-        const cur = getNextSunday();
-        for (let i=0;i<4;i++) { const d=new Date(cur); d.setDate(d.getDate()+i*7); sundays.push(d); }
-        const unassigned = songs.filter(s=>!s.date);
-        if (!unassigned.length) return alert('Todas tienen fecha.');
-        unassigned[0].date = sundays[idx].toISOString().split('T')[0];
-        unassigned[0].contentTasks = generateContentTasks(unassigned[0].date);
-        saveSongs(); renderAll();
-      };
-
-      function generateSetupHTML(song) {
-        const launch = new Date(song.date + 'T00:00:00');
-        const launchStr = isNaN(launch) ? 'Sin fecha' : launch.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
-        return `
-          <div style="font-weight:700; font-size:16px;">${escapeHtml(song.name)}</div>
-          <div style="font-size:10px; margin:4px 0;">${song.artist} · ${launchStr}</div>
-          <div style="margin:8px 0;"><strong>Producción:</strong></div>
-          ${song.tasks.map(t=>`<div style="font-size:10px;">${t.done?'✓':'○'} ${t.name}</div>`).join('')}
-          <div style="margin:8px 0;"><strong>Contenido:</strong></div>
-          ${(song.contentTasks||[]).map(ct=>`<div style="font-size:10px;">${ct.done?'✓':'○'} ${ct.name} → ${ct.targetDate} ${ct.targetTime}</div>`).join('')}
-          <div style="margin:8px 0;"><strong>Hashtags:</strong></div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;">${generateHashtags(song).split(' ').map(h=>`<span style="background:rgba(0,255,170,0.1);color:#00ffaa;padding:2px 8px;border-radius:12px;font-size:9px;">${h}</span>`).join('')}</div>
+      // ---------- ACTUALIZAR KPI REAL ----------
+      function renderActualKPI() {
+        if (!monthlyData.length) return;
+        const last = monthlyData[monthlyData.length - 1];
+        document.getElementById('actualKPI').innerHTML = `
+          <div class="kpi-box"><div class="val">${last.avgListeners}</div><div class="lab">Oyentes prom/día</div></div>
+          <div class="kpi-box"><div class="val">${last.totalStreams}</div><div class="lab">Streams/mes</div></div>
+          <div class="kpi-box"><div class="val">${last.followers}</div><div class="lab">Seguidores</div></div>
         `;
       }
 
-      function generateHashtags(song) {
-        let tags = ['#MkeyzStudio','#NuevoLanzamiento'];
-        if (song.genre) tags.push(...song.genre.split(',').map(g=>'#'+g.trim()));
-        if (song.meta?.bpm) tags.push('#BPM'+song.meta.bpm);
-        if (song.meta?.tags) tags.push(...song.meta.tags.split(',').map(t=>'#'+t.trim()));
-        return tags.slice(0,12).join(' ');
+      // ---------- PROYECCIÓN ----------
+      let activeScenarios = new Map(); // guarda { growth%, months, lastMonth, baseListeners, baseStreams, baseSaves, baseFollowers }
+      let projectionChart = null;
+
+      function recalcProjections() {
+        if (!monthlyData.length) return;
+        const last = monthlyData[monthlyData.length - 1];
+        const baseListeners = last.avgListeners;
+        const baseStreams = last.totalStreams;
+        const baseSaves = last.totalSaves;
+        const baseFollowers = last.followers;
+
+        const newScenarios = new Map();
+        // Obtener crecimientos activos
+        const compareMode = document.getElementById('compareMode').checked;
+        const activeChips = document.querySelectorAll('.preset-chip.active');
+        let chipsToProcess = compareMode ? activeChips : [activeChips[activeChips.length-1]];
+
+        chipsToProcess.forEach(chip => {
+          const growthStr = chip.dataset.growth;
+          let growth;
+          if (growthStr === 'custom') {
+            growth = parseFloat(document.getElementById('customGrowth').value) || 15;
+          } else {
+            growth = parseFloat(growthStr);
+          }
+          const months = parseInt(document.getElementById('projectionMonths').value) || 6;
+          newScenarios.set(growth, { growth, months });
+        });
+
+        activeScenarios = newScenarios;
+        updateChart(baseListeners, baseStreams, baseSaves, baseFollowers);
+        renderSimKPI(baseListeners, baseStreams, baseSaves, baseFollowers);
+        renderComparisonTable(baseListeners, baseStreams, baseSaves, baseFollowers);
       }
 
-      window.openSetup = (i) => {
-        document.getElementById('setup-content').innerHTML = generateSetupHTML(songs[i]);
-        document.getElementById('setup-panel').classList.remove('hidden');
-      };
-      window.closeSetup = () => document.getElementById('setup-panel').classList.add('hidden');
+      function updateChart(baseL, baseS, baseSv, baseF) {
+        const ctx = document.getElementById('projectionChart').getContext('2d');
+        if (projectionChart) projectionChart.destroy();
 
-      document.getElementById('copy-setup-btn').addEventListener('click', ()=>{
-        navigator.clipboard.writeText(document.getElementById('setup-content').innerText);
-        const btn = document.getElementById('copy-setup-btn'); btn.textContent='Copiado!'; setTimeout(()=>btn.textContent='Copiar plan',2000);
-      });
+        const labels = [...monthlyData.map(m => m.month)];
+        const realListeners = monthlyData.map(m => m.avgListeners);
 
-      document.getElementById('show-new-song-btn').addEventListener('click', ()=>{
-        document.getElementById('new-song-card').classList.toggle('hidden');
-        document.getElementById('song-date').valueAsDate = getNextSunday();
-      });
-      document.getElementById('toggle-library-btn').addEventListener('click', ()=> document.getElementById('library-card').classList.toggle('hidden'));
-      document.getElementById('add-song-btn').addEventListener('click', ()=>{
-        const name = document.getElementById('song-name').value.trim();
-        if (!name) return alert('Nombre obligatorio');
-        songs.push({
-          id: Date.now(),
-          name,
-          artist: artistName,
-          genre: document.getElementById('song-genre').value,
-          status: document.getElementById('song-status').value,
-          date: document.getElementById('song-date').value,
-          meta: { bpm: document.getElementById('song-bpm').value, key: document.getElementById('song-key').value, duration: document.getElementById('song-duration').value, isrc: document.getElementById('song-isrc').value, tags: document.getElementById('song-tags').value },
-          tasks: JSON.parse(JSON.stringify(tasksDefault)),
-          contentTasks: generateContentTasks(document.getElementById('song-date').value)
+        const datasets = [{
+          label: 'Oyentes reales',
+          data: realListeners,
+          borderColor: '#00ffaa',
+          backgroundColor: 'rgba(0,255,170,0.1)',
+          tension: 0.3,
+          fill: true,
+          pointRadius: 1,
+          borderWidth: 2
+        }];
+
+        // Añadir proyecciones
+        const colors = ['#ff008c', '#ffcc00', '#00ccff', '#aa80ff', '#ff80aa'];
+        let colorIdx = 0;
+
+        activeScenarios.forEach((scenario, growth) => {
+          const projListeners = [];
+          const projLabels = [...labels];
+          let currentL = baseL;
+          for (let i = 0; i < scenario.months; i++) {
+            currentL = Math.round(currentL * (1 + growth / 100));
+            projListeners.push(currentL);
+            const lastLabel = projLabels[projLabels.length - 1];
+            const [y, m] = lastLabel.split('-').map(Number);
+            const nextDate = new Date(y, m, 1);
+            const nextMonth = nextDate.toISOString().substring(0, 7);
+            projLabels.push(nextMonth);
+          }
+
+          datasets.push({
+            label: `Proyección +${growth}%`,
+            data: [...Array(labels.length).fill(null), ...projListeners],
+            borderColor: colors[colorIdx % colors.length],
+            borderDash: [5, 5],
+            tension: 0.3,
+            fill: false,
+            pointRadius: 2,
+            borderWidth: 2
+          });
+          colorIdx++;
         });
-        saveSongs(); renderAll();
-        document.getElementById('new-song-card').classList.add('hidden');
-        document.getElementById('library-card').classList.remove('hidden');
+
+        projectionChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels: [...labels, ...Array(activeScenarios.size ? [...activeScenarios.values()][0].months : 0).fill('')], datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: '#ccc', usePointStyle: true } },
+            },
+            scales: {
+              y: { beginAtZero: true, grid: { color: '#222' }, ticks: { color: '#aaa' } },
+              x: { grid: { display: false }, ticks: { color: '#aaa', maxTicksLimit: 12 } }
+            }
+          }
+        });
+      }
+
+      function renderSimKPI(baseL, baseS, baseSv, baseF) {
+        const container = document.getElementById('simKPI');
+        if (activeScenarios.size === 0) {
+          container.innerHTML = '<div class="kpi-box"><div class="val">—</div><div class="lab">Sin escenarios</div></div>';
+          return;
+        }
+        let html = '';
+        activeScenarios.forEach((scenario, growth) => {
+          const projL = Math.round(baseL * Math.pow(1 + growth / 100, scenario.months));
+          const projS = Math.round(baseS * Math.pow(1 + growth / 100, scenario.months));
+          const projF = Math.round(baseF * Math.pow(1 + growth / 100, scenario.months));
+          html += `
+            <div class="kpi-box">
+              <div class="val">${projL}</div>
+              <div class="lab">+${growth}% en ${scenario.months}m</div>
+            </div>
+            <div class="kpi-box">
+              <div class="val">${projS}</div>
+              <div class="lab">Streams (futuro)</div>
+            </div>
+            <div class="kpi-box">
+              <div class="val">${projF}</div>
+              <div class="lab">Seguidores (futuro)</div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      }
+
+      function renderComparisonTable(baseL, baseS, baseSv, baseF) {
+        const table = document.getElementById('comparisonTable');
+        let html = '<tr><th>Escenario</th><th>Oyentes prom.</th><th>Streams</th><th>Seguidores</th></tr>';
+        html += `<tr style="color:#00ffaa"><td>Actual (${monthlyData[monthlyData.length-1].month})</td><td>${baseL}</td><td>${baseS}</td><td>${baseF}</td></tr>`;
+        activeScenarios.forEach((scenario, growth) => {
+          const projL = Math.round(baseL * Math.pow(1 + growth / 100, scenario.months));
+          const projS = Math.round(baseS * Math.pow(1 + growth / 100, scenario.months));
+          const projF = Math.round(baseF * Math.pow(1 + growth / 100, scenario.months));
+          html += `<tr><td>+${growth}% en ${scenario.months}m</td><td>${projL}</td><td>${projS}</td><td>${projF}</td></tr>`;
+        });
+        table.innerHTML = html;
+      }
+
+      // ---------- EVENTOS ----------
+      document.getElementById('csvInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const text = ev.target.result;
+          rawData = parseCSV(text);
+          monthlyData = processData(rawData);
+          renderActualKPI();
+          recalcProjections();
+        };
+        reader.readAsText(file);
       });
 
-      document.getElementById('add-spotify-data').addEventListener('click', ()=>{
-        const month = document.getElementById('spotify-month').value;
-        const listeners = parseInt(document.getElementById('spotify-listeners').value)||0;
-        if (!month) return;
-        const existing = spotifyData.findIndex(d=>d.month===month);
-        if (existing>=0) spotifyData[existing].listeners = listeners;
-        else spotifyData.push({ month, listeners, streams:0, active:0, new:0, supers:0 });
-        saveSpotify(); renderSpotify();
+      // Manejar presets
+      document.getElementById('presetsContainer').addEventListener('click', (e) => {
+        if (!e.target.classList.contains('preset-chip')) return;
+        const chip = e.target;
+        const compareMode = document.getElementById('compareMode').checked;
+        if (!compareMode) {
+          // Modo único: desactivar todos y activar solo este
+          document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+        }
+        chip.classList.toggle('active');
+        if (chip.dataset.growth === 'custom') {
+          document.getElementById('customGrowthPanel').classList.remove('hidden');
+        } else {
+          document.getElementById('customGrowthPanel').classList.add('hidden');
+        }
+        recalcProjections();
       });
 
-      document.getElementById('save-horario-btn').addEventListener('click', ()=>{
-        const dia = document.getElementById('edit-dia').value;
-        const hora = document.getElementById('edit-hora').value;
-        if (!hora) return;
-        const idx = horarios.findIndex(h=>h.dia===dia);
-        if (idx>=0) horarios[idx] = { dia, hora, tipo: 'Personalizado' };
-        else horarios.push({ dia, hora, tipo: 'Personalizado' });
-        saveHorarios(); renderHorarios();
-      });
-      document.getElementById('reset-horarios-btn').addEventListener('click', ()=>{
-        horarios = [
-          { dia: 'Miércoles', hora: '11:00', tipo: 'Redes' },
-          { dia: 'Viernes', hora: '07:00', tipo: 'Video' },
-          { dia: 'Jueves', hora: '17:00', tipo: 'Lyric' },
-          { dia: 'Sábado', hora: '10:00', tipo: 'Reels' },
-          { dia: 'Martes', hora: '14:00', tipo: 'Post' },
-          { dia: 'Domingo', hora: '12:00', tipo: 'Lanzamiento' }
-        ];
-        saveHorarios(); renderHorarios();
+      document.getElementById('customGrowth').addEventListener('input', recalcProjections);
+      document.getElementById('projectionMonths').addEventListener('input', recalcProjections);
+      document.getElementById('compareMode').addEventListener('change', () => {
+        if (!document.getElementById('compareMode').checked) {
+          // dejar solo el último activo
+          const chips = document.querySelectorAll('.preset-chip.active');
+          if (chips.length > 1) {
+            chips.forEach((c, i) => { if (i < chips.length - 1) c.classList.remove('active'); });
+          }
+        }
+        recalcProjections();
       });
 
-      function escapeHtml(t) { const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
-      function renderAll() { renderSpotify(); renderHorarios(); renderPipeline(); renderLibrary(); }
-
-      document.getElementById('advanced-toggle').addEventListener('click', function(){
-        const f = document.getElementById('advanced-fields');
-        f.style.display = f.style.display==='none'?'block':'none';
-      });
-
-      renderAll();
-      document.getElementById('library-card').classList.remove('hidden');
+      // ---------- CARGA INICIAL ----------
+      rawData = parseCSV(embeddedCSV);
+      monthlyData = processData(rawData);
+      renderActualKPI();
+      recalcProjections();
     })();
   </script>
 </body>
