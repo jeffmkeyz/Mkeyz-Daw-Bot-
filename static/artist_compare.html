@@ -3,259 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>MKEYZ · Simulador de Audiencia</title>
+  <title>MKEYZ · Simulador Mensual</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Montserrat', system-ui, sans-serif;
-    }
-    body {
-      background: #05050a;
-      color: #fff;
-      min-height: 100vh;
-      padding: 20px 12px 40px;
-      display: flex;
-      justify-content: center;
-    }
-    .container {
-      max-width: 650px;
-      width: 100%;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .header .brand {
-      font-size: 28px;
-      font-weight: 900;
-      text-transform: uppercase;
-      background: linear-gradient(90deg, #ffffff, #00ffaa, #ff008c);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 1px;
-    }
-    .card {
-      background: rgba(15, 15, 20, 0.8);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 18px;
-      margin-bottom: 18px;
-    }
-    .section-title {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: #00ffaa;
-      margin-bottom: 14px;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.25s;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      background: linear-gradient(90deg, #00ffaa, #00c3ff);
-      color: #000;
-    }
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 255, 170, 0.25);
-    }
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 10px;
-      border-radius: 8px;
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
-    input, select {
-      width: 100%;
-      padding: 10px 12px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 12px;
-      color: #fff;
-      font-size: 13px;
-      outline: none;
-      margin-bottom: 8px;
-    }
-    input:focus, select:focus {
-      border-color: #00ffaa;
-      box-shadow: 0 0 0 2px rgba(0, 255, 170, 0.2);
-    }
-    .row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-    .row > div {
-      flex: 1;
-      min-width: 90px;
-    }
-    .label {
-      font-size: 10px;
-      color: #aaa;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-      gap: 8px;
-      margin: 12px 0;
-    }
-    .kpi-box {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-radius: 14px;
-      padding: 12px 6px;
-      text-align: center;
-    }
-    .kpi-box .val {
-      font-size: 20px;
-      font-weight: 900;
-      color: #00ffaa;
-    }
-    .kpi-box .lab {
-      font-size: 8px;
-      color: #aaa;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 4px;
-    }
-    .preset-grid {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin: 10px 0;
-    }
-    .preset-chip {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 6px 14px;
-      font-size: 11px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .preset-chip.active {
-      background: rgba(0, 255, 170, 0.15);
-      border-color: #00ffaa;
-      color: #00ffaa;
-    }
-    canvas {
-      width: 100%;
-      height: auto;
-      max-height: 350px;
-      margin: 12px 0;
-    }
-    .hidden {
-      display: none !important;
-    }
-    .note {
-      font-size: 10px;
-      color: #888;
-      margin: 4px 0;
-    }
-    .slider-container {
-      margin: 8px 0;
-    }
-    .slider-container input[type="range"] {
-      width: 100%;
-      margin: 4px 0;
-    }
-    .scenario-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      margin: 4px 0;
-    }
-    .comparison-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-    }
-    .comparison-table th, .comparison-table td {
-      padding: 6px 8px;
-      text-align: right;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .comparison-table th {
-      text-align: left;
-      color: #aaa;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Montserrat',system-ui,sans-serif; }
+    body { background:#05050a; color:#fff; min-height:100vh; padding:20px 12px 40px; display:flex; justify-content:center; }
+    .container { max-width:650px; width:100%; }
+    .header { text-align:center; margin-bottom:24px; }
+    .header .brand { font-size:28px; font-weight:900; text-transform:uppercase; background:linear-gradient(90deg,#ffffff,#00ffaa,#ff008c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:1px; }
+    .card { background:rgba(15,15,20,0.8); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:18px; margin-bottom:18px; }
+    .section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:#00ffaa; margin-bottom:14px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 16px; border:none; border-radius:12px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.25s; text-transform:uppercase; letter-spacing:0.5px; background:linear-gradient(90deg,#00ffaa,#00c3ff); color:#000; }
+    .btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,255,170,0.25); }
+    .btn-sm { padding:6px 12px; font-size:10px; border-radius:8px; }
+    .btn-outline { background:transparent; border:1px solid rgba(255,255,255,0.2); color:#fff; }
+    input,select { width:100%; padding:10px 12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; outline:none; margin-bottom:8px; }
+    input:focus,select:focus { border-color:#00ffaa; box-shadow:0 0 0 2px rgba(0,255,170,0.2); }
+    .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+    .row>div { flex:1; min-width:90px; }
+    .label { font-size:10px; color:#aaa; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+    .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:8px; margin:12px 0; }
+    .kpi-box { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:12px 6px; text-align:center; }
+    .kpi-box .val { font-size:20px; font-weight:900; color:#00ffaa; }
+    .kpi-box .lab { font-size:8px; color:#aaa; text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+    .preset-grid { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
+    .preset-chip { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:6px 14px; font-size:11px; cursor:pointer; transition:0.2s; }
+    .preset-chip.active { background:rgba(0,255,170,0.15); border-color:#00ffaa; color:#00ffaa; }
+    .toggle-switch { display:flex; align-items:center; gap:8px; margin:8px 0; font-size:11px; }
+    .toggle-switch input[type=checkbox] { width:auto; margin:0; accent-color:#00ffaa; }
+    canvas { width:100%; height:auto; max-height:350px; margin:12px 0; }
+    .hidden { display:none!important; }
+    .note { font-size:10px; color:#888; margin:4px 0; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <div class="brand">MKEYZ</div>
-      <div style="font-size:11px;color:#aaa;letter-spacing:1px;">Simulador de Audiencia · Proyecciones claras</div>
+      <div style="font-size:11px;color:#aaa;letter-spacing:1px;">Simulador Mensual · Efecto Waterfall</div>
     </div>
 
-    <!-- CARGA DE CSV -->
+    <!-- CARGA DE DATOS -->
     <div class="card">
       <div class="section-title">📂 Datos históricos</div>
       <input type="file" id="csvInput" accept=".csv">
-      <p class="note">Sube tu archivo CSV con las columnas: date,listeners,streams,saves,followers (o con los nombres exactos de tu archivo). Si no subes nada, se usarán datos de ejemplo.</p>
+      <p class="note">Sube tu CSV o usa los datos de ejemplo.</p>
       <div class="kpi-grid" id="actualKPI"></div>
     </div>
 
-    <!-- SIMULADOR -->
+    <!-- CONFIGURACIÓN -->
     <div class="card">
-      <div class="section-title">🎛️ Escenarios de crecimiento</div>
+      <div class="section-title">🎛️ Crecimiento orgánico</div>
       <div class="preset-grid" id="presetsContainer">
-        <span class="preset-chip active" data-growth="5">🐢 +5% mensual</span>
-        <span class="preset-chip" data-growth="10">🚀 +10% mensual</span>
-        <span class="preset-chip" data-growth="20">🔥 +20% mensual</span>
+        <span class="preset-chip active" data-growth="5">🐢 +5%</span>
+        <span class="preset-chip" data-growth="10">🚀 +10%</span>
+        <span class="preset-chip" data-growth="20">🔥 +20%</span>
         <span class="preset-chip" data-growth="custom">✏️ Personalizado</span>
       </div>
       <div id="customGrowthPanel" class="hidden row">
-        <div>
-          <div class="label">Crecimiento mensual (%)</div>
-          <input type="number" id="customGrowth" value="15" step="1" min="0" max="100">
-        </div>
-        <div>
-          <div class="label">Meses a proyectar</div>
-          <input type="number" id="projectionMonths" value="6" step="1" min="1" max="24">
-        </div>
+        <div><div class="label">Crecimiento mensual (%)</div><input type="number" id="customGrowth" value="15" step="1" min="0" max="100"></div>
+        <div><div class="label">Meses a proyectar</div><input type="number" id="projectionMonths" value="6" step="1" min="1" max="24"></div>
       </div>
-      <div class="scenario-checkbox">
-        <input type="checkbox" id="compareMode" checked> <label for="compareMode">Mostrar todos los escenarios activos a la vez</label>
+      <div class="row">
+        <div><div class="label">Techo de oyentes diarios</div><input type="number" id="marketCap" value="2000" step="100" min="0"></div>
       </div>
+    </div>
+
+    <!-- LANZAMIENTOS -->
+    <div class="card">
+      <div class="section-title">🎤 Lanzamientos domingueros</div>
+      <div class="toggle-switch">
+        <input type="checkbox" id="enableReleases" checked> <label for="enableReleases">Activar estrategia semanal</label>
+      </div>
+      <div class="row">
+        <div><div class="label">Pico inicial por lanzamiento (% base)</div><input type="number" id="releaseBoost" value="35" step="5" min="0" max="100"></div>
+        <div><div class="label">Duración del pico (semanas)</div><input type="number" id="releaseDecay" value="2" step="1" min="1" max="4"></div>
+      </div>
+      <div class="row">
+        <div><div class="label">Aumento fijo mensual (oyentes/día)</div><input type="number" id="releaseFixed" value="15" step="1" min="0" max="100"></div>
+        <div><div class="label">Domingos al mes</div><input type="number" id="sundaysPerMonth" value="4" step="1" min="1" max="5"></div>
+      </div>
+      <p class="note">Cada domingo aporta un pico del % indicado (que decae en semanas) más un aumento fijo diario acumulable. El total mensual se suma a tu base.</p>
+    </div>
+
+    <!-- GRÁFICO -->
+    <div class="card">
+      <div class="section-title">📈 Proyección mensual</div>
       <canvas id="projectionChart"></canvas>
       <div class="kpi-grid" id="simKPI"></div>
-      <details>
-        <summary style="color:#00ffaa; cursor:pointer; font-size:12px;">📊 Tabla comparativa</summary>
-        <div style="overflow-x:auto;">
-          <table class="comparison-table" id="comparisonTable"></table>
-        </div>
-      </details>
     </div>
   </div>
 
   <script>
     (() => {
-      // ---------- DATOS EMBEBIDOS (MUESTRA) ----------
       const embeddedCSV = `date,listeners,monthly listeners,monthly active listeners,super listeners,streams,playlist adds,saves,followers
 2024-01-01,84,2590,218,21,710,0,7,260
 2024-01-02,77,2520,216,21,554,1,2,261
@@ -263,9 +103,8 @@
 2024-05-05,56,941,443,8,67,1,8,131`;
 
       let rawData = [];
-      let monthlyData = [];  // { month, avgListeners, totalStreams, totalSaves, followers }
+      let monthlyData = [];
 
-      // ---------- PARSEO DE CSV ----------
       function parseCSV(text) {
         const lines = text.trim().split('\n');
         if (lines.length < 2) return [];
@@ -275,53 +114,39 @@
           const cols = lines[i].split(',');
           if (cols.length < headers.length) continue;
           const row = {};
-          headers.forEach((h, idx) => {
-            row[h] = cols[idx]?.trim();
-          });
+          headers.forEach((h, idx) => { row[h] = cols[idx]?.trim(); });
           if (row.date) data.push(row);
         }
         return data;
       }
 
-      function processData(data) {
-        const monthlyMap = new Map();
+      function processMonthly(data) {
+        const map = new Map();
         data.forEach(r => {
           const month = r.date.substring(0, 7);
-          if (!monthlyMap.has(month)) {
-            monthlyMap.set(month, {
-              month,
-              listeners: [],
-              streams: 0,
-              saves: 0,
-              followers: 0,
-              days: 0
-            });
+          if (!map.has(month)) {
+            map.set(month, { month, listeners: [], streams: 0, saves: 0, followers: 0, days: 0 });
           }
-          const m = monthlyMap.get(month);
-          const listeners = parseInt(r['listeners']) || 0;
-          const streams = parseInt(r['streams']) || 0;
-          const saves = parseInt(r['saves']) || 0;
-          const followers = parseInt(r['followers']) || 0;
-          m.listeners.push(listeners);
-          m.streams += streams;
-          m.saves += saves;
+          const m = map.get(month);
+          m.listeners.push(parseInt(r['listeners']) || 0);
+          m.streams += parseInt(r['streams']) || 0;
+          m.saves += parseInt(r['saves']) || 0;
           m.days++;
-          if (followers > 0) m.followers = followers; // último valor del mes
+          const f = parseInt(r['followers']);
+          if (!isNaN(f) && f > 0) m.followers = f;
         });
-
-        return Array.from(monthlyMap.values()).map(m => ({
+        return Array.from(map.values()).map(m => ({
           month: m.month,
-          avgListeners: Math.round(m.listeners.reduce((a,b) => a+b, 0) / m.days),
+          avgListeners: Math.round(m.listeners.reduce((a,b)=>a+b,0) / m.days),
           totalStreams: m.streams,
           totalSaves: m.saves,
           followers: m.followers
-        })).sort((a, b) => a.month.localeCompare(b.month));
+        })).sort((a,b) => a.month.localeCompare(b.month));
       }
 
-      // ---------- ACTUALIZAR KPI REAL ----------
       function renderActualKPI() {
         if (!monthlyData.length) return;
-        const last = monthlyData[monthlyData.length - 1];
+        const last = monthlyData[monthlyData.length-1];
         document.getElementById('actualKPI').innerHTML = `
           <div class="kpi-box"><div class="val">${last.avgListeners}</div><div class="lab">Oyentes prom/día</div></div>
           <div class="kpi-box"><div class="val">${last.totalStreams}</div><div class="lab">Streams/mes</div></div>
@@ -329,100 +154,139 @@
         `;
       }
 
-      // ---------- PROYECCIÓN ----------
-      let activeScenarios = new Map(); // guarda { growth%, months, lastMonth, baseListeners, baseStreams, baseSaves, baseFollowers }
-      let projectionChart = null;
+      let chartInstance = null;
 
-      function recalcProjections() {
-        if (!monthlyData.length) return;
-        const last = monthlyData[monthlyData.length - 1];
-        const baseListeners = last.avgListeners;
-        const baseStreams = last.totalStreams;
-        const baseSaves = last.totalSaves;
-        const baseFollowers = last.followers;
-
-        const newScenarios = new Map();
-        // Obtener crecimientos activos
-        const compareMode = document.getElementById('compareMode').checked;
-        const activeChips = document.querySelectorAll('.preset-chip.active');
-        let chipsToProcess = compareMode ? activeChips : [activeChips[activeChips.length-1]];
-
-        chipsToProcess.forEach(chip => {
-          const growthStr = chip.dataset.growth;
-          let growth;
-          if (growthStr === 'custom') {
-            growth = parseFloat(document.getElementById('customGrowth').value) || 15;
-          } else {
-            growth = parseFloat(growthStr);
-          }
-          const months = parseInt(document.getElementById('projectionMonths').value) || 6;
-          newScenarios.set(growth, { growth, months });
-        });
-
-        activeScenarios = newScenarios;
-        updateChart(baseListeners, baseStreams, baseSaves, baseFollowers);
-        renderSimKPI(baseListeners, baseStreams, baseSaves, baseFollowers);
-        renderComparisonTable(baseListeners, baseStreams, baseSaves, baseFollowers);
-      }
-
-      function updateChart(baseL, baseS, baseSv, baseF) {
-        const ctx = document.getElementById('projectionChart').getContext('2d');
-        if (projectionChart) projectionChart.destroy();
+      function simulateMonthly(baseListeners, baseStreams, organicGrowth, months, cap,
+        releasesEnabled, boostPercent, decayWeeks, fixedDaily, sundays) {
 
         const labels = [...monthlyData.map(m => m.month)];
         const realListeners = monthlyData.map(m => m.avgListeners);
+        const organicProj = [];
+        const withReleasesProj = [];
 
-        const datasets = [{
-          label: 'Oyentes reales',
-          data: realListeners,
-          borderColor: '#00ffaa',
-          backgroundColor: 'rgba(0,255,170,0.1)',
-          tension: 0.3,
-          fill: true,
-          pointRadius: 1,
-          borderWidth: 2
-        }];
+        let currentOrganic = baseListeners;
+        let currentReleases = baseListeners;
 
-        // Añadir proyecciones
-        const colors = ['#ff008c', '#ffcc00', '#00ccff', '#aa80ff', '#ff80aa'];
-        let colorIdx = 0;
+        for (let m = 0; m < months; m++) {
+          // Crecimiento orgánico
+          currentOrganic = Math.round(currentOrganic * (1 + organicGrowth / 100));
+          currentOrganic = Math.min(currentOrganic, cap);
+          organicProj.push(currentOrganic);
 
-        activeScenarios.forEach((scenario, growth) => {
-          const projListeners = [];
-          const projLabels = [...labels];
-          let currentL = baseL;
-          for (let i = 0; i < scenario.months; i++) {
-            currentL = Math.round(currentL * (1 + growth / 100));
-            projListeners.push(currentL);
-            const lastLabel = projLabels[projLabels.length - 1];
-            const [y, m] = lastLabel.split('-').map(Number);
-            const nextDate = new Date(y, m, 1);
-            const nextMonth = nextDate.toISOString().substring(0, 7);
-            projLabels.push(nextMonth);
+          // Con lanzamientos
+          if (releasesEnabled) {
+            // Crecimiento orgánico base
+            currentReleases = Math.round(currentReleases * (1 + organicGrowth / 100));
+            // Efecto de cada domingo
+            for (let s = 0; s < sundays; s++) {
+              // Pico temporal que decae durante las semanas indicadas
+              const peak = Math.round(currentReleases * (boostPercent / 100));
+              // El aporte mensual del pico: pico * (1/decayWeeks) por cada semana que dure
+              // Simplificamos: el pico se reparte durante decayWeeks semanas, así que en un mes
+              // aporta (1/decayWeeks) del pico por cada domingo.
+              const monthlyPeakContribution = Math.round(peak / decayWeeks);
+              currentReleases += monthlyPeakContribution;
+              // Aumento fijo diario (se suma al final del mes)
+            }
+            // Aumento fijo mensual (fixedDaily * 30 días)
+            currentReleases += Math.round(fixedDaily * 30);
+            currentReleases = Math.min(currentReleases, cap);
+            withReleasesProj.push(currentReleases);
+          } else {
+            withReleasesProj.push(null); // no se muestra
           }
 
-          datasets.push({
-            label: `Proyección +${growth}%`,
-            data: [...Array(labels.length).fill(null), ...projListeners],
-            borderColor: colors[colorIdx % colors.length],
-            borderDash: [5, 5],
+          // Etiqueta del siguiente mes
+          const lastLabel = labels[labels.length - 1];
+          const [y, mo] = lastLabel.split('-').map(Number);
+          const nextDate = new Date(y, mo, 1);
+          const nextLabel = nextDate.toISOString().substring(0, 7);
+          labels.push(nextLabel);
+        }
+
+        return { labels, realListeners, organicProj, withReleasesProj };
+      }
+
+      function runSimulation() {
+        if (!monthlyData.length) return;
+        const last = monthlyData[monthlyData.length-1];
+        const baseL = last.avgListeners;
+        const baseS = last.totalStreams;
+
+        const activeChip = document.querySelector('.preset-chip.active');
+        let organicGrowth = 5;
+        if (activeChip) {
+          if (activeChip.dataset.growth === 'custom') {
+            organicGrowth = parseFloat(document.getElementById('customGrowth').value) || 15;
+          } else {
+            organicGrowth = parseFloat(activeChip.dataset.growth);
+          }
+        }
+        const months = parseInt(document.getElementById('projectionMonths').value) || 6;
+        const cap = parseInt(document.getElementById('marketCap').value) || 2000;
+
+        const releasesEnabled = document.getElementById('enableReleases').checked;
+        const boost = parseFloat(document.getElementById('releaseBoost').value) || 35;
+        const decay = parseInt(document.getElementById('releaseDecay').value) || 2;
+        const fixed = parseInt(document.getElementById('releaseFixed').value) || 15;
+        const sundays = parseInt(document.getElementById('sundaysPerMonth').value) || 4;
+
+        const result = simulateMonthly(baseL, baseS, organicGrowth, months, cap,
+          releasesEnabled, boost, decay, fixed, sundays);
+
+        updateChart(result);
+        renderSimKPI(result, releasesEnabled);
+      }
+
+      function updateChart(result) {
+        const ctx = document.getElementById('projectionChart').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+
+        const datasets = [
+          {
+            label: 'Oyentes reales',
+            data: result.realListeners,
+            borderColor: '#00ffaa',
+            backgroundColor: 'rgba(0,255,170,0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 1,
+            borderWidth: 2
+          },
+          {
+            label: 'Proyección orgánica',
+            data: [...Array(result.realListeners.length).fill(null), ...result.organicProj],
+            borderColor: '#ffcc00',
+            borderDash: [3,3],
             tension: 0.3,
             fill: false,
             pointRadius: 2,
-            borderWidth: 2
-          });
-          colorIdx++;
-        });
+            borderWidth: 2,
+            spanGaps: true
+          }
+        ];
 
-        projectionChart = new Chart(ctx, {
+        if (result.withReleasesProj.some(v => v !== null)) {
+          datasets.push({
+            label: 'Con lanzamientos 🚀',
+            data: [...Array(result.realListeners.length).fill(null), ...result.withReleasesProj],
+            borderColor: '#ff008c',
+            borderDash: [6,2],
+            tension: 0.3,
+            fill: false,
+            pointRadius: 3,
+            borderWidth: 3,
+            spanGaps: true
+          });
+        }
+
+        chartInstance = new Chart(ctx, {
           type: 'line',
-          data: { labels: [...labels, ...Array(activeScenarios.size ? [...activeScenarios.values()][0].months : 0).fill('')], datasets },
+          data: { labels: result.labels, datasets },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-              legend: { labels: { color: '#ccc', usePointStyle: true } },
-            },
+            plugins: { legend: { labels: { color: '#ccc', usePointStyle: true } } },
             scales: {
               y: { beginAtZero: true, grid: { color: '#222' }, ticks: { color: '#aaa' } },
               x: { grid: { display: false }, ticks: { color: '#aaa', maxTicksLimit: 12 } }
@@ -431,99 +295,57 @@
         });
       }
 
-      function renderSimKPI(baseL, baseS, baseSv, baseF) {
-        const container = document.getElementById('simKPI');
-        if (activeScenarios.size === 0) {
-          container.innerHTML = '<div class="kpi-box"><div class="val">—</div><div class="lab">Sin escenarios</div></div>';
-          return;
-        }
-        let html = '';
-        activeScenarios.forEach((scenario, growth) => {
-          const projL = Math.round(baseL * Math.pow(1 + growth / 100, scenario.months));
-          const projS = Math.round(baseS * Math.pow(1 + growth / 100, scenario.months));
-          const projF = Math.round(baseF * Math.pow(1 + growth / 100, scenario.months));
-          html += `
-            <div class="kpi-box">
-              <div class="val">${projL}</div>
-              <div class="lab">+${growth}% en ${scenario.months}m</div>
-            </div>
-            <div class="kpi-box">
-              <div class="val">${projS}</div>
-              <div class="lab">Streams (futuro)</div>
-            </div>
-            <div class="kpi-box">
-              <div class="val">${projF}</div>
-              <div class="lab">Seguidores (futuro)</div>
-            </div>
-          `;
-        });
-        container.innerHTML = html;
+      function renderSimKPI(result, releasesEnabled) {
+        const lastReal = result.realListeners[result.realListeners.length-1];
+        const lastOrganic = result.organicProj[result.organicProj.length-1];
+        const lastReleases = releasesEnabled && result.withReleasesProj.length ? result.withReleasesProj[result.withReleasesProj.length-1] : lastOrganic;
+        document.getElementById('simKPI').innerHTML = `
+          <div class="kpi-box"><div class="val">${lastReal}</div><div class="lab">Actual</div></div>
+          <div class="kpi-box"><div class="val">${lastOrganic}</div><div class="lab">Solo orgánico</div></div>
+          <div class="kpi-box"><div class="val">${lastReleases}</div><div class="lab">Con lanzamientos</div></div>
+        `;
       }
 
-      function renderComparisonTable(baseL, baseS, baseSv, baseF) {
-        const table = document.getElementById('comparisonTable');
-        let html = '<tr><th>Escenario</th><th>Oyentes prom.</th><th>Streams</th><th>Seguidores</th></tr>';
-        html += `<tr style="color:#00ffaa"><td>Actual (${monthlyData[monthlyData.length-1].month})</td><td>${baseL}</td><td>${baseS}</td><td>${baseF}</td></tr>`;
-        activeScenarios.forEach((scenario, growth) => {
-          const projL = Math.round(baseL * Math.pow(1 + growth / 100, scenario.months));
-          const projS = Math.round(baseS * Math.pow(1 + growth / 100, scenario.months));
-          const projF = Math.round(baseF * Math.pow(1 + growth / 100, scenario.months));
-          html += `<tr><td>+${growth}% en ${scenario.months}m</td><td>${projL}</td><td>${projS}</td><td>${projF}</td></tr>`;
-        });
-        table.innerHTML = html;
-      }
-
-      // ---------- EVENTOS ----------
+      // Eventos
       document.getElementById('csvInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (ev) => {
-          const text = ev.target.result;
-          rawData = parseCSV(text);
-          monthlyData = processData(rawData);
+          rawData = parseCSV(ev.target.result);
+          monthlyData = processMonthly(rawData);
           renderActualKPI();
-          recalcProjections();
+          runSimulation();
         };
         reader.readAsText(file);
       });
 
-      // Manejar presets
       document.getElementById('presetsContainer').addEventListener('click', (e) => {
         if (!e.target.classList.contains('preset-chip')) return;
-        const chip = e.target;
-        const compareMode = document.getElementById('compareMode').checked;
-        if (!compareMode) {
-          // Modo único: desactivar todos y activar solo este
-          document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-        }
-        chip.classList.toggle('active');
-        if (chip.dataset.growth === 'custom') {
+        document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+        e.target.classList.add('active');
+        if (e.target.dataset.growth === 'custom') {
           document.getElementById('customGrowthPanel').classList.remove('hidden');
         } else {
           document.getElementById('customGrowthPanel').classList.add('hidden');
         }
-        recalcProjections();
+        runSimulation();
       });
 
-      document.getElementById('customGrowth').addEventListener('input', recalcProjections);
-      document.getElementById('projectionMonths').addEventListener('input', recalcProjections);
-      document.getElementById('compareMode').addEventListener('change', () => {
-        if (!document.getElementById('compareMode').checked) {
-          // dejar solo el último activo
-          const chips = document.querySelectorAll('.preset-chip.active');
-          if (chips.length > 1) {
-            chips.forEach((c, i) => { if (i < chips.length - 1) c.classList.remove('active'); });
-          }
-        }
-        recalcProjections();
-      });
+      document.getElementById('customGrowth').addEventListener('input', runSimulation);
+      document.getElementById('projectionMonths').addEventListener('input', runSimulation);
+      document.getElementById('marketCap').addEventListener('input', runSimulation);
+      document.getElementById('enableReleases').addEventListener('change', runSimulation);
+      document.getElementById('releaseBoost').addEventListener('input', runSimulation);
+      document.getElementById('releaseDecay').addEventListener('input', runSimulation);
+      document.getElementById('releaseFixed').addEventListener('input', runSimulation);
+      document.getElementById('sundaysPerMonth').addEventListener('input', runSimulation);
 
-      // ---------- CARGA INICIAL ----------
+      // Inicio
       rawData = parseCSV(embeddedCSV);
-      monthlyData = processData(rawData);
+      monthlyData = processMonthly(rawData);
       renderActualKPI();
-      recalcProjections();
+      runSimulation();
     })();
   </script>
 </body>
