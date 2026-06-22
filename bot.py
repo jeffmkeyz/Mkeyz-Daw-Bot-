@@ -87,10 +87,20 @@ GENRES = ["Trap", "Pop Latino", "Afrobeats", "Lo-Fi",
 NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
 MODES_MAP  = {0: "Mayor", 1: "Menor"}
 
-TMP = os.path.join(os.environ.get("TEMP", "/tmp"), "mkeyz_daw")
+TMP = os.path.join(os.environ.get("TEMP") or "/tmp", "mkeyz_daw")
 os.makedirs(TMP, exist_ok=True)
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mkeyz.db")
+
+def get_db():
+    """Abre una conexión SQLite con timeout y WAL activados.
+    Necesario porque bot.py y server.py comparten el mismo archivo .db
+    desde dos procesos distintos — sin esto, escrituras simultáneas
+    pueden chocar con 'database is locked' de forma intermitente."""
+    con = sqlite3.connect(DB_PATH, timeout=10, check_same_thread=False)
+    con.execute("PRAGMA journal_mode=WAL")
+    con.execute("PRAGMA synchronous=NORMAL")
+    return con
 
 logging.basicConfig(format="%(asctime)s | %(levelname)s | %(message)s",
                     level=logging.INFO, stream=sys.stdout)
@@ -113,7 +123,12 @@ MODE_PROJ       = "proyeccion"
 MODE_RETO       = "reto"
 MODE_COTIZADOR  = "cotizador"
 MODE_BATTLE     = "battle"
-GAME_URL        = os.getenv("GAME_URL", "")
+GAME_URL        = os.getenv("GAME_URL", "").strip().rstrip("/")
+if GAME_URL and not GAME_URL.startswith(("http://", "https://")):
+    # Telegram exige https:// en los botones Web App — si la variable
+    # GAME_URL se guardó sin esquema, lo añadimos automáticamente
+    # para que esto no vuelva a romper los botones del bot.
+    GAME_URL = "https://" + GAME_URL
 
 # ── MKEYZ Token Rewards (por acción en el bot) ─────────────────
 MKEYZ_REWARDS = {
@@ -175,7 +190,7 @@ MOODS_BEATS   = ["Oscuro 🌑", "Alegre ☀️", "Romántico 💜", "Agresivo �
 # ══════════════════════════════════════════════════════════
 
 def db_init():
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     cur = con.cursor()
     cur.executescript("""
         CREATE TABLE IF NOT EXISTS subscriptions (
@@ -244,7 +259,7 @@ def db_get_plan(tg_id):
         return PLAN_STUDIO
     if tg_id in VIP_IDS:
         return PLAN_STUDIO
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     cur = con.cursor()
     cur.execute("SELECT plan, expires_at FROM subscriptions WHERE tg_id=?", (tg_id,))
     row = cur.fetchone()
@@ -257,7 +272,7 @@ def db_get_plan(tg_id):
     return plan
 
 def db_set_plan(tg_id, plan, months=1):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     cur = con.cursor()
     now     = int(time.time())
     expires = now + (months * 30 * 24 * 3600)
@@ -272,7 +287,7 @@ def plan_allows(user_plan, required):
 
 # ── Artistas ───────────────────────────────────────────────
 def db_get_artist(tg_id):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     cur.execute("SELECT * FROM artists WHERE tg_id=?", (tg_id,))
@@ -281,7 +296,7 @@ def db_get_artist(tg_id):
     return dict(row) if row else None
 
 def db_register(tg_id, username, name, genre, bio, ig):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     cur = con.cursor()
     cur.execute("INSERT OR REPLACE INTO artists (tg_id,username,name,genre,bio,ig,joined_at) VALUES (?,?,?,?,?,?,?)",
                 (tg_id, username, name, genre, bio, ig, int(time.time())))
@@ -289,7 +304,7 @@ def db_register(tg_id, username, name, genre, bio, ig):
     con.close()
 
 def db_delete_artist(tg_id):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     cur = con.cursor()
     cur.execute("SELECT id FROM artists WHERE tg_id=?", (tg_id,))
     row = cur.fetchone()
@@ -302,7 +317,7 @@ def db_delete_artist(tg_id):
     con.close()
 
 def db_all_artists(genre=None):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     if genre:
@@ -314,7 +329,7 @@ def db_all_artists(genre=None):
     return rows
 
 def db_add_post(tg_id, ptype, content=None, file_id=None, caption=None, file_type=None):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     cur = con.cursor()
     cur.execute("SELECT id FROM artists WHERE tg_id=?", (tg_id,))
     row = cur.fetchone()
@@ -329,7 +344,7 @@ def db_add_post(tg_id, ptype, content=None, file_id=None, caption=None, file_typ
     return pid
 
 def db_get_posts(limit=10, ptype=None):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     if ptype:
@@ -341,7 +356,7 @@ def db_get_posts(limit=10, ptype=None):
     return rows
 
 def db_get_post(post_id):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     cur.execute("SELECT p.*, a.name as artist_name, a.tg_id as artist_tg_id FROM posts p JOIN artists a ON p.artist_id=a.id WHERE p.id=?", (post_id,))
@@ -350,7 +365,7 @@ def db_get_post(post_id):
     return dict(row) if row else None
 
 def db_add_feedback(post_id, from_tg_id, from_name, text):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     cur = con.cursor()
     cur.execute("INSERT INTO feedback (post_id,from_tg_id,from_name,text,sent_at) VALUES (?,?,?,?,?)",
                 (post_id, from_tg_id, from_name, text, int(time.time())))
@@ -358,7 +373,7 @@ def db_add_feedback(post_id, from_tg_id, from_name, text):
     con.close()
 
 def db_get_feedback(post_id):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     cur.execute("SELECT * FROM feedback WHERE post_id=? ORDER BY sent_at DESC", (post_id,))
@@ -369,7 +384,7 @@ def db_get_feedback(post_id):
 # ── Battle DB ─────────────────────────────────────────────
 
 def db_add_battle(tg_id, name, file_id, file_type, caption):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     cur = con.cursor()
     now = int(time.time())
     cur.execute("""
@@ -382,7 +397,7 @@ def db_add_battle(tg_id, name, file_id, file_type, caption):
     return bid
 
 def db_get_active_battles(limit=5):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     cur.execute("SELECT * FROM battles WHERE expires_at > ? ORDER BY votes_fire DESC LIMIT ?",
@@ -429,7 +444,7 @@ def get_week_id():
     return int(time.time()) // (7 * 24 * 3600)
 
 def db_add_reto_entry(tg_id, name, file_id, file_type, week_id):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     cur = con.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS reto_entries (
@@ -461,7 +476,7 @@ def db_add_reto_entry(tg_id, name, file_id, file_type, week_id):
     return eid
 
 def db_get_reto_entries(week_id, limit=10):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     try:
@@ -474,7 +489,7 @@ def db_get_reto_entries(week_id, limit=10):
     return rows
 
 def db_vote_reto(entry_id, voter_tg_id):
-    con = sqlite3.connect(DB_PATH)
+    con = get_db()
     cur = con.cursor()
     try:
         cur.execute("INSERT INTO reto_votes (entry_id, voter_tg_id) VALUES (?,?)",
@@ -710,8 +725,18 @@ async def edit(query, text, kb):
             await query.edit_message_text(text, parse_mode="Markdown", reply_markup=kb)
         else:
             await query.message.reply_text(text, parse_mode="Markdown", reply_markup=kb)
-    except Exception:
-        await query.message.reply_text(text, parse_mode="Markdown", reply_markup=kb)
+    except Exception as e:
+        log.warning(f"edit() falló, reintentando con reply_text: {e}")
+        try:
+            await query.message.reply_text(text, parse_mode="Markdown", reply_markup=kb)
+        except Exception as e2:
+            log.error(f"edit() también falló en el reintento: {e2}")
+            try:
+                await query.message.reply_text(
+                    "⚠️ No pude mostrar esta sección. Intenta de nuevo con /menu."
+                )
+            except Exception:
+                pass
 
 def kb_upgrade(required_plan):
     """Keyboard showing ONLY the required plan — no other options."""
@@ -2829,6 +2854,24 @@ async def on_payment(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 #  MAIN
 # ══════════════════════════════════════════════════════════
 
+async def on_error(update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Captura cualquier excepción no manejada en un handler.
+    Antes de esto, errores como el de GAME_URL sin https:// se
+    perdían silenciosamente ('No error handlers are registered')
+    y el usuario solo veía que el botón no hacía nada."""
+    log.error("Excepción no controlada procesando un update", exc_info=ctx.error)
+    try:
+        if isinstance(update, Update) and update.effective_message:
+            await update.effective_message.reply_text(
+                "⚠️ Ocurrió un error inesperado. Intenta de nuevo o usa /start."
+            )
+    except Exception:
+        pass
+
+# ══════════════════════════════════════════════════════════
+#  MAIN
+# ══════════════════════════════════════════════════════════
+
 def main():
     db_init()
     app = (ApplicationBuilder()
@@ -2848,6 +2891,7 @@ def main():
     app.add_handler(CallbackQueryHandler(on_button))
     app.add_handler(MessageHandler(filters.AUDIO | filters.VOICE | filters.Document.AUDIO, on_audio))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
+    app.add_error_handler(on_error)
 
     log.info("✅ Mkeyz Studio Bot listo")
     app.run_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
